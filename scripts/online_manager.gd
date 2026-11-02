@@ -98,8 +98,8 @@ func _build_patch_url(target_code: String, fields_dict: Dictionary) -> String:
 		mask_parts.append("updateMask.fieldPaths=%s" % str(k))
 	var query_mask = "&".join(mask_parts)
 	if query_mask.is_empty():
-		return "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, target_code, CloudSync.API_KEY, Time.get_ticks_msec()]
-	return "%s/%s?key=%s&%s&_cb=%d" % [BASE_ROOMS_URL, target_code, CloudSync.API_KEY, query_mask, Time.get_ticks_msec()]
+		return "%s/%s?key=%s" % [BASE_ROOMS_URL, target_code, CloudSync.API_KEY]
+	return "%s/%s?key=%s&%s" % [BASE_ROOMS_URL, target_code, CloudSync.API_KEY, query_mask]
 
 # --- CREAR SALA (HOST) ---
 func create_room(host_name: String, host_team: Array, callback: Callable = Callable(), target_friend: Dictionary = {}) -> void:
@@ -113,7 +113,7 @@ func create_room(host_name: String, host_team: Array, callback: Callable = Calla
 	is_guest_ready = false
 	is_starting_match = false
 	
-	var url = "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY, Time.get_ticks_msec()]
+	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
 	var h_email = GameData.profile_email if GameData else ""
 	var t_email = str(target_friend.get("email", ""))
 	var t_alias = str(target_friend.get("alias", ""))
@@ -169,7 +169,7 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 			callback.call(false, err_msg)
 		return
 		
-	var url = "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, clean_code, CloudSync.API_KEY, Time.get_ticks_msec()]
+	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, clean_code, CloudSync.API_KEY]
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -360,7 +360,7 @@ func _on_poll_tick() -> void:
 	if current_http_req != null:
 		return # Ya hay una petición en curso
 		
-	var url = "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY, Time.get_ticks_msec()]
+	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
 	current_http_req = HTTPRequest.new()
 	add_child(current_http_req)
 	
@@ -514,7 +514,7 @@ func leave_or_delete_room() -> void:
 	if not room_code.is_empty():
 		var code = room_code
 		room_code = ""
-		var url = "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, code, CloudSync.API_KEY, Time.get_ticks_msec()]
+		var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, code, CloudSync.API_KEY]
 		var http = HTTPRequest.new()
 		add_child(http)
 		http.request_completed.connect(func(_res: int, _code: int, _h: PackedStringArray, _b: PackedByteArray):
