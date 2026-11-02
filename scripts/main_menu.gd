@@ -553,6 +553,26 @@ func _ready() -> void:
 	btn_confirm_join.pressed.connect(_on_confirm_join_pressed)
 	btn_close_online_lobby.pressed.connect(_on_close_online_lobby_pressed)
 	join_code_input.text_submitted.connect(func(_t): _on_confirm_join_pressed())
+	join_code_input.gui_input.connect(func(event: InputEvent):
+		if (event is InputEventMouseButton and event.pressed) or (event is InputEventScreenTouch and event.pressed):
+			if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+				var is_mobile_web = bool(JavaScriptBridge.eval("/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)"))
+				if is_mobile_web:
+					_prompt_web_input_if_needed(join_code_input, "Ingresa el código de 4 caracteres de la sala:")
+	)
+	var j_parent = join_code_input.get_parent()
+	if j_parent and not j_parent.has_node("BtnPromptJoinCode"):
+		var b_pjc = Button.new()
+		b_pjc.name = "BtnPromptJoinCode"
+		b_pjc.text = "✏️ Escribir Código (Móvil / Web)"
+		b_pjc.custom_minimum_size = Vector2(0, 32)
+		b_pjc.add_theme_font_size_override("font_size", 11)
+		_apply_retro_button_style(b_pjc, Color(0.2, 0.45, 0.65), Color(0.3, 0.6, 0.85), false)
+		b_pjc.pressed.connect(func():
+			_prompt_web_input_if_needed(join_code_input, "Ingresa el código de 4 caracteres de la sala:")
+		)
+		j_parent.add_child(b_pjc)
+		j_parent.move_child(b_pjc, join_code_input.get_index() + 1)
 	if not OnlineManager.match_ready_to_start.is_connected(_on_online_match_ready):
 		OnlineManager.match_ready_to_start.connect(_on_online_match_ready)
 	online_lobby_modal.visible = false
@@ -565,6 +585,25 @@ func _ready() -> void:
 	btn_search_friend.pressed.connect(_on_search_friend_pressed)
 	btn_clear_search.pressed.connect(_on_clear_search_pressed)
 	friend_search_input.text_submitted.connect(func(_t): _on_search_friend_pressed())
+	friend_search_input.gui_input.connect(func(event: InputEvent):
+		if (event is InputEventMouseButton and event.pressed) or (event is InputEventScreenTouch and event.pressed):
+			if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+				var is_mobile_web = bool(JavaScriptBridge.eval("/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)"))
+				if is_mobile_web:
+					_prompt_web_input_if_needed(friend_search_input, "Buscar entrenador por Correo o Alias:")
+	)
+	var s_parent = friend_search_input.get_parent()
+	if s_parent and not s_parent.has_node("BtnPromptSearch"):
+		var b_ps = Button.new()
+		b_ps.name = "BtnPromptSearch"
+		b_ps.text = "✏️"
+		b_ps.tooltip_text = "Escribir búsqueda"
+		b_ps.custom_minimum_size = Vector2(34, 0)
+		b_ps.pressed.connect(func():
+			_prompt_web_input_if_needed(friend_search_input, "Buscar entrenador por Correo o Alias:")
+		)
+		s_parent.add_child(b_ps)
+		s_parent.move_child(b_ps, friend_search_input.get_index() + 1)
 	btn_tab_my_friends.pressed.connect(_show_my_friends_tab)
 	btn_tab_search_results.pressed.connect(_show_search_results_tab)
 	btn_refresh_friends.pressed.connect(_refresh_friends_and_rooms)
@@ -4960,9 +4999,14 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 			if show_welcome_on_login:
 				_show_welcome_notification()
 		else:
-			# Cuenta nueva en Google Cloud -> Crear perfil con regalo de bienvenida y sincronizar
+			# Cuenta nueva en Google Cloud -> Conservar cartas locales si existían
 			var chosen_alias = display_name if not display_name.is_empty() else email.split("@")[0].capitalize()
-			GameData.create_new_profile(chosen_alias, "Google Cloud", email, false)
+			if not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
+				chosen_alias = GameData.profile_name
+			if GameData.player_unlocked_ids.is_empty():
+				GameData.create_new_profile(chosen_alias, "Google Cloud", email, false)
+			else:
+				GameData.create_or_update_profile(chosen_alias, "Google Cloud", email, false)
 			GameData.profile_welcome_claimed = true
 			GameData.profile_email = email
 			GameData.profile_cloud_key = email
@@ -4978,10 +5022,10 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 					_update_lobby_header_badge()
 					refresh_cards_data_from_catalog()
 					_show_welcome_notification()
-					print("[Main] Google OAuth: Brand new profile created and synced for %s (%s)!" % [chosen_alias, email])
+					print("[Main] Google OAuth: Profile created and synced for %s (%s)!" % [chosen_alias, email])
 				else:
 					if cloud_feedback_lbl:
-						cloud_feedback_lbl.text = "❌ Error al guardar perfil en la nube: %s" % save_msg
+						cloud_feedback_lbl.text = "⚠️ Perfil guardado localmente, pero falló la sincronización con la nube:\n%s" % save_msg
 						cloud_feedback_lbl.visible = true
 			)
 	)
@@ -5132,7 +5176,10 @@ func _on_cloud_confirm_pressed() -> void:
 			if cloud_feedback_lbl:
 				cloud_feedback_lbl.text = "⏳ Creating new profile in Google Cloud..."
 				
-			GameData.create_new_profile(entered_alias, "Google Cloud", entered_email, false)
+			if GameData.player_unlocked_ids.is_empty():
+				GameData.create_new_profile(entered_alias, "Google Cloud", entered_email, false)
+			else:
+				GameData.create_or_update_profile(entered_alias, "Google Cloud", entered_email, false)
 			GameData.profile_welcome_claimed = true
 			GameData.profile_email = entered_email
 			GameData.profile_cloud_key = entered_email

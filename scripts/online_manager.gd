@@ -77,6 +77,16 @@ func _firestore_fields_to_dict(fields: Dictionary) -> Dictionary:
 			result[k] = float(field_obj["doubleValue"])
 	return result
 
+# Construye la URL de PATCH con updateMask para que Firestore NO borre los otros campos del documento
+func _build_patch_url(target_code: String, fields_dict: Dictionary) -> String:
+	var mask_parts = PackedStringArray()
+	for k in fields_dict.keys():
+		mask_parts.append("updateMask.fieldPaths=%s" % str(k))
+	var query_mask = "&".join(mask_parts)
+	if query_mask.is_empty():
+		return "%s/%s?key=%s" % [BASE_ROOMS_URL, target_code, CloudSync.API_KEY]
+	return "%s/%s?key=%s&%s" % [BASE_ROOMS_URL, target_code, CloudSync.API_KEY, query_mask]
+
 # --- CREAR SALA (HOST) ---
 func create_room(host_name: String, host_team: Array, callback: Callable = Callable(), target_friend: Dictionary = {}) -> void:
 	reset_session()
@@ -136,8 +146,10 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 	reset_session()
 	var clean_code = target_code.strip_edges().to_upper()
 	if clean_code.length() < 3:
+		var err_msg = "Código de sala no válido (debe tener 4 caracteres)."
+		room_joined.emit(false, err_msg)
 		if callback.is_valid():
-			callback.call(false, "Código de sala no válido.")
+			callback.call(false, err_msg)
 		return
 		
 	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, clean_code, CloudSync.API_KEY]
@@ -153,7 +165,7 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 				var dict = _firestore_fields_to_dict(parsed["fields"])
 				var status = str(dict.get("status", ""))
 				if status != "WAITING":
-					var msg = "La sala ya comenzó o no está disponible."
+					var msg = "La sala '%s' ya no está disponible (Estado: %s)." % [clean_code, status]
 					room_joined.emit(false, msg)
 					if callback.is_valid():
 						callback.call(false, msg)
@@ -172,16 +184,16 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 				else:
 					opponent_team_ids = []
 					
-				# Actualizar sala con datos del Guest y marcar READY
+				# Actualizar sala con datos del Guest y marcar READY con updateMask
 				_confirm_guest_join(clean_code, guest_name, guest_team, callback)
 				return
 				
-			var msg = "Formato de datos de sala no válido."
+			var msg = "La sala '%s' no contiene datos activos o fue cerrada." % clean_code
 			room_joined.emit(false, msg)
 			if callback.is_valid():
 				callback.call(false, msg)
 		elif code == 404:
-			var msg = "Sala '%s' no encontrada. Verifica el código." % clean_code
+			var msg = "Sala '%s' no encontrada. Verifica que el anfitrión haya creado la sala." % clean_code
 			room_joined.emit(false, msg)
 			if callback.is_valid():
 				callback.call(false, msg)
@@ -194,13 +206,13 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 	http.request(url, PackedStringArray(), HTTPClient.METHOD_GET)
 
 func _confirm_guest_join(code: String, guest_name: String, guest_team: Array, callback: Callable) -> void:
-	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, code, CloudSync.API_KEY]
 	var update_data = {
 		"status": "READY",
 		"guest_name": guest_name,
 		"guest_team": guest_team,
 		"updated_at": Time.get_datetime_string_from_system()
 	}
+	var url = _build_patch_url(code, update_data)
 	var payload = { "fields": _dict_to_firestore_fields(update_data) }
 	var body = JSON.stringify(payload)
 	var headers = PackedStringArray(["Content-Type: application/json"])
@@ -276,7 +288,7 @@ func _process_room_state(fields: Dictionary) -> void:
 			opponent_team_ids = []
 		print("[OnlineManager] 👥 Rival conectado: %s con %d Pokémon" % [opponent_name, opponent_team_ids.size()])
 		
-		# Host pasa la sala a IN_BATTLE
+		# Host pasa la sala a IN_BATTLE usando updateMask
 		_set_room_status("IN_BATTLE")
 		guest_connected.emit(opponent_name, opponent_team_ids)
 		match_ready_to_start.emit()
@@ -308,11 +320,11 @@ func _process_room_state(fields: Dictionary) -> void:
 func _set_room_status(new_status: String) -> void:
 	if room_code.is_empty():
 		return
-	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
 	var update_data = {
 		"status": new_status,
 		"updated_at": Time.get_datetime_string_from_system()
 	}
+	var url = _build_patch_url(room_code, update_data)
 	var payload = { "fields": _dict_to_firestore_fields(update_data) }
 	var body = JSON.stringify(payload)
 	var headers = PackedStringArray(["Content-Type: application/json"])
@@ -337,13 +349,13 @@ func send_battle_action(action_dict: Dictionary, callback: Callable = Callable()
 	var next_turn = "GUEST" if my_role == "HOST" else "HOST"
 	current_turn_role = next_turn
 	
-	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
 	var update_data = {
 		"action_seq": last_processed_seq,
 		"current_turn": next_turn,
 		"last_action_json": JSON.stringify(action_dict),
 		"updated_at": Time.get_datetime_string_from_system()
 	}
+	var url = _build_patch_url(room_code, update_data)
 	var payload = { "fields": _dict_to_firestore_fields(update_data) }
 	var body = JSON.stringify(payload)
 	var headers = PackedStringArray(["Content-Type: application/json"])
@@ -377,11 +389,15 @@ func leave_or_delete_room() -> void:
 		if is_host:
 			http.request(url, PackedStringArray(), HTTPClient.METHOD_DELETE)
 		else:
-			# Si es el invitado, marca la sala como cerrada
-			var update_data = { "status": "CLOSED" }
+			# Si es el invitado, marca la sala como cerrada usando updateMask
+			var update_data = {
+				"status": "CLOSED",
+				"updated_at": Time.get_datetime_string_from_system()
+			}
+			var patch_url = _build_patch_url(code, update_data)
 			var payload = { "fields": _dict_to_firestore_fields(update_data) }
 			var headers = PackedStringArray(["Content-Type: application/json"])
-			http.request(url, headers, HTTPClient.METHOD_PATCH, JSON.stringify(payload))
+			http.request(patch_url, headers, HTTPClient.METHOD_PATCH, JSON.stringify(payload))
 			
 	reset_session()
 

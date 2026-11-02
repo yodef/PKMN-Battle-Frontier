@@ -2790,13 +2790,20 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	adventure_player_team_state.clear()
 	adventure_completed_episodes.clear()
 	adventure_unlocked_episodes = [1]
-	player_unlocked_ids.clear()
-	player_card_stocks.clear()
-	for id in all_pokemon_ids:
-		if pokemon_catalog[id].get("unlocked_start", false):
-			player_unlocked_ids.append(id)
-			player_card_stocks[id] = 1
-	player_unlocked_ids.sort()
+	
+	# Conservar cartas si ya existían cartas desbloqueadas en este dispositivo
+	if player_unlocked_ids.is_empty():
+		player_card_stocks.clear()
+		for id in all_pokemon_ids:
+			if pokemon_catalog[id].get("unlocked_start", false):
+				player_unlocked_ids.append(id)
+				player_card_stocks[id] = 1
+		player_unlocked_ids.sort()
+	else:
+		for id in player_unlocked_ids:
+			if not player_card_stocks.has(id) or player_card_stocks[id] < 1:
+				player_card_stocks[id] = 1
+				
 	save_profile(auto_sync_cloud)
 	diamonds_changed.emit(player_diamonds)
 	rare_candies_changed.emit(player_rare_candies)
@@ -2900,17 +2907,17 @@ func apply_save_dict(data: Dictionary) -> bool:
 			if typeof(item) == TYPE_DICTIONARY:
 				player_friends.append(item.duplicate(true))
 	
-	# Cargar estadísticas
+	# Cargar estadísticas con fusión (mantener el máximo progreso alcanzado)
 	var st = data.get("stats", {})
-	stats_tournaments_won = int(st.get("tournaments_won", 0))
-	stats_battles_won = int(st.get("battles_won", 0))
-	stats_battles_total = int(st.get("battles_total", 0))
-	stats_packs_opened = int(st.get("packs_opened", 0))
+	stats_tournaments_won = maxi(stats_tournaments_won, int(st.get("tournaments_won", 0)))
+	stats_battles_won = maxi(stats_battles_won, int(st.get("battles_won", 0)))
+	stats_battles_total = maxi(stats_battles_total, int(st.get("battles_total", 0)))
+	stats_packs_opened = maxi(stats_packs_opened, int(st.get("packs_opened", 0)))
 	
-	# Cargar economía
+	# Cargar economía con fusión (mantener el valor más alto entre local y nube)
 	var econ = data.get("economy", {})
-	player_diamonds = int(econ.get("diamonds", 0))
-	player_rare_candies = int(econ.get("rare_candies", 0))
+	player_diamonds = maxi(player_diamonds, int(econ.get("diamonds", 0)))
+	player_rare_candies = maxi(player_rare_candies, int(econ.get("rare_candies", 0)))
 	
 	# Auto-reparación para asegurar que cuentas iniciales siempre reciban su bono de bienvenida
 	if not profile_welcome_claimed and stats_battles_total == 0 and stats_tournaments_won == 0:
@@ -2923,23 +2930,23 @@ func apply_save_dict(data: Dictionary) -> bool:
 	diamonds_changed.emit(player_diamonds)
 	rare_candies_changed.emit(player_rare_candies)
 	
-	# Cargar colección
+	# Cargar colección (FUSIÓN INTELIGENTE: Jamás perder cartas ya obtenidas)
 	var col = data.get("collection", {})
 	var unl = col.get("unlocked_ids", [])
-	if unl.size() > 0:
-		player_unlocked_ids.clear()
+	if typeof(unl) == TYPE_ARRAY and unl.size() > 0:
 		for id in unl:
 			var int_id = int(id)
 			if not (int_id in player_unlocked_ids) and pokemon_catalog.has(int_id):
 				player_unlocked_ids.append(int_id)
 		player_unlocked_ids.sort()
 		
-	# Cargar stocks
-	player_card_stocks.clear()
+	# Cargar stocks (mantener la cantidad más alta de cada carta)
 	var raw_stocks = col.get("stocks", {})
 	if typeof(raw_stocks) == TYPE_DICTIONARY:
 		for k in raw_stocks.keys():
-			player_card_stocks[int(k)] = int(raw_stocks[k])
+			var card_id = int(k)
+			var cloud_stock = int(raw_stocks[k])
+			player_card_stocks[card_id] = maxi(player_card_stocks.get(card_id, 0), cloud_stock)
 	for id in player_unlocked_ids:
 		if not player_card_stocks.has(id) or player_card_stocks[id] < 1:
 			player_card_stocks[id] = 1

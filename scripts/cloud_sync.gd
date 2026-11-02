@@ -64,8 +64,7 @@ func check_account_exists(account_key: String, callback: Callable) -> void:
 			if callback.is_valid():
 				callback.call(true, save_data, "")
 		elif response_code == 404:
-			if callback.is_valid():
-				callback.call(false, {}, "")
+			_check_account_exists_fallback(account_key, callback)
 		else:
 			var err_msg = "Error HTTP %d" % response_code
 			if result != HTTPRequest.RESULT_SUCCESS:
@@ -79,6 +78,54 @@ func check_account_exists(account_key: String, callback: Callable) -> void:
 		http.queue_free()
 		if callback.is_valid():
 			callback.call(false, {}, "Request failed to initialize (Error %d)" % err)
+
+func _check_account_exists_fallback(account_key: String, callback: Callable) -> void:
+	var clean_query = account_key.strip_edges().to_lower()
+	var search_url = "%s?key=%s&pageSize=50" % [FIRESTORE_BASE_URL, API_KEY]
+	var http_search = HTTPRequest.new()
+	http_search.timeout = 10.0
+	add_child(http_search)
+	
+	http_search.request_completed.connect(func(_res: int, code: int, _hdrs: PackedStringArray, body: PackedByteArray):
+		http_search.queue_free()
+		if code >= 200 and code < 300:
+			var txt = body.get_string_from_utf8()
+			var parsed = JSON.parse_string(txt)
+			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("documents"):
+				var docs = parsed.get("documents", [])
+				for doc in docs:
+					if typeof(doc) != TYPE_DICTIONARY or not doc.has("fields"):
+						continue
+					var fields = doc["fields"]
+					var t_email = str(fields.get("email", {}).get("stringValue", "")).to_lower()
+					var t_alias = str(fields.get("trainer_alias", fields.get("trainer_name", {})).get("stringValue", "")).to_lower()
+					var t_id = str(fields.get("profile_id", {}).get("stringValue", "")).to_lower()
+					
+					var raw_without_gmail = clean_query.trim_suffix("@gmail.com")
+					var match_found = false
+					if t_email == clean_query or t_alias == clean_query or t_id == clean_query or t_alias == raw_without_gmail:
+						match_found = true
+					elif not clean_query.contains("@") and (t_email.begins_with(clean_query + "@") or t_alias == clean_query):
+						match_found = true
+						
+					if match_found:
+						var save_data: Dictionary = {}
+						if fields.has("save_json"):
+							var raw_save = str(fields["save_json"].get("stringValue", ""))
+							var parsed_save = JSON.parse_string(raw_save)
+							if typeof(parsed_save) == TYPE_DICTIONARY:
+								save_data = parsed_save
+						if callback.is_valid():
+							callback.call(true, save_data, "")
+						return
+		if callback.is_valid():
+			callback.call(false, {}, "")
+	)
+	var err = http_search.request(search_url, PackedStringArray(), HTTPClient.METHOD_GET)
+	if err != OK:
+		http_search.queue_free()
+		if callback.is_valid():
+			callback.call(false, {}, "")
 
 # Guarda un perfil completo en Google Cloud Firestore
 func save_profile_to_cloud(account_key: String, save_dict: Dictionary, callback: Callable = Callable()) -> void:
