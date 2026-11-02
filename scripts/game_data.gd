@@ -2568,28 +2568,48 @@ func get_pokemon_texture(texture_path_or_file: String) -> Texture2D:
 		return pokemon_textures_cache[key]
 		
 	var tex: Texture2D = null
-	# 1. Si es ruta de Godot (res://) y existe en ResourceLoader
-	if texture_path_or_file.begins_with("res://") and ResourceLoader.exists(texture_path_or_file):
-		tex = load(texture_path_or_file)
-	else:
-		var file_name = texture_path_or_file.get_file()
-		var res_card_path = "res://assets/cards/" + file_name
-		if ResourceLoader.exists(res_card_path):
-			tex = load(res_card_path)
-		else:
-			# 3. Carga directa desde disco (refleja archivos agregados o modificados inmediatamente)
-			var paths_on_disk = [
-				ProjectSettings.globalize_path(res_card_path),
-				"D:/Games/Pokemon Battle Frontier/PKMN/" + file_name,
-				"D:/Games/Pokemon Battle Frontier/PKMN/cards/" + file_name
-			]
-			for disk_p in paths_on_disk:
-				if FileAccess.file_exists(disk_p):
-					var img = Image.load_from_file(disk_p)
-					if img:
-						tex = ImageTexture.create_from_image(img)
-						break
-						
+	var file_name = texture_path_or_file.get_file()
+	
+	# Candidatos a probar dentro de res://
+	var res_candidates: Array[String] = []
+	if texture_path_or_file.begins_with("res://"):
+		res_candidates.append(texture_path_or_file)
+	res_candidates.append("res://assets/cards/" + file_name)
+	
+	# Si tiene paréntesis como "125 (239).png", extraer "239.png" y "0239.png"
+	var regex_paren = RegEx.new()
+	regex_paren.compile("\\((\\d+)\\)")
+	var match_res = regex_paren.search(file_name)
+	if match_res:
+		var inner_num = match_res.get_string(1)
+		res_candidates.append("res://assets/cards/" + inner_num + ".png")
+		res_candidates.append("res://assets/cards/%s.png" % inner_num.pad_zeros(3))
+	
+	for r_path in res_candidates:
+		if ResourceLoader.exists(r_path):
+			tex = load(r_path)
+			if tex:
+				break
+				
+	# Si no se encontró en res://, probar carga directa desde disco (PC)
+	if not tex:
+		var paths_on_disk = [
+			ProjectSettings.globalize_path("res://assets/cards/" + file_name),
+			"D:/Games/Pokemon Battle Frontier/PKMN/" + file_name,
+			"D:/Games/Pokemon Battle Frontier/PKMN/cards/" + file_name
+		]
+		if match_res:
+			var inner_num = match_res.get_string(1)
+			paths_on_disk.append("D:/Games/Pokemon Battle Frontier/PKMN/" + inner_num + ".png")
+			paths_on_disk.append("D:/Games/Pokemon Battle Frontier/PKMN/%s.png" % inner_num.pad_zeros(3))
+			
+		for disk_p in paths_on_disk:
+			if FileAccess.file_exists(disk_p):
+				var img = Image.load_from_file(disk_p)
+				if img:
+					tex = ImageTexture.create_from_image(img)
+					break
+					
 	if tex:
 		pokemon_textures_cache[key] = tex
 	return tex
