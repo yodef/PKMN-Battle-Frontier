@@ -290,9 +290,23 @@ const engine = new Engine(GODOT_CONFIG);
 				console.error('Error while registering service worker:', err);
 			});
 		} else {
-			// Display the message as usual
-			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
-			displayFailureNotice(missingMsg + missing.join('\n'));
+			const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+			const hasWebGL2Missing = missing.some(m => m.includes('WebGL2') || m.includes('webgl2'));
+			
+			if (isIOS && hasWebGL2Missing) {
+				const iosHelpMsg = "⚠️ Modo de Aislamiento de Apple Detectado (Lockdown Enabled)\n\n" +
+					"Tu iPhone tiene activado el 'Modo de Aislamiento', el cual bloquea WebGL2 e impide cargar juegos en el navegador.\n\n" +
+					"👉 Cómo solucionarlo en 5 segundos:\n" +
+					"1. Toca el botón 'aA' o icono de ajustes en la barra de URL (donde dice 'yodef.github.io').\n" +
+					"2. Selecciona 'Ajustes del sitio web' (Website Settings).\n" +
+					"3. Desactiva 'Modo de aislamiento' solo para esta página.\n" +
+					"4. Recarga la página y ¡a jugar!";
+				displayFailureNotice(iosHelpMsg);
+			} else {
+				// Display the message as usual
+				const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+				displayFailureNotice(missingMsg + missing.join('\n'));
+			}
 		}
 	} else {
 		setStatusMode('progress');
