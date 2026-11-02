@@ -486,6 +486,45 @@ func _ready() -> void:
 	cloud_trainer_input.text_submitted.connect(func(_t): _on_cloud_confirm_pressed())
 	if cloud_email_input:
 		cloud_email_input.text_submitted.connect(func(_t): _on_cloud_confirm_pressed())
+		cloud_email_input.gui_input.connect(func(event: InputEvent):
+			if (event is InputEventMouseButton and event.pressed) or (event is InputEventScreenTouch and event.pressed):
+				if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+					var is_mobile_web = bool(JavaScriptBridge.eval("/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)"))
+					if is_mobile_web:
+						_prompt_web_input_if_needed(cloud_email_input, "Ingresa tu correo o alias de Google:")
+		)
+	if cloud_trainer_input:
+		cloud_trainer_input.gui_input.connect(func(event: InputEvent):
+			if (event is InputEventMouseButton and event.pressed) or (event is InputEventScreenTouch and event.pressed):
+				if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+					var is_mobile_web = bool(JavaScriptBridge.eval("/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)"))
+					if is_mobile_web:
+						_prompt_web_input_if_needed(cloud_trainer_input, "Ingresa tu Alias de Entrenador:")
+		)
+	
+	# Botón ✏️ de ayuda para escribir en web/móvil
+	if cloud_email_row and not cloud_email_row.has_node("BtnPromptEmail"):
+		var b_pe = Button.new()
+		b_pe.name = "BtnPromptEmail"
+		b_pe.text = "✏️"
+		b_pe.tooltip_text = "Escribir correo o alias"
+		b_pe.custom_minimum_size = Vector2(34, 0)
+		b_pe.pressed.connect(func():
+			_prompt_web_input_if_needed(cloud_email_input, "Ingresa tu correo o alias de Google:")
+		)
+		cloud_email_row.add_child(b_pe)
+		
+	if cloud_trainer_row and not cloud_trainer_row.has_node("BtnPromptTrainer"):
+		var b_pt = Button.new()
+		b_pt.name = "BtnPromptTrainer"
+		b_pt.text = "✏️"
+		b_pt.tooltip_text = "Escribir alias"
+		b_pt.custom_minimum_size = Vector2(34, 0)
+		b_pt.pressed.connect(func():
+			_prompt_web_input_if_needed(cloud_trainer_input, "Ingresa tu Alias de Entrenador:")
+		)
+		cloud_trainer_row.add_child(b_pt)
+
 	if not CloudSync.google_oauth_completed.is_connected(_on_google_oauth_completed):
 		CloudSync.google_oauth_completed.connect(_on_google_oauth_completed)
 	
@@ -4999,6 +5038,19 @@ func _on_sign_up_google_pressed() -> void:
 	if not is_direct:
 		_launch_google_browser_oauth()
 
+func _prompt_web_input_if_needed(target_input: LineEdit, title_prompt: String) -> void:
+	if not target_input:
+		return
+	if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+		var cur_val = target_input.text.c_escape()
+		var p_title = title_prompt.c_escape()
+		var js = "window.prompt('%s', '%s')" % [p_title, cur_val]
+		var res = JavaScriptBridge.eval(js)
+		if res != null and typeof(res) == TYPE_STRING:
+			target_input.text = str(res).strip_edges()
+	else:
+		DisplayServer.virtual_keyboard_show(target_input.text)
+
 func _on_cloud_confirm_pressed() -> void:
 	var entered_email = cloud_email_input.text.strip_edges() if cloud_email_input else ""
 	var entered_alias = cloud_trainer_input.text.strip_edges() if cloud_trainer_input else ""
@@ -5006,13 +5058,9 @@ func _on_cloud_confirm_pressed() -> void:
 	if cloud_action_mode == "LOGIN_CLOUD":
 		if entered_email.is_empty():
 			if cloud_feedback_lbl:
-				cloud_feedback_lbl.text = "⚠️ Please enter your Google Email."
+				cloud_feedback_lbl.text = "⚠️ Please enter your Google Email or Trainer Alias."
 				cloud_feedback_lbl.visible = true
 			return
-		if not entered_email.contains("@"):
-			entered_email += "@gmail.com"
-			if cloud_email_input:
-				cloud_email_input.text = entered_email
 				
 		btn_cloud_confirm.disabled = true
 		if cloud_feedback_lbl:
