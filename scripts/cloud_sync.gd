@@ -211,6 +211,8 @@ func load_profile_from_cloud(account_key: String, callback: Callable = Callable(
 		else:
 			var resp_text = resp_body.get_string_from_utf8()
 			var msg = "Error %d loading from Google Cloud." % response_code
+			if response_code == 0 or result != HTTPRequest.RESULT_SUCCESS:
+				msg = "Could not reach Google Cloud (Result %d, Code %d). Please check internet connection." % [result, response_code]
 			print("[CloudSync] ❌ %s: %s" % [msg, resp_text])
 			cloud_load_completed.emit(false, {}, msg)
 			if callback.is_valid():
@@ -402,6 +404,8 @@ func _process(delta: float) -> void:
 			_handle_auth_client_connection(peer)
 
 func start_google_oauth_flow() -> bool:
+	if OS.has_feature("mobile"):
+		return false
 	stop_google_oauth_server()
 	_auth_server = TCPServer.new()
 	
