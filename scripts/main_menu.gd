@@ -31,7 +31,8 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var btn_team_sort_evo: Button = $TeamSelectModal/Box/SortBar/BtnSortEvo
 @onready var team_grid_cards: Container = $TeamSelectModal/Box/ScrollContainer/GridMargin/GridCards
 @onready var btn_start_battle: Button = $TeamSelectModal/Box/Actions/BtnStartBattle
-@onready var btn_close_team_select: Button = $TeamSelectModal/Box/Actions/BtnCloseTeamSelect
+@onready var btn_clear_team: Button = $TeamSelectModal/Box/Actions/TeamActionsRow/BtnClearTeam
+@onready var btn_close_team_select: Button = $TeamSelectModal/Box/Actions/TeamActionsRow/BtnCloseTeamSelect
 
 # --- MODAL CAMPAIGN HUB (TORNEO & AVENTURA) ---
 @onready var campaign_hub_modal: Control = $CampaignHubModal
@@ -227,13 +228,21 @@ var stat_candies_lbl: Label = null
 @onready var cloud_trainer_row: HBoxContainer = $CloudNoticeModal/CloudCard/CloudVBox/CloudTrainerRow
 @onready var cloud_trainer_prompt: Label = $CloudNoticeModal/CloudCard/CloudVBox/CloudTrainerRow/CloudTrainerPrompt
 @onready var cloud_trainer_input: LineEdit = $CloudNoticeModal/CloudCard/CloudVBox/CloudTrainerRow/CloudTrainerInput
+@onready var cloud_password_row: HBoxContainer = $CloudNoticeModal/CloudCard/CloudVBox/CloudPasswordRow
+@onready var cloud_password_prompt: Label = $CloudNoticeModal/CloudCard/CloudVBox/CloudPasswordRow/CloudPasswordPrompt
+@onready var cloud_password_input: LineEdit = $CloudNoticeModal/CloudCard/CloudVBox/CloudPasswordRow/CloudPasswordInput
 @onready var cloud_feedback_lbl: Label = $CloudNoticeModal/CloudCard/CloudVBox/CloudFeedbackLbl
 @onready var btn_cloud_confirm: Button = $CloudNoticeModal/CloudCard/CloudVBox/BtnCloudConfirm
+@onready var btn_resend_verification: Button = $CloudNoticeModal/CloudCard/CloudVBox/BtnResendVerification
 @onready var btn_launch_browser_auth: Button = $CloudNoticeModal/CloudCard/CloudVBox/BtnLaunchBrowserAuth
 @onready var btn_toggle_manual_auth: Button = $CloudNoticeModal/CloudCard/CloudVBox/BtnToggleManualAuth
 @onready var btn_close_cloud_notice: Button = $CloudNoticeModal/CloudCard/CloudVBox/BtnCloseCloudNotice
 var cloud_action_mode: String = "SIGNUP_GOOGLE"
 var is_manual_cloud_mode: bool = false
+var _pending_verify_id_token: String = ""
+var _pending_verify_email: String = ""
+var _pending_verify_alias: String = ""
+var _pending_verify_password: String = ""
 
 # --- MODAL BIENVENIDA (REGALO 15 GEMAS) ---
 @onready var welcome_modal: Control = $WelcomeModal
@@ -373,6 +382,8 @@ func _ready() -> void:
 	btn_tab_enemy.pressed.connect(_on_tab_enemy_pressed)
 	btn_random_enemy.pressed.connect(_randomize_enemy_team)
 	btn_start_battle.pressed.connect(_on_start_battle_pressed)
+	if btn_clear_team:
+		btn_clear_team.pressed.connect(_on_clear_team_pressed)
 	btn_close_team_select.pressed.connect(_on_close_team_select_pressed)
 	btn_team_sort_id.pressed.connect(func(): _on_team_sort_pressed("ID"))
 	btn_team_sort_dex.pressed.connect(func(): _on_team_sort_pressed("DEX"))
@@ -495,6 +506,8 @@ func _ready() -> void:
 	btn_login_cloud.pressed.connect(_on_login_cloud_pressed)
 	btn_sign_up_google.pressed.connect(_on_sign_up_google_pressed)
 	btn_cloud_confirm.pressed.connect(_on_cloud_confirm_pressed)
+	if btn_resend_verification:
+		btn_resend_verification.pressed.connect(_on_resend_verification_pressed)
 	if btn_launch_browser_auth:
 		btn_launch_browser_auth.pressed.connect(_launch_google_browser_oauth)
 	if btn_toggle_manual_auth:
@@ -504,6 +517,8 @@ func _ready() -> void:
 		cloud_notice_modal.visible = false
 	)
 	cloud_trainer_input.text_submitted.connect(func(_t): _on_cloud_confirm_pressed())
+	if cloud_password_input:
+		cloud_password_input.text_submitted.connect(func(_t): _on_cloud_confirm_pressed())
 	if cloud_email_input:
 		cloud_email_input.text_submitted.connect(func(_t): _on_cloud_confirm_pressed())
 		cloud_email_input.gui_input.connect(func(event: InputEvent):
@@ -990,15 +1005,7 @@ func open_team_select_for_campaign() -> void:
 			var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "legendary")
 			if cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "basic" and not is_legendary:
 				selected_player_ids.append(int(p["id"]))
-	elif selected_player_ids.is_empty():
-		for card in cards_data:
-			var st = str(card.get("stage", "Basic")).strip_edges().to_lower()
-			var r = str(card.get("rarity", "Common")).strip_edges().to_lower()
-			var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
-			if st == "basic" and not is_legendary:
-				selected_player_ids.append(int(card["id"]))
-				if selected_player_ids.size() >= 3:
-					break
+	# If starting a fresh run, leave selected_player_ids empty so the player can choose freely
 			
 	update_team_sort_buttons_ui()
 	build_team_select_cards_grid()
@@ -2402,11 +2409,6 @@ func _on_quick_battle_pressed() -> void:
 	team_select_title.text = "⚔️ TEAM SELECTION"
 	team_select_tabs.visible = true
 	
-	# Preseleccionar para jugador si no hay selección
-	if selected_player_ids.is_empty():
-		for i in range(min(3, cards_data.size())):
-			selected_player_ids.append(cards_data[i]["id"])
-			
 	# Preseleccionar para la IA si no hay selección o si contiene cartas no desbloqueadas
 	var valid_enemy_ids: Array[int] = []
 	for id in selected_enemy_ids:
@@ -2437,6 +2439,14 @@ func _on_close_team_select_pressed() -> void:
 		else:
 			update_campaign_hub_ui()
 			campaign_hub_modal.visible = true
+
+func _on_clear_team_pressed() -> void:
+	if current_team_tab == "ENEMY":
+		selected_enemy_ids.clear()
+	else:
+		selected_player_ids.clear()
+	build_team_select_cards_grid()
+	update_team_select_ui()
 
 func _on_tab_player_pressed() -> void:
 	current_team_tab = "PLAYER"
@@ -2785,16 +2795,17 @@ func update_team_select_ui() -> void:
 		var ready = (p_count >= 1 and p_count <= 3)
 		btn_start_battle.disabled = not ready
 		if ready:
-			btn_start_battle.text = "✅ CONFIRMAR EQUIPO EN SALA (%d PKMN)" % p_count
+			btn_start_battle.text = "✅ CONFIRM TEAM IN LOBBY (%d PKMN)" % p_count
 		else:
-			btn_start_battle.text = "Elige de 1 a 3 Pokémon Básicos"
+			btn_start_battle.text = "Choose 1 to 3 Basic Pokémon"
 	elif team_select_mode == "CAMPAIGN":
 		var p_count = selected_player_ids.size()
 		btn_start_battle.disabled = (p_count < 1)
+		var mode_label = "ADVENTURE" if GameData.campaign_submode == "ADVENTURE" else "TOURNAMENT"
 		if p_count >= 1:
-			btn_start_battle.text = "✅ CONFIRM TOURNAMENT TEAM (%d PKMN)" % p_count
+			btn_start_battle.text = "✅ CONFIRM %s TEAM (%d PKMN)" % [mode_label, p_count]
 		else:
-			btn_start_battle.text = "Choose 1 to 3 BASIC Pokémon for Tournament"
+			btn_start_battle.text = "Choose 1 to 3 BASIC Pokémon for %s" % mode_label.capitalize()
 	else:
 		var p_count = selected_player_ids.size()
 		var e_count = selected_enemy_ids.size()
@@ -3050,11 +3061,10 @@ func _on_lobby_change_team_pressed() -> void:
 	_open_team_select_for_online()
 
 func _open_team_select_for_online() -> void:
-	_ensure_default_online_team()
 	qb_selected_mode = "ONLINE"
-	team_select_title.text = "🌐 MODIFICAR EQUIPO DE BATALLA"
-	team_select_subtitle.text = "Selecciona de 1 a 3 Pokémon Básicos para el combate multijugador"
-	btn_tab_player.text = "🌐 Tu Equipo (%d/3)" % selected_player_ids.size()
+	team_select_title.text = "🌐 MODIFY BATTLE TEAM"
+	team_select_subtitle.text = "Select 1 to 3 Basic Pokémon for multiplayer battles"
+	btn_tab_player.text = "🌐 Your Team (%d/3)" % selected_player_ids.size()
 	btn_tab_enemy.visible = false
 	btn_random_enemy.visible = false
 	if qb_mode_row:
@@ -5204,8 +5214,8 @@ func _show_login_screen() -> void:
 						return
 		profile_detected_lbl.text = "👤 Welcome to Pokémon Battle Frontier!"
 		btn_login_play.text = "▶  PLAY AS GUEST\n(Direct to Lobby)"
-	btn_login_cloud.text = "🔑  LOG IN WITH GOOGLE\n(Restore Cloud Progress)"
-	btn_sign_up_google.text = "🌐  REGISTER GOOGLE ACCOUNT\n(Personalize Alias & Cloud Sync)"
+	btn_login_cloud.text = "🔑  LOG IN WITH CLOUD ACCOUNT\n(Restore Saved Progress)"
+	btn_sign_up_google.text = "🌐  REGISTER NEW PROFILE\n(Email Verification & Cloud Sync)"
 
 func _on_login_play_pressed() -> void:
 	var is_brand_new = not GameData.has_saved_profile()
@@ -5221,14 +5231,14 @@ func _on_login_play_pressed() -> void:
 func _launch_google_browser_oauth() -> void:
 	if cloud_feedback_lbl:
 		if OS.has_feature("web"):
-			cloud_feedback_lbl.text = "⏳ Abriendo selector de cuenta de Google..."
+			cloud_feedback_lbl.text = "⏳ Opening Google account selector..."
 		else:
-			cloud_feedback_lbl.text = "⏳ Abriendo ventana de Google en el navegador..."
+			cloud_feedback_lbl.text = "⏳ Opening Google browser login..."
 		cloud_feedback_lbl.visible = true
 	var ok = CloudSync.start_google_oauth_flow()
 	if not ok:
 		if cloud_feedback_lbl:
-			cloud_feedback_lbl.text = "⚠️ No se pudo abrir la autenticación con Google. Usa el ingreso manual."
+			cloud_feedback_lbl.text = "⚠️ Could not open Google browser login. Please enter manually."
 			cloud_feedback_lbl.visible = true
 		_set_manual_cloud_mode(true)
 
@@ -5237,26 +5247,49 @@ func _toggle_manual_cloud_mode() -> void:
 
 func _set_manual_cloud_mode(manual: bool) -> void:
 	is_manual_cloud_mode = manual
+	if cloud_action_mode == "VERIFY_EMAIL":
+		if cloud_email_row:
+			cloud_email_row.visible = false
+		if cloud_trainer_row:
+			cloud_trainer_row.visible = false
+		if cloud_password_row:
+			cloud_password_row.visible = false
+		if btn_launch_browser_auth:
+			btn_launch_browser_auth.visible = false
+		if btn_toggle_manual_auth:
+			btn_toggle_manual_auth.visible = false
+		if btn_resend_verification:
+			btn_resend_verification.visible = true
+		if btn_cloud_confirm:
+			btn_cloud_confirm.visible = true
+		return
+
 	if cloud_email_row:
 		cloud_email_row.visible = manual
+	if cloud_password_row:
+		cloud_password_row.visible = manual
 	if cloud_trainer_row:
 		cloud_trainer_row.visible = (manual and cloud_action_mode == "SIGNUP_GOOGLE")
+	if btn_resend_verification:
+		btn_resend_verification.visible = false
 	if btn_cloud_confirm:
 		btn_cloud_confirm.visible = manual
 	if btn_launch_browser_auth:
 		btn_launch_browser_auth.visible = not manual
 		if OS.has_feature("web"):
-			btn_launch_browser_auth.text = "🔑 Iniciar Sesión con Google"
+			btn_launch_browser_auth.text = "🔑 Sign In with Google"
 		else:
-			btn_launch_browser_auth.text = "🌐 Abrir selector de Google"
+			btn_launch_browser_auth.text = "🌐 Open Google Browser Sign-In"
 	if btn_toggle_manual_auth:
 		btn_toggle_manual_auth.visible = true
-		btn_toggle_manual_auth.text = "🌐 Volver a selección con Google" if manual else "✏️ O ingresar manualmente..."
+		btn_toggle_manual_auth.text = "🌐 Switch to Google Browser Sign-In" if manual else "✏️ Or enter credentials manually..."
 	if manual:
 		if cloud_email_input and cloud_email_input.text.is_empty():
 			cloud_email_input.grab_focus()
-		elif cloud_trainer_input:
+		elif cloud_trainer_input and cloud_action_mode == "SIGNUP_GOOGLE" and cloud_trainer_input.text.is_empty():
 			cloud_trainer_input.grab_focus()
+		elif cloud_password_input and cloud_password_input.text.is_empty():
+			cloud_password_input.grab_focus()
 
 func _on_google_oauth_completed(success: bool, email: String, display_name: String, error_msg: String) -> void:
 	if not success:
@@ -5266,18 +5299,18 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 		return
 		
 	if cloud_feedback_lbl:
-		cloud_feedback_lbl.text = "✅ ¡Cuenta seleccionada: %s!\nSincronizando con Google Cloud..." % email
+		cloud_feedback_lbl.text = "✅ Account selected: %s\nSyncing with Google Cloud..." % email
 		cloud_feedback_lbl.visible = true
 		
 	CloudSync.check_account_exists(email, func(exists: bool, cloud_data: Dictionary, err: String):
 		if not err.is_empty():
 			if cloud_feedback_lbl:
-				cloud_feedback_lbl.text = "❌ Error al conectar con Google Cloud:\n%s" % err
+				cloud_feedback_lbl.text = "❌ Error connecting to Google Cloud:\n%s" % err
 				cloud_feedback_lbl.visible = true
 			return
 			
 		if exists:
-			# Cuenta ya existente en Google Cloud -> Cargar y entrar
+			# Existing account in Google Cloud -> Load and enter
 			var prof = cloud_data.get("profile", {})
 			var cloud_alias = str(prof.get("trainer_alias", prof.get("name", ""))).strip_edges()
 			if (cloud_alias.is_empty() or cloud_alias == "Trainer") and not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
@@ -5303,7 +5336,7 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 			if GameData.can_claim_welcome_gift():
 				_show_welcome_notification()
 		else:
-			# Cuenta nueva en Google Cloud -> Conservar cartas locales si existían
+			# New account in Google Cloud
 			var chosen_alias = display_name if not display_name.is_empty() else email.split("@")[0].capitalize()
 			if not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
 				chosen_alias = GameData.profile_name
@@ -5333,16 +5366,16 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 					print("[Main] Google OAuth: Profile created and synced for %s (%s)!" % [chosen_alias, email])
 				else:
 					if cloud_feedback_lbl:
-						cloud_feedback_lbl.text = "⚠️ Perfil guardado localmente, pero falló la sincronización con la nube:\n%s" % save_msg
+						cloud_feedback_lbl.text = "⚠️ Profile saved locally, but failed to sync to cloud:\n%s" % save_msg
 						cloud_feedback_lbl.visible = true
 			)
 	)
 
 func _on_login_cloud_pressed() -> void:
 	cloud_action_mode = "LOGIN_CLOUD"
-	cloud_title.text = "🔑 LOG IN WITH GOOGLE"
-	cloud_desc.text = "Selecciona tu cuenta de Google para restaurar tu progreso y colección en tiempo real:"
-	_set_manual_cloud_mode(false)
+	cloud_title.text = "🔑 LOG IN WITH CLOUD ACCOUNT"
+	cloud_desc.text = "Enter your registered email and password to restore your progress and collection:"
+	_set_manual_cloud_mode(true)
 	if cloud_email_input:
 		var remembered_email = GameData.profile_email
 		if remembered_email.is_empty() and GameData.profile_cloud_key.contains("@"):
@@ -5354,25 +5387,29 @@ func _on_login_cloud_pressed() -> void:
 				if typeof(rem_dict) == TYPE_DICTIONARY:
 					remembered_email = str(rem_dict.get("email", "")).strip_edges()
 		cloud_email_input.text = remembered_email
-		cloud_email_input.placeholder_text = "e.g. your_email@gmail.com o Rafiki"
+		cloud_email_input.placeholder_text = "e.g. ash@gmail.com"
+	if cloud_password_input:
+		cloud_password_input.text = ""
+		cloud_password_input.placeholder_text = "Your password"
 	if cloud_feedback_lbl:
 		cloud_feedback_lbl.visible = false
 		cloud_feedback_lbl.text = ""
+	if btn_resend_verification:
+		btn_resend_verification.visible = false
 	btn_cloud_confirm.text = "☁️ Log In & Restore Save"
 	btn_cloud_confirm.disabled = false
 	cloud_notice_modal.visible = true
-	_launch_google_browser_oauth()
 
 func _on_sign_up_google_pressed() -> void:
 	cloud_action_mode = "SIGNUP_GOOGLE"
-	cloud_title.text = "🌐 REGISTER GOOGLE ACCOUNT"
-	cloud_desc.text = "Conecta con tu cuenta de Google activa para sincronizar tu progreso y recibir tu regalo de bienvenida (25 💎 + 50 🍬):"
-	_set_manual_cloud_mode(false)
+	cloud_title.text = "🌐 REGISTER NEW PROFILE"
+	cloud_desc.text = "Enter your email, alias and password. An email verification is required to activate your profile:"
+	_set_manual_cloud_mode(true)
 	if cloud_trainer_prompt:
 		cloud_trainer_prompt.text = "Trainer Alias:"
 	if cloud_email_input:
 		cloud_email_input.text = GameData.profile_email
-		cloud_email_input.placeholder_text = "e.g. ash.ketchum@gmail.com"
+		cloud_email_input.placeholder_text = "e.g. ash@gmail.com"
 	if cloud_trainer_input:
 		var current_alias = GameData.profile_name
 		if current_alias.is_empty() or current_alias == "Trainer":
@@ -5380,13 +5417,17 @@ func _on_sign_up_google_pressed() -> void:
 			current_alias = sys_user.capitalize() if not sys_user.is_empty() else "Red"
 		cloud_trainer_input.text = current_alias
 		cloud_trainer_input.placeholder_text = "e.g. Ash, Red, Nestor..."
+	if cloud_password_input:
+		cloud_password_input.text = ""
+		cloud_password_input.placeholder_text = "Min 6 characters"
 	if cloud_feedback_lbl:
 		cloud_feedback_lbl.visible = false
 		cloud_feedback_lbl.text = ""
-	btn_cloud_confirm.text = "✨ Register & Sync Profile"
+	if btn_resend_verification:
+		btn_resend_verification.visible = false
+	btn_cloud_confirm.text = "✉️ Send Verification & Register"
 	btn_cloud_confirm.disabled = false
 	cloud_notice_modal.visible = true
-	_launch_google_browser_oauth()
 
 func _prompt_web_input_if_needed(target_input: LineEdit, title_prompt: String) -> void:
 	if not target_input:
@@ -5402,71 +5443,73 @@ func _prompt_web_input_if_needed(target_input: LineEdit, title_prompt: String) -
 		DisplayServer.virtual_keyboard_show(target_input.text)
 
 func _on_cloud_confirm_pressed() -> void:
+	if cloud_action_mode == "VERIFY_EMAIL":
+		_check_email_verification_status()
+		return
+
 	var entered_email = cloud_email_input.text.strip_edges() if cloud_email_input else ""
 	var entered_alias = cloud_trainer_input.text.strip_edges() if cloud_trainer_input else ""
+	var entered_pass = cloud_password_input.text.strip_edges() if cloud_password_input else ""
 	
 	if cloud_action_mode == "LOGIN_CLOUD":
 		if entered_email.is_empty():
 			if cloud_feedback_lbl:
-				cloud_feedback_lbl.text = "⚠️ Please enter your Google Email or Trainer Alias."
+				cloud_feedback_lbl.text = "⚠️ Please enter your registered email address."
 				cloud_feedback_lbl.visible = true
 			return
 				
 		btn_cloud_confirm.disabled = true
 		if cloud_feedback_lbl:
-			cloud_feedback_lbl.text = "⏳ Contacting Google Cloud (Firebase)..."
+			cloud_feedback_lbl.text = "⏳ Authenticating..."
 			cloud_feedback_lbl.visible = true
 			
-		CloudSync.load_profile_from_cloud(entered_email, func(success: bool, data: Dictionary, msg: String):
-			btn_cloud_confirm.disabled = false
-			if success:
-				var prof = data.get("profile", {})
-				var cloud_alias = str(prof.get("trainer_alias", prof.get("name", ""))).strip_edges()
-				if (cloud_alias.is_empty() or cloud_alias == "Trainer") and not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
-					data["profile"]["trainer_alias"] = GameData.profile_name
-					data["profile"]["name"] = GameData.profile_name
-				GameData.apply_save_dict(data)
-				GameData.profile_email = entered_email
-				GameData.profile_cloud_key = entered_email
-				GameData.profile_auth_provider = "Google Cloud"
-				GameData.save_profile()
-				if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
-					JavaScriptBridge.eval("if (window.saveRememberedCloudUser) { window.saveRememberedCloudUser('%s', '%s'); }" % [entered_email.c_escape(), GameData.profile_name.c_escape()])
-				GameData.session_entered_lobby = true
-				cloud_notice_modal.visible = false
-				login_modal.visible = false
-				_update_lobby_header_badge()
-				refresh_cards_data_from_catalog()
-				print("[Main] Profile loaded from Google Cloud for %s (%s)!" % [GameData.profile_name, entered_email])
-				if GameData.can_claim_welcome_gift():
-					_show_welcome_notification()
-			else:
-				if cloud_feedback_lbl:
-					cloud_feedback_lbl.text = "ℹ️ No se encontró una partida previa para '%s'.\n¿Deseas registrar este correo como tu nueva cuenta en Google Cloud?" % entered_email
-					cloud_feedback_lbl.visible = true
-				btn_cloud_confirm.text = "✨ Crear y Registrar Cuenta Ahora"
-				cloud_action_mode = "SIGNUP_GOOGLE"
-				if cloud_trainer_row:
-					cloud_trainer_row.visible = true
-				if cloud_trainer_input and cloud_trainer_input.text.is_empty():
-					cloud_trainer_input.text = entered_email.split("@")[0].capitalize()
-		)
+		if not entered_pass.is_empty():
+			CloudSync.firebase_auth_sign_in(entered_email, entered_pass, func(sign_ok: bool, id_token: String, sign_err: String):
+				if not sign_ok:
+					btn_cloud_confirm.disabled = false
+					if cloud_feedback_lbl:
+						cloud_feedback_lbl.text = "❌ %s" % sign_err
+						cloud_feedback_lbl.visible = true
+					return
+					
+				# Check if verified
+				CloudSync.firebase_auth_check_verified(id_token, func(check_ok: bool, is_verified: bool, _chk_err: String):
+					if check_ok and not is_verified:
+						_pending_verify_id_token = id_token
+						_pending_verify_email = entered_email
+						_pending_verify_alias = entered_email.split("@")[0].capitalize()
+						_pending_verify_password = entered_pass
+						btn_cloud_confirm.disabled = false
+						_switch_to_verification_view(entered_email)
+						return
+						
+					_load_cloud_profile_and_enter(entered_email)
+				)
+			)
+		else:
+			_load_cloud_profile_and_enter(entered_email)
 		
 	elif cloud_action_mode == "SIGNUP_GOOGLE":
-		if btn_cloud_confirm.text.begins_with("🔑"):
-			_on_login_cloud_pressed()
-			return
-
 		if entered_email.is_empty():
 			if cloud_feedback_lbl:
-				cloud_feedback_lbl.text = "⚠️ Please enter a valid Google Email."
+				cloud_feedback_lbl.text = "⚠️ Please enter your email address."
 				cloud_feedback_lbl.visible = true
 			return
-		if not entered_email.contains("@"):
-			entered_email += "@gmail.com"
-			if cloud_email_input:
-				cloud_email_input.text = entered_email
-				
+			
+		var email_regex = RegEx.new()
+		email_regex.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
+		if not email_regex.search(entered_email):
+			if cloud_feedback_lbl:
+				cloud_feedback_lbl.text = "⚠️ Please enter a valid email address (e.g. trainer@gmail.com)."
+				cloud_feedback_lbl.visible = true
+			return
+			
+		if entered_pass.length() < 6:
+			if cloud_feedback_lbl:
+				cloud_feedback_lbl.text = "⚠️ Password must be at least 6 characters long."
+				cloud_feedback_lbl.visible = true
+			return
+			
 		if entered_alias.is_empty():
 			entered_alias = entered_email.split("@")[0].capitalize()
 			if cloud_trainer_input:
@@ -5474,84 +5517,235 @@ func _on_cloud_confirm_pressed() -> void:
 				
 		btn_cloud_confirm.disabled = true
 		if cloud_feedback_lbl:
-			cloud_feedback_lbl.text = "⏳ Checking Google Account availability..."
+			cloud_feedback_lbl.text = "⏳ Checking account availability..."
 			cloud_feedback_lbl.visible = true
 			
 		CloudSync.check_account_exists(entered_email, func(exists: bool, _data: Dictionary, err: String):
 			if not err.is_empty():
 				btn_cloud_confirm.disabled = false
 				if cloud_feedback_lbl:
-					cloud_feedback_lbl.text = "❌ Could not connect to Google Cloud:\n%s\nPlease check your internet connection." % err
+					cloud_feedback_lbl.text = "❌ Cloud connection error:\n%s" % err
 					cloud_feedback_lbl.visible = true
 				return
 				
 			if exists:
 				btn_cloud_confirm.disabled = false
 				if cloud_feedback_lbl:
-					cloud_feedback_lbl.text = "ℹ️ Cuenta existente encontrada para '%s'. Cargando partida..." % entered_email
+					cloud_feedback_lbl.text = "ℹ️ An account with '%s' already exists. Switching to Log In..." % entered_email
 					cloud_feedback_lbl.visible = true
+				_on_login_cloud_pressed()
+				return
+				
+			if cloud_feedback_lbl:
+				cloud_feedback_lbl.text = "⏳ Creating account in Firebase..."
+				
+			CloudSync.firebase_auth_sign_up(entered_email, entered_pass, func(sign_ok: bool, id_token: String, sign_err: String):
+				if not sign_ok:
+					btn_cloud_confirm.disabled = false
+					if sign_err.to_lower().contains("already exists"):
+						if cloud_feedback_lbl:
+							cloud_feedback_lbl.text = "ℹ️ An account with this email already exists. Switching to Log In..."
+							cloud_feedback_lbl.visible = true
+						_on_login_cloud_pressed()
+					else:
+						if cloud_feedback_lbl:
+							cloud_feedback_lbl.text = "❌ Registration failed: %s" % sign_err
+							cloud_feedback_lbl.visible = true
+					return
 					
-				var prof = _data.get("profile", {})
-				var cloud_alias = str(prof.get("trainer_alias", prof.get("name", ""))).strip_edges()
-				if (cloud_alias.is_empty() or cloud_alias == "Trainer") and not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
-					_data["profile"]["trainer_alias"] = GameData.profile_name
-					_data["profile"]["name"] = GameData.profile_name
-				elif (cloud_alias.is_empty() or cloud_alias == "Trainer") and not entered_alias.is_empty() and entered_alias != "Trainer":
-					_data["profile"]["trainer_alias"] = entered_alias
-					_data["profile"]["name"] = entered_alias
+				if cloud_feedback_lbl:
+					cloud_feedback_lbl.text = "⏳ Sending verification email to %s..." % entered_email
 					
-				GameData.apply_save_dict(_data)
-				GameData.profile_email = entered_email
-				GameData.profile_cloud_key = entered_email
-				GameData.profile_auth_provider = "Google Cloud"
-				GameData.save_profile()
-				if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
-					JavaScriptBridge.eval("if (window.saveRememberedCloudUser) { window.saveRememberedCloudUser('%s', '%s'); }" % [entered_email.c_escape(), GameData.profile_name.c_escape()])
+				CloudSync.firebase_auth_send_verification_email(id_token, func(ver_ok: bool, ver_err: String):
+					btn_cloud_confirm.disabled = false
+					if not ver_ok:
+						if cloud_feedback_lbl:
+							cloud_feedback_lbl.text = "❌ Failed to send verification email: %s" % ver_err
+							cloud_feedback_lbl.visible = true
+						return
+						
+					_pending_verify_id_token = id_token
+					_pending_verify_email = entered_email
+					_pending_verify_alias = entered_alias
+					_pending_verify_password = entered_pass
+					_switch_to_verification_view(entered_email)
+				)
+			)
+		)
+
+func _switch_to_verification_view(email: String) -> void:
+	cloud_action_mode = "VERIFY_EMAIL"
+	cloud_title.text = "✉️ VERIFY YOUR EMAIL"
+	cloud_desc.text = "A verification email has been sent to:\n%s\n\n1. Check your inbox (and Spam folder).\n2. Click the verification link from Firebase.\n3. Click '✅ I Have Verified My Email' below." % email
+	_set_manual_cloud_mode(true)
+	if cloud_feedback_lbl:
+		cloud_feedback_lbl.text = "✉️ Verification link sent! Please check your email inbox."
+		cloud_feedback_lbl.visible = true
+	btn_cloud_confirm.text = "✅ I Have Verified My Email"
+	btn_cloud_confirm.disabled = false
+
+func _check_email_verification_status() -> void:
+	if _pending_verify_id_token.is_empty():
+		if not _pending_verify_email.is_empty() and not _pending_verify_password.is_empty():
+			btn_cloud_confirm.disabled = true
+			if cloud_feedback_lbl:
+				cloud_feedback_lbl.text = "⏳ Refreshing session..."
+				cloud_feedback_lbl.visible = true
+			CloudSync.firebase_auth_sign_in(_pending_verify_email, _pending_verify_password, func(s_ok: bool, new_token: String, _s_err: String):
+				if s_ok:
+					_pending_verify_id_token = new_token
+					_check_email_verification_status()
+				else:
+					btn_cloud_confirm.disabled = false
+					if cloud_feedback_lbl:
+						cloud_feedback_lbl.text = "⚠️ Session expired. Please log in or register again."
+						cloud_feedback_lbl.visible = true
+			)
+			return
+		else:
+			if cloud_feedback_lbl:
+				cloud_feedback_lbl.text = "⚠️ Session token missing. Please register again."
+				cloud_feedback_lbl.visible = true
+			return
+			
+	btn_cloud_confirm.disabled = true
+	if cloud_feedback_lbl:
+		cloud_feedback_lbl.text = "⏳ Checking email verification with Firebase..."
+		cloud_feedback_lbl.visible = true
+		
+	CloudSync.firebase_auth_check_verified(_pending_verify_id_token, func(success: bool, is_verified: bool, err_msg: String):
+		btn_cloud_confirm.disabled = false
+		if not success:
+			if not _pending_verify_email.is_empty() and not _pending_verify_password.is_empty():
+				_pending_verify_id_token = ""
+				_check_email_verification_status()
+				return
+			if cloud_feedback_lbl:
+				cloud_feedback_lbl.text = "❌ Verification check failed: %s" % err_msg
+				cloud_feedback_lbl.visible = true
+			return
+			
+		if not is_verified:
+			if cloud_feedback_lbl:
+				cloud_feedback_lbl.text = "⚠️ Email not verified yet!\nPlease click the verification link sent to %s, then try again." % _pending_verify_email
+				cloud_feedback_lbl.visible = true
+			return
+			
+		# Verification successful!
+		if cloud_feedback_lbl:
+			cloud_feedback_lbl.text = "🎉 Email verified! Creating your profile..."
+			cloud_feedback_lbl.visible = true
+			
+		if GameData.player_unlocked_ids.is_empty():
+			GameData.create_new_profile(_pending_verify_alias, "Google Cloud", _pending_verify_email, false)
+		else:
+			GameData.create_or_update_profile(_pending_verify_alias, "Google Cloud", _pending_verify_email, false)
+		GameData.profile_email = _pending_verify_email
+		GameData.profile_cloud_key = _pending_verify_email
+		GameData.profile_name = _pending_verify_alias
+		GameData.profile_auth_provider = "Google Cloud"
+		GameData.save_profile(false)
+		
+		CloudSync.save_profile_to_cloud(_pending_verify_email, GameData.get_save_dict(), func(save_ok: bool, save_msg: String):
+			btn_cloud_confirm.disabled = false
+			if save_ok:
 				GameData.session_entered_lobby = true
 				cloud_notice_modal.visible = false
 				login_modal.visible = false
 				_update_lobby_header_badge()
 				refresh_cards_data_from_catalog()
+				if profile_modal and profile_modal.visible:
+					_on_profile_pressed()
 				if GameData.can_claim_welcome_gift():
 					_show_welcome_notification()
-				print("[Main] Auto-restored existing cloud account on signup for %s (%s)!" % [GameData.profile_name, entered_email])
-				return
-				
-			# Brand new cloud account registration!
-			if cloud_feedback_lbl:
-				cloud_feedback_lbl.text = "⏳ Creating new profile in Google Cloud..."
-				
-			if GameData.player_unlocked_ids.is_empty():
-				GameData.create_new_profile(entered_alias, "Google Cloud", entered_email, false)
+				print("[Main] New verified profile created and synced for %s (%s)!" % [_pending_verify_alias, _pending_verify_email])
 			else:
-				GameData.create_or_update_profile(entered_alias, "Google Cloud", entered_email, false)
-			GameData.profile_email = entered_email
-			GameData.profile_cloud_key = entered_email
-			GameData.profile_name = entered_alias
-			GameData.profile_auth_provider = "Google Cloud"
-			GameData.save_profile(false)
-			
-			CloudSync.save_profile_to_cloud(entered_email, GameData.get_save_dict(), func(success: bool, msg: String):
-				btn_cloud_confirm.disabled = false
-				if success:
-					GameData.session_entered_lobby = true
-					cloud_notice_modal.visible = false
-					login_modal.visible = false
-					_update_lobby_header_badge()
-					refresh_cards_data_from_catalog()
-					if profile_modal and profile_modal.visible:
-						_on_profile_pressed()
-					if GameData.can_claim_welcome_gift():
-						_show_welcome_notification()
-					if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
-						JavaScriptBridge.eval("if (window.saveRememberedCloudUser) { window.saveRememberedCloudUser('%s', '%s'); }" % [entered_email.c_escape(), entered_alias.c_escape()])
-					print("[Main] New Google Account created and synced for %s (%s)!" % [entered_alias, entered_email])
+				if cloud_feedback_lbl:
+					cloud_feedback_lbl.text = "⚠️ Profile saved locally, but failed to sync to cloud:\n%s" % save_msg
+					cloud_feedback_lbl.visible = true
+		)
+	)
+
+func _on_resend_verification_pressed() -> void:
+	if _pending_verify_id_token.is_empty():
+		if not _pending_verify_email.is_empty() and not _pending_verify_password.is_empty():
+			if btn_resend_verification:
+				btn_resend_verification.disabled = true
+			CloudSync.firebase_auth_sign_in(_pending_verify_email, _pending_verify_password, func(s_ok: bool, new_token: String, _s_err: String):
+				if s_ok:
+					_pending_verify_id_token = new_token
+					_on_resend_verification_pressed()
 				else:
+					if btn_resend_verification:
+						btn_resend_verification.disabled = false
 					if cloud_feedback_lbl:
-						cloud_feedback_lbl.text = "❌ Error registering in Google Cloud: %s\nPlease check your internet connection." % msg
+						cloud_feedback_lbl.text = "⚠️ Session expired. Please log in or register again."
 						cloud_feedback_lbl.visible = true
 			)
-		)
+			return
+		else:
+			if cloud_feedback_lbl:
+				cloud_feedback_lbl.text = "⚠️ Session token missing. Please register again."
+				cloud_feedback_lbl.visible = true
+			return
+			
+	if btn_resend_verification:
+		btn_resend_verification.disabled = true
+	if cloud_feedback_lbl:
+		cloud_feedback_lbl.text = "⏳ Resending verification email..."
+		cloud_feedback_lbl.visible = true
+		
+	CloudSync.firebase_auth_send_verification_email(_pending_verify_id_token, func(ok: bool, msg: String):
+		if btn_resend_verification:
+			btn_resend_verification.disabled = false
+		if ok:
+			if cloud_feedback_lbl:
+				cloud_feedback_lbl.text = "✅ Verification email resent! Check your inbox (and Spam folder)."
+				cloud_feedback_lbl.visible = true
+		else:
+			if cloud_feedback_lbl:
+				cloud_feedback_lbl.text = "❌ Failed to resend email: %s" % msg
+				cloud_feedback_lbl.visible = true
+	)
+
+func _load_cloud_profile_and_enter(email: String) -> void:
+	if cloud_feedback_lbl:
+		cloud_feedback_lbl.text = "⏳ Loading profile from Cloud..."
+		cloud_feedback_lbl.visible = true
+		
+	CloudSync.load_profile_from_cloud(email, func(success: bool, data: Dictionary, msg: String):
+		btn_cloud_confirm.disabled = false
+		if success:
+			var prof = data.get("profile", {})
+			var cloud_alias = str(prof.get("trainer_alias", prof.get("name", ""))).strip_edges()
+			if (cloud_alias.is_empty() or cloud_alias == "Trainer") and not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
+				data["profile"]["trainer_alias"] = GameData.profile_name
+				data["profile"]["name"] = GameData.profile_name
+			GameData.apply_save_dict(data)
+			GameData.profile_email = email
+			GameData.profile_cloud_key = email
+			GameData.profile_auth_provider = "Google Cloud"
+			GameData.save_profile()
+			if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+				JavaScriptBridge.eval("if (window.saveRememberedCloudUser) { window.saveRememberedCloudUser('%s', '%s'); }" % [email.c_escape(), GameData.profile_name.c_escape()])
+			GameData.session_entered_lobby = true
+			cloud_notice_modal.visible = false
+			login_modal.visible = false
+			_update_lobby_header_badge()
+			refresh_cards_data_from_catalog()
+			print("[Main] Profile loaded from Google Cloud for %s (%s)!" % [GameData.profile_name, email])
+			if GameData.can_claim_welcome_gift():
+				_show_welcome_notification()
+		else:
+			if cloud_feedback_lbl:
+				cloud_feedback_lbl.text = "ℹ️ No saved game found for '%s'.\nWould you like to register this email as a new profile?" % email
+				cloud_feedback_lbl.visible = true
+			btn_cloud_confirm.text = "✉️ Send Verification & Register"
+			cloud_action_mode = "SIGNUP_GOOGLE"
+			_set_manual_cloud_mode(true)
+			if cloud_trainer_input and cloud_trainer_input.text.is_empty():
+				cloud_trainer_input.text = email.split("@")[0].capitalize()
+	)
 
 func _show_welcome_notification() -> void:
 	if not welcome_modal:

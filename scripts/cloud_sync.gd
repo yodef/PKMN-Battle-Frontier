@@ -94,6 +94,119 @@ func parse_trainer_doc_to_save_data(fields: Dictionary) -> Dictionary:
 		
 	return save_data
 
+# --- FIREBASE AUTHENTICATION (EMAIL & VERIFICATION) ---
+const FIREBASE_AUTH_SIGNUP_URL: String = "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + API_KEY
+const FIREBASE_AUTH_SEND_OOB_URL: String = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=" + API_KEY
+const FIREBASE_AUTH_LOOKUP_URL: String = "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + API_KEY
+const FIREBASE_AUTH_SIGNIN_URL: String = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + API_KEY
+
+func firebase_auth_sign_up(email: String, password: String, callback: Callable) -> void:
+	var http = HTTPRequest.new()
+	http.timeout = 10.0
+	add_child(http)
+	var payload = {
+		"email": email.strip_edges(),
+		"password": password,
+		"returnSecureToken": true
+	}
+	var headers = _get_nocache_headers(true)
+	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		var resp_text = body.get_string_from_utf8()
+		var parsed = JSON.parse_string(resp_text)
+		if code >= 200 and code < 300 and typeof(parsed) == TYPE_DICTIONARY:
+			var id_token = str(parsed.get("idToken", ""))
+			callback.call(true, id_token, "")
+		else:
+			var err_msg = "Registration failed."
+			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("error"):
+				var raw_err = str(parsed["error"].get("message", ""))
+				if raw_err.contains("EMAIL_EXISTS"):
+					err_msg = "An account with this email already exists."
+				elif raw_err.contains("INVALID_EMAIL"):
+					err_msg = "The email address is invalid."
+				elif raw_err.contains("WEAK_PASSWORD"):
+					err_msg = "Password should be at least 6 characters."
+				else:
+					err_msg = raw_err
+			callback.call(false, "", err_msg)
+	)
+	http.request(FIREBASE_AUTH_SIGNUP_URL, headers, HTTPClient.METHOD_POST, JSON.stringify(payload))
+
+func firebase_auth_send_verification_email(id_token: String, callback: Callable) -> void:
+	var http = HTTPRequest.new()
+	http.timeout = 10.0
+	add_child(http)
+	var payload = {
+		"requestType": "VERIFY_EMAIL",
+		"idToken": id_token
+	}
+	var headers = _get_nocache_headers(true)
+	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		var resp_text = body.get_string_from_utf8()
+		var parsed = JSON.parse_string(resp_text)
+		if code >= 200 and code < 300:
+			callback.call(true, "")
+		else:
+			var err_msg = "Could not send verification email."
+			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("error"):
+				err_msg = str(parsed["error"].get("message", err_msg))
+			callback.call(false, err_msg)
+	)
+	http.request(FIREBASE_AUTH_SEND_OOB_URL, headers, HTTPClient.METHOD_POST, JSON.stringify(payload))
+
+func firebase_auth_check_verified(id_token: String, callback: Callable) -> void:
+	var http = HTTPRequest.new()
+	http.timeout = 10.0
+	add_child(http)
+	var payload = {
+		"idToken": id_token
+	}
+	var headers = _get_nocache_headers(true)
+	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		var resp_text = body.get_string_from_utf8()
+		var parsed = JSON.parse_string(resp_text)
+		if code >= 200 and code < 300 and typeof(parsed) == TYPE_DICTIONARY and parsed.has("users"):
+			var users_arr = parsed["users"]
+			if users_arr.size() > 0:
+				var is_v = bool(users_arr[0].get("emailVerified", false))
+				callback.call(true, is_v, "")
+				return
+		callback.call(false, false, "Could not verify email status.")
+	)
+	http.request(FIREBASE_AUTH_LOOKUP_URL, headers, HTTPClient.METHOD_POST, JSON.stringify(payload))
+
+func firebase_auth_sign_in(email: String, password: String, callback: Callable) -> void:
+	var http = HTTPRequest.new()
+	http.timeout = 10.0
+	add_child(http)
+	var payload = {
+		"email": email.strip_edges(),
+		"password": password,
+		"returnSecureToken": true
+	}
+	var headers = _get_nocache_headers(true)
+	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		var resp_text = body.get_string_from_utf8()
+		var parsed = JSON.parse_string(resp_text)
+		if code >= 200 and code < 300 and typeof(parsed) == TYPE_DICTIONARY:
+			var id_token = str(parsed.get("idToken", ""))
+			callback.call(true, id_token, "")
+		else:
+			var err_msg = "Sign-in failed."
+			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("error"):
+				var raw_err = str(parsed["error"].get("message", ""))
+				if raw_err.contains("INVALID_LOGIN_CREDENTIALS") or raw_err.contains("EMAIL_NOT_FOUND") or raw_err.contains("INVALID_PASSWORD"):
+					err_msg = "Invalid email or password."
+				else:
+					err_msg = raw_err
+			callback.call(false, "", err_msg)
+	)
+	http.request(FIREBASE_AUTH_SIGNIN_URL, headers, HTTPClient.METHOD_POST, JSON.stringify(payload))
+
 # Comprueba si una cuenta ya existe en Firestore sin sobreescribir datos
 func check_account_exists(account_key: String, callback: Callable) -> void:
 	var doc_id = sanitize_account_key(account_key)

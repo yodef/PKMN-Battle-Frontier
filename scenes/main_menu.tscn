@@ -359,7 +359,19 @@ theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
 theme_override_font_sizes/font_size = 15
 text = "⚔️ START BATTLE (3 vs 3)!"
 
-[node name="BtnCloseTeamSelect" type="Button" parent="TeamSelectModal/Box/Actions"]
+[node name="TeamActionsRow" type="HBoxContainer" parent="TeamSelectModal/Box/Actions"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BtnClearTeam" type="Button" parent="TeamSelectModal/Box/Actions/TeamActionsRow"]
+custom_minimum_size = Vector2(160, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 13
+text = "🗑️  Clear Team"
+
+[node name="BtnCloseTeamSelect" type="Button" parent="TeamSelectModal/Box/Actions/TeamActionsRow"]
 custom_minimum_size = Vector2(160, 42)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -1956,17 +1968,17 @@ grow_vertical = 2
 color = Color(0, 0, 0, 0.85)
 
 [node name="CloudCard" type="PanelContainer" parent="CloudNoticeModal"]
-custom_minimum_size = Vector2(440, 360)
+custom_minimum_size = Vector2(460, 420)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -180.0
-offset_right = 220.0
-offset_bottom = 180.0
+offset_left = -230.0
+offset_top = -210.0
+offset_right = 230.0
+offset_bottom = 210.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -1997,14 +2009,14 @@ custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
 theme_override_font_sizes/font_size = 14
-text = "🔴 Elegir Cuenta de Google (Navegador)"
+text = "🔴 Sign In with Google (Browser)"
 
 [node name="BtnToggleManualAuth" type="Button" parent="CloudNoticeModal/CloudCard/CloudVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.85, 1)
 theme_override_font_sizes/font_size = 11
 flat = true
-text = "✏️ O ingresar correo manualmente..."
+text = "✏️ Or enter email manually..."
 
 [node name="CloudEmailRow" type="HBoxContainer" parent="CloudNoticeModal/CloudCard/CloudVBox"]
 layout_mode = 2
@@ -2014,7 +2026,7 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "Google Email:"
+text = "Email Address:"
 
 [node name="CloudEmailInput" type="LineEdit" parent="CloudNoticeModal/CloudCard/CloudVBox/CloudEmailRow"]
 layout_mode = 2
@@ -2038,6 +2050,23 @@ size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 placeholder_text = "e.g. Ash, Red, Nestor..."
 
+[node name="CloudPasswordRow" type="HBoxContainer" parent="CloudNoticeModal/CloudCard/CloudVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CloudPasswordPrompt" type="Label" parent="CloudNoticeModal/CloudCard/CloudVBox/CloudPasswordRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Password:"
+
+[node name="CloudPasswordInput" type="LineEdit" parent="CloudNoticeModal/CloudCard/CloudVBox/CloudPasswordRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+secret = true
+placeholder_text = "Min 6 characters"
+
 [node name="CloudFeedbackLbl" type="Label" parent="CloudNoticeModal/CloudCard/CloudVBox"]
 visible = false
 layout_mode = 2
@@ -2053,6 +2082,13 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 1, 0.45, 1)
 theme_override_font_sizes/font_size = 14
 text = "✨ Set Name & Enter Lobby"
+
+[node name="BtnResendVerification" type="Button" parent="CloudNoticeModal/CloudCard/CloudVBox"]
+visible = false
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "✉️  Resend Verification Email"
 
 [node name="BtnCloseCloudNotice" type="Button" parent="CloudNoticeModal/CloudCard/CloudVBox"]
 custom_minimum_size = Vector2(130, 36)
