@@ -140,6 +140,7 @@ func create_room(host_name: String, host_team: Array, callback: Callable = Calla
 	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
+	http.timeout = 8.0
 	add_child(http)
 	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, _b: PackedByteArray):
 		http.queue_free()
@@ -172,6 +173,7 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, clean_code, CloudSync.API_KEY]
 	
 	var http = HTTPRequest.new()
+	http.timeout = 8.0
 	add_child(http)
 	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, b: PackedByteArray):
 		http.queue_free()
@@ -238,6 +240,7 @@ func _confirm_guest_join(code: String, guest_name: String, guest_team: Array, ca
 	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
+	http.timeout = 8.0
 	add_child(http)
 	http.request_completed.connect(func(_res: int, resp_code: int, _h: PackedStringArray, _b: PackedByteArray):
 		http.queue_free()
@@ -272,6 +275,7 @@ func set_guest_ready(ready: bool, callback: Callable = Callable()) -> void:
 	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
+	http.timeout = 8.0
 	add_child(http)
 	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, _b: PackedByteArray):
 		http.queue_free()
@@ -298,6 +302,7 @@ func start_online_match(callback: Callable = Callable()) -> void:
 	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
+	http.timeout = 8.0
 	add_child(http)
 	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, _b: PackedByteArray):
 		http.queue_free()
@@ -332,6 +337,7 @@ func update_my_team(new_team: Array, callback: Callable = Callable()) -> void:
 	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
+	http.timeout = 8.0
 	add_child(http)
 	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, _b: PackedByteArray):
 		http.queue_free()
@@ -362,6 +368,7 @@ func _on_poll_tick() -> void:
 		
 	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
 	current_http_req = HTTPRequest.new()
+	current_http_req.timeout = 5.0
 	add_child(current_http_req)
 	
 	current_http_req.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, b: PackedByteArray):
@@ -464,6 +471,7 @@ func _set_room_status(new_status: String) -> void:
 	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
+	http.timeout = 8.0
 	add_child(http)
 	http.request_completed.connect(func(_res: int, _code: int, _h: PackedStringArray, _b: PackedByteArray):
 		http.queue_free()
@@ -495,6 +503,7 @@ func send_battle_action(action_dict: Dictionary, callback: Callable = Callable()
 	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
+	http.timeout = 8.0
 	add_child(http)
 	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, _b: PackedByteArray):
 		http.queue_free()

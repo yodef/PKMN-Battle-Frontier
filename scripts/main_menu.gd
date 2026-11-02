@@ -2866,6 +2866,7 @@ func _on_start_battle_pressed() -> void:
 var _is_online_match_launching: bool = false
 
 func _open_online_lobby() -> void:
+	_is_online_match_launching = false
 	_ensure_default_online_team()
 	online_lobby_modal.visible = true
 	_show_online_host_tab()
@@ -3124,24 +3125,29 @@ func _on_online_match_ready() -> void:
 	GameData.online_rival_name = r_name
 	
 	_ensure_default_online_team()
-	var enemy_ids = OnlineManager.opponent_team_ids.duplicate()
-	if enemy_ids.is_empty():
-		enemy_ids = [4]
-		
-	GameData.player_team_ids = selected_player_ids.duplicate()
-	GameData.enemy_team_ids = enemy_ids
+	var safe_enemy_ids: Array[int] = []
+	for eid in OnlineManager.opponent_team_ids:
+		safe_enemy_ids.append(int(eid))
+	if safe_enemy_ids.is_empty():
+		safe_enemy_ids.append(4)
+	GameData.enemy_team_ids = safe_enemy_ids
+
+	var safe_player_ids: Array[int] = []
+	for pid in selected_player_ids:
+		safe_player_ids.append(int(pid))
+	if safe_player_ids.is_empty():
+		safe_player_ids.append(0)
+	GameData.player_team_ids = safe_player_ids
 	
-	var timer = get_tree().create_timer(0.8)
-	timer.timeout.connect(func():
-		online_lobby_modal.visible = false
-		team_select_modal.visible = false
-		if bgm_player and bgm_player.playing:
-			bgm_player.stop()
-		var err = get_tree().change_scene_to_file("res://scenes/battle.tscn")
-		if err != OK:
-			print("[Main] Error cambiando escena a battle.tscn: ", err)
-			_is_online_match_launching = false
-	)
+	online_lobby_modal.visible = false
+	team_select_modal.visible = false
+	if bgm_player and bgm_player.playing:
+		bgm_player.stop()
+		
+	var err = get_tree().change_scene_to_file("res://scenes/battle.tscn")
+	if err != OK:
+		print("[Main] Error cambiando escena a battle.tscn: ", err)
+		_is_online_match_launching = false
 
 func _on_collection_pressed() -> void:
 	refresh_cards_data_from_catalog()
