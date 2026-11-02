@@ -5160,6 +5160,34 @@ func _show_login_screen() -> void:
 		]
 		btn_login_play.text = "▶  CONTINUE AS %s\n(Enter Battle Frontier)" % GameData.profile_name.to_upper()
 	else:
+		# En Web: Si no hay perfil local en IndexedDB, verificar si localStorage recuerda la cuenta de Google
+		if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+			var remembered_str = JavaScriptBridge.eval("window.getRememberedCloudUser ? window.getRememberedCloudUser() : ''")
+			if remembered_str != null and typeof(remembered_str) == TYPE_STRING and not str(remembered_str).is_empty():
+				var remembered_dict = JSON.parse_string(str(remembered_str))
+				if typeof(remembered_dict) == TYPE_DICTIONARY:
+					var rem_email = str(remembered_dict.get("email", "")).strip_edges()
+					if not rem_email.is_empty():
+						profile_detected_lbl.text = "☁️ Cuenta Google: %s\n⏳ Restaurando partida desde la nube..." % rem_email
+						btn_login_play.disabled = true
+						CloudSync.load_profile_from_cloud(rem_email, func(ok: bool, data: Dictionary, _msg: String):
+							btn_login_play.disabled = false
+							if ok:
+								GameData.apply_save_dict(data)
+								GameData.profile_email = rem_email
+								GameData.profile_cloud_key = rem_email
+								GameData.profile_auth_provider = "Google Cloud"
+								GameData.save_profile()
+								GameData.session_entered_lobby = true
+								login_modal.visible = false
+								_update_lobby_header_badge()
+								refresh_cards_data_from_catalog()
+								print("[Main] Auto-restored cloud profile on Web for %s (%s)!" % [GameData.profile_name, rem_email])
+							else:
+								profile_detected_lbl.text = "👤 Welcome to Pokémon Battle Frontier!"
+								btn_login_play.text = "▶  PLAY AS GUEST\n(Direct to Lobby)"
+						)
+						return
 		profile_detected_lbl.text = "👤 Welcome to Pokémon Battle Frontier!"
 		btn_login_play.text = "▶  PLAY AS GUEST\n(Direct to Lobby)"
 	btn_login_cloud.text = "🔑  LOG IN WITH GOOGLE\n(Restore Cloud Progress)"
@@ -5254,6 +5282,8 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 			GameData.profile_cloud_key = email
 			GameData.profile_auth_provider = "Google Cloud"
 			GameData.save_profile()
+			if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+				JavaScriptBridge.eval("if (window.saveRememberedCloudUser) { window.saveRememberedCloudUser('%s', '%s'); }" % [email.c_escape(), GameData.profile_name.c_escape()])
 			GameData.session_entered_lobby = true
 			cloud_notice_modal.visible = false
 			login_modal.visible = false
@@ -5277,6 +5307,8 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 			GameData.profile_name = chosen_alias
 			GameData.profile_auth_provider = "Google Cloud"
 			GameData.save_profile(false)
+			if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+				JavaScriptBridge.eval("if (window.saveRememberedCloudUser) { window.saveRememberedCloudUser('%s', '%s'); }" % [email.c_escape(), chosen_alias.c_escape()])
 			
 			CloudSync.save_profile_to_cloud(email, GameData.get_save_dict(), func(save_ok: bool, save_msg: String):
 				if save_ok:
@@ -5303,6 +5335,12 @@ func _on_login_cloud_pressed() -> void:
 		var remembered_email = GameData.profile_email
 		if remembered_email.is_empty() and GameData.profile_cloud_key.contains("@"):
 			remembered_email = GameData.profile_cloud_key
+		if remembered_email.is_empty() and OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+			var rem_str = JavaScriptBridge.eval("window.getRememberedCloudUser ? window.getRememberedCloudUser() : ''")
+			if rem_str != null and typeof(rem_str) == TYPE_STRING and not str(rem_str).is_empty():
+				var rem_dict = JSON.parse_string(str(rem_str))
+				if typeof(rem_dict) == TYPE_DICTIONARY:
+					remembered_email = str(rem_dict.get("email", "")).strip_edges()
 		cloud_email_input.text = remembered_email
 		cloud_email_input.placeholder_text = "e.g. your_email@gmail.com o Rafiki"
 	if cloud_feedback_lbl:
@@ -5381,6 +5419,8 @@ func _on_cloud_confirm_pressed() -> void:
 				GameData.profile_cloud_key = entered_email
 				GameData.profile_auth_provider = "Google Cloud"
 				GameData.save_profile()
+				if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+					JavaScriptBridge.eval("if (window.saveRememberedCloudUser) { window.saveRememberedCloudUser('%s', '%s'); }" % [entered_email.c_escape(), GameData.profile_name.c_escape()])
 				GameData.session_entered_lobby = true
 				cloud_notice_modal.visible = false
 				login_modal.visible = false
@@ -5468,6 +5508,8 @@ func _on_cloud_confirm_pressed() -> void:
 					if profile_modal and profile_modal.visible:
 						_on_profile_pressed()
 					_show_welcome_notification()
+					if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+						JavaScriptBridge.eval("if (window.saveRememberedCloudUser) { window.saveRememberedCloudUser('%s', '%s'); }" % [entered_email.c_escape(), entered_alias.c_escape()])
 					print("[Main] New Google Account created and synced for %s (%s)!" % [entered_alias, entered_email])
 				else:
 					if cloud_feedback_lbl:
@@ -5610,6 +5652,8 @@ func _on_save_progress_pressed() -> void:
 func _on_logout_pressed() -> void:
 	profile_modal.visible = false
 	GameData.session_entered_lobby = false
+	if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+		JavaScriptBridge.eval("if (window.clearRememberedCloudUser) { window.clearRememberedCloudUser(); }")
 	_show_login_screen()
 
 func _on_erase_profile_prompt_pressed() -> void:
@@ -5618,6 +5662,8 @@ func _on_erase_profile_prompt_pressed() -> void:
 func _on_confirm_erase_pressed() -> void:
 	erase_confirm_modal.visible = false
 	profile_modal.visible = false
+	if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+		JavaScriptBridge.eval("if (window.clearRememberedCloudUser) { window.clearRememberedCloudUser(); }")
 	GameData.erase_profile()
 	refresh_cards_data_from_catalog()
 	_apply_audio_settings()
