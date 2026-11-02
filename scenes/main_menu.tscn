@@ -87,6 +87,14 @@ theme_override_font_sizes/font_size = 15
 text = "⚔️  QUICK BATTLE
 (1 to 3 PKMN Battle)"
 
+[node name="BtnOnlineMultiplayer" type="Button" parent="ContentContainer/MenuButtons"]
+custom_minimum_size = Vector2(0, 62)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "🌐  COMBATE EN LÍNEA
+(Salas y Retos Cloud)"
+
 [node name="BtnCollection" type="Button" parent="ContentContainer/MenuButtons"]
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
@@ -2246,21 +2254,77 @@ text = "Comparte este código con tu amigo para combatir:"
 horizontal_alignment = 1
 
 [node name="RoomCodeBox" type="PanelContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel"]
-custom_minimum_size = Vector2(0, 56)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 
 [node name="RoomCodeLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/RoomCodeBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 30
 text = "----"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="HostTeamSection" type="VBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HostTeamHeader" type="HBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostTeamSection"]
+layout_mode = 2
+
+[node name="HostTeamLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostTeamSection/HostTeamHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "🎒 Tu Equipo:"
+
+[node name="BtnHostChangeTeam" type="Button" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostTeamSection/HostTeamHeader"]
+custom_minimum_size = Vector2(130, 26)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "🎒 Modificar Equipo"
+
+[node name="HostTeamContainer" type="HBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostTeamSection"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="HostRivalSection" type="VBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HostRivalInfoLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostRivalSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.85, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "👤 Rival: Esperando conexión..."
+horizontal_alignment = 1
+
+[node name="HostRivalTeamContainer" type="HBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostRivalSection"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="HostRivalReadyBadge" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostRivalSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "🔴 Rival: No conectado"
+horizontal_alignment = 1
+
+[node name="BtnHostStartBattle" type="Button" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 14
+disabled = true
+text = "⚔️ Esperando que el rival esté LISTO..."
+
 [node name="HostStatusLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 0.6, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "⏳ Esperando a que el rival ingrese el código..."
 horizontal_alignment = 1
 
@@ -2269,27 +2333,71 @@ visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="JoinInfoLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel"]
+[node name="JoinInputSection" type="VBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="JoinInfoLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/JoinInputSection"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "Ingresa el código de 4 caracteres de la sala:"
 horizontal_alignment = 1
 
-[node name="JoinCodeInput" type="LineEdit" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel"]
-custom_minimum_size = Vector2(0, 48)
+[node name="JoinCodeInput" type="LineEdit" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/JoinInputSection"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 alignment = 1
 max_length = 6
 placeholder_text = "EJ: UJK3"
 
-[node name="BtnConfirmJoin" type="Button" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel"]
-custom_minimum_size = Vector2(0, 44)
+[node name="BtnConfirmJoin" type="Button" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/JoinInputSection"]
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 1, 0.5, 1)
 theme_override_font_sizes/font_size = 14
-text = "⚡ Conectar y Pelear"
+text = "⚡ Conectar a la Sala"
+
+[node name="GuestLobbySection" type="VBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GuestRoomInfoLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "🏠 Conectado a la sala"
+horizontal_alignment = 1
+
+[node name="GuestTeamHeader" type="HBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection"]
+layout_mode = 2
+
+[node name="GuestTeamLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/GuestTeamHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "🎒 Tu Equipo:"
+
+[node name="BtnGuestChangeTeam" type="Button" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/GuestTeamHeader"]
+custom_minimum_size = Vector2(130, 26)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "🎒 Modificar Equipo"
+
+[node name="GuestTeamContainer" type="HBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="BtnGuestReadyToggle" type="Button" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+text = "✅ ¡ESTOY LISTO! (READY)"
 
 [node name="JoinStatusLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel"]
 layout_mode = 2

@@ -3,6 +3,9 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+		<meta http-equiv="Pragma" content="no-cache">
+		<meta http-equiv="Expires" content="0">
 		<title>$GODOT_PROJECT_NAME</title>
 		<style>
 html, body, #canvas {
@@ -174,6 +177,9 @@ body {
 		</script>
 		<script>
 const GODOT_CONFIG = $GODOT_CONFIG;
+if (GODOT_CONFIG && typeof GODOT_CONFIG === 'object') {
+	GODOT_CONFIG.mainPack = "index.pck?v=" + Date.now();
+}
 const GODOT_THREADS_ENABLED = $GODOT_THREADS_ENABLED;
 const engine = new Engine(GODOT_CONFIG);
 

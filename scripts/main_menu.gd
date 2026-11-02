@@ -6,6 +6,7 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var trainer_status_badge: Label = $ContentContainer/HeaderContainer/TrainerStatusBadge
 @onready var btn_campaign: Button = $ContentContainer/MenuButtons/BtnCampaign
 @onready var btn_quick_battle: Button = $ContentContainer/MenuButtons/BtnQuickBattle
+@onready var btn_online_multiplayer: Button = $ContentContainer/MenuButtons/BtnOnlineMultiplayer
 @onready var btn_collection: Button = $ContentContainer/MenuButtons/BtnCollection
 @onready var btn_shop: Button = $ContentContainer/MenuButtons/BtnShop
 @onready var btn_profile: Button = $ContentContainer/MenuButtons/AuxButtonsRow/BtnProfile
@@ -247,14 +248,31 @@ var is_manual_cloud_mode: bool = false
 @onready var online_card: PanelContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard
 @onready var btn_tab_create_room: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/OnlineModeSelector/BtnTabCreateRoom
 @onready var btn_tab_join_room: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/OnlineModeSelector/BtnTabJoinRoom
+
+# Host Panel
 @onready var host_panel: VBoxContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel
 @onready var room_code_box: PanelContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/RoomCodeBox
 @onready var room_code_lbl: Label = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/RoomCodeBox/RoomCodeLbl
+@onready var host_team_container: HBoxContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostTeamSection/HostTeamContainer
+@onready var btn_host_change_team: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostTeamSection/HostTeamHeader/BtnHostChangeTeam
+@onready var host_rival_info_lbl: Label = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostRivalSection/HostRivalInfoLbl
+@onready var host_rival_team_container: HBoxContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostRivalSection/HostRivalTeamContainer
+@onready var host_rival_ready_badge: Label = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostRivalSection/HostRivalReadyBadge
+@onready var btn_host_start_battle: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/BtnHostStartBattle
 @onready var host_status_lbl: Label = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/HostStatusLbl
+
+# Join Panel
 @onready var join_panel: VBoxContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel
-@onready var join_code_input: LineEdit = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/JoinCodeInput
-@onready var btn_confirm_join: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/BtnConfirmJoin
+@onready var join_input_section: VBoxContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/JoinInputSection
+@onready var join_code_input: LineEdit = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/JoinInputSection/JoinCodeInput
+@onready var btn_confirm_join: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/JoinInputSection/BtnConfirmJoin
+@onready var guest_lobby_section: VBoxContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection
+@onready var guest_room_info_lbl: Label = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/GuestRoomInfoLbl
+@onready var btn_guest_change_team: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/GuestTeamHeader/BtnGuestChangeTeam
+@onready var guest_team_container: HBoxContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/GuestTeamContainer
+@onready var btn_guest_ready_toggle: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/BtnGuestReadyToggle
 @onready var join_status_lbl: Label = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/JoinStatusLbl
+
 @onready var btn_close_online_lobby: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/BtnCloseOnlineLobby
 
 # --- MODAL MISIONES Y RECOMPENSAS DIARIAS ---
@@ -344,6 +362,8 @@ func _ready() -> void:
 	# Botones del menú principal
 	btn_campaign.pressed.connect(_on_campaign_pressed)
 	btn_quick_battle.pressed.connect(_on_quick_battle_pressed)
+	if btn_online_multiplayer:
+		btn_online_multiplayer.pressed.connect(_open_online_lobby)
 	btn_collection.pressed.connect(_on_collection_pressed)
 	btn_shop.pressed.connect(_on_shop_pressed)
 	btn_exit.pressed.connect(_on_exit_pressed)
@@ -552,6 +572,23 @@ func _ready() -> void:
 	btn_tab_join_room.pressed.connect(_show_online_join_tab)
 	btn_confirm_join.pressed.connect(_on_confirm_join_pressed)
 	btn_close_online_lobby.pressed.connect(_on_close_online_lobby_pressed)
+	if btn_host_change_team:
+		btn_host_change_team.pressed.connect(_on_lobby_change_team_pressed)
+	if btn_guest_change_team:
+		btn_guest_change_team.pressed.connect(_on_lobby_change_team_pressed)
+	if btn_guest_ready_toggle:
+		btn_guest_ready_toggle.pressed.connect(_on_guest_ready_toggle_pressed)
+	if btn_host_start_battle:
+		btn_host_start_battle.pressed.connect(_on_host_start_battle_pressed)
+		
+	if not OnlineManager.guest_connected.is_connected(_on_online_guest_connected):
+		OnlineManager.guest_connected.connect(_on_online_guest_connected)
+	if not OnlineManager.guest_ready_changed.is_connected(_on_online_guest_ready_changed):
+		OnlineManager.guest_ready_changed.connect(_on_online_guest_ready_changed)
+	if not OnlineManager.opponent_team_updated.is_connected(_on_online_opponent_team_updated):
+		OnlineManager.opponent_team_updated.connect(_on_online_opponent_team_updated)
+	if not OnlineManager.match_ready_to_start.is_connected(_on_online_match_ready):
+		OnlineManager.match_ready_to_start.connect(_on_online_match_ready)
 	join_code_input.text_submitted.connect(func(_t): _on_confirm_join_pressed())
 	join_code_input.gui_input.connect(func(event: InputEvent):
 		if (event is InputEventMouseButton and event.pressed) or (event is InputEventScreenTouch and event.pressed):
@@ -2387,7 +2424,9 @@ func _on_quick_battle_pressed() -> void:
 
 func _on_close_team_select_pressed() -> void:
 	team_select_modal.visible = false
-	if team_select_mode == "CAMPAIGN":
+	if team_select_mode == "ONLINE_LOBBY":
+		online_lobby_modal.visible = true
+	elif team_select_mode == "CAMPAIGN":
 		var state = GameData.get_active_campaign_team_state()
 		if state.size() > 0:
 			update_campaign_ui()
@@ -2738,7 +2777,15 @@ func update_team_select_ui() -> void:
 			
 			name_lbl.add_theme_color_override("font_color", Color("#e2e8f0"))
 			
-	if team_select_mode == "CAMPAIGN":
+	if team_select_mode == "ONLINE_LOBBY":
+		var p_count = selected_player_ids.size()
+		var ready = (p_count >= 1 and p_count <= 3)
+		btn_start_battle.disabled = not ready
+		if ready:
+			btn_start_battle.text = "✅ CONFIRMAR EQUIPO EN SALA (%d PKMN)" % p_count
+		else:
+			btn_start_battle.text = "Elige de 1 a 3 Pokémon Básicos"
+	elif team_select_mode == "CAMPAIGN":
 		var p_count = selected_player_ids.size()
 		btn_start_battle.disabled = (p_count < 1)
 		if p_count >= 1:
@@ -2769,6 +2816,20 @@ func update_team_select_ui() -> void:
 				btn_start_battle.text = "Choose at least 1 for %s" % ("Player 2" if GameData.is_pvp_mode else "Rival AI")
 
 func _on_start_battle_pressed() -> void:
+	if team_select_mode == "ONLINE_LOBBY":
+		if selected_player_ids.size() < 1:
+			return
+		team_select_modal.visible = false
+		online_lobby_modal.visible = true
+		_update_lobby_teams_ui()
+		OnlineManager.update_my_team(selected_player_ids)
+		if not OnlineManager.is_host and OnlineManager.is_guest_ready:
+			OnlineManager.set_guest_ready(false)
+			if btn_guest_ready_toggle:
+				btn_guest_ready_toggle.text = "✅ ¡ESTOY LISTO! (READY)"
+				_apply_retro_button_style(btn_guest_ready_toggle, Color(0.2, 0.7, 0.3), Color(0.3, 0.9, 0.4))
+		return
+		
 	if team_select_mode == "CAMPAIGN":
 		if selected_player_ids.is_empty():
 			return
@@ -2799,11 +2860,90 @@ func _on_start_battle_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/battle.tscn")
 
 # --- SALA DE COMBATE EN LÍNEA (ONLINE LOBBY) ---
+var _is_online_match_launching: bool = false
+
 func _open_online_lobby() -> void:
+	_ensure_default_online_team()
 	online_lobby_modal.visible = true
 	_show_online_host_tab()
 
+func _ensure_default_online_team() -> void:
+	if selected_player_ids.is_empty():
+		for id in GameData.player_unlocked_ids:
+			if selected_player_ids.size() < 3:
+				selected_player_ids.append(id)
+	if selected_player_ids.is_empty():
+		selected_player_ids = [0]
+
+func _render_pokemon_team_badges(container: HBoxContainer, team_ids: Array) -> void:
+	if not container:
+		return
+	for c in container.get_children():
+		c.queue_free()
+		
+	if team_ids.is_empty():
+		var empty_lbl = Label.new()
+		empty_lbl.text = "⏳ (Esperando selección...)"
+		empty_lbl.add_theme_font_size_override("font_size", 11)
+		empty_lbl.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
+		container.add_child(empty_lbl)
+		return
+		
+	for pid in team_ids:
+		var cat_entry = GameData.pokemon_catalog.get(int(pid), {})
+		var pkmn_name = str(cat_entry.get("name", "PKMN"))
+		var type_key = str(cat_entry.get("type", "NORMAL")).to_upper()
+		var theme = AssembledCardScript.TYPE_THEMES.get(type_key, AssembledCardScript.TYPE_THEMES["NORMAL"])
+		var border_col = theme.get("border", Color("#81D4FA"))
+		
+		var badge_panel = PanelContainer.new()
+		var sb = StyleBoxFlat.new()
+		sb.bg_color = Color(0.08, 0.12, 0.18, 0.95)
+		sb.border_color = border_col
+		sb.set_border_width_all(1)
+		sb.set_corner_radius_all(6)
+		badge_panel.add_theme_stylebox_override("panel", sb)
+		
+		var margin = MarginContainer.new()
+		margin.add_theme_constant_override("margin_left", 6)
+		margin.add_theme_constant_override("margin_right", 8)
+		margin.add_theme_constant_override("margin_top", 4)
+		margin.add_theme_constant_override("margin_bottom", 4)
+		badge_panel.add_child(margin)
+		
+		var hbox = HBoxContainer.new()
+		hbox.add_theme_constant_override("separation", 6)
+		margin.add_child(hbox)
+		
+		var tex_file = str(cat_entry.get("texture_path", cat_entry.get("texture_file", "")))
+		var pkmn_tex = GameData.get_pokemon_texture(tex_file)
+		if pkmn_tex:
+			var trect = TextureRect.new()
+			trect.texture = pkmn_tex
+			trect.custom_minimum_size = Vector2(26, 26)
+			trect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			trect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			hbox.add_child(trect)
+			
+		var n_lbl = Label.new()
+		n_lbl.text = pkmn_name
+		n_lbl.add_theme_font_size_override("font_size", 11)
+		n_lbl.add_theme_color_override("font_color", Color(1, 1, 1))
+		hbox.add_child(n_lbl)
+		
+		container.add_child(badge_panel)
+
+func _update_lobby_teams_ui() -> void:
+	if host_team_container:
+		_render_pokemon_team_badges(host_team_container, selected_player_ids)
+	if guest_team_container:
+		_render_pokemon_team_badges(guest_team_container, selected_player_ids)
+	if host_rival_team_container:
+		_render_pokemon_team_badges(host_rival_team_container, OnlineManager.opponent_team_ids)
+
 func _show_online_host_tab() -> void:
+	_ensure_default_online_team()
+	_is_online_match_launching = false
 	btn_tab_create_room.button_pressed = true
 	btn_tab_join_room.button_pressed = false
 	_style_toggle_btn(btn_tab_create_room, true, Color("#4CAF50"))
@@ -2813,28 +2953,48 @@ func _show_online_host_tab() -> void:
 	room_code_lbl.text = "----"
 	host_status_lbl.text = "⏳ Creando sala en Google Cloud..."
 	
+	if host_rival_info_lbl:
+		host_rival_info_lbl.text = "👤 Rival: Esperando conexión..."
+	if host_rival_ready_badge:
+		host_rival_ready_badge.text = "🔴 Rival: No conectado"
+		host_rival_ready_badge.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
+	if btn_host_start_battle:
+		btn_host_start_battle.disabled = true
+		btn_host_start_battle.text = "⚔️ Esperando que el rival esté LISTO..."
+		_apply_retro_button_style(btn_host_start_battle, Color(0.3, 0.4, 0.5), Color(0.3, 0.4, 0.5))
+		
+	_update_lobby_teams_ui()
+	
 	OnlineManager.create_room(GameData.profile_name, selected_player_ids, func(success: bool, code: String):
 		if success:
 			room_code_lbl.text = code
-			host_status_lbl.text = "⏳ Esperando a que tu rival ingrese el código %s..." % code
+			host_status_lbl.text = "⏳ Comparte el código %s con tu rival para combatir." % code
 		else:
 			room_code_lbl.text = "ERR"
 			host_status_lbl.text = "❌ Error al crear sala. Intenta nuevamente."
 	)
 
 func _show_online_join_tab() -> void:
+	_ensure_default_online_team()
+	_is_online_match_launching = false
 	btn_tab_create_room.button_pressed = false
 	btn_tab_join_room.button_pressed = true
 	_style_toggle_btn(btn_tab_create_room, false, Color("#4CAF50"))
 	_style_toggle_btn(btn_tab_join_room, true, Color("#2196F3"))
 	host_panel.visible = false
 	join_panel.visible = true
+	
+	if join_input_section:
+		join_input_section.visible = true
+	if guest_lobby_section:
+		guest_lobby_section.visible = false
+		
 	join_code_input.text = ""
 	join_status_lbl.text = ""
-	# Si éramos host de una sala previa sin usar, cancelarla
 	OnlineManager.leave_or_delete_room()
 
 func _on_confirm_join_pressed() -> void:
+	_ensure_default_online_team()
 	var code = join_code_input.text.strip_edges().to_upper()
 	if code.length() < 3:
 		join_status_lbl.text = "⚠️ Ingresa el código de 4 caracteres de la sala."
@@ -2843,38 +3003,141 @@ func _on_confirm_join_pressed() -> void:
 	join_status_lbl.text = "🔄 Conectando a la sala %s..." % code
 	join_status_lbl.add_theme_color_override("font_color", Color("#81D4FA"))
 	btn_confirm_join.disabled = true
+	
 	OnlineManager.join_room(code, GameData.profile_name, selected_player_ids, func(success: bool, msg: String):
 		btn_confirm_join.disabled = false
 		if success:
-			join_status_lbl.text = "✅ ¡Conectado! Esperando inicio de batalla..."
+			if join_input_section:
+				join_input_section.visible = false
+			if guest_lobby_section:
+				guest_lobby_section.visible = true
+			if guest_room_info_lbl:
+				guest_room_info_lbl.text = "🏠 Conectado a la sala %s (Anfitrión: %s)" % [code, OnlineManager.opponent_name]
+			if btn_guest_ready_toggle:
+				btn_guest_ready_toggle.text = "✅ ¡ESTOY LISTO! (READY)"
+				_apply_retro_button_style(btn_guest_ready_toggle, Color(0.2, 0.7, 0.3), Color(0.3, 0.9, 0.4))
+			join_status_lbl.text = "💡 Modifica tu equipo si lo deseas y presiona ¡ESTOY LISTO! para que el anfitrión inicie el combate."
 			join_status_lbl.add_theme_color_override("font_color", Color("#69F0AE"))
+			_update_lobby_teams_ui()
 		else:
 			join_status_lbl.text = "❌ %s" % msg
 			join_status_lbl.add_theme_color_override("font_color", Color("#FF5252"))
 	)
+
+func _on_guest_ready_toggle_pressed() -> void:
+	var new_ready = not OnlineManager.is_guest_ready
+	btn_guest_ready_toggle.disabled = true
+	OnlineManager.set_guest_ready(new_ready, func(_success: bool):
+		btn_guest_ready_toggle.disabled = false
+		if new_ready:
+			btn_guest_ready_toggle.text = "↩️ Cancelar Listo (Modificar Equipo)"
+			_apply_retro_button_style(btn_guest_ready_toggle, Color(0.85, 0.5, 0.15), Color(1.0, 0.65, 0.2))
+			join_status_lbl.text = "🟢 ¡Estás Listo! Esperando que el anfitrión inicie el combate..."
+			join_status_lbl.add_theme_color_override("font_color", Color("#69F0AE"))
+		else:
+			btn_guest_ready_toggle.text = "✅ ¡ESTOY LISTO! (READY)"
+			_apply_retro_button_style(btn_guest_ready_toggle, Color(0.2, 0.7, 0.3), Color(0.3, 0.9, 0.4))
+			join_status_lbl.text = "🟡 No estás listo. Modifica tu equipo o presiona ¡ESTOY LISTO!."
+			join_status_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
+	)
+
+func _on_lobby_change_team_pressed() -> void:
+	team_select_mode = "ONLINE_LOBBY"
+	_open_team_select_for_online()
+
+func _open_team_select_for_online() -> void:
+	_ensure_default_online_team()
+	qb_selected_mode = "ONLINE"
+	team_select_title.text = "🌐 MODIFICAR EQUIPO DE BATALLA"
+	team_select_subtitle.text = "Selecciona de 1 a 3 Pokémon Básicos para el combate multijugador"
+	btn_tab_player.text = "🌐 Tu Equipo (%d/3)" % selected_player_ids.size()
+	btn_tab_enemy.visible = false
+	btn_random_enemy.visible = false
+	if qb_mode_row:
+		qb_mode_row.visible = false
+	current_team_tab = "PLAYER"
+	build_team_select_cards_grid()
+	update_team_select_ui()
+	online_lobby_modal.visible = false
+	team_select_modal.visible = true
+
+func _on_online_guest_connected(guest_name: String, guest_team: Array) -> void:
+	if host_rival_info_lbl:
+		host_rival_info_lbl.text = "👤 Rival Conectado: %s" % guest_name
+	if host_rival_team_container:
+		_render_pokemon_team_badges(host_rival_team_container, guest_team)
+	host_status_lbl.text = "👥 %s se ha conectado. Esperando a que esté listo..." % guest_name
+	host_status_lbl.add_theme_color_override("font_color", Color("#81D4FA"))
+
+func _on_online_guest_ready_changed(is_ready: bool) -> void:
+	if is_ready:
+		if host_rival_ready_badge:
+			host_rival_ready_badge.text = "🟢 Rival: ¡LISTO PARA EL COMBATE!"
+			host_rival_ready_badge.add_theme_color_override("font_color", Color(0.3, 1.0, 0.45))
+		if btn_host_start_battle:
+			btn_host_start_battle.disabled = false
+			var rival_str = OnlineManager.opponent_name if not OnlineManager.opponent_name.is_empty() else "Rival"
+			btn_host_start_battle.text = "⚔️ ¡INICIAR COMBATE VS %s!" % rival_str.to_upper()
+			_apply_retro_button_style(btn_host_start_battle, Color(0.15, 0.75, 0.3), Color(0.25, 0.95, 0.4))
+		host_status_lbl.text = "✨ ¡Ambos entrenadores están listos! Haz clic en Iniciar Combate."
+		host_status_lbl.add_theme_color_override("font_color", Color("#69F0AE"))
+	else:
+		if host_rival_ready_badge:
+			host_rival_ready_badge.text = "🔴 Rival: Preparando equipo (NO LISTO)"
+			host_rival_ready_badge.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
+		if btn_host_start_battle:
+			btn_host_start_battle.disabled = true
+			btn_host_start_battle.text = "⚔️ Esperando que el rival esté LISTO..."
+			_apply_retro_button_style(btn_host_start_battle, Color(0.3, 0.4, 0.5), Color(0.3, 0.4, 0.5))
+		host_status_lbl.text = "⏳ El rival está modificando o preparando su equipo..."
+		host_status_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
+
+func _on_online_opponent_team_updated(new_team: Array) -> void:
+	if host_rival_team_container:
+		_render_pokemon_team_badges(host_rival_team_container, new_team)
+
+func _on_host_start_battle_pressed() -> void:
+	btn_host_start_battle.disabled = true
+	btn_host_start_battle.text = "🚀 Cargando Estadio..."
+	OnlineManager.start_online_match()
 
 func _on_close_online_lobby_pressed() -> void:
 	OnlineManager.leave_or_delete_room()
 	online_lobby_modal.visible = false
 
 func _on_online_match_ready() -> void:
-	host_status_lbl.text = "🎉 ¡Rival conectado! Entrenador: %s" % OnlineManager.opponent_name
-	join_status_lbl.text = "🎉 ¡Conectado con %s! Iniciando combate..." % OnlineManager.opponent_name
+	if _is_online_match_launching:
+		return
+	_is_online_match_launching = true
+	OnlineManager.stop_polling()
+	
+	var r_name = OnlineManager.opponent_name if not OnlineManager.opponent_name.is_empty() else "Rival"
+	host_status_lbl.text = "🚀 ¡Iniciando combate! Entrenador: %s" % r_name
+	join_status_lbl.text = "🚀 ¡Iniciando combate! Entrenador: %s" % r_name
 	
 	GameData.is_campaign_mode = false
 	GameData.is_pvp_mode = false
 	GameData.is_online_pvp = true
-	GameData.online_rival_name = OnlineManager.opponent_name
-	GameData.player_team_ids = selected_player_ids.duplicate()
-	GameData.enemy_team_ids = OnlineManager.opponent_team_ids.duplicate()
+	GameData.online_rival_name = r_name
 	
-	var timer = get_tree().create_timer(1.2)
+	_ensure_default_online_team()
+	var enemy_ids = OnlineManager.opponent_team_ids.duplicate()
+	if enemy_ids.is_empty():
+		enemy_ids = [4]
+		
+	GameData.player_team_ids = selected_player_ids.duplicate()
+	GameData.enemy_team_ids = enemy_ids
+	
+	var timer = get_tree().create_timer(0.8)
 	timer.timeout.connect(func():
 		online_lobby_modal.visible = false
 		team_select_modal.visible = false
 		if bgm_player and bgm_player.playing:
 			bgm_player.stop()
-		get_tree().change_scene_to_file("res://scenes/battle.tscn")
+		var err = get_tree().change_scene_to_file("res://scenes/battle.tscn")
+		if err != OK:
+			print("[Main] Error cambiando escena a battle.tscn: ", err)
+			_is_online_match_launching = false
 	)
 
 func _on_collection_pressed() -> void:
@@ -2894,6 +3157,7 @@ func _apply_pokemon_ui_theme() -> void:
 	var lobby_btns = [
 		btn_campaign,
 		btn_quick_battle,
+		btn_online_multiplayer,
 		btn_collection,
 		btn_shop,
 		btn_daily_missions,
@@ -5127,8 +5391,14 @@ func _on_cloud_confirm_pressed() -> void:
 					_show_welcome_notification()
 			else:
 				if cloud_feedback_lbl:
-					cloud_feedback_lbl.text = "❌ %s\nPlease check spelling or register a new Google account." % msg
+					cloud_feedback_lbl.text = "ℹ️ No se encontró una partida previa para '%s'.\n¿Deseas registrar este correo como tu nueva cuenta en Google Cloud?" % entered_email
 					cloud_feedback_lbl.visible = true
+				btn_cloud_confirm.text = "✨ Crear y Registrar Cuenta Ahora"
+				cloud_action_mode = "SIGNUP_GOOGLE"
+				if cloud_trainer_row:
+					cloud_trainer_row.visible = true
+				if cloud_trainer_input and cloud_trainer_input.text.is_empty():
+					cloud_trainer_input.text = entered_email.split("@")[0].capitalize()
 		)
 		
 	elif cloud_action_mode == "SIGNUP_GOOGLE":
@@ -5862,10 +6132,6 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 
 func _on_search_friend_pressed() -> void:
 	var query = friend_search_input.text.strip_edges()
-	if query.is_empty():
-		friends_feedback_lbl.text = "⚠️ Please enter an Email, Alias or ID to search."
-		return
-		
 	friends_feedback_lbl.text = "⏳ Searching trainers in Google Cloud (Firebase)..."
 	btn_search_friend.disabled = true
 	
@@ -5876,7 +6142,10 @@ func _on_search_friend_pressed() -> void:
 			btn_tab_search_results.text = "🔍 Results (%d)" % results.size()
 			_show_search_results_tab()
 			if results.is_empty():
-				friends_feedback_lbl.text = "⚠️ No trainers found matching '%s'." % query
+				if query.is_empty():
+					friends_feedback_lbl.text = "⚠️ No other trainers registered in Google Cloud yet."
+				else:
+					friends_feedback_lbl.text = "⚠️ No trainers found matching '%s'." % query
 			else:
 				friends_feedback_lbl.text = "✅ Found %d trainer(s)!" % results.size()
 		else:

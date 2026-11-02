@@ -275,6 +275,7 @@ func _ready() -> void:
 			btn_speed.text = SPEED_LABELS[s_idx]
 			
 	if GameData.is_online_pvp:
+		OnlineManager.start_polling(1.0)
 		if not OnlineManager.opponent_action_received.is_connected(_on_online_opponent_action):
 			OnlineManager.opponent_action_received.connect(_on_online_opponent_action)
 		if not OnlineManager.opponent_left_or_surrendered.is_connected(_on_online_opponent_surrender):
