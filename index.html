@@ -137,12 +137,41 @@ body {
 				error: ""
 			};
 
+			window.saveRememberedCloudUser = function(email, alias) {
+				try {
+					if (email) localStorage.setItem("pkmn_cloud_email", email.trim().toLowerCase());
+					if (alias) localStorage.setItem("pkmn_cloud_alias", alias.trim());
+				} catch (e) {
+					console.warn("[WebAuth] localStorage write failed:", e);
+				}
+			};
+
+			window.getRememberedCloudUser = function() {
+				try {
+					const email = localStorage.getItem("pkmn_cloud_email") || "";
+					const alias = localStorage.getItem("pkmn_cloud_alias") || "";
+					return JSON.stringify({ email: email, alias: alias });
+				} catch (e) {
+					return JSON.stringify({ email: "", alias: "" });
+				}
+			};
+
+			window.clearRememberedCloudUser = function() {
+				try {
+					localStorage.removeItem("pkmn_cloud_email");
+					localStorage.removeItem("pkmn_cloud_alias");
+				} catch (e) {
+					console.warn("[WebAuth] localStorage remove failed:", e);
+				}
+			};
+
 			window.loginWithGoogleWeb = async function() {
 				window.firebaseAuthStatus = { state: "pending", email: "", name: "", uid: "", error: "" };
 				try {
 					const result = await signInWithPopup(auth, provider);
 					const user = result.user;
 					const alias = user.displayName || user.email.split('@')[0];
+					window.saveRememberedCloudUser(user.email, alias);
 					window.firebaseAuthStatus = {
 						state: "success",
 						email: user.email,
@@ -178,7 +207,7 @@ body {
 			};
 		</script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":61172792,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":61174344,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 if (GODOT_CONFIG && typeof GODOT_CONFIG === 'object') {
 	GODOT_CONFIG.mainPack = "index.pck?v=" + Date.now();
 }
