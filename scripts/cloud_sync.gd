@@ -18,6 +18,12 @@ var _auth_server_port: int = 8910
 var _is_waiting_for_oauth: bool = false
 var _oauth_timeout_timer: float = 0.0
 
+var _is_waiting_for_web_oauth: bool = false
+var _is_waiting_for_cloud_handshake: bool = false
+var _handshake_session_id: String = ""
+var _handshake_poll_timer: float = 0.0
+var _handshake_http: HTTPRequest = null
+
 # Sanitiza el nombre o correo para que sea un ID de documento válido en Firestore
 func sanitize_account_key(raw_key: String) -> String:
 	var clean = raw_key.strip_edges().to_lower()
@@ -444,30 +450,83 @@ func fetch_friend_rooms(friends_list: Array, my_email: String, callback: Callabl
 		if callback.is_valid():
 			callback.call(false, { "direct_invites": [], "friend_rooms": [] }, "HTTP Request Error")
 
-# --- GOOGLE OAUTH BROWSER FLOW (LOOPBACK AUTH SERVER) ---
+# --- GOOGLE OAUTH FLOW (WEB POPUP / CLOUD HANDSHAKE / LOCAL SERVER) ---
 
 func _process(delta: float) -> void:
-	if not _is_waiting_for_oauth or _auth_server == null:
+	# 1. Flujo Web (Popup de Firebase Auth mediante JavaScriptBridge)
+	if _is_waiting_for_web_oauth:
+		_oauth_timeout_timer -= delta
+		if _oauth_timeout_timer <= 0.0:
+			_is_waiting_for_web_oauth = false
+			google_oauth_completed.emit(false, "", "", "Tiempo de espera agotado al conectar con Google.")
+			return
+			
+		if ClassDB.class_exists("JavaScriptBridge"):
+			var raw_status = JavaScriptBridge.eval("window.getFirebaseAuthStatus ? window.getFirebaseAuthStatus() : ''")
+			if raw_status != null and typeof(raw_status) == TYPE_STRING and not str(raw_status).is_empty():
+				var parsed = JSON.parse_string(str(raw_status))
+				if typeof(parsed) == TYPE_DICTIONARY:
+					var state = str(parsed.get("state", "idle"))
+					if state == "success":
+						_is_waiting_for_web_oauth = false
+						var email = str(parsed.get("email", ""))
+						var user_name = str(parsed.get("name", ""))
+						JavaScriptBridge.eval("window.firebaseAuthStatus = { state: 'idle', email: '', name: '', uid: '', error: '' }")
+						google_oauth_completed.emit(true, email, user_name, "")
+						return
+					elif state == "error":
+						_is_waiting_for_web_oauth = false
+						var err_msg = str(parsed.get("error", "Error al autenticar con Google."))
+						JavaScriptBridge.eval("window.firebaseAuthStatus = { state: 'idle', email: '', name: '', uid: '', error: '' }")
+						google_oauth_completed.emit(false, "", "", err_msg)
+						return
 		return
-		
-	_oauth_timeout_timer -= delta
-	if _oauth_timeout_timer <= 0.0:
-		stop_google_oauth_server()
-		google_oauth_completed.emit(false, "", "", "Tiempo de espera agotado. Puedes reintentar o usar inicio manual.")
+
+	# 2. Flujo Cloud Handshake (Mobile APK / Fallback universal)
+	if _is_waiting_for_cloud_handshake:
+		_oauth_timeout_timer -= delta
+		if _oauth_timeout_timer <= 0.0:
+			_stop_cloud_handshake()
+			google_oauth_completed.emit(false, "", "", "Tiempo de espera agotado. Puedes reintentar o ingresar manualmente.")
+			return
+			
+		_handshake_poll_timer -= delta
+		if _handshake_poll_timer <= 0.0:
+			_handshake_poll_timer = 1.2
+			_poll_handshake_session()
 		return
-		
-	if _auth_server.is_connection_available():
-		var peer: StreamPeerTCP = _auth_server.take_connection()
-		if peer:
-			_handle_auth_client_connection(peer)
+
+	# 3. Flujo Loopback Server (PC Desktop)
+	if _is_waiting_for_oauth and _auth_server != null:
+		_oauth_timeout_timer -= delta
+		if _oauth_timeout_timer <= 0.0:
+			stop_google_oauth_server()
+			google_oauth_completed.emit(false, "", "", "Tiempo de espera agotado. Puedes reintentar o usar inicio manual.")
+			return
+			
+		if _auth_server.is_connection_available():
+			var peer: StreamPeerTCP = _auth_server.take_connection()
+			if peer:
+				_handle_auth_client_connection(peer)
 
 func start_google_oauth_flow() -> bool:
-	if OS.has_feature("mobile") or OS.has_feature("web"):
-		return false
 	stop_google_oauth_server()
-	_auth_server = TCPServer.new()
 	
-	# Buscar un puerto disponible en el rango 8910-8920
+	# Plataforma Web: Popup directo de Firebase Auth en el navegador
+	if OS.has_feature("web"):
+		if ClassDB.class_exists("JavaScriptBridge"):
+			_is_waiting_for_web_oauth = true
+			_oauth_timeout_timer = 120.0
+			JavaScriptBridge.eval("if (window.loginWithGoogleWeb) { window.loginWithGoogleWeb(); }")
+			return true
+		return false
+		
+	# Plataforma Móvil (Android APK / iOS): Cloud Handshake con navegador del sistema
+	if OS.has_feature("mobile"):
+		return _start_cloud_handshake_oauth()
+		
+	# Plataforma PC Windows / Linux / macOS: Intentar TCPServer loopback
+	_auth_server = TCPServer.new()
 	var port = 8910
 	var err = ERR_UNAVAILABLE
 	for p in range(8910, 8920):
@@ -477,8 +536,8 @@ func start_google_oauth_flow() -> bool:
 			break
 			
 	if err != OK:
-		print("[CloudSync] ❌ No se pudo abrir puerto local para Google OAuth: ", err)
-		return false
+		print("[CloudSync] Puerto local ocupado, recurriendo a Cloud Handshake...")
+		return _start_cloud_handshake_oauth()
 		
 	_auth_server_port = port
 	_is_waiting_for_oauth = true
@@ -489,8 +548,73 @@ func start_google_oauth_flow() -> bool:
 	OS.shell_open(auth_url)
 	return true
 
+func _start_cloud_handshake_oauth() -> bool:
+	_stop_cloud_handshake()
+	_handshake_session_id = "sess_%d_%d" % [int(Time.get_unix_time_from_system()), randi() % 900000 + 100000]
+	_is_waiting_for_cloud_handshake = true
+	_oauth_timeout_timer = 120.0
+	_handshake_poll_timer = 0.5
+	
+	var auth_url = "https://yodef.github.io/PKMN-Battle-Frontier/auth.html?session=%s" % _handshake_session_id
+	print("[CloudSync] 🌐 Abriendo navegador para Cloud Handshake OAuth en: ", auth_url)
+	OS.shell_open(auth_url)
+	return true
+
+func _stop_cloud_handshake() -> void:
+	_is_waiting_for_cloud_handshake = false
+	if _handshake_http:
+		_handshake_http.queue_free()
+		_handshake_http = null
+
+func _poll_handshake_session() -> void:
+	if _handshake_http != null:
+		return
+		
+	var url = "https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/auth_sessions/%s?key=%s" % [PROJECT_ID, _handshake_session_id, API_KEY]
+	_handshake_http = HTTPRequest.new()
+	_handshake_http.timeout = 5.0
+	add_child(_handshake_http)
+	
+	_handshake_http.request_completed.connect(func(_res: int, code: int, _hdrs: PackedStringArray, body: PackedByteArray):
+		if _handshake_http:
+			_handshake_http.queue_free()
+			_handshake_http = null
+			
+		if not _is_waiting_for_cloud_handshake:
+			return
+			
+		if code == 200:
+			var txt = body.get_string_from_utf8()
+			var parsed = JSON.parse_string(txt)
+			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("fields"):
+				var fields = parsed.get("fields", {})
+				var email = str(fields.get("email", {}).get("stringValue", ""))
+				var user_name = str(fields.get("name", {}).get("stringValue", ""))
+				if not email.is_empty():
+					print("[CloudSync] ✅ Cloud Handshake exitoso para: %s (%s)" % [user_name, email])
+					var session_to_delete = _handshake_session_id
+					_stop_cloud_handshake()
+					_delete_cloud_session(session_to_delete)
+					google_oauth_completed.emit(true, email, user_name, "")
+	)
+	var err = _handshake_http.request(url, PackedStringArray(), HTTPClient.METHOD_GET)
+	if err != OK:
+		if _handshake_http:
+			_handshake_http.queue_free()
+			_handshake_http = null
+
+func _delete_cloud_session(session_id: String) -> void:
+	var del_http = HTTPRequest.new()
+	del_http.timeout = 5.0
+	add_child(del_http)
+	del_http.request_completed.connect(func(_r, _c, _h, _b): del_http.queue_free())
+	var del_url = "https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/auth_sessions/%s?key=%s" % [PROJECT_ID, session_id, API_KEY]
+	del_http.request(del_url, PackedStringArray(), HTTPClient.METHOD_DELETE)
+
 func stop_google_oauth_server() -> void:
 	_is_waiting_for_oauth = false
+	_is_waiting_for_web_oauth = false
+	_stop_cloud_handshake()
 	if _auth_server:
 		_auth_server.stop()
 		_auth_server = null
