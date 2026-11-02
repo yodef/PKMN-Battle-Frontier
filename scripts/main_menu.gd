@@ -5176,6 +5176,11 @@ func _show_login_screen() -> void:
 						CloudSync.load_profile_from_cloud(rem_email, func(ok: bool, data: Dictionary, _msg: String):
 							btn_login_play.disabled = false
 							if ok:
+								var prof = data.get("profile", {})
+								var cloud_alias = str(prof.get("trainer_alias", prof.get("name", ""))).strip_edges()
+								if (cloud_alias.is_empty() or cloud_alias == "Trainer") and not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
+									data["profile"]["trainer_alias"] = GameData.profile_name
+									data["profile"]["name"] = GameData.profile_name
 								GameData.apply_save_dict(data)
 								GameData.profile_email = rem_email
 								GameData.profile_cloud_key = rem_email
@@ -5267,6 +5272,15 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 			
 		if exists:
 			# Cuenta ya existente en Google Cloud -> Cargar y entrar
+			var prof = cloud_data.get("profile", {})
+			var cloud_alias = str(prof.get("trainer_alias", prof.get("name", ""))).strip_edges()
+			if (cloud_alias.is_empty() or cloud_alias == "Trainer") and not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
+				cloud_data["profile"]["trainer_alias"] = GameData.profile_name
+				cloud_data["profile"]["name"] = GameData.profile_name
+			elif (cloud_alias.is_empty() or cloud_alias == "Trainer") and not display_name.is_empty() and display_name != "Trainer":
+				cloud_data["profile"]["trainer_alias"] = display_name
+				cloud_data["profile"]["name"] = display_name
+				
 			GameData.apply_save_dict(cloud_data)
 			GameData.profile_email = email
 			GameData.profile_cloud_key = email
@@ -5287,6 +5301,8 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 			var chosen_alias = display_name if not display_name.is_empty() else email.split("@")[0].capitalize()
 			if not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
 				chosen_alias = GameData.profile_name
+			if chosen_alias.is_empty() or chosen_alias == "Trainer":
+				chosen_alias = email.split("@")[0].capitalize()
 			if GameData.player_unlocked_ids.is_empty():
 				GameData.create_new_profile(chosen_alias, "Google Cloud", email, false)
 			else:
@@ -5398,6 +5414,11 @@ func _on_cloud_confirm_pressed() -> void:
 		CloudSync.load_profile_from_cloud(entered_email, func(success: bool, data: Dictionary, msg: String):
 			btn_cloud_confirm.disabled = false
 			if success:
+				var prof = data.get("profile", {})
+				var cloud_alias = str(prof.get("trainer_alias", prof.get("name", ""))).strip_edges()
+				if (cloud_alias.is_empty() or cloud_alias == "Trainer") and not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
+					data["profile"]["trainer_alias"] = GameData.profile_name
+					data["profile"]["name"] = GameData.profile_name
 				GameData.apply_save_dict(data)
 				GameData.profile_email = entered_email
 				GameData.profile_cloud_key = entered_email
@@ -5463,6 +5484,15 @@ func _on_cloud_confirm_pressed() -> void:
 				if cloud_feedback_lbl:
 					cloud_feedback_lbl.text = "ℹ️ Cuenta existente encontrada para '%s'. Cargando partida..." % entered_email
 					cloud_feedback_lbl.visible = true
+					
+				var prof = _data.get("profile", {})
+				var cloud_alias = str(prof.get("trainer_alias", prof.get("name", ""))).strip_edges()
+				if (cloud_alias.is_empty() or cloud_alias == "Trainer") and not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
+					_data["profile"]["trainer_alias"] = GameData.profile_name
+					_data["profile"]["name"] = GameData.profile_name
+				elif (cloud_alias.is_empty() or cloud_alias == "Trainer") and not entered_alias.is_empty() and entered_alias != "Trainer":
+					_data["profile"]["trainer_alias"] = entered_alias
+					_data["profile"]["name"] = entered_alias
 					
 				GameData.apply_save_dict(_data)
 				GameData.profile_email = entered_email
@@ -6181,24 +6211,27 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 
 func _on_search_friend_pressed() -> void:
 	var query = friend_search_input.text.strip_edges()
-	friends_feedback_lbl.text = "⏳ Searching trainers in Google Cloud (Firebase)..."
+	friends_feedback_lbl.text = "⏳ Buscando entrenadores en Google Cloud (Firebase)..."
 	btn_search_friend.disabled = true
 	
 	CloudSync.search_trainers(query, func(success: bool, results: Array, msg: String):
 		btn_search_friend.disabled = false
 		if success:
 			last_search_results = results
-			btn_tab_search_results.text = "🔍 Results (%d)" % results.size()
+			btn_tab_search_results.text = "🔍 Resultados (%d)" % results.size()
 			_show_search_results_tab()
 			if results.is_empty():
 				if query.is_empty():
-					friends_feedback_lbl.text = "⚠️ No other trainers registered in Google Cloud yet."
+					friends_feedback_lbl.text = "⚠️ No hay otros entrenadores registrados en Google Cloud aún."
 				else:
-					friends_feedback_lbl.text = "⚠️ No trainers found matching '%s'." % query
+					friends_feedback_lbl.text = "⚠️ No se encontraron entrenadores con '%s'." % query
 			else:
-				friends_feedback_lbl.text = "✅ Found %d trainer(s)!" % results.size()
+				if query.is_empty():
+					friends_feedback_lbl.text = "✅ Mostrando todos los entrenadores registrados (%d en total)" % results.size()
+				else:
+					friends_feedback_lbl.text = "✅ ¡Se encontraron %d entrenador(es)!" % results.size()
 		else:
-			friends_feedback_lbl.text = "❌ Error searching: %s" % msg
+			friends_feedback_lbl.text = "❌ Error en la búsqueda: %s" % msg
 	)
 
 func _on_clear_search_pressed() -> void:
@@ -6276,24 +6309,31 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	info_vbox.add_child(sub_lbl)
 	
 	# Acciones
+	var is_self = bool(res_data.get("is_self", false))
 	var is_already = GameData.is_friend(email) or GameData.is_friend(p_id) or GameData.is_friend(alias)
 	var add_btn = Button.new()
 	add_btn.custom_minimum_size = Vector2(110, 34)
 	add_btn.add_theme_font_size_override("font_size", 11)
 	
-	if is_already:
-		add_btn.text = "✓ Friends"
+	if is_self:
+		name_lbl.text = "%s  👤 (Tu perfil)" % alias
+		name_lbl.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+		add_btn.text = "👤 (Tu Perfil)"
+		add_btn.disabled = true
+		add_btn.add_theme_color_override("font_color", Color(0.65, 0.75, 0.85))
+	elif is_already:
+		add_btn.text = "✓ Amigos"
 		add_btn.disabled = true
 		add_btn.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 	else:
-		add_btn.text = "➕ Add Friend"
+		add_btn.text = "➕ Añadir Amigo"
 		add_btn.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 		add_btn.pressed.connect(func():
 			GameData.add_friend(alias, email, p_id)
-			add_btn.text = "✓ Added!"
+			add_btn.text = "✓ ¡Añadido!"
 			add_btn.disabled = true
 			add_btn.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
-			friends_feedback_lbl.text = "✨ '%s' added to your Friends List!" % alias
+			friends_feedback_lbl.text = "✨ ¡'%s' añadido a tu lista de amigos!" % alias
 			_update_friends_ui()
 		)
 	hbox.add_child(add_btn)

@@ -2835,8 +2835,11 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 
 func create_or_update_profile(p_name: String, provider: String = "Local", p_email: String = "", auto_sync_cloud: bool = false) -> void:
 	var clean = p_name.strip_edges()
-	if clean != "":
+	if clean != "" and clean != "Trainer":
 		profile_name = clean
+	elif profile_name.is_empty() or profile_name == "Trainer":
+		if clean != "":
+			profile_name = clean
 	if p_email.strip_edges() != "":
 		profile_email = p_email.strip_edges()
 		profile_cloud_key = profile_email
@@ -2912,7 +2915,15 @@ func apply_save_dict(data: Dictionary) -> bool:
 		
 	# Cargar perfil
 	var prof = data.get("profile", {})
-	profile_name = prof.get("trainer_alias", prof.get("name", "Trainer"))
+	var incoming_name = str(prof.get("trainer_alias", prof.get("name", ""))).strip_edges()
+	if incoming_name != "" and incoming_name != "Trainer":
+		profile_name = incoming_name
+	elif profile_name.is_empty() or profile_name == "Trainer":
+		if incoming_name != "":
+			profile_name = incoming_name
+		else:
+			profile_name = "Trainer"
+	
 	profile_email = prof.get("email", "")
 	profile_id = prof.get("id", "")
 	profile_auth_provider = prof.get("auth_provider", "Guest")

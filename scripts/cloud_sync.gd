@@ -47,6 +47,53 @@ func sanitize_account_key(raw_key: String) -> String:
 		clean = "trainer_guest"
 	return clean
 
+# Parsea y normaliza un documento de Firestore a un save_dict de GameData,
+# garantizando que un alias personalizado nunca sea sobreescrito por "Trainer".
+func parse_trainer_doc_to_save_data(fields: Dictionary) -> Dictionary:
+	var save_data: Dictionary = {}
+	if fields.has("save_json"):
+		var raw_save = str(fields["save_json"].get("stringValue", ""))
+		var parsed_save = JSON.parse_string(raw_save)
+		if typeof(parsed_save) == TYPE_DICTIONARY:
+			save_data = parsed_save
+			
+	if not save_data.has("profile") or typeof(save_data["profile"]) != TYPE_DICTIONARY:
+		save_data["profile"] = {}
+		
+	# Extraer alias de campos raíz de Firestore (preferir trainer_alias, luego trainer_name)
+	var root_alias = ""
+	if fields.has("trainer_alias"):
+		root_alias = str(fields["trainer_alias"].get("stringValue", "")).strip_edges()
+	if root_alias.is_empty() and fields.has("trainer_name"):
+		root_alias = str(fields["trainer_name"].get("stringValue", "")).strip_edges()
+		
+	# Alias existente en save_json
+	var existing_alias = str(save_data["profile"].get("trainer_alias", save_data["profile"].get("name", ""))).strip_edges()
+	
+	# Decisión sobre el alias final: priorizar nombres reales diferentes de "Trainer"
+	var final_alias = "Trainer"
+	if existing_alias != "" and existing_alias != "Trainer":
+		final_alias = existing_alias
+	elif root_alias != "" and root_alias != "Trainer":
+		final_alias = root_alias
+	elif existing_alias != "":
+		final_alias = existing_alias
+	elif root_alias != "":
+		final_alias = root_alias
+		
+	save_data["profile"]["trainer_alias"] = final_alias
+	save_data["profile"]["name"] = final_alias
+	
+	# Extraer email y profile_id de la raíz si no estuvieran en save_json
+	var root_email = str(fields.get("email", {}).get("stringValue", "")).strip_edges()
+	if not root_email.is_empty():
+		save_data["profile"]["email"] = root_email
+	var root_id = str(fields.get("profile_id", {}).get("stringValue", "")).strip_edges()
+	if not root_id.is_empty():
+		save_data["profile"]["id"] = root_id
+		
+	return save_data
+
 # Comprueba si una cuenta ya existe en Firestore sin sobreescribir datos
 func check_account_exists(account_key: String, callback: Callable) -> void:
 	var doc_id = sanitize_account_key(account_key)
@@ -65,11 +112,7 @@ func check_account_exists(account_key: String, callback: Callable) -> void:
 			var save_data: Dictionary = {}
 			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("fields"):
 				var fields = parsed.get("fields", {})
-				if fields.has("save_json"):
-					var raw_save = str(fields["save_json"].get("stringValue", ""))
-					var parsed_save = JSON.parse_string(raw_save)
-					if typeof(parsed_save) == TYPE_DICTIONARY:
-						save_data = parsed_save
+				save_data = parse_trainer_doc_to_save_data(fields)
 			if callback.is_valid():
 				callback.call(true, save_data, "")
 		elif response_code == 404:
@@ -118,12 +161,7 @@ func _check_account_exists_fallback(account_key: String, callback: Callable) -> 
 						match_found = true
 						
 					if match_found:
-						var save_data: Dictionary = {}
-						if fields.has("save_json"):
-							var raw_save = str(fields["save_json"].get("stringValue", ""))
-							var parsed_save = JSON.parse_string(raw_save)
-							if typeof(parsed_save) == TYPE_DICTIONARY:
-								save_data = parsed_save
+						var save_data = parse_trainer_doc_to_save_data(fields)
 						if callback.is_valid():
 							callback.call(true, save_data, "")
 						return
@@ -152,7 +190,12 @@ func save_profile_to_cloud(account_key: String, save_dict: Dictionary, callback:
 	
 	var json_str = JSON.stringify(save_dict)
 	var prof = save_dict.get("profile", {})
-	var p_name = str(prof.get("trainer_alias", prof.get("name", "Trainer")))
+	var p_name = str(prof.get("trainer_alias", prof.get("name", ""))).strip_edges()
+	if p_name.is_empty() or p_name == "Trainer":
+		if GameData and not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
+			p_name = GameData.profile_name
+		else:
+			p_name = "Trainer"
 	var p_email = str(prof.get("email", ""))
 	if p_email.is_empty() and account_key.contains("@"):
 		p_email = account_key
@@ -241,23 +284,13 @@ func load_profile_from_cloud(account_key: String, callback: Callable = Callable(
 			var parsed = JSON.parse_string(resp_text)
 			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("fields"):
 				var fields = parsed.get("fields", {})
-				if fields.has("save_json"):
-					var raw_save_json = str(fields["save_json"].get("stringValue", ""))
-					var save_data = JSON.parse_string(raw_save_json)
-					if typeof(save_data) == TYPE_DICTIONARY:
-						if not save_data.has("profile"):
-							save_data["profile"] = {}
-						if fields.has("trainer_alias"):
-							save_data["profile"]["trainer_alias"] = str(fields["trainer_alias"].get("stringValue", ""))
-							save_data["profile"]["name"] = save_data["profile"]["trainer_alias"]
-						if fields.has("email"):
-							save_data["profile"]["email"] = str(fields["email"].get("stringValue", ""))
-						last_cloud_sync_time = Time.get_time_string_from_system()
-						print("[CloudSync] ✅ Successfully loaded profile from Google Cloud for: ", doc_id)
-						cloud_load_completed.emit(true, save_data, "Profile loaded from Google Cloud!")
-						if callback.is_valid():
-							callback.call(true, save_data, "Success")
-						return
+				var save_data = parse_trainer_doc_to_save_data(fields)
+				last_cloud_sync_time = Time.get_time_string_from_system()
+				print("[CloudSync] ✅ Successfully loaded profile from Google Cloud for: ", doc_id, " (Alias: %s)" % save_data["profile"]["name"])
+				cloud_load_completed.emit(true, save_data, "Profile loaded from Google Cloud!")
+				if callback.is_valid():
+					callback.call(true, save_data, "Success")
+				return
 			
 			cloud_load_completed.emit(false, {}, "Invalid data format received from Google Cloud.")
 			if callback.is_valid():
@@ -316,21 +349,13 @@ func _try_search_fallback_on_404(account_key: String, callback: Callable) -> voi
 						match_found = true
 						
 					if match_found:
-						if fields.has("save_json"):
-							var raw_save = str(fields["save_json"].get("stringValue", ""))
-							var save_data = JSON.parse_string(raw_save)
-							if typeof(save_data) == TYPE_DICTIONARY:
-								if not save_data.has("profile"):
-									save_data["profile"] = {}
-								save_data["profile"]["trainer_alias"] = str(fields.get("trainer_alias", fields.get("trainer_name", {})).get("stringValue", "Trainer"))
-								save_data["profile"]["name"] = save_data["profile"]["trainer_alias"]
-								save_data["profile"]["email"] = str(fields.get("email", {}).get("stringValue", ""))
-								last_cloud_sync_time = Time.get_time_string_from_system()
-								print("[CloudSync] ✅ Fallback search found profile for '%s' (Email: %s, Alias: %s)" % [account_key, save_data["profile"]["email"], save_data["profile"]["name"]])
-								cloud_load_completed.emit(true, save_data, "Profile loaded from Google Cloud!")
-								if callback.is_valid():
-									callback.call(true, save_data, "Success")
-								return
+						var save_data = parse_trainer_doc_to_save_data(fields)
+						last_cloud_sync_time = Time.get_time_string_from_system()
+						print("[CloudSync] ✅ Fallback search found profile for '%s' (Email: %s, Alias: %s)" % [account_key, save_data["profile"]["email"], save_data["profile"]["name"]])
+						cloud_load_completed.emit(true, save_data, "Profile loaded from Google Cloud!")
+						if callback.is_valid():
+							callback.call(true, save_data, "Success")
+						return
 		# Si tras la búsqueda exhaustiva no existe
 		var msg = "Google Account or Trainer '%s' not found in Google Cloud." % account_key
 		print("[CloudSync] ⚠️ %s" % msg)
@@ -381,21 +406,43 @@ func search_trainers(query_text: String, callback: Callable) -> void:
 			
 			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("documents"):
 				var docs = parsed.get("documents", [])
-				var my_email = GameData.profile_email.to_lower() if GameData else ""
-				var my_id = GameData.profile_id.to_lower() if GameData else ""
+				var my_email = GameData.profile_email.strip_edges().to_lower() if GameData else ""
+				var my_id = GameData.profile_id.strip_edges().to_lower() if GameData else ""
+				var my_alias = GameData.profile_name.strip_edges().to_lower() if GameData else ""
 				
 				for doc in docs:
 					if typeof(doc) != TYPE_DICTIONARY or not doc.has("fields"):
 						continue
 					var f = doc["fields"]
-					var t_email = str(f.get("email", {}).get("stringValue", ""))
-					var t_alias = str(f.get("trainer_alias", f.get("trainer_name", {})).get("stringValue", "Trainer"))
-					var t_id = str(f.get("profile_id", {}).get("stringValue", ""))
+					var t_email = str(f.get("email", {}).get("stringValue", "")).strip_edges()
+					var t_alias = str(f.get("trainer_alias", f.get("trainer_name", {})).get("stringValue", "")).strip_edges()
+					var t_id = str(f.get("profile_id", {}).get("stringValue", "")).strip_edges()
 					var t_diamonds = int(f.get("diamonds", {}).get("integerValue", 0))
 					
-					# Excluirse a uno mismo
-					if (not my_email.is_empty() and t_email.to_lower() == my_email) or (not my_id.is_empty() and t_id.to_lower() == my_id):
-						continue
+					# Si los datos raíz están incompletos o son genéricos, inspeccionar save_json
+					if (t_alias.is_empty() or t_alias == "Trainer" or t_email.is_empty() or t_id.is_empty()) and f.has("save_json"):
+						var raw_s = str(f["save_json"].get("stringValue", ""))
+						var p_s = JSON.parse_string(raw_s)
+						if typeof(p_s) == TYPE_DICTIONARY and p_s.has("profile"):
+							var p_prof = p_s["profile"]
+							if t_alias.is_empty() or t_alias == "Trainer":
+								var inner_alias = str(p_prof.get("trainer_alias", p_prof.get("name", ""))).strip_edges()
+								if not inner_alias.is_empty() and inner_alias != "Trainer":
+									t_alias = inner_alias
+							if t_email.is_empty():
+								t_email = str(p_prof.get("email", "")).strip_edges()
+							if t_id.is_empty():
+								t_id = str(p_prof.get("id", "")).strip_edges()
+					if t_alias.is_empty():
+						t_alias = "Trainer"
+						
+					var is_self = false
+					if not my_email.is_empty() and t_email.to_lower() == my_email:
+						is_self = true
+					elif not my_id.is_empty() and t_id.to_lower() == my_id:
+						is_self = true
+					elif not my_alias.is_empty() and my_alias != "trainer" and t_alias.to_lower() == my_alias:
+						is_self = true
 						
 					# Filtrar por query
 					var match_found = false
@@ -414,7 +461,8 @@ func search_trainers(query_text: String, callback: Callable) -> void:
 							"alias": t_alias,
 							"email": t_email,
 							"id": t_id,
-							"diamonds": t_diamonds
+							"diamonds": t_diamonds,
+							"is_self": is_self
 						})
 						
 			if callback.is_valid():
