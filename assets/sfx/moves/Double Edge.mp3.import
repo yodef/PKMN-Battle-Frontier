@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b1s7e3b8355gp"
+path="res://.godot/imported/Double Edge.mp3-9a7561868d9a7634ba38c1e80199a3e6.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Double Edge.mp3"
+dest_files=["res://.godot/imported/Double Edge.mp3-9a7561868d9a7634ba38c1e80199a3e6.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bm5nb3q2e8xjt"
+path="res://.godot/imported/Sludge Bomb.mp3-3a76cea1e7e569c6041c1054749c463e.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Sludge Bomb.mp3"
+dest_files=["res://.godot/imported/Sludge Bomb.mp3-3a76cea1e7e569c6041c1054749c463e.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

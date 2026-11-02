@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cwwo138ax0wfu"
+path="res://.godot/imported/Dynamic Punch.mp3-fada52cbe8a218d32191f78e8d9bb74d.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Dynamic Punch.mp3"
+dest_files=["res://.godot/imported/Dynamic Punch.mp3-fada52cbe8a218d32191f78e8d9bb74d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

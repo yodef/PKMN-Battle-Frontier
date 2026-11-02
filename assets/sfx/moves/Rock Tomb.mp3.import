@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b5bvynoegopae"
+path="res://.godot/imported/Rock Tomb.mp3-2c0d4618f03b6856be645d9bdd2cc1e4.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Rock Tomb.mp3"
+dest_files=["res://.godot/imported/Rock Tomb.mp3-2c0d4618f03b6856be645d9bdd2cc1e4.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

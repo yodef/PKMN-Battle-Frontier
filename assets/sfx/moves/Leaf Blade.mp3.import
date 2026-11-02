@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://detpjlby6b21m"
+path="res://.godot/imported/Leaf Blade.mp3-9cfe240a40eb7e61d7dbea9a42f252fb.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Leaf Blade.mp3"
+dest_files=["res://.godot/imported/Leaf Blade.mp3-9cfe240a40eb7e61d7dbea9a42f252fb.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,1218 @@
+[gd_scene format=3 uid="uid://b2vesrrv0w7n5"]
+
+[ext_resource type="Script" uid="uid://b2kclrgqf5sam" path="res://scripts/battle.gd" id="1_battle"]
+[ext_resource type="Texture2D" uid="uid://b3kui6gol2uqi" path="res://assets/ui/scanline_tile.png" id="2_scanline"]
+[ext_resource type="Texture2D" uid="uid://gerqyenk2f6c" path="res://assets/ui/hp_badge.png" id="3_hpbadge"]
+[ext_resource type="Texture2D" uid="uid://bg8g3xvi7njnd" path="res://assets/ui/pokeball_normal.png" id="4_pokeball"]
+[ext_resource type="Script" path="res://scripts/combat_card_miniature.gd" id="5_card_mini"]
+
+[node name="Battle" type="Control" unique_id=2056984088]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_battle")
+
+[node name="Background" type="TextureRect" parent="." unique_id=2077039233]
+modulate = Color(0.07, 0.11, 0.16, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_scanline")
+stretch_mode = 1
+
+[node name="MainContainer" type="VBoxContainer" parent="." unique_id=1767727263]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="TopBar" type="HBoxContainer" parent="MainContainer" unique_id=1285804470]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnBackMenu" type="Button" parent="MainContainer/TopBar" unique_id=1346424738]
+custom_minimum_size = Vector2(80, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⬅ Menu"
+
+[node name="BtnTypeChart" type="Button" parent="MainContainer/TopBar" unique_id=2109250054]
+custom_minimum_size = Vector2(95, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⚖️ Types"
+
+[node name="BtnSpeed" type="Button" parent="MainContainer/TopBar" unique_id=1459203810]
+custom_minimum_size = Vector2(76, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⏩ 1x"
+
+[node name="BattleTitle" type="Label" parent="MainContainer/TopBar" unique_id=1658137403]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "Quick Battle (3 vs 3)"
+horizontal_alignment = 2
+
+[node name="EnemySection" type="PanelContainer" parent="MainContainer" unique_id=566976687]
+layout_mode = 2
+
+[node name="HBox" type="HBoxContainer" parent="MainContainer/EnemySection" unique_id=275771717]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EnemyCard" type="PanelContainer" parent="MainContainer/EnemySection/HBox" unique_id=921709843]
+custom_minimum_size = Vector2(130, 180)
+layout_mode = 2
+script = ExtResource("5_card_mini")
+
+[node name="Info" type="VBoxContainer" parent="MainContainer/EnemySection/HBox" unique_id=901678418]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="EnemyNameRow" type="HBoxContainer" parent="MainContainer/EnemySection/HBox/Info" unique_id=1635442449]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="EnemyTypeIcon" type="TextureRect" parent="MainContainer/EnemySection/HBox/Info/EnemyNameRow" unique_id=1543371107]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EnemyName" type="Label" parent="MainContainer/EnemySection/HBox/Info/EnemyNameRow" unique_id=1970867192]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Rival"
+
+[node name="EnemyType" type="Label" parent="MainContainer/EnemySection/HBox/Info" unique_id=1947913316]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "Type: ... | Weak: ... | Res: ..."
+
+[node name="EnemyBenchRow" type="VBoxContainer" parent="MainContainer/EnemySection/HBox/Info" unique_id=2076124255]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="EnemyBenchLbl" type="Label" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow" unique_id=1341285069]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "• BANCA RIVAL:"
+
+[node name="EnemyBenchCards" type="HBoxContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow" unique_id=1629388661]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="EnemyBench1" type="PanelContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards" unique_id=1342703481]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CardContent" type="HBoxContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench1" unique_id=459272007]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Pokeball" type="TextureRect" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench1/CardContent" unique_id=1490485649]
+custom_minimum_size = Vector2(20, 24)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("4_pokeball")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Details" type="VBoxContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench1/CardContent" unique_id=2027046688]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="Header" type="HBoxContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench1/CardContent/Details" unique_id=1825876373]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TypeIcon" type="TextureRect" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench1/CardContent/Details/Header" unique_id=340734135]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench1/CardContent/Details/Header" unique_id=427242445]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Bench 1"
+clip_text = true
+
+[node name="SpdText" type="Label" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench1/CardContent/Details/Header" unique_id=1490485650]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "SPD: 1"
+horizontal_alignment = 2
+
+[node name="HPSection" type="HBoxContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench1/CardContent/Details" unique_id=1822653597]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="MiniHPBar" type="ProgressBar" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench1/CardContent/Details/HPSection" unique_id=959146067]
+custom_minimum_size = Vector2(50, 6)
+layout_mode = 2
+size_flags_vertical = 4
+show_percentage = false
+
+[node name="HPText" type="Label" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench1/CardContent/Details/HPSection" unique_id=1256953922]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "10/10"
+
+[node name="EnemyBench2" type="PanelContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards" unique_id=1135782207]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CardContent" type="HBoxContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench2" unique_id=2116992752]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Pokeball" type="TextureRect" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench2/CardContent" unique_id=83681795]
+custom_minimum_size = Vector2(20, 24)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("4_pokeball")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Details" type="VBoxContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench2/CardContent" unique_id=1854050427]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="Header" type="HBoxContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench2/CardContent/Details" unique_id=2138068572]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TypeIcon" type="TextureRect" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench2/CardContent/Details/Header" unique_id=448429097]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench2/CardContent/Details/Header" unique_id=2060954967]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Bench 2"
+clip_text = true
+
+[node name="SpdText" type="Label" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench2/CardContent/Details/Header" unique_id=1854050428]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "SPD: 1"
+horizontal_alignment = 2
+
+[node name="HPSection" type="HBoxContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench2/CardContent/Details" unique_id=542941864]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="MiniHPBar" type="ProgressBar" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench2/CardContent/Details/HPSection" unique_id=1011025424]
+custom_minimum_size = Vector2(50, 6)
+layout_mode = 2
+size_flags_vertical = 4
+show_percentage = false
+
+[node name="HPText" type="Label" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow/EnemyBenchCards/EnemyBench2/CardContent/Details/HPSection" unique_id=1298012658]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "10/10"
+
+[node name="HSeparator" type="HSeparator" parent="MainContainer/EnemySection/HBox/Info" unique_id=1684864394]
+layout_mode = 2
+
+[node name="HPBox" type="VBoxContainer" parent="MainContainer/EnemySection/HBox/Info" unique_id=1184361360]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="HPTopRow" type="HBoxContainer" parent="MainContainer/EnemySection/HBox/Info/HPBox" unique_id=1638028800]
+layout_mode = 2
+
+[node name="EnemyStatusLbl" type="Label" parent="MainContainer/EnemySection/HBox/Info/HPBox/HPTopRow" unique_id=2003720366]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.5, 0.2, 1)
+theme_override_font_sizes/font_size = 11
+
+[node name="HPBarRow" type="HBoxContainer" parent="MainContainer/EnemySection/HBox/Info/HPBox" unique_id=1406068821]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HPBadge" type="TextureRect" parent="MainContainer/EnemySection/HBox/Info/HPBox/HPBarRow" unique_id=1510480282]
+custom_minimum_size = Vector2(24, 14)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("3_hpbadge")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EnemyHPLbl" type="Label" parent="MainContainer/EnemySection/HBox/Info/HPBox/HPBarRow" unique_id=1544926922]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "10 / 10"
+
+[node name="EnemyHPBar" type="ProgressBar" parent="MainContainer/EnemySection/HBox/Info/HPBox/HPBarRow" unique_id=1630774705]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 10.0
+value = 10.0
+show_percentage = false
+
+[node name="EnemyEnergyLbl" type="Label" parent="MainContainer/EnemySection/HBox/Info" unique_id=1789954037]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Energy: ⚡⚡⚡ (3/3)"
+
+[node name="CenterLog" type="PanelContainer" parent="MainContainer" unique_id=775992375]
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="MainContainer/CenterLog" unique_id=710323644]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="MainContainer/CenterLog/Margin" unique_id=1377476126]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TurnBadge" type="Label" parent="MainContainer/CenterLog/Margin/VBox" unique_id=370911321]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "YOUR TURN"
+horizontal_alignment = 1
+
+[node name="LogLabel" type="RichTextLabel" parent="MainContainer/CenterLog/Margin/VBox" unique_id=969458149]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[center]Battle Ready![/center]"
+fit_content = true
+
+[node name="PlayerSection" type="PanelContainer" parent="MainContainer" unique_id=1799993231]
+layout_mode = 2
+
+[node name="HBox" type="HBoxContainer" parent="MainContainer/PlayerSection" unique_id=1062902254]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PlayerCard" type="PanelContainer" parent="MainContainer/PlayerSection/HBox" unique_id=2056547487]
+custom_minimum_size = Vector2(130, 180)
+layout_mode = 2
+script = ExtResource("5_card_mini")
+
+[node name="Info" type="VBoxContainer" parent="MainContainer/PlayerSection/HBox" unique_id=640751851]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="PlayerNameRow" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info" unique_id=1205735063]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PlayerTypeIcon" type="TextureRect" parent="MainContainer/PlayerSection/HBox/Info/PlayerNameRow" unique_id=330682335]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PlayerName" type="Label" parent="MainContainer/PlayerSection/HBox/Info/PlayerNameRow" unique_id=1202298418]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Player"
+
+[node name="PlayerType" type="Label" parent="MainContainer/PlayerSection/HBox/Info" unique_id=1751345577]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "Type: ... | Weak: ... | Res: ..."
+
+[node name="BenchRow" type="VBoxContainer" parent="MainContainer/PlayerSection/HBox/Info" unique_id=1078930811]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="PlayerBenchLbl" type="Label" parent="MainContainer/PlayerSection/HBox/Info/BenchRow" unique_id=1095650781]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "• TU BANCA (CAMBIAR POKÉMON):"
+
+[node name="SwitchButtons" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/BenchRow" unique_id=771472066]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BtnSwitch1" type="Button" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons" unique_id=322485121]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CardContent" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch1" unique_id=1953594404]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 4.0
+offset_right = -6.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Pokeball" type="TextureRect" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch1/CardContent" unique_id=178180016]
+custom_minimum_size = Vector2(20, 24)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("4_pokeball")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Details" type="VBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch1/CardContent" unique_id=1162843289]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="Header" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch1/CardContent/Details" unique_id=1585978829]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="TypeIcon" type="TextureRect" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch1/CardContent/Details/Header" unique_id=240327674]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch1/CardContent/Details/Header" unique_id=1870539409]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 11
+text = "Bench 1"
+clip_text = true
+
+[node name="SpdText" type="Label" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch1/CardContent/Details/Header" unique_id=1162843290]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.45, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "SPD: 1"
+horizontal_alignment = 2
+
+[node name="HPSection" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch1/CardContent/Details" unique_id=9200175]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="MiniHPBar" type="ProgressBar" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch1/CardContent/Details/HPSection" unique_id=2014211811]
+custom_minimum_size = Vector2(50, 6)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+show_percentage = false
+
+[node name="HPText" type="Label" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch1/CardContent/Details/HPSection" unique_id=1231384760]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "10/10"
+
+[node name="BtnSwitch2" type="Button" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons" unique_id=1545303471]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CardContent" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch2" unique_id=8213244]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 4.0
+offset_right = -6.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Pokeball" type="TextureRect" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch2/CardContent" unique_id=1933644081]
+custom_minimum_size = Vector2(20, 24)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("4_pokeball")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Details" type="VBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch2/CardContent" unique_id=1262837594]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="Header" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch2/CardContent/Details" unique_id=2146980527]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="TypeIcon" type="TextureRect" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch2/CardContent/Details/Header" unique_id=564787550]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch2/CardContent/Details/Header" unique_id=402620140]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 11
+text = "Bench 2"
+clip_text = true
+
+[node name="SpdText" type="Label" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch2/CardContent/Details/Header" unique_id=1262837595]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.45, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "SPD: 1"
+horizontal_alignment = 2
+
+[node name="HPSection" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch2/CardContent/Details" unique_id=1861975314]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="MiniHPBar" type="ProgressBar" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch2/CardContent/Details/HPSection" unique_id=1583149463]
+custom_minimum_size = Vector2(50, 6)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+show_percentage = false
+
+[node name="HPText" type="Label" parent="MainContainer/PlayerSection/HBox/Info/BenchRow/SwitchButtons/BtnSwitch2/CardContent/Details/HPSection" unique_id=1208771333]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "10/10"
+
+[node name="HSeparator" type="HSeparator" parent="MainContainer/PlayerSection/HBox/Info" unique_id=2013458059]
+layout_mode = 2
+
+[node name="HPBox" type="VBoxContainer" parent="MainContainer/PlayerSection/HBox/Info" unique_id=255903027]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="HPTopRow" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/HPBox" unique_id=2025714332]
+layout_mode = 2
+
+[node name="PlayerStatusLbl" type="Label" parent="MainContainer/PlayerSection/HBox/Info/HPBox/HPTopRow" unique_id=1282368568]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.5, 0.2, 1)
+theme_override_font_sizes/font_size = 11
+
+[node name="HPBarRow" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/HPBox" unique_id=2025645186]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HPBadge" type="TextureRect" parent="MainContainer/PlayerSection/HBox/Info/HPBox/HPBarRow" unique_id=336204273]
+custom_minimum_size = Vector2(24, 14)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("3_hpbadge")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PlayerHPLbl" type="Label" parent="MainContainer/PlayerSection/HBox/Info/HPBox/HPBarRow" unique_id=1332796746]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "10 / 10"
+
+[node name="PlayerHPBar" type="ProgressBar" parent="MainContainer/PlayerSection/HBox/Info/HPBox/HPBarRow" unique_id=327651029]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 10.0
+value = 10.0
+show_percentage = false
+
+[node name="PlayerEnergyLbl" type="Label" parent="MainContainer/PlayerSection/HBox/Info" unique_id=1294222838]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Energy: ⚡⚡⚡ (3/3)"
+
+[node name="PlayerExpBox" type="VBoxContainer" parent="MainContainer/PlayerSection/HBox/Info" unique_id=1389619541]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="PlayerExpBar" type="ProgressBar" parent="MainContainer/PlayerSection/HBox/Info/PlayerExpBox" unique_id=626581826]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+max_value = 10.0
+show_percentage = false
+
+[node name="PlayerExpLbl" type="Label" parent="MainContainer/PlayerSection/HBox/Info/PlayerExpBox" unique_id=1370551062]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39, 0.71, 0.96, 1)
+theme_override_font_sizes/font_size = 11
+text = "EXP: 0 / 10"
+
+[node name="ActionsSection" type="VBoxContainer" parent="MainContainer" unique_id=1168382364]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Options" type="HBoxContainer" parent="MainContainer/ActionsSection" unique_id=1113340604]
+layout_mode = 2
+alignment = 1
+
+[node name="ChkBoost" type="CheckBox" parent="MainContainer/ActionsSection/Options" unique_id=284451940]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "⚡ Boost (+1⚡)"
+
+[node name="BtnPassive" type="Button" parent="MainContainer/ActionsSection/Options" unique_id=350807335]
+visible = false
+custom_minimum_size = Vector2(130, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "🛡️ Passive"
+
+[node name="BtnRecover" type="Button" parent="MainContainer/ActionsSection/Options" unique_id=1932070482]
+custom_minimum_size = Vector2(150, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "🔋 Recharge (+1⚡)"
+
+[node name="BtnBag" type="Button" parent="MainContainer/ActionsSection/Options" unique_id=1955096588]
+custom_minimum_size = Vector2(95, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "🎒 Bag"
+
+[node name="MoveButtons" type="HBoxContainer" parent="MainContainer/ActionsSection" unique_id=269014093]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Move1Col" type="VBoxContainer" parent="MainContainer/ActionsSection/MoveButtons" unique_id=1650386107]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Move1Slots" type="HBoxContainer" parent="MainContainer/ActionsSection/MoveButtons/Move1Col" unique_id=149853625]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="BtnMove1" type="Button" parent="MainContainer/ActionsSection/MoveButtons/Move1Col" unique_id=1455442833]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "Attack 1"
+
+[node name="Move2Col" type="VBoxContainer" parent="MainContainer/ActionsSection/MoveButtons" unique_id=731620319]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Move2Slots" type="HBoxContainer" parent="MainContainer/ActionsSection/MoveButtons/Move2Col" unique_id=101037986]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="BtnMove2" type="Button" parent="MainContainer/ActionsSection/MoveButtons/Move2Col" unique_id=1462428852]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "Attack 2"
+
+[node name="FloatingNumbersLayer" type="Control" parent="." unique_id=1849204712]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="GameOverOverlay" type="Control" parent="." unique_id=1063714212]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Backdrop" type="ColorRect" parent="GameOverOverlay" unique_id=1063714213]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.05, 0.09, 0.78)
+
+[node name="CenterBox" type="CenterContainer" parent="GameOverOverlay" unique_id=1063714214]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CardPanel" type="PanelContainer" parent="GameOverOverlay/CenterBox" unique_id=1063714215]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="GameOverOverlay/CenterBox/CardPanel" unique_id=1063714216]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="GameOverOverlay/CenterBox/CardPanel/Margin" unique_id=1334648574]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Title" type="Label" parent="GameOverOverlay/CenterBox/CardPanel/Margin/VBox" unique_id=1602134534]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "VICTORY!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Subtitle" type="Label" parent="GameOverOverlay/CenterBox/CardPanel/Margin/VBox" unique_id=610537902]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "You won the battle!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ButtonsRow" type="HBoxContainer" parent="GameOverOverlay/CenterBox/CardPanel/Margin/VBox" unique_id=472692406]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="BtnRestart" type="Button" parent="GameOverOverlay/CenterBox/CardPanel/Margin/VBox/ButtonsRow" unique_id=1374806143]
+custom_minimum_size = Vector2(145, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Play Again"
+
+[node name="BtnGameOverMenu" type="Button" parent="GameOverOverlay/CenterBox/CardPanel/Margin/VBox/ButtonsRow" unique_id=926098199]
+custom_minimum_size = Vector2(145, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Main Menu"
+
+[node name="EnergyModal" type="Control" parent="." unique_id=740140082]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Backdrop" type="ColorRect" parent="EnergyModal" unique_id=677540931]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.06, 0.1, 0.75)
+
+[node name="CenterBox" type="CenterContainer" parent="EnergyModal" unique_id=2140003801]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="EnergyModal/CenterBox" unique_id=643143211]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="EnergyModal/CenterBox/Panel" unique_id=1212246859]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="EnergyModal/CenterBox/Panel/Margin" unique_id=1898402865]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleRow" type="HBoxContainer" parent="EnergyModal/CenterBox/Panel/Margin/VBox" unique_id=837651327]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="MoveIcon" type="TextureRect" parent="EnergyModal/CenterBox/Panel/Margin/VBox/TitleRow" unique_id=1802696781]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MoveTitle" type="Label" parent="EnergyModal/CenterBox/Panel/Margin/VBox/TitleRow" unique_id=895332376]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "ENERGY USAGE"
+horizontal_alignment = 1
+
+[node name="TargetLbl" type="Label" parent="EnergyModal/CenterBox/Panel/Margin/VBox" unique_id=184094523]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "🎯 Target: Rival (❤️ 5 / 10 HP)"
+horizontal_alignment = 1
+
+[node name="PromptLbl" type="Label" parent="EnergyModal/CenterBox/Panel/Margin/VBox" unique_id=203386203]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Choose how much energy to spend for this attack:"
+horizontal_alignment = 1
+
+[node name="OptionsList" type="VBoxContainer" parent="EnergyModal/CenterBox/Panel/Margin/VBox" unique_id=618634224]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnCancelEnergy" type="Button" parent="EnergyModal/CenterBox/Panel/Margin/VBox" unique_id=429011294]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "✖ Cancel (Choose another action)"
+
+[node name="BagModal" type="Control" parent="." unique_id=2052886283]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Backdrop" type="ColorRect" parent="BagModal" unique_id=1408734340]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.06, 0.1, 0.8)
+
+[node name="CenterBox" type="CenterContainer" parent="BagModal" unique_id=221010364]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="BagModal/CenterBox" unique_id=779769360]
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="BagModal/CenterBox/Panel" unique_id=434150411]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="BagModal/CenterBox/Panel/Margin" unique_id=912664718]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleRow" type="HBoxContainer" parent="BagModal/CenterBox/Panel/Margin/VBox" unique_id=1161212291]
+layout_mode = 2
+alignment = 1
+
+[node name="BagTitle" type="Label" parent="BagModal/CenterBox/Panel/Margin/VBox/TitleRow" unique_id=1485238804]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "🎒 TRAINER'S BAG"
+
+[node name="BagSubtitle" type="Label" parent="BagModal/CenterBox/Panel/Margin/VBox" unique_id=892063717]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "⚠️ Using an item will consume your turn."
+horizontal_alignment = 1
+
+[node name="ItemsList" type="VBoxContainer" parent="BagModal/CenterBox/Panel/Margin/VBox" unique_id=539248441]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TargetsSection" type="VBoxContainer" parent="BagModal/CenterBox/Panel/Margin/VBox" unique_id=965387744]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TargetPromptLbl" type="Label" parent="BagModal/CenterBox/Panel/Margin/VBox/TargetsSection" unique_id=1718883213]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Select a target Pokémon:"
+horizontal_alignment = 1
+
+[node name="TargetsContainer" type="VBoxContainer" parent="BagModal/CenterBox/Panel/Margin/VBox/TargetsSection" unique_id=1658737062]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BtnCancelBag" type="Button" parent="BagModal/CenterBox/Panel/Margin/VBox" unique_id=2002251228]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "✖ Close Bag (Don't spend turn)"
+
+[node name="TypeChartModal" type="Control" parent="." unique_id=348402561]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Backdrop" type="ColorRect" parent="TypeChartModal" unique_id=392818569]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.06, 0.1, 0.85)
+
+[node name="CenterBox" type="CenterContainer" parent="TypeChartModal" unique_id=747999205]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="TypeChartModal/CenterBox" unique_id=281608714]
+custom_minimum_size = Vector2(504, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="TypeChartModal/CenterBox/Panel" unique_id=520284067]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="TypeChartModal/CenterBox/Panel/Margin" unique_id=2353231]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleRow" type="HBoxContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox" unique_id=1098048384]
+layout_mode = 2
+
+[node name="TitleLbl" type="Label" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/TitleRow" unique_id=839639129]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+theme_override_font_sizes/font_size = 14
+text = "⚖️ TYPE EFFECTIVENESS CHART"
+
+[node name="BtnCloseTypeChartX" type="Button" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/TitleRow" unique_id=507834845]
+custom_minimum_size = Vector2(28, 24)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "✖"
+
+[node name="MatchupPanel" type="PanelContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox" unique_id=1004962045]
+layout_mode = 2
+
+[node name="MatchupMargin" type="MarginContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/MatchupPanel" unique_id=150007909]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 5
+
+[node name="MatchupVBox" type="VBoxContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/MatchupPanel/MatchupMargin" unique_id=1706862596]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="MatchupHeader" type="Label" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/MatchupPanel/MatchupMargin/MatchupVBox" unique_id=1234258138]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "🥊 ACTIVE BATTLE MATCHUP"
+
+[node name="MatchupBody" type="RichTextLabel" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/MatchupPanel/MatchupMargin/MatchupVBox" unique_id=958413308]
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 10
+bbcode_enabled = true
+text = "Loading combat matchup data..."
+fit_content = true
+
+[node name="AxesRow" type="HBoxContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox" unique_id=336513313]
+layout_mode = 2
+
+[node name="LeftAxisLbl" type="Label" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/AxesRow" unique_id=1496156562]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.67, 0.57, 1)
+theme_override_font_sizes/font_size = 10
+text = "⚔️ Rows: ATTACK TYPE"
+
+[node name="RightAxisLbl" type="Label" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/AxesRow" unique_id=1902822042]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.87, 0.92, 1)
+theme_override_font_sizes/font_size = 10
+text = "🛡️ Columns: DEFENDER"
+horizontal_alignment = 2
+
+[node name="GridPanel" type="PanelContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox" unique_id=1159577489]
+layout_mode = 2
+
+[node name="GridMargin" type="MarginContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/GridPanel" unique_id=385582491]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="MatrixGrid" type="GridContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/GridPanel/GridMargin" unique_id=1943096185]
+layout_mode = 2
+theme_override_constants/h_separation = 2
+theme_override_constants/v_separation = 2
+columns = 10
+
+[node name="DetailPanel" type="PanelContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox" unique_id=503234211]
+layout_mode = 2
+
+[node name="DetailMargin" type="MarginContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/DetailPanel" unique_id=1312472539]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="DetailLbl" type="RichTextLabel" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/DetailPanel/DetailMargin" unique_id=1531535921]
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 10
+bbcode_enabled = true
+text = "💡 [color=#ffd700]Tap any cell or type icon[/color] to view exact damage modifier."
+fit_content = true
+
+[node name="LegendRow" type="HBoxContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox" unique_id=971571415]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="LegPlus" type="Label" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/LegendRow" unique_id=561446117]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.41, 0.94, 0.68, 1)
+theme_override_font_sizes/font_size = 10
+text = "🟩 +2 Super Effective"
+
+[node name="LegMinus" type="Label" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/LegendRow" unique_id=1266707295]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.54, 0.5, 1)
+theme_override_font_sizes/font_size = 10
+text = "🟥 -2 Resisted (Table / Same Type)"
+
+[node name="LegNeutral" type="Label" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/LegendRow" unique_id=849094205]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.64, 0.68, 1)
+theme_override_font_sizes/font_size = 10
+text = "⬛ · Neutral Damage"
+
+[node name="IncPanel" type="PanelContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox" unique_id=1731671988]
+layout_mode = 2
+
+[node name="IncMargin" type="MarginContainer" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/IncPanel" unique_id=1826387405]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="IncLbl" type="RichTextLabel" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/IncPanel/IncMargin" unique_id=123167114]
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 9
+bbcode_enabled = true
+text = "[color=#ffd54f][b]🛡️ Natural Same-Type Resistance:[/b][/color] Attacks against a Pokémon of the [b]same type[/b] (except [b]NORMAL[/b]) deal [color=#ff8a80][b]-2 DMG[/b][/color].
+[color=#90caf9][b]Grouped types:[/b][/color] • [color=#ba68c8]🌑 DARK:[/color] Ghost, Bug  • [color=#d7ccc8]⛰️ GROUND:[/color] Rock, Steel  • [color=#cfd8dc]⚪ NORMAL:[/color] Fairy, Dragon, Flying  • [color=#4fc3f7]💧 WATER:[/color] Ice"
+fit_content = true
+
+[node name="BtnCloseTypeChartBottom" type="Button" parent="TypeChartModal/CenterBox/Panel/Margin/VBox" unique_id=333467940]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "✖ Return to Battle"
+
+[node name="EvolutionModal" type="Control" parent="." unique_id=987654321]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Backdrop" type="ColorRect" parent="EvolutionModal" unique_id=987654322]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.04, 0.08, 0.88)
+
+[node name="CenterBox" type="CenterContainer" parent="EvolutionModal" unique_id=987654323]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CardPanel" type="PanelContainer" parent="EvolutionModal/CenterBox" unique_id=987654324]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="EvolutionModal/CenterBox/CardPanel" unique_id=987654325]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="EvolutionModal/CenterBox/CardPanel/Margin" unique_id=987654326]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Title" type="Label" parent="EvolutionModal/CenterBox/CardPanel/Margin/VBox" unique_id=987654327]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "🌟 EVOLUTION! 🌟"
+horizontal_alignment = 1
+
+[node name="StatusText" type="Label" parent="EvolutionModal/CenterBox/CardPanel/Margin/VBox" unique_id=987654328]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.94, 0.98, 1)
+theme_override_font_sizes/font_size = 14
+text = "What? Bulbasaur is evolving!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="SpriteBox" type="CenterContainer" parent="EvolutionModal/CenterBox/CardPanel/Margin/VBox" unique_id=987654329]
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+
+[node name="PkmnSprite" type="TextureRect" parent="EvolutionModal/CenterBox/CardPanel/Margin/VBox/SpriteBox" unique_id=987654330]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+pivot_offset = Vector2(80, 80)
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HealBadgeRow" type="HBoxContainer" parent="EvolutionModal/CenterBox/CardPanel/Margin/VBox" unique_id=987654331]
+layout_mode = 2
+alignment = 1
+
+[node name="HealLabel" type="Label" parent="EvolutionModal/CenterBox/CardPanel/Margin/VBox/HealBadgeRow" unique_id=987654332]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.95, 0.5, 1)
+theme_override_font_sizes/font_size = 14
+text = "💖 Restored +10 HP!"
+horizontal_alignment = 1
+
+[node name="HpBar" type="ProgressBar" parent="EvolutionModal/CenterBox/CardPanel/Margin/VBox" unique_id=987654333]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+max_value = 20.0
+value = 10.0
+show_percentage = false
+
+[node name="HpText" type="Label" parent="EvolutionModal/CenterBox/CardPanel/Margin/VBox" unique_id=987654334]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "HP: 20 / 20"
+horizontal_alignment = 1
+
+[node name="BtnContinueEvo" type="Button" parent="EvolutionModal/CenterBox/CardPanel/Margin/VBox" unique_id=987654335]
+custom_minimum_size = Vector2(160, 38)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 13
+text = "Continue ▶"

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ofkaiv4fo3kx"
+path="res://.godot/imported/Horn Attack.mp3-73e5239d9a06e575c9654f8a2b41d304.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Horn Attack.mp3"
+dest_files=["res://.godot/imported/Horn Attack.mp3-73e5239d9a06e575c9654f8a2b41d304.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

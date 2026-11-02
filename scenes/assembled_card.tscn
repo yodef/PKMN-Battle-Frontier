@@ -1,0 +1,233 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/assembled_card.gd" id="1_card"]
+
+[node name="AssembledCard" type="Control"]
+custom_minimum_size = Vector2(220, 315)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 220.0
+offset_bottom = 315.0
+script = ExtResource("1_card")
+
+[node name="CardPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="CardPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="VBox" type="VBoxContainer" parent="CardPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HeaderHBox" type="HBoxContainer" parent="CardPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="StageBadge" type="PanelContainer" parent="CardPanel/Margin/VBox/HeaderHBox"]
+layout_mode = 2
+
+[node name="StageLabel" type="Label" parent="CardPanel/Margin/VBox/HeaderHBox/StageBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "BASIC"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="CardPanel/Margin/VBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Bulbasaur"
+clip_text = true
+
+[node name="HpBox" type="HBoxContainer" parent="CardPanel/Margin/VBox/HeaderHBox"]
+layout_mode = 2
+theme_override_constants/separation = 3
+alignment = 2
+
+[node name="HpLabel" type="Label" parent="CardPanel/Margin/VBox/HeaderHBox/HpBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
+theme_override_font_sizes/font_size = 11
+text = "10 HP"
+
+[node name="TypeIcon" type="TextureRect" parent="CardPanel/Margin/VBox/HeaderHBox/HpBox"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ArtFrame" type="PanelContainer" parent="CardPanel/Margin/VBox"]
+custom_minimum_size = Vector2(208, 140)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SpriteRect" type="TextureRect" parent="CardPanel/Margin/VBox/ArtFrame"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SubHeader" type="PanelContainer" parent="CardPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+
+[node name="SubHBox" type="HBoxContainer" parent="CardPanel/Margin/VBox/SubHeader"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="PokedexLabel" type="Label" parent="CardPanel/Margin/VBox/SubHeader/SubHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 0.8)
+theme_override_font_sizes/font_size = 9
+text = "No. 001 • GRASS Type"
+vertical_alignment = 1
+
+[node name="TierBadge" type="PanelContainer" parent="CardPanel/Margin/VBox/SubHeader/SubHBox"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="TierLabel" type="Label" parent="CardPanel/Margin/VBox/SubHeader/SubHBox/TierBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 8
+text = "TIER S+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MovesBox" type="VBoxContainer" parent="CardPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Move1Row" type="HBoxContainer" parent="CardPanel/Margin/VBox/MovesBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="M1TypeIcon" type="TextureRect" parent="CardPanel/Margin/VBox/MovesBox/Move1Row"]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="M1Cost" type="Label" parent="CardPanel/Margin/VBox/MovesBox/Move1Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 9
+text = "⚡ 1"
+
+[node name="M1Name" type="Label" parent="CardPanel/Margin/VBox/MovesBox/Move1Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 9
+text = "Tackle"
+clip_text = true
+
+[node name="M1Dmg" type="Label" parent="CardPanel/Margin/VBox/MovesBox/Move1Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "2 DMG"
+
+[node name="Move2Row" type="HBoxContainer" parent="CardPanel/Margin/VBox/MovesBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="M2TypeIcon" type="TextureRect" parent="CardPanel/Margin/VBox/MovesBox/Move2Row"]
+custom_minimum_size = Vector2(14, 14)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="M2Cost" type="Label" parent="CardPanel/Margin/VBox/MovesBox/Move2Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 9
+text = "⚡ 2"
+
+[node name="M2Name" type="Label" parent="CardPanel/Margin/VBox/MovesBox/Move2Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 9
+text = "Razor Leaf"
+clip_text = true
+
+[node name="M2Dmg" type="Label" parent="CardPanel/Margin/VBox/MovesBox/Move2Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "4 DMG"
+
+[node name="FooterHBox" type="HBoxContainer" parent="CardPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="WeakBox" type="HBoxContainer" parent="CardPanel/Margin/VBox/FooterHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="WeakTxt" type="Label" parent="CardPanel/Margin/VBox/FooterHBox/WeakBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.65, 0.65, 1)
+theme_override_font_sizes/font_size = 8
+text = "Weak:"
+
+[node name="WeakIcon" type="TextureRect" parent="CardPanel/Margin/VBox/FooterHBox/WeakBox"]
+custom_minimum_size = Vector2(13, 13)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="WeakVal" type="Label" parent="CardPanel/Margin/VBox/FooterHBox/WeakBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.65, 0.65, 1)
+theme_override_font_sizes/font_size = 8
+text = "+2"
+
+[node name="ResBox" type="HBoxContainer" parent="CardPanel/Margin/VBox/FooterHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="ResTxt" type="Label" parent="CardPanel/Margin/VBox/FooterHBox/ResBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 8
+text = "Res:"
+
+[node name="ResIcon" type="TextureRect" parent="CardPanel/Margin/VBox/FooterHBox/ResBox"]
+custom_minimum_size = Vector2(13, 13)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ResVal" type="Label" parent="CardPanel/Margin/VBox/FooterHBox/ResBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 8
+text = "-2"
+
+[node name="SpeedLabel" type="Label" parent="CardPanel/Margin/VBox/FooterHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
+theme_override_font_sizes/font_size = 8
+text = "👟 1 SPD"

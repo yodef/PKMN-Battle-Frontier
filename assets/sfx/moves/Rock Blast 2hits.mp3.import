@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://lm5gihyffk1o"
+path="res://.godot/imported/Rock Blast 2hits.mp3-1c1e618b0cc006202e4501e558c41c61.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Rock Blast 2hits.mp3"
+dest_files=["res://.godot/imported/Rock Blast 2hits.mp3-1c1e618b0cc006202e4501e558c41c61.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

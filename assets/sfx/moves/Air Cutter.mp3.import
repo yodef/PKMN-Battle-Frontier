@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://vix1y6let3wh"
+path="res://.godot/imported/Air Cutter.mp3-caad8e93920fad894ce6384fc2771fde.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Air Cutter.mp3"
+dest_files=["res://.godot/imported/Air Cutter.mp3-caad8e93920fad894ce6384fc2771fde.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

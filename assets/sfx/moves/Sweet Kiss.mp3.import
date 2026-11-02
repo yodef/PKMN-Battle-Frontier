@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://4pcagf5c5dap"
+path="res://.godot/imported/Sweet Kiss.mp3-23424f948fb1abf669a8e4fce574bc0b.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Sweet Kiss.mp3"
+dest_files=["res://.godot/imported/Sweet Kiss.mp3-23424f948fb1abf669a8e4fce574bc0b.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

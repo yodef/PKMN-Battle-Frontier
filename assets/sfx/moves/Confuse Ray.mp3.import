@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dyr36ege1bset"
+path="res://.godot/imported/Confuse Ray.mp3-2a7108fa16807d89d12e8c91799db2c8.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Confuse Ray.mp3"
+dest_files=["res://.godot/imported/Confuse Ray.mp3-2a7108fa16807d89d12e8c91799db2c8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

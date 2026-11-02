@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dbxngg6sjdrts"
+path="res://.godot/imported/Bulk Up.mp3-1ff15d2ea5f09fd6115d76cd1b4e3ecd.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Bulk Up.mp3"
+dest_files=["res://.godot/imported/Bulk Up.mp3-1ff15d2ea5f09fd6115d76cd1b4e3ecd.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

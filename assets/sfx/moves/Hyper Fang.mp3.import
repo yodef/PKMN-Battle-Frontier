@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b4o2oj3hnxxfh"
+path="res://.godot/imported/Hyper Fang.mp3-4877888503d7ee5b63c1147c3cc5a876.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Hyper Fang.mp3"
+dest_files=["res://.godot/imported/Hyper Fang.mp3-4877888503d7ee5b63c1147c3cc5a876.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

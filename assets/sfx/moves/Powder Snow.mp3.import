@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bk0r33dxthdjd"
+path="res://.godot/imported/Powder Snow.mp3-f73d2075bd2c20f0019ffde04586459a.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Powder Snow.mp3"
+dest_files=["res://.godot/imported/Powder Snow.mp3-f73d2075bd2c20f0019ffde04586459a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

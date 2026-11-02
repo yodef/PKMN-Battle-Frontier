@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c5pwqopyrewmn"
+path="res://.godot/imported/Tail Whip.mp3-bc9b5042d947247d080e47e0c57bedc7.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Tail Whip.mp3"
+dest_files=["res://.godot/imported/Tail Whip.mp3-bc9b5042d947247d080e47e0c57bedc7.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

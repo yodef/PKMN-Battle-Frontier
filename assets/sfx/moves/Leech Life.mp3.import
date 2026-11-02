@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bxsqtyht3bcqi"
+path="res://.godot/imported/Leech Life.mp3-43cc09595dc24cece2b1a382aaef177f.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Leech Life.mp3"
+dest_files=["res://.godot/imported/Leech Life.mp3-43cc09595dc24cece2b1a382aaef177f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

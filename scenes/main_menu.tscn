@@ -1,0 +1,2676 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_menu"]
+[ext_resource type="AudioStream" uid="uid://3xcdtny5stjj" path="res://assets/bgm/1 Title Screen.mp3" id="2_bgm"]
+[ext_resource type="PackedScene" path="res://scenes/assembled_card.tscn" id="3_card"]
+[ext_resource type="Texture2D" path="res://assets/ui/logo_battle_frontier.png" id="4_logo"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.07, 0.09, 0.13, 1)
+
+[node name="ContentContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 22.0
+offset_right = -24.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderContainer" type="VBoxContainer" parent="ContentContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="LogoRect" type="TextureRect" parent="ContentContainer/HeaderContainer"]
+custom_minimum_size = Vector2(0, 230)
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("4_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Subtitle" type="Label" parent="ContentContainer/HeaderContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.7, 0.85, 1)
+theme_override_font_sizes/font_size = 13
+text = "TCG Mobile Edition • Fan Game"
+horizontal_alignment = 1
+
+[node name="TrainerStatusBadge" type="Label" parent="ContentContainer/HeaderContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "👤 Trainer: Ash | 💎 0 Diamonds"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="ContentContainer"]
+layout_mode = 2
+
+[node name="MenuButtons" type="VBoxContainer" parent="ContentContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="BtnCampaign" type="Button" parent="ContentContainer/MenuButtons"]
+custom_minimum_size = Vector2(0, 62)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "🏆  CAMPAIGN
+(Pokémon Tournament)"
+
+[node name="BtnQuickBattle" type="Button" parent="ContentContainer/MenuButtons"]
+custom_minimum_size = Vector2(0, 62)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.5, 1)
+theme_override_font_sizes/font_size = 15
+text = "⚔️  QUICK BATTLE
+(1 to 3 PKMN Battle)"
+
+[node name="BtnCollection" type="Button" parent="ContentContainer/MenuButtons"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "🎴  MY COLLECTION
+(View Cards & Stages)"
+
+[node name="BtnShop" type="Button" parent="ContentContainer/MenuButtons"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "🛒  SHOP
+(Gen 1 Kanto Booster)"
+
+[node name="BtnDailyMissions" type="Button" parent="ContentContainer/MenuButtons"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "🎁  DAILY MISSIONS & REWARDS"
+
+[node name="AuxButtonsRow" type="HBoxContainer" parent="ContentContainer/MenuButtons"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnProfile" type="Button" parent="ContentContainer/MenuButtons/AuxButtonsRow"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "👤  PROFILE"
+
+[node name="BtnFriends" type="Button" parent="ContentContainer/MenuButtons/AuxButtonsRow"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.35, 1, 0.55, 1)
+theme_override_font_sizes/font_size = 13
+text = "👥  FRIENDS"
+
+[node name="BtnSettings" type="Button" parent="ContentContainer/MenuButtons/AuxButtonsRow"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "⚙️  SETTINGS"
+
+[node name="BtnExit" type="Button" parent="ContentContainer/MenuButtons"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.4, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+text = "🚪  EXIT GAME"
+
+[node name="FooterLabel" type="Label" parent="ContentContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.45, 0.55, 1)
+theme_override_font_sizes/font_size = 11
+text = "Non-profit fan project • v0.4"
+horizontal_alignment = 1
+
+[node name="TeamSelectModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SelectBg" type="ColorRect" parent="TeamSelectModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="Box" type="VBoxContainer" parent="TeamSelectModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 24.0
+offset_right = -16.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Title" type="Label" parent="TeamSelectModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 22
+text = "⚔️ TEAM SELECTION"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="TeamSelectModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Configure your team and the rival team (1st Leader, 2nd & 3rd Bench)."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="TabsContainer" type="HBoxContainer" parent="TeamSelectModal/Box"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BtnTabPlayer" type="Button" parent="TeamSelectModal/Box/TabsContainer"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+toggle_mode = true
+button_pressed = true
+text = "👤 Your Team (0/3)"
+
+[node name="BtnTabEnemy" type="Button" parent="TeamSelectModal/Box/TabsContainer"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+toggle_mode = true
+text = "🤖 Rival AI (0/3)"
+
+[node name="BtnRandomEnemy" type="Button" parent="TeamSelectModal/Box/TabsContainer"]
+custom_minimum_size = Vector2(75, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "🎲 Random"
+
+[node name="SlotsContainer" type="HBoxContainer" parent="TeamSelectModal/Box"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Slot1" type="PanelContainer" parent="TeamSelectModal/Box/SlotsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="TeamSelectModal/Box/SlotsContainer/Slot1"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "1st LEADER:
+[Empty]"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Slot2" type="PanelContainer" parent="TeamSelectModal/Box/SlotsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="TeamSelectModal/Box/SlotsContainer/Slot2"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "2nd Bench:
+[Empty]"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Slot3" type="PanelContainer" parent="TeamSelectModal/Box/SlotsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="TeamSelectModal/Box/SlotsContainer/Slot3"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "3rd Bench:
+[Empty]"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="SortBar" type="HBoxContainer" parent="TeamSelectModal/Box"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="SortLbl" type="Label" parent="TeamSelectModal/Box/SortBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Sort by:"
+
+[node name="BtnSortId" type="Button" parent="TeamSelectModal/Box/SortBar"]
+custom_minimum_size = Vector2(60, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+button_pressed = true
+text = "⚙️ ID"
+
+[node name="BtnSortDex" type="Button" parent="TeamSelectModal/Box/SortBar"]
+custom_minimum_size = Vector2(65, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "🔢 Dex"
+
+[node name="BtnSortAlpha" type="Button" parent="TeamSelectModal/Box/SortBar"]
+custom_minimum_size = Vector2(62, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "🔤 A - Z"
+
+[node name="BtnSortRarity" type="Button" parent="TeamSelectModal/Box/SortBar"]
+custom_minimum_size = Vector2(68, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "✨ Rarity"
+
+[node name="BtnSortEvo" type="Button" parent="TeamSelectModal/Box/SortBar"]
+custom_minimum_size = Vector2(65, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "⏫ Evo"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="TeamSelectModal/Box"]
+custom_minimum_size = Vector2(0, 280)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
+
+[node name="GridMargin" type="MarginContainer" parent="TeamSelectModal/Box/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="GridCards" type="VBoxContainer" parent="TeamSelectModal/Box/ScrollContainer/GridMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="Actions" type="VBoxContainer" parent="TeamSelectModal/Box"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnStartBattle" type="Button" parent="TeamSelectModal/Box/Actions"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 15
+text = "⚔️ START BATTLE (3 vs 3)!"
+
+[node name="BtnCloseTeamSelect" type="Button" parent="TeamSelectModal/Box/Actions"]
+custom_minimum_size = Vector2(160, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 13
+text = "⬅ Back to Menu"
+
+[node name="CampaignHubModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CampaignHubBg" type="ColorRect" parent="CampaignHubModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="Box" type="VBoxContainer" parent="CampaignHubModal"]
+layout_mode = 1
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -245.0
+offset_top = 16.0
+offset_right = 245.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="CampaignHubModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 22
+text = "🗺️ CAMPAIGN MODES"
+horizontal_alignment = 1
+
+[node name="HubWalletBadge" type="Label" parent="CampaignHubModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "💰 Campaign Gold: 0 G  |  💎 0 Diamonds"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="CampaignHubModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Choose your path: compete in the Tournament or embark on Story Adventure!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ModesScroll" type="ScrollContainer" parent="CampaignHubModal/Box"]
+custom_minimum_size = Vector2(0, 520)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ModesVBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="CardTournament" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="TournVBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TournTitle" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+text = "🏆 Pokémon Tournament"
+
+[node name="TournDesc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Survive 9 back-to-back matches across 3 phases.\nDynamic loot drops & phase completion bonuses!"
+autowrap_mode = 2
+
+[node name="TournStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: Ready to start"
+
+[node name="BtnHubTournament" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+text = "⚔️ Enter Tournament"
+
+[node name="CardAdventureEp1" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Ep1VBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Ep1Title" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 16
+text = "🗺️ Adventure: Episode I"
+
+[node name="Ep1Desc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Pewter City Gym: Journey from Route 2 through Viridian Forest to defeat Gym Leader Brock!"
+autowrap_mode = 2
+
+[node name="Ep1Rewards" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Battles: 4  |  First Clear: 💎 20 Diamonds & Ep. II Unlock"
+
+[node name="Ep1Status" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: Ready to embark"
+
+[node name="BtnHubAdventureEp1" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "🗺️ Embark on Episode I"
+
+[node name="CardAdventureEp2" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
+modulate = Color(0.7, 0.7, 0.75, 0.8)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Ep2VBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Ep2Title" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+text = "🔒 Adventure: Episode II"
+
+[node name="Ep2Desc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Cerulean City Gym: Traverse Mt. Moon to challenge Gym Leader Misty!"
+autowrap_mode = 2
+
+[node name="Ep2Status" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "(Locked - In Development)"
+
+[node name="BtnHubAdventureEp2" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔒 Locked (In Development)"
+
+[node name="BtnCloseCampaignHub" type="Button" parent="CampaignHubModal/Box"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "⬅ Back to Main Menu"
+
+[node name="CampaignModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CampaignBg" type="ColorRect" parent="CampaignModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="Box" type="VBoxContainer" parent="CampaignModal"]
+layout_mode = 1
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -245.0
+offset_top = 16.0
+offset_right = 245.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Title" type="Label" parent="CampaignModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 22
+text = "🏆 POKÉMON TOURNAMENT"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="CampaignModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Compete across 3 phases (9 battles total) to become the Tournament Champion!
+⚠️ Pokémon do NOT heal automatically between battles. Use potions before fighting."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="StatusCard" type="PanelContainer" parent="CampaignModal/Box"]
+layout_mode = 2
+
+[node name="StatusRow" type="HBoxContainer" parent="CampaignModal/Box/StatusCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="MatchLbl" type="Label" parent="CampaignModal/Box/StatusCard/StatusRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.4, 0.95, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+text = "⚔️ Battle 1 of 9"
+
+[node name="GoldLbl" type="Label" parent="CampaignModal/Box/StatusCard/StatusRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "💰 Gold: 0 G"
+horizontal_alignment = 2
+
+[node name="TeamHeader" type="Label" parent="CampaignModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "👥 YOUR TOURNAMENT TEAM:"
+
+[node name="TeamScroll" type="ScrollContainer" parent="CampaignModal/Box"]
+custom_minimum_size = Vector2(0, 310)
+layout_mode = 2
+size_flags_vertical = 1
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 0
+
+[node name="TeamList" type="VBoxContainer" parent="CampaignModal/Box/TeamScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ShopSection" type="PanelContainer" parent="CampaignModal/Box"]
+layout_mode = 2
+
+[node name="ShopVBox" type="VBoxContainer" parent="CampaignModal/Box/ShopSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ShopHeader" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "🛒 CAMP SUPPLY SHOP"
+horizontal_alignment = 1
+
+[node name="ShopHSep" type="HSeparator" parent="CampaignModal/Box/ShopSection/ShopVBox"]
+layout_mode = 2
+
+[node name="PotionRow" type="HBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ItemIcon" type="TextureRect" parent="CampaignModal/Box/ShopSection/ShopVBox/PotionRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ShopInfo" type="VBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox/PotionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="ItemTitle" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/PotionRow/ShopInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Potion (+10 HP to an active PKMN)"
+
+[node name="ItemCountLbl" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/PotionRow/ShopInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "Inventory: 0 Potions"
+
+[node name="BtnBuyPotion" type="Button" parent="CampaignModal/Box/ShopSection/ShopVBox/PotionRow"]
+custom_minimum_size = Vector2(100, 34)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 12
+text = "Buy (3 G)"
+
+[node name="RemedyRow" type="HBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RemedyIcon" type="TextureRect" parent="CampaignModal/Box/ShopSection/ShopVBox/RemedyRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RemedyInfo" type="VBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox/RemedyRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="RemedyTitle" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/RemedyRow/RemedyInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Remedy (Cure Burn, Poison & Statuses)"
+
+[node name="RemedyCountLbl" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/RemedyRow/RemedyInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.6, 1)
+theme_override_font_sizes/font_size = 11
+text = "Inventory: 0 Remedies"
+
+[node name="BtnBuyRemedy" type="Button" parent="CampaignModal/Box/ShopSection/ShopVBox/RemedyRow"]
+custom_minimum_size = Vector2(100, 34)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 12
+text = "Buy (2 G)"
+
+[node name="EtherRow" type="HBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EtherIcon" type="TextureRect" parent="CampaignModal/Box/ShopSection/ShopVBox/EtherRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EtherInfo" type="VBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox/EtherRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="EtherTitle" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/EtherRow/EtherInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Ether (+5 Energy to a PKMN in battle)"
+
+[node name="EtherCountLbl" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/EtherRow/EtherInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.55, 0.95, 1)
+theme_override_font_sizes/font_size = 11
+text = "Inventory: 0 Ethers"
+
+[node name="BtnBuyEther" type="Button" parent="CampaignModal/Box/ShopSection/ShopVBox/EtherRow"]
+custom_minimum_size = Vector2(100, 34)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 12
+text = "Buy (3 G)"
+
+[node name="ReviveRow" type="HBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ReviveIcon" type="TextureRect" parent="CampaignModal/Box/ShopSection/ShopVBox/ReviveRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ReviveInfo" type="VBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox/ReviveRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="ReviveTitle" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/ReviveRow/ReviveInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Revive (Revive a PKMN at 50% HP)"
+
+[node name="ReviveCountLbl" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/ReviveRow/ReviveInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 11
+text = "Inventory: 0 Revives"
+
+[node name="BtnBuyRevive" type="Button" parent="CampaignModal/Box/ShopSection/ShopVBox/ReviveRow"]
+custom_minimum_size = Vector2(100, 34)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 12
+text = "Buy (6 G)"
+
+[node name="ActionsBox" type="VBoxContainer" parent="CampaignModal/Box"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnStartCampaignBattle" type="Button" parent="CampaignModal/Box/ActionsBox"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 15
+text = "⚔️ START BATTLE (1/9)"
+
+[node name="NavRow" type="HBoxContainer" parent="CampaignModal/Box/ActionsBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnChangeCampaignTeam" type="Button" parent="CampaignModal/Box/ActionsBox/NavRow"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "👥 Change Team"
+
+[node name="BtnCloseCampaign" type="Button" parent="CampaignModal/Box/ActionsBox/NavRow"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "⬅ Main Menu"
+
+[node name="BtnResetCampaign" type="Button" parent="CampaignModal/Box/ActionsBox"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.5, 0.4, 1)
+theme_override_font_sizes/font_size = 11
+text = "🔄 Restart Tournament (Forfeits Gold & Progress)"
+
+[node name="CollectionModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CollectionBg" type="ColorRect" parent="CollectionModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="GridView" type="VBoxContainer" parent="CollectionModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 20.0
+offset_right = -15.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Title" type="Label" parent="CollectionModal/GridView"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 20
+text = "🎴 MY COLLECTION"
+horizontal_alignment = 1
+
+[node name="StatsLbl" type="Label" parent="CollectionModal/GridView"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Cards Collected: 4 / 9"
+horizontal_alignment = 1
+
+[node name="SortBar" type="HBoxContainer" parent="CollectionModal/GridView"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="SortLbl" type="Label" parent="CollectionModal/GridView/SortBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Sort by:"
+
+[node name="BtnSortId" type="Button" parent="CollectionModal/GridView/SortBar"]
+custom_minimum_size = Vector2(55, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+button_pressed = true
+text = "⚙️ ID"
+
+[node name="BtnSortDex" type="Button" parent="CollectionModal/GridView/SortBar"]
+custom_minimum_size = Vector2(62, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "🔢 Dex"
+
+[node name="BtnSortAlpha" type="Button" parent="CollectionModal/GridView/SortBar"]
+custom_minimum_size = Vector2(62, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "🔤 A - Z"
+
+[node name="BtnSortRarity" type="Button" parent="CollectionModal/GridView/SortBar"]
+custom_minimum_size = Vector2(68, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "✨ Rarity"
+
+[node name="BtnSortOwned" type="Button" parent="CollectionModal/GridView/SortBar"]
+custom_minimum_size = Vector2(72, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+toggle_mode = true
+text = "⭐ Owned"
+
+[node name="GridScroll" type="ScrollContainer" parent="CollectionModal/GridView"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
+
+[node name="GridMargin" type="MarginContainer" parent="CollectionModal/GridView/GridScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="GridCards" type="GridContainer" parent="CollectionModal/GridView/GridScroll/GridMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 4
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 12
+
+[node name="BtnCloseCollection" type="Button" parent="CollectionModal/GridView"]
+custom_minimum_size = Vector2(220, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "⬅ Back to Main Menu"
+
+[node name="DetailView" type="VBoxContainer" parent="CollectionModal"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 20.0
+offset_right = -15.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="TopNav" type="HBoxContainer" parent="CollectionModal/DetailView"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnBackToGrid" type="Button" parent="CollectionModal/DetailView/TopNav"]
+custom_minimum_size = Vector2(170, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⬅ Back to Grid"
+
+[node name="DetailTitle" type="Label" parent="CollectionModal/DetailView/TopNav"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "CARD DETAILS"
+horizontal_alignment = 2
+
+[node name="CardCenter" type="CenterContainer" parent="CollectionModal/DetailView"]
+layout_mode = 2
+
+[node name="AssembledCard" parent="CollectionModal/DetailView/CardCenter" instance=ExtResource("3_card")]
+layout_mode = 2
+
+[node name="DetailsScroll" type="ScrollContainer" parent="CollectionModal/DetailView"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
+
+[node name="DetailsBox" type="VBoxContainer" parent="CollectionModal/DetailView/DetailsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="HeaderPanel" type="PanelContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox"]
+layout_mode = 2
+
+[node name="HeaderMargin" type="MarginContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/HeaderPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="HeaderVBox" type="VBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/HeaderPanel/HeaderMargin"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="NameRow" type="HBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/HeaderPanel/HeaderMargin/HeaderVBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="DetailTypeIcon" type="TextureRect" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/HeaderPanel/HeaderMargin/HeaderVBox/NameRow"]
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DetailName" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/HeaderPanel/HeaderMargin/HeaderVBox/NameRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "Bulbasaur"
+
+[node name="DetailSub" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/HeaderPanel/HeaderMargin/HeaderVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.78, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "No. 001 • Stage: Basic • GRASS"
+
+[node name="LockedNoticePanel" type="PanelContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox"]
+visible = false
+layout_mode = 2
+
+[node name="LockedMargin" type="MarginContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/LockedNoticePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="LockedNoticeLbl" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/LockedNoticePanel/LockedMargin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "🔒 CARD NOT UNLOCKED
+This card is not yet in your collection.
+Win battles in the Tournament or get it in the shop to unlock it!"
+autowrap_mode = 2
+
+[node name="StatsPanel" type="PanelContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox"]
+layout_mode = 2
+
+[node name="StatsMargin" type="MarginContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StatsVBox" type="VBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="StatsTitle" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.43, 0.9, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+text = "📊 BASE STATS"
+
+[node name="StatsHp" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "❤️ Max HP: 10 HP"
+
+[node name="StatsSpd" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "👟 Speed: 1 SPD (Turn order)"
+
+[node name="StatsEnergy" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "🔋 Recovery: +1 Energy / turn"
+
+[node name="DebRow" type="HBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="DebTxt" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox/DebRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.65, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "🛡️ Weakness:"
+
+[node name="DebIcon" type="TextureRect" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox/DebRow"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DebVal" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox/DebRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.65, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "(+2 damage taken)"
+
+[node name="ResRow" type="HBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ResTxt" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox/ResRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "     Resistance:"
+
+[node name="ResIcon" type="TextureRect" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox/ResRow"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ResVal" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox/ResRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "(-2 damage taken)"
+
+[node name="PassivePanel" type="PanelContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox"]
+layout_mode = 2
+
+[node name="PassiveMargin" type="MarginContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/PassivePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="PassiveVBox" type="VBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/PassivePanel/PassiveMargin"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="PassiveTitle" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/PassivePanel/PassiveMargin/PassiveVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "✨ PASSIVE ABILITY"
+
+[node name="PassiveDesc" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/PassivePanel/PassiveMargin/PassiveVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Passive ability description..."
+autowrap_mode = 2
+
+[node name="Move1Panel" type="PanelContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox"]
+layout_mode = 2
+
+[node name="M1Margin" type="MarginContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move1Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="M1VBox" type="VBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move1Panel/M1Margin"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="M1TitleRow" type="HBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move1Panel/M1Margin/M1VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="M1TypeIcon" type="TextureRect" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move1Panel/M1Margin/M1VBox/M1TitleRow"]
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="M1Title" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move1Panel/M1Margin/M1VBox/M1TitleRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.77, 0.99, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tackle (2 DMG)"
+
+[node name="M1Sub" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move1Panel/M1Margin/M1VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Type: NORMAL | Cost: ⚡ 1"
+
+[node name="M1Desc" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move1Panel/M1Margin/M1VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 0.85)
+theme_override_font_sizes/font_size = 12
+text = "Basic attack with no secondary effect."
+autowrap_mode = 2
+
+[node name="Move2Panel" type="PanelContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox"]
+layout_mode = 2
+
+[node name="M2Margin" type="MarginContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move2Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="M2VBox" type="VBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move2Panel/M2Margin"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="M2TitleRow" type="HBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move2Panel/M2Margin/M2VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="M2TypeIcon" type="TextureRect" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move2Panel/M2Margin/M2VBox/M2TitleRow"]
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="M2Title" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move2Panel/M2Margin/M2VBox/M2TitleRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.77, 0.99, 1)
+theme_override_font_sizes/font_size = 14
+text = "Razor Leaf (4 DMG)"
+
+[node name="M2Sub" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move2Panel/M2Margin/M2VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Type: GRASS | Cost: ⚡ 2"
+
+[node name="M2Boost" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move2Panel/M2Margin/M2VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.65, 0.65, 1)
+theme_override_font_sizes/font_size = 12
+text = "🔥 Boost: +1 extra ⚡ -> +2 DMG"
+
+[node name="M2Desc" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/Move2Panel/M2Margin/M2VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 0.85)
+theme_override_font_sizes/font_size = 12
+text = "Slashing attack."
+autowrap_mode = 2
+
+[node name="CardNav" type="HBoxContainer" parent="CollectionModal/DetailView"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="BtnPrev" type="Button" parent="CollectionModal/DetailView/CardNav"]
+custom_minimum_size = Vector2(90, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "◀ Previous"
+
+[node name="PageLbl" type="Label" parent="CollectionModal/DetailView/CardNav"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "1 / 9"
+horizontal_alignment = 1
+
+[node name="BtnNext" type="Button" parent="CollectionModal/DetailView/CardNav"]
+custom_minimum_size = Vector2(90, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Next ▶"
+
+[node name="ShopModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ShopBg" type="ColorRect" parent="ShopModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="Box" type="VBoxContainer" parent="ShopModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 35.0
+offset_right = -24.0
+offset_bottom = -25.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Title" type="Label" parent="ShopModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 24
+text = "🛒 BOOSTER PACK SHOP"
+horizontal_alignment = 1
+
+[node name="ShopDiamondsLbl" type="Label" parent="ShopModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "💎 Diamonds: 0"
+horizontal_alignment = 1
+
+[node name="PackPanel" type="PanelContainer" parent="ShopModal/Box"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="ShopModal/Box/PackPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="PackHeaderRow" type="HBoxContainer" parent="ShopModal/Box/PackPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="PackArtTexture" type="TextureRect" parent="ShopModal/Box/PackPanel/VBox/PackHeaderRow"]
+custom_minimum_size = Vector2(100, 142)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PackHeaderInfo" type="VBoxContainer" parent="ShopModal/Box/PackPanel/VBox/PackHeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+alignment = 1
+
+[node name="PackTitle" type="Label" parent="ShopModal/Box/PackPanel/VBox/PackHeaderRow/PackHeaderInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+text = "Booster Pack (Kanto)"
+
+[node name="PackPrice" type="Label" parent="ShopModal/Box/PackPanel/VBox/PackHeaderRow/PackHeaderInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Price: 💎 5 Diamonds"
+
+[node name="PackDesc" type="Label" parent="ShopModal/Box/PackPanel/VBox/PackHeaderRow/PackHeaderInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "Contains 3 random cards based on Rarity. Expand your collection and unlock powerful Pokémon!"
+autowrap_mode = 2
+
+[node name="PackEarnHint" type="Label" parent="ShopModal/Box/PackPanel/VBox/PackHeaderRow/PackHeaderInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.75, 0.95, 1)
+theme_override_font_sizes/font_size = 10
+text = "💡 Earn Diamonds in Tournament Mode!"
+
+[node name="RatesPanel" type="PanelContainer" parent="ShopModal/Box/PackPanel/VBox"]
+layout_mode = 2
+
+[node name="RatesVBox" type="VBoxContainer" parent="ShopModal/Box/PackPanel/VBox/RatesPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RatesHeader" type="Label" parent="ShopModal/Box/PackPanel/VBox/RatesPanel/RatesVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 11
+text = "🎲 RARITY DROP RATES (PER CARD):"
+horizontal_alignment = 1
+
+[node name="RatesGrid" type="GridContainer" parent="ShopModal/Box/PackPanel/VBox/RatesPanel/RatesVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 3
+columns = 2
+
+[node name="ShowcaseVBox" type="VBoxContainer" parent="ShopModal/Box/PackPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ShowcaseHeader" type="Label" parent="ShopModal/Box/PackPanel/VBox/ShowcaseVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 11
+text = "✨ FEATURED FOIL CARDS (EPIC & LEGENDARY):"
+horizontal_alignment = 1
+
+[node name="ShowcaseRow" type="HBoxContainer" parent="ShopModal/Box/PackPanel/VBox/ShowcaseVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="BtnOpenPack" type="Button" parent="ShopModal/Box"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 15
+text = "✨ OPEN BOOSTER PACK (💎 5 Diamonds)"
+
+[node name="ShopFeedbackLbl" type="Label" parent="ShopModal/Box"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+text = "🎉 All cards unlocked for testing!"
+horizontal_alignment = 1
+
+[node name="BtnCloseShop" type="Button" parent="ShopModal/Box"]
+layout_mode = 2
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(160, 44)
+theme_override_font_sizes/font_size = 14
+text = "Back to Menu"
+
+[node name="LoginModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LoginBg" type="ColorRect" parent="LoginModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.07, 0.09, 0.13, 1)
+
+[node name="LoginBox" type="VBoxContainer" parent="LoginModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 22.0
+offset_right = -24.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="LoginHeader" type="VBoxContainer" parent="LoginModal/LoginBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="LoginLogoRect" type="TextureRect" parent="LoginModal/LoginBox/LoginHeader"]
+custom_minimum_size = Vector2(0, 230)
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("4_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LoginSubtitle" type="Label" parent="LoginModal/LoginBox/LoginHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.7, 0.85, 1)
+theme_override_font_sizes/font_size = 13
+text = "TCG Mobile Edition • Cloud Sync"
+horizontal_alignment = 1
+
+[node name="ProfileDetectedLbl" type="Label" parent="LoginModal/LoginBox/LoginHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "👤 Welcome to Battle Frontier!"
+horizontal_alignment = 1
+
+[node name="LoginHSeparator" type="HSeparator" parent="LoginModal/LoginBox"]
+layout_mode = 2
+
+[node name="LoginButtons" type="VBoxContainer" parent="LoginModal/LoginBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="BtnLoginPlay" type="Button" parent="LoginModal/LoginBox/LoginButtons"]
+custom_minimum_size = Vector2(0, 62)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.5, 1)
+theme_override_font_sizes/font_size = 15
+text = "▶  PLAY AS GUEST
+(Direct to Lobby)"
+
+[node name="BtnLoginCloud" type="Button" parent="LoginModal/LoginBox/LoginButtons"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "🔑  LOG IN WITH GOOGLE
+(Restore Cloud Progress)"
+
+[node name="BtnSignUpGoogle" type="Button" parent="LoginModal/LoginBox/LoginButtons"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "🌐  REGISTER GOOGLE ACCOUNT
+(Cloud Sync & Backup)"
+
+[node name="LoginFeedbackLbl" type="Label" parent="LoginModal/LoginBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.45, 0.55, 1)
+theme_override_font_sizes/font_size = 11
+text = "Non-profit fan project • v0.4"
+horizontal_alignment = 1
+
+[node name="ProfileModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ProfileBg" type="ColorRect" parent="ProfileModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="ProfileBox" type="VBoxContainer" parent="ProfileModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 35.0
+offset_right = -24.0
+offset_bottom = -25.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ProfileTitle" type="Label" parent="ProfileModal/ProfileBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 22
+text = "👤 TRAINER PROFILE"
+horizontal_alignment = 1
+
+[node name="TrainerInfoCard" type="PanelContainer" parent="ProfileModal/ProfileBox"]
+layout_mode = 2
+
+[node name="TrainerInfoVBox" type="VBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TrainerNameRow" type="HBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TrainerNamePrompt" type="Label" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerNameRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Trainer Alias:"
+
+[node name="TrainerNameInput" type="LineEdit" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerNameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+placeholder_text = "Enter Trainer Alias..."
+
+[node name="TrainerEmailRow" type="HBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TrainerEmailPrompt" type="Label" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Google Email:"
+
+[node name="TrainerEmailValue" type="Label" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Not connected"
+
+[node name="AccountStatusLbl" type="Label" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 11
+text = "Status: 🟢 Local Storage Active"
+
+[node name="BtnLinkGoogle" type="Button" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 12
+text = "🌐 Connect with Google Account"
+
+[node name="StatsCard" type="PanelContainer" parent="ProfileModal/ProfileBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StatsVBox" type="VBoxContainer" parent="ProfileModal/ProfileBox/StatsCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StatsHeader" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "📊 PERSONAL RECORDS & STATS"
+horizontal_alignment = 1
+
+[node name="StatsGrid" type="GridContainer" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 8
+columns = 2
+
+[node name="StatDiamondsLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "💎 Diamonds: 0"
+
+[node name="StatTournamentsLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "🏆 Tournaments Won: 0"
+
+[node name="StatBattlesLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⚔️ Battles: 0 / 0 (0%)"
+
+[node name="StatCollectionLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "🎴 Cards: 4 / 167 (2%)"
+
+[node name="StatPacksLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "📦 Packs Opened: 0"
+
+[node name="StatGoldLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "💰 Campaign Gold: 0 G"
+
+[node name="ProfileFeedbackLbl" type="Label" parent="ProfileModal/ProfileBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "✅ Progress saved successfully!"
+horizontal_alignment = 1
+
+[node name="BtnSaveProgress" type="Button" parent="ProfileModal/ProfileBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.45, 1)
+theme_override_font_sizes/font_size = 14
+text = "💾  SAVE PROGRESS (Local Storage)"
+
+[node name="BtnLogout" type="Button" parent="ProfileModal/ProfileBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.7, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "🚪  LOG OUT"
+
+[node name="BtnCloseProfile" type="Button" parent="ProfileModal/ProfileBox"]
+custom_minimum_size = Vector2(160, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "⬅ Back to Lobby"
+
+[node name="SettingsModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SettingsBg" type="ColorRect" parent="SettingsModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="SettingsBox" type="VBoxContainer" parent="SettingsModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 40.0
+offset_right = -24.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="SettingsTitle" type="Label" parent="SettingsModal/SettingsBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "⚙️ SETTINGS"
+horizontal_alignment = 1
+
+[node name="AudioPanel" type="PanelContainer" parent="SettingsModal/SettingsBox"]
+layout_mode = 2
+
+[node name="AudioVBox" type="VBoxContainer" parent="SettingsModal/SettingsBox/AudioPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="AudioHeader" type="Label" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "🎵 AUDIO & MUSIC"
+
+[node name="MusicVolHeaderRow" type="HBoxContainer" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox"]
+layout_mode = 2
+
+[node name="MusicVolTitle" type="Label" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox/MusicVolHeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "Music Level:"
+
+[node name="MusicVolValueLbl" type="Label" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox/MusicVolHeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "80%"
+
+[node name="MusicSlider" type="HSlider" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+max_value = 1.0
+step = 0.05
+value = 0.8
+
+[node name="MuteMusicCheck" type="CheckBox" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "🔇 Mute Music"
+
+[node name="HSeparator" type="HSeparator" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox"]
+layout_mode = 2
+
+[node name="SfxVolHeaderRow" type="HBoxContainer" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox"]
+layout_mode = 2
+
+[node name="SfxVolTitle" type="Label" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox/SfxVolHeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "SFX Level:"
+
+[node name="SfxVolValueLbl" type="Label" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox/SfxVolHeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "90%"
+
+[node name="SfxSlider" type="HSlider" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+max_value = 1.0
+step = 0.05
+value = 0.9
+
+[node name="MuteSfxCheck" type="CheckBox" parent="SettingsModal/SettingsBox/AudioPanel/AudioVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "🔇 Mute SFX"
+
+[node name="InfoPanel" type="PanelContainer" parent="SettingsModal/SettingsBox"]
+layout_mode = 2
+
+[node name="InfoVBox" type="VBoxContainer" parent="SettingsModal/SettingsBox/InfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="InfoHeader" type="Label" parent="SettingsModal/SettingsBox/InfoPanel/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "ℹ️ GAME SYSTEM"
+
+[node name="InfoVersionLbl" type="Label" parent="SettingsModal/SettingsBox/InfoPanel/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Version: v0.5.0 • Pokémon Battle Frontier"
+
+[node name="InfoStorageLbl" type="Label" parent="SettingsModal/SettingsBox/InfoPanel/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.7, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "Save Path: user://profile_save.json"
+
+[node name="BtnCloseSettings" type="Button" parent="SettingsModal/SettingsBox"]
+custom_minimum_size = Vector2(160, 44)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "⬅ Back to Lobby"
+
+[node name="EraseConfirmModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="EraseBg" type="ColorRect" parent="EraseConfirmModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.85)
+
+[node name="EraseCard" type="PanelContainer" parent="EraseConfirmModal"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -140.0
+offset_right = 210.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="EraseVBox" type="VBoxContainer" parent="EraseConfirmModal/EraseCard"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="EraseTitle" type="Label" parent="EraseConfirmModal/EraseCard/EraseVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+theme_override_font_sizes/font_size = 16
+text = "⚠️ ERASE TRAINER PROFILE?"
+horizontal_alignment = 1
+
+[node name="EraseDesc" type="Label" parent="EraseConfirmModal/EraseCard/EraseVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "This will permanently delete your local save file:
+• All Diamonds and Tournament records reset to 0
+• Unlocked collection resets to starter 4 Pokémon
+• You will be returned to the Login screen.
+
+Are you sure you want to start a new profile?"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="EraseActions" type="HBoxContainer" parent="EraseConfirmModal/EraseCard/EraseVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BtnCancelErase" type="Button" parent="EraseConfirmModal/EraseCard/EraseVBox/EraseActions"]
+custom_minimum_size = Vector2(130, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "❌ Cancel"
+
+[node name="BtnConfirmErase" type="Button" parent="EraseConfirmModal/EraseCard/EraseVBox/EraseActions"]
+custom_minimum_size = Vector2(160, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔥 Yes, Erase Profile"
+
+[node name="CloudNoticeModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CloudBg" type="ColorRect" parent="CloudNoticeModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.85)
+
+[node name="CloudCard" type="PanelContainer" parent="CloudNoticeModal"]
+custom_minimum_size = Vector2(440, 360)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -180.0
+offset_right = 220.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CloudVBox" type="VBoxContainer" parent="CloudNoticeModal/CloudCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="CloudTitle" type="Label" parent="CloudNoticeModal/CloudCard/CloudVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 16
+text = "🌐 CLOUD AUTHENTICATION"
+horizontal_alignment = 1
+
+[node name="CloudDesc" type="Label" parent="CloudNoticeModal/CloudCard/CloudVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Google Sign-Up & Cloud Progress Sync:
+• Progress is saved in real-time to Google Cloud Firestore.
+• Access your collection across any PC or device!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BtnLaunchBrowserAuth" type="Button" parent="CloudNoticeModal/CloudCard/CloudVBox"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+text = "🔴 Elegir Cuenta de Google (Navegador)"
+
+[node name="BtnToggleManualAuth" type="Button" parent="CloudNoticeModal/CloudCard/CloudVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.7, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+flat = true
+text = "✏️ O ingresar correo manualmente..."
+
+[node name="CloudEmailRow" type="HBoxContainer" parent="CloudNoticeModal/CloudCard/CloudVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CloudEmailPrompt" type="Label" parent="CloudNoticeModal/CloudCard/CloudVBox/CloudEmailRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Google Email:"
+
+[node name="CloudEmailInput" type="LineEdit" parent="CloudNoticeModal/CloudCard/CloudVBox/CloudEmailRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+placeholder_text = "e.g. ash@gmail.com"
+
+[node name="CloudTrainerRow" type="HBoxContainer" parent="CloudNoticeModal/CloudCard/CloudVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CloudTrainerPrompt" type="Label" parent="CloudNoticeModal/CloudCard/CloudVBox/CloudTrainerRow"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Trainer Alias:"
+
+[node name="CloudTrainerInput" type="LineEdit" parent="CloudNoticeModal/CloudCard/CloudVBox/CloudTrainerRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+placeholder_text = "e.g. Ash, Red, Nestor..."
+
+[node name="CloudFeedbackLbl" type="Label" parent="CloudNoticeModal/CloudCard/CloudVBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.45, 1)
+theme_override_font_sizes/font_size = 11
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BtnCloudConfirm" type="Button" parent="CloudNoticeModal/CloudCard/CloudVBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.45, 1)
+theme_override_font_sizes/font_size = 14
+text = "✨ Set Name & Enter Lobby"
+
+[node name="BtnCloseCloudNotice" type="Button" parent="CloudNoticeModal/CloudCard/CloudVBox"]
+custom_minimum_size = Vector2(130, 36)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 12
+text = "Cancel"
+
+[node name="WelcomeModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="WelcomeBg" type="ColorRect" parent="WelcomeModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.06, 0.1, 0.88)
+
+[node name="WelcomeBox" type="CenterContainer" parent="WelcomeModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="WelcomeCard" type="PanelContainer" parent="WelcomeModal/WelcomeBox"]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+
+[node name="WelcomeMargin" type="MarginContainer" parent="WelcomeModal/WelcomeBox/WelcomeCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 22
+
+[node name="WelcomeVBox" type="VBoxContainer" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="WelcomeIcon" type="Label" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "🎉"
+horizontal_alignment = 1
+
+[node name="WelcomeTitle" type="Label" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "WELCOME, TRAINER!"
+horizontal_alignment = 1
+
+[node name="WelcomeGiftPanel" type="PanelContainer" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox"]
+layout_mode = 2
+
+[node name="GiftMargin" type="MarginContainer" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox/WelcomeGiftPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="GiftVBox" type="VBoxContainer" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox/WelcomeGiftPanel/GiftMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="GiftBadgeLbl" type="Label" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox/WelcomeGiftPanel/GiftMargin/GiftVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "💎 +25 GEMS & 🍬 50 RARE CANDIES!"
+horizontal_alignment = 1
+
+[node name="GiftDescLbl" type="Label" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox/WelcomeGiftPanel/GiftMargin/GiftVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Welcome to Pokémon Battle Frontier!\nAs a special welcome gift, we have granted 25 Gems and 50 Rare Candies so you can open packs and evolve your first Pokémon!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="WelcomeInfoLbl" type="Label" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "• Open up to 5 Booster Packs in the Shop (5 💎 each) to build your roster!\n• Use your 50 Rare Candies to unlock a Stage 1 evolution!\n• Progress and records are saved automatically."
+autowrap_mode = 2
+
+[node name="WelcomeActions" type="VBoxContainer" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnWelcomeGoShop" type="Button" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox/WelcomeActions"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 14
+text = "🛒 Go to Shop & Open Booster Packs (25 💎)"
+
+[node name="BtnWelcomeEnterLobby" type="Button" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox/WelcomeActions"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "▶ Enter Lobby"
+
+[node name="OnlineLobbyModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="OnlineBg" type="ColorRect" parent="OnlineLobbyModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.06, 0.09, 0.94)
+
+[node name="OnlineCenter" type="CenterContainer" parent="OnlineLobbyModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="OnlineCard" type="PanelContainer" parent="OnlineLobbyModal/OnlineCenter"]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+
+[node name="OnlineMargin" type="MarginContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="OnlineVBox" type="VBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="OnlineTitle" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "🌐 COMBATE POKÉMON EN LÍNEA"
+horizontal_alignment = 1
+
+[node name="OnlineSubtitle" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Conéctate con otro entrenador usando Google Cloud"
+horizontal_alignment = 1
+
+[node name="OnlineModeSelector" type="HBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnTabCreateRoom" type="Button" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/OnlineModeSelector"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+text = "🏠 Crear Sala"
+
+[node name="BtnTabJoinRoom" type="Button" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/OnlineModeSelector"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "🔑 Unirse a Sala"
+
+[node name="HostPanel" type="VBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HostInfoLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Comparte este código con tu amigo para combatir:"
+horizontal_alignment = 1
+
+[node name="RoomCodeBox" type="PanelContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+
+[node name="RoomCodeLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel/RoomCodeBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 32
+text = "----"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HostStatusLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/HostPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+text = "⏳ Esperando a que el rival ingrese el código..."
+horizontal_alignment = 1
+
+[node name="JoinPanel" type="VBoxContainer" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="JoinInfoLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Ingresa el código de 4 caracteres de la sala:"
+horizontal_alignment = 1
+
+[node name="JoinCodeInput" type="LineEdit" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+alignment = 1
+max_length = 6
+placeholder_text = "EJ: UJK3"
+
+[node name="BtnConfirmJoin" type="Button" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 14
+text = "⚡ Conectar y Pelear"
+
+[node name="JoinStatusLbl" type="Label" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+
+[node name="BtnOnlineFriends" type="Button" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 1, 0.55, 1)
+theme_override_font_sizes/font_size = 13
+text = "👥  Friends List & Direct Challenges"
+
+[node name="BtnCloseOnlineLobby" type="Button" parent="OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+text = "⬅ Cancelar y Volver"
+
+[node name="DailyModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DailyBg" type="ColorRect" parent="DailyModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.06, 0.1, 0.95)
+
+[node name="DailyBox" type="VBoxContainer" parent="DailyModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 36.0
+offset_right = -16.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="DailyHeaderRow" type="HBoxContainer" parent="DailyModal/DailyBox"]
+layout_mode = 2
+
+[node name="DailyTitle" type="Label" parent="DailyModal/DailyBox/DailyHeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "🎁 DAILY MISSIONS & REWARDS"
+
+[node name="DailyStreakBadge" type="Label" parent="DailyModal/DailyBox/DailyHeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔥 Day 1/7"
+
+[node name="DailyCalendarPanel" type="PanelContainer" parent="DailyModal/DailyBox"]
+layout_mode = 2
+
+[node name="DailyCalendarMargin" type="MarginContainer" parent="DailyModal/DailyBox/DailyCalendarPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="DailyCalendarVBox" type="VBoxContainer" parent="DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CalendarTitleRow" type="HBoxContainer" parent="DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin/DailyCalendarVBox"]
+layout_mode = 2
+
+[node name="CalendarTitle" type="Label" parent="DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin/DailyCalendarVBox/CalendarTitleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "📅 7-Day Login Streak Rewards"
+
+[node name="CalendarStatus" type="Label" parent="DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin/DailyCalendarVBox/CalendarTitleRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "Available!"
+
+[node name="CalendarGrid" type="HBoxContainer" parent="DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin/DailyCalendarVBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="BtnClaimLoginReward" type="Button" parent="DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin/DailyCalendarVBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+text = "🎁 Claim Today's Reward"
+
+[node name="DailyMissionsPanel" type="PanelContainer" parent="DailyModal/DailyBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DailyMissionsMargin" type="MarginContainer" parent="DailyModal/DailyBox/DailyMissionsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="DailyMissionsVBox" type="VBoxContainer" parent="DailyModal/DailyBox/DailyMissionsPanel/DailyMissionsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MissionsHeaderRow" type="HBoxContainer" parent="DailyModal/DailyBox/DailyMissionsPanel/DailyMissionsMargin/DailyMissionsVBox"]
+layout_mode = 2
+
+[node name="MissionsTitle" type="Label" parent="DailyModal/DailyBox/DailyMissionsPanel/DailyMissionsMargin/DailyMissionsVBox/MissionsHeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "🎯 Today's Missions"
+
+[node name="MissionsResetHint" type="Label" parent="DailyModal/DailyBox/DailyMissionsPanel/DailyMissionsMargin/DailyMissionsVBox/MissionsHeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.7, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "⏳ Resets daily at 00:00"
+
+[node name="MissionsListVBox" type="VBoxContainer" parent="DailyModal/DailyBox/DailyMissionsPanel/DailyMissionsMargin/DailyMissionsVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="ChestPanel" type="PanelContainer" parent="DailyModal/DailyBox"]
+layout_mode = 2
+
+[node name="ChestMargin" type="MarginContainer" parent="DailyModal/DailyBox/ChestPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="ChestHBox" type="HBoxContainer" parent="DailyModal/DailyBox/ChestPanel/ChestMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ChestIcon" type="Label" parent="DailyModal/DailyBox/ChestPanel/ChestMargin/ChestHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🏆"
+
+[node name="ChestTextVBox" type="VBoxContainer" parent="DailyModal/DailyBox/ChestPanel/ChestMargin/ChestHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="ChestTitle" type="Label" parent="DailyModal/DailyBox/ChestPanel/ChestMargin/ChestHBox/ChestTextVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "Daily Completion Bonus (+10 💎)"
+
+[node name="ChestDesc" type="Label" parent="DailyModal/DailyBox/ChestPanel/ChestMargin/ChestHBox/ChestTextVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 11
+text = "Complete all 3 daily missions to claim!"
+
+[node name="BtnClaimChest" type="Button" parent="DailyModal/DailyBox/ChestPanel/ChestMargin/ChestHBox"]
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 12
+text = "Claim +10 💎"
+
+[node name="BtnCloseDaily" type="Button" parent="DailyModal/DailyBox"]
+custom_minimum_size = Vector2(160, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "⬅ Back to Lobby"
+
+[node name="FriendsModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FriendsBg" type="ColorRect" parent="FriendsModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.06, 0.1, 0.95)
+
+[node name="FriendsBox" type="VBoxContainer" parent="FriendsModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = 26.0
+offset_right = -18.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="FriendsHeaderRow" type="HBoxContainer" parent="FriendsModal/FriendsBox"]
+layout_mode = 2
+
+[node name="FriendsTitle" type="Label" parent="FriendsModal/FriendsBox/FriendsHeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.35, 1, 0.55, 1)
+theme_override_font_sizes/font_size = 20
+text = "👥 TRAINER FRIENDS & MATCHES"
+
+[node name="FriendsCountBadge" type="Label" parent="FriendsModal/FriendsBox/FriendsHeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Friends: 0"
+
+[node name="ChallengeBanner" type="PanelContainer" parent="FriendsModal/FriendsBox"]
+visible = false
+layout_mode = 2
+
+[node name="ChallengeMargin" type="MarginContainer" parent="FriendsModal/FriendsBox/ChallengeBanner"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="ChallengeHBox" type="HBoxContainer" parent="FriendsModal/FriendsBox/ChallengeBanner/ChallengeMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ChallengeTextVBox" type="VBoxContainer" parent="FriendsModal/FriendsBox/ChallengeBanner/ChallengeMargin/ChallengeHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="ChallengeTitle" type="Label" parent="FriendsModal/FriendsBox/ChallengeBanner/ChallengeMargin/ChallengeHBox/ChallengeTextVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "⚔️ DIRECT BATTLE CHALLENGE RECEIVED!"
+
+[node name="ChallengeDesc" type="Label" parent="FriendsModal/FriendsBox/ChallengeBanner/ChallengeMargin/ChallengeHBox/ChallengeTextVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "Host: Ash • Room: ABCD • Ready to battle!"
+
+[node name="BtnAcceptChallenge" type="Button" parent="FriendsModal/FriendsBox/ChallengeBanner/ChallengeMargin/ChallengeHBox"]
+custom_minimum_size = Vector2(130, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.45, 1)
+theme_override_font_sizes/font_size = 12
+text = "⚔️ ACCEPT"
+
+[node name="BtnDeclineChallenge" type="Button" parent="FriendsModal/FriendsBox/ChallengeBanner/ChallengeMargin/ChallengeHBox"]
+custom_minimum_size = Vector2(70, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "✖ Dismiss"
+
+[node name="SearchCard" type="PanelContainer" parent="FriendsModal/FriendsBox"]
+layout_mode = 2
+
+[node name="SearchMargin" type="MarginContainer" parent="FriendsModal/FriendsBox/SearchCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="SearchHBox" type="HBoxContainer" parent="FriendsModal/FriendsBox/SearchCard/SearchMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FriendSearchInput" type="LineEdit" parent="FriendsModal/FriendsBox/SearchCard/SearchMargin/SearchHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+placeholder_text = "Search trainers by Google Email, Alias (e.g. Ash) or ID (PKMN-...)..."
+
+[node name="BtnSearchFriend" type="Button" parent="FriendsModal/FriendsBox/SearchCard/SearchMargin/SearchHBox"]
+custom_minimum_size = Vector2(85, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "🔍 Search"
+
+[node name="BtnClearSearch" type="Button" parent="FriendsModal/FriendsBox/SearchCard/SearchMargin/SearchHBox"]
+custom_minimum_size = Vector2(40, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "✖"
+
+[node name="FriendsTabsRow" type="HBoxContainer" parent="FriendsModal/FriendsBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnTabMyFriends" type="Button" parent="FriendsModal/FriendsBox/FriendsTabsRow"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "👥 My Friends (0)"
+
+[node name="BtnTabSearchResults" type="Button" parent="FriendsModal/FriendsBox/FriendsTabsRow"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "🔍 Search Results"
+
+[node name="BtnRefreshFriends" type="Button" parent="FriendsModal/FriendsBox/FriendsTabsRow"]
+custom_minimum_size = Vector2(90, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 12
+text = "🔄 Refresh"
+
+[node name="FriendsContentScroll" type="ScrollContainer" parent="FriendsModal/FriendsBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="FriendsListVBox" type="VBoxContainer" parent="FriendsModal/FriendsBox/FriendsContentScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="SearchResultsScroll" type="ScrollContainer" parent="FriendsModal/FriendsBox"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SearchResultsVBox" type="VBoxContainer" parent="FriendsModal/FriendsBox/SearchResultsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="FriendsFeedbackLbl" type="Label" parent="FriendsModal/FriendsBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.7, 0.8, 1)
+theme_override_font_sizes/font_size = 11
+text = "💡 Tip: Click '⚔️ Challenge' on any friend to start an instant online battle!"
+horizontal_alignment = 1
+
+[node name="BtnCloseFriends" type="Button" parent="FriendsModal/FriendsBox"]
+custom_minimum_size = Vector2(160, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "⬅ Back to Lobby"
+
+[node name="BGMPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_bgm")
+autoplay = true

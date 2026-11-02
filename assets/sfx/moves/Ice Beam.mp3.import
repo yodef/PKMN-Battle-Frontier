@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cq81dq2craqgn"
+path="res://.godot/imported/Ice Beam.mp3-0a4ed77ee7c822bc4156708adf3b2fb8.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Ice Beam.mp3"
+dest_files=["res://.godot/imported/Ice Beam.mp3-0a4ed77ee7c822bc4156708adf3b2fb8.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/test_optional_partial_energy_and_recharge.gd" id="1_test"]
+
+[node name="TestOptionalPartialEnergyAndRecharge" type="Node"]
+script = ExtResource("1_test")

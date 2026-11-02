@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dkr0g6hputq0s"
+path="res://.godot/imported/Helping Hand.mp3-34c4dd5e0631f6a8bc0b4e36d20ea908.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Helping Hand.mp3"
+dest_files=["res://.godot/imported/Helping Hand.mp3-34c4dd5e0631f6a8bc0b4e36d20ea908.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

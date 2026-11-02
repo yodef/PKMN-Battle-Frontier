@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cvvcgjfblismb"]
+
+[ext_resource type="Script" path="res://tests/test_move_energy_effects.gd" id="1_test"]
+
+[node name="TestMoveEnergyEffects" type="Node"]
+script = ExtResource("1_test")

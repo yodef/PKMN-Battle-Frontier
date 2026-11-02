@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://take_sorting_and_grid_screenshots"]
+
+[ext_resource type="Script" path="res://tests/take_sorting_and_grid_screenshots.gd" id="1_test"]
+
+[node name="TakeSortingScreenshots" type="Node"]
+script = ExtResource("1_test")

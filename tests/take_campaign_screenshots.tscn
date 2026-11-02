@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bbnvsm4ix6q3r"]
+
+[ext_resource type="Script" path="res://tests/take_campaign_screenshots.gd" id="1_shot"]
+
+[node name="TakeCampaignScreenshots" type="Node"]
+script = ExtResource("1_shot")

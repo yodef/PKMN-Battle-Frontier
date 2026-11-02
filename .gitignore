@@ -1,0 +1,15 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Build artifacts
+*.apk
+*.exe
+*.pck
+*.zip
+
+# OS / temporary files
+.DS_Store
+Thumbs.db
+*.tmp
+*.log

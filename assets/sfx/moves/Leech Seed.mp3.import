@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://byfs11acu7y7"
+path="res://.godot/imported/Leech Seed.mp3-8c9a845cf74c014c3f8813dad6de2ec0.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/Leech Seed.mp3"
+dest_files=["res://.godot/imported/Leech Seed.mp3-8c9a845cf74c014c3f8813dad6de2ec0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

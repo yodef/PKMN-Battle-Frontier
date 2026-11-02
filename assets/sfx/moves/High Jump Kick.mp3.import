@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://i38qtws363ww"
+path="res://.godot/imported/High Jump Kick.mp3-d571fbcffe4e8e37f60b58584a863d57.mp3str"
+
+[deps]
+
+source_file="res://assets/sfx/moves/High Jump Kick.mp3"
+dest_files=["res://.godot/imported/High Jump Kick.mp3-d571fbcffe4e8e37f60b58584a863d57.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
