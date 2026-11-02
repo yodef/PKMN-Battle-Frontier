@@ -203,11 +203,8 @@ func load_profile_from_cloud(account_key: String, callback: Callable = Callable(
 			if callback.is_valid():
 				callback.call(false, {}, "Invalid data format.")
 		elif response_code == 404:
-			var msg = "Google Account '%s' not found in Google Cloud." % account_key
-			print("[CloudSync] ⚠️ %s" % msg)
-			cloud_load_completed.emit(false, {}, msg)
-			if callback.is_valid():
-				callback.call(false, {}, msg)
+			# Si no se encontró por ID directo, intentar fallback de búsqueda por alias o email
+			_try_search_fallback_on_404(account_key, callback)
 		else:
 			var resp_text = resp_body.get_string_from_utf8()
 			var msg = "Error %d loading from Google Cloud." % response_code
@@ -224,6 +221,67 @@ func load_profile_from_cloud(account_key: String, callback: Callable = Callable(
 		is_loading = false
 		http.queue_free()
 		var msg = "Failed to send request to Google Cloud (Error %d)" % err
+		cloud_load_completed.emit(false, {}, msg)
+		if callback.is_valid():
+			callback.call(false, {}, msg)
+
+# Fallback inteligente: si la clave directa da 404, busca en la colección por alias o correo parcial
+func _try_search_fallback_on_404(account_key: String, callback: Callable) -> void:
+	var clean_query = account_key.strip_edges().to_lower()
+	var search_url = "%s?key=%s&pageSize=50" % [FIRESTORE_BASE_URL, API_KEY]
+	var http_search = HTTPRequest.new()
+	http_search.timeout = 15.0
+	add_child(http_search)
+	
+	http_search.request_completed.connect(func(_res: int, code: int, _hdrs: PackedStringArray, body: PackedByteArray):
+		http_search.queue_free()
+		if code >= 200 and code < 300:
+			var txt = body.get_string_from_utf8()
+			var parsed = JSON.parse_string(txt)
+			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("documents"):
+				var docs = parsed.get("documents", [])
+				for doc in docs:
+					if typeof(doc) != TYPE_DICTIONARY or not doc.has("fields"):
+						continue
+					var fields = doc["fields"]
+					var t_email = str(fields.get("email", {}).get("stringValue", "")).to_lower()
+					var t_alias = str(fields.get("trainer_alias", fields.get("trainer_name", {})).get("stringValue", "")).to_lower()
+					var t_id = str(fields.get("profile_id", {}).get("stringValue", "")).to_lower()
+					
+					var raw_without_gmail = clean_query.trim_suffix("@gmail.com")
+					var match_found = false
+					if t_email == clean_query or t_alias == clean_query or t_id == clean_query or t_alias == raw_without_gmail:
+						match_found = true
+					elif not clean_query.contains("@") and (t_email.begins_with(clean_query + "@") or t_alias == clean_query):
+						match_found = true
+						
+					if match_found:
+						if fields.has("save_json"):
+							var raw_save = str(fields["save_json"].get("stringValue", ""))
+							var save_data = JSON.parse_string(raw_save)
+							if typeof(save_data) == TYPE_DICTIONARY:
+								if not save_data.has("profile"):
+									save_data["profile"] = {}
+								save_data["profile"]["trainer_alias"] = str(fields.get("trainer_alias", fields.get("trainer_name", {})).get("stringValue", "Trainer"))
+								save_data["profile"]["name"] = save_data["profile"]["trainer_alias"]
+								save_data["profile"]["email"] = str(fields.get("email", {}).get("stringValue", ""))
+								last_cloud_sync_time = Time.get_time_string_from_system()
+								print("[CloudSync] ✅ Fallback search found profile for '%s' (Email: %s, Alias: %s)" % [account_key, save_data["profile"]["email"], save_data["profile"]["name"]])
+								cloud_load_completed.emit(true, save_data, "Profile loaded from Google Cloud!")
+								if callback.is_valid():
+									callback.call(true, save_data, "Success")
+								return
+		# Si tras la búsqueda exhaustiva no existe
+		var msg = "Google Account or Trainer '%s' not found in Google Cloud." % account_key
+		print("[CloudSync] ⚠️ %s" % msg)
+		cloud_load_completed.emit(false, {}, msg)
+		if callback.is_valid():
+			callback.call(false, {}, msg)
+	)
+	var err = http_search.request(search_url, PackedStringArray(), HTTPClient.METHOD_GET)
+	if err != OK:
+		http_search.queue_free()
+		var msg = "Google Account '%s' not found in Google Cloud." % account_key
 		cloud_load_completed.emit(false, {}, msg)
 		if callback.is_valid():
 			callback.call(false, {}, msg)
@@ -404,7 +462,7 @@ func _process(delta: float) -> void:
 			_handle_auth_client_connection(peer)
 
 func start_google_oauth_flow() -> bool:
-	if OS.has_feature("mobile"):
+	if OS.has_feature("mobile") or OS.has_feature("web"):
 		return false
 	stop_google_oauth_server()
 	_auth_server = TCPServer.new()

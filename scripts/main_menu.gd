@@ -4856,7 +4856,8 @@ func _toggle_manual_cloud_mode() -> void:
 	_set_manual_cloud_mode(not is_manual_cloud_mode)
 
 func _set_manual_cloud_mode(manual: bool) -> void:
-	if OS.has_feature("mobile"):
+	var is_direct = OS.has_feature("mobile") or OS.has_feature("web")
+	if is_direct:
 		manual = true
 	is_manual_cloud_mode = manual
 	if cloud_email_row:
@@ -4866,9 +4867,9 @@ func _set_manual_cloud_mode(manual: bool) -> void:
 	if btn_cloud_confirm:
 		btn_cloud_confirm.visible = manual
 	if btn_launch_browser_auth:
-		btn_launch_browser_auth.visible = (not manual and not OS.has_feature("mobile"))
+		btn_launch_browser_auth.visible = (not manual and not is_direct)
 	if btn_toggle_manual_auth:
-		btn_toggle_manual_auth.visible = not OS.has_feature("mobile")
+		btn_toggle_manual_auth.visible = not is_direct
 		btn_toggle_manual_auth.text = "🌐 Volver a selección con Google (Navegador)" if manual else "✏️ O ingresar correo manualmente..."
 	if manual:
 		if cloud_email_input and cloud_email_input.text.is_empty():
@@ -4945,8 +4946,9 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 func _on_login_cloud_pressed() -> void:
 	cloud_action_mode = "LOGIN_CLOUD"
 	cloud_title.text = "🔑 LOG IN WITH GOOGLE"
-	if OS.has_feature("mobile"):
-		cloud_desc.text = "Ingresa tu correo de Google (Gmail) para restaurar tu progreso y colección desde la nube:"
+	var is_direct = OS.has_feature("mobile") or OS.has_feature("web")
+	if is_direct:
+		cloud_desc.text = "Ingresa tu correo de Google (Gmail) o Alias para restaurar tu progreso y colección desde la nube:"
 		_set_manual_cloud_mode(true)
 	else:
 		cloud_desc.text = "Elige tu cuenta de Google en la ventana del navegador para sincronizar tu progreso y colección en tiempo real:"
@@ -4956,20 +4958,21 @@ func _on_login_cloud_pressed() -> void:
 		if remembered_email.is_empty() and GameData.profile_cloud_key.contains("@"):
 			remembered_email = GameData.profile_cloud_key
 		cloud_email_input.text = remembered_email
-		cloud_email_input.placeholder_text = "e.g. your_email@gmail.com"
+		cloud_email_input.placeholder_text = "e.g. your_email@gmail.com o Rafiki"
 	if cloud_feedback_lbl:
 		cloud_feedback_lbl.visible = false
 		cloud_feedback_lbl.text = ""
 	btn_cloud_confirm.text = "☁️ Log In & Restore Save"
 	btn_cloud_confirm.disabled = false
 	cloud_notice_modal.visible = true
-	if not OS.has_feature("mobile"):
+	if not is_direct:
 		_launch_google_browser_oauth()
 
 func _on_sign_up_google_pressed() -> void:
 	cloud_action_mode = "SIGNUP_GOOGLE"
 	cloud_title.text = "🌐 REGISTER GOOGLE ACCOUNT"
-	if OS.has_feature("mobile"):
+	var is_direct = OS.has_feature("mobile") or OS.has_feature("web")
+	if is_direct:
 		cloud_desc.text = "Ingresa tu correo de Google y tu Alias para vincular tu partida con la nube:"
 		_set_manual_cloud_mode(true)
 	else:
@@ -4993,7 +4996,7 @@ func _on_sign_up_google_pressed() -> void:
 	btn_cloud_confirm.text = "✨ Register & Sync Profile"
 	btn_cloud_confirm.disabled = false
 	cloud_notice_modal.visible = true
-	if not OS.has_feature("mobile"):
+	if not is_direct:
 		_launch_google_browser_oauth()
 
 func _on_cloud_confirm_pressed() -> void:
