@@ -24,6 +24,15 @@ var _handshake_session_id: String = ""
 var _handshake_poll_timer: float = 0.0
 var _handshake_http: HTTPRequest = null
 
+func _get_nocache_headers(content_type_json: bool = false) -> PackedStringArray:
+	var hdrs = [
+		"Cache-Control: no-cache, no-store, must-revalidate",
+		"Pragma: no-cache"
+	]
+	if content_type_json:
+		hdrs.append("Content-Type: application/json")
+	return PackedStringArray(hdrs)
+
 # Sanitiza el nombre o correo para que sea un ID de documento válido en Firestore
 func sanitize_account_key(raw_key: String) -> String:
 	var clean = raw_key.strip_edges().to_lower()
@@ -41,8 +50,8 @@ func sanitize_account_key(raw_key: String) -> String:
 # Comprueba si una cuenta ya existe en Firestore sin sobreescribir datos
 func check_account_exists(account_key: String, callback: Callable) -> void:
 	var doc_id = sanitize_account_key(account_key)
-	var url = "%s/%s?key=%s" % [FIRESTORE_BASE_URL, doc_id, API_KEY]
-	var headers = PackedStringArray()
+	var url = "%s/%s?key=%s&_cb=%d" % [FIRESTORE_BASE_URL, doc_id, API_KEY, Time.get_ticks_msec()]
+	var headers = _get_nocache_headers()
 	
 	var http = HTTPRequest.new()
 	http.timeout = 10.0
@@ -81,7 +90,7 @@ func check_account_exists(account_key: String, callback: Callable) -> void:
 
 func _check_account_exists_fallback(account_key: String, callback: Callable) -> void:
 	var clean_query = account_key.strip_edges().to_lower()
-	var search_url = "%s?key=%s&pageSize=50" % [FIRESTORE_BASE_URL, API_KEY]
+	var search_url = "%s?key=%s&pageSize=50&_cb=%d" % [FIRESTORE_BASE_URL, API_KEY, Time.get_ticks_msec()]
 	var http_search = HTTPRequest.new()
 	http_search.timeout = 10.0
 	add_child(http_search)
@@ -121,7 +130,7 @@ func _check_account_exists_fallback(account_key: String, callback: Callable) -> 
 		if callback.is_valid():
 			callback.call(false, {}, "")
 	)
-	var err = http_search.request(search_url, PackedStringArray(), HTTPClient.METHOD_GET)
+	var err = http_search.request(search_url, _get_nocache_headers(), HTTPClient.METHOD_GET)
 	if err != OK:
 		http_search.queue_free()
 		if callback.is_valid():
@@ -166,9 +175,7 @@ func save_profile_to_cloud(account_key: String, save_dict: Dictionary, callback:
 	}
 	
 	var body = JSON.stringify(payload)
-	var headers = PackedStringArray([
-		"Content-Type: application/json"
-	])
+	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
 	http.timeout = 10.0
@@ -217,8 +224,8 @@ func load_profile_from_cloud(account_key: String, callback: Callable = Callable(
 		return
 		
 	var doc_id = sanitize_account_key(account_key)
-	var url = "%s/%s?key=%s" % [FIRESTORE_BASE_URL, doc_id, API_KEY]
-	var headers = PackedStringArray()
+	var url = "%s/%s?key=%s&_cb=%d" % [FIRESTORE_BASE_URL, doc_id, API_KEY, Time.get_ticks_msec()]
+	var headers = _get_nocache_headers()
 	
 	var http = HTTPRequest.new()
 	http.timeout = 10.0
@@ -281,7 +288,7 @@ func load_profile_from_cloud(account_key: String, callback: Callable = Callable(
 # Fallback inteligente: si la clave directa da 404, busca en la colección por alias o correo parcial
 func _try_search_fallback_on_404(account_key: String, callback: Callable) -> void:
 	var clean_query = account_key.strip_edges().to_lower()
-	var search_url = "%s?key=%s&pageSize=50" % [FIRESTORE_BASE_URL, API_KEY]
+	var search_url = "%s?key=%s&pageSize=50&_cb=%d" % [FIRESTORE_BASE_URL, API_KEY, Time.get_ticks_msec()]
 	var http_search = HTTPRequest.new()
 	http_search.timeout = 15.0
 	add_child(http_search)
@@ -331,7 +338,7 @@ func _try_search_fallback_on_404(account_key: String, callback: Callable) -> voi
 		if callback.is_valid():
 			callback.call(false, {}, msg)
 	)
-	var err = http_search.request(search_url, PackedStringArray(), HTTPClient.METHOD_GET)
+	var err = http_search.request(search_url, _get_nocache_headers(), HTTPClient.METHOD_GET)
 	if err != OK:
 		http_search.queue_free()
 		var msg = "Google Account '%s' not found in Google Cloud." % account_key
@@ -358,8 +365,8 @@ func sync_current_profile_to_cloud(callback: Callable = Callable()) -> void:
 # Busca entrenadores en Firestore por correo, alias o ID
 func search_trainers(query_text: String, callback: Callable) -> void:
 	var clean_query = query_text.strip_edges().to_lower()
-	var url = "%s?key=%s&pageSize=50" % [FIRESTORE_BASE_URL, API_KEY]
-	var headers = PackedStringArray()
+	var url = "%s?key=%s&pageSize=50&_cb=%d" % [FIRESTORE_BASE_URL, API_KEY, Time.get_ticks_msec()]
+	var headers = _get_nocache_headers()
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -425,8 +432,8 @@ func search_trainers(query_text: String, callback: Callable) -> void:
 
 # Consulta salas activas de amigos o retos directos
 func fetch_friend_rooms(friends_list: Array, my_email: String, callback: Callable) -> void:
-	var url = "https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/rooms?key=%s" % [PROJECT_ID, API_KEY]
-	var headers = PackedStringArray()
+	var url = "https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/rooms?key=%s&pageSize=50&_cb=%d" % [PROJECT_ID, API_KEY, Time.get_ticks_msec()]
+	var headers = _get_nocache_headers()
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -617,7 +624,7 @@ func _poll_handshake_session() -> void:
 	if _handshake_http != null:
 		return
 		
-	var url = "https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/auth_sessions/%s?key=%s" % [PROJECT_ID, _handshake_session_id, API_KEY]
+	var url = "https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/auth_sessions/%s?key=%s&_cb=%d" % [PROJECT_ID, _handshake_session_id, API_KEY, Time.get_ticks_msec()]
 	_handshake_http = HTTPRequest.new()
 	_handshake_http.timeout = 5.0
 	add_child(_handshake_http)
@@ -644,7 +651,7 @@ func _poll_handshake_session() -> void:
 					_delete_cloud_session(session_to_delete)
 					google_oauth_completed.emit(true, email, user_name, "")
 	)
-	var err = _handshake_http.request(url, PackedStringArray(), HTTPClient.METHOD_GET)
+	var err = _handshake_http.request(url, _get_nocache_headers(), HTTPClient.METHOD_GET)
 	if err != OK:
 		if _handshake_http:
 			_handshake_http.queue_free()
@@ -655,8 +662,8 @@ func _delete_cloud_session(session_id: String) -> void:
 	del_http.timeout = 5.0
 	add_child(del_http)
 	del_http.request_completed.connect(func(_r, _c, _h, _b): del_http.queue_free())
-	var del_url = "https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/auth_sessions/%s?key=%s" % [PROJECT_ID, session_id, API_KEY]
-	del_http.request(del_url, PackedStringArray(), HTTPClient.METHOD_DELETE)
+	var del_url = "https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/auth_sessions/%s?key=%s&_cb=%d" % [PROJECT_ID, session_id, API_KEY, Time.get_ticks_msec()]
+	del_http.request(del_url, _get_nocache_headers(), HTTPClient.METHOD_DELETE)
 
 func stop_google_oauth_server() -> void:
 	_is_waiting_for_oauth = false

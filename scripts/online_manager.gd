@@ -82,6 +82,15 @@ func _firestore_fields_to_dict(fields: Dictionary) -> Dictionary:
 			result[k] = float(field_obj["doubleValue"])
 	return result
 
+func _get_nocache_headers(content_type_json: bool = false) -> PackedStringArray:
+	var hdrs = [
+		"Cache-Control: no-cache, no-store, must-revalidate",
+		"Pragma: no-cache"
+	]
+	if content_type_json:
+		hdrs.append("Content-Type: application/json")
+	return PackedStringArray(hdrs)
+
 # Construye la URL de PATCH con updateMask para que Firestore NO borre los otros campos del documento
 func _build_patch_url(target_code: String, fields_dict: Dictionary) -> String:
 	var mask_parts = PackedStringArray()
@@ -89,8 +98,8 @@ func _build_patch_url(target_code: String, fields_dict: Dictionary) -> String:
 		mask_parts.append("updateMask.fieldPaths=%s" % str(k))
 	var query_mask = "&".join(mask_parts)
 	if query_mask.is_empty():
-		return "%s/%s?key=%s" % [BASE_ROOMS_URL, target_code, CloudSync.API_KEY]
-	return "%s/%s?key=%s&%s" % [BASE_ROOMS_URL, target_code, CloudSync.API_KEY, query_mask]
+		return "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, target_code, CloudSync.API_KEY, Time.get_ticks_msec()]
+	return "%s/%s?key=%s&%s&_cb=%d" % [BASE_ROOMS_URL, target_code, CloudSync.API_KEY, query_mask, Time.get_ticks_msec()]
 
 # --- CREAR SALA (HOST) ---
 func create_room(host_name: String, host_team: Array, callback: Callable = Callable(), target_friend: Dictionary = {}) -> void:
@@ -104,7 +113,7 @@ func create_room(host_name: String, host_team: Array, callback: Callable = Calla
 	is_guest_ready = false
 	is_starting_match = false
 	
-	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
+	var url = "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY, Time.get_ticks_msec()]
 	var h_email = GameData.profile_email if GameData else ""
 	var t_email = str(target_friend.get("email", ""))
 	var t_alias = str(target_friend.get("alias", ""))
@@ -128,7 +137,7 @@ func create_room(host_name: String, host_team: Array, callback: Callable = Calla
 	
 	var payload = { "fields": _dict_to_firestore_fields(room_data) }
 	var body = JSON.stringify(payload)
-	var headers = PackedStringArray(["Content-Type: application/json"])
+	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -160,7 +169,7 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 			callback.call(false, err_msg)
 		return
 		
-	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, clean_code, CloudSync.API_KEY]
+	var url = "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, clean_code, CloudSync.API_KEY, Time.get_ticks_msec()]
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -213,7 +222,7 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 			if callback.is_valid():
 				callback.call(false, msg)
 	)
-	http.request(url, PackedStringArray(), HTTPClient.METHOD_GET)
+	http.request(url, _get_nocache_headers(), HTTPClient.METHOD_GET)
 
 func _confirm_guest_join(code: String, guest_name: String, guest_team: Array, callback: Callable) -> void:
 	var update_data = {
@@ -226,7 +235,7 @@ func _confirm_guest_join(code: String, guest_name: String, guest_team: Array, ca
 	var url = _build_patch_url(code, update_data)
 	var payload = { "fields": _dict_to_firestore_fields(update_data) }
 	var body = JSON.stringify(payload)
-	var headers = PackedStringArray(["Content-Type: application/json"])
+	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -260,7 +269,7 @@ func set_guest_ready(ready: bool, callback: Callable = Callable()) -> void:
 	var url = _build_patch_url(room_code, update_data)
 	var payload = { "fields": _dict_to_firestore_fields(update_data) }
 	var body = JSON.stringify(payload)
-	var headers = PackedStringArray(["Content-Type: application/json"])
+	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -286,7 +295,7 @@ func start_online_match(callback: Callable = Callable()) -> void:
 	var url = _build_patch_url(room_code, update_data)
 	var payload = { "fields": _dict_to_firestore_fields(update_data) }
 	var body = JSON.stringify(payload)
-	var headers = PackedStringArray(["Content-Type: application/json"])
+	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -320,7 +329,7 @@ func update_my_team(new_team: Array, callback: Callable = Callable()) -> void:
 	var url = _build_patch_url(room_code, update_data)
 	var payload = { "fields": _dict_to_firestore_fields(update_data) }
 	var body = JSON.stringify(payload)
-	var headers = PackedStringArray(["Content-Type: application/json"])
+	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -351,7 +360,7 @@ func _on_poll_tick() -> void:
 	if current_http_req != null:
 		return # Ya hay una petición en curso
 		
-	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
+	var url = "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY, Time.get_ticks_msec()]
 	current_http_req = HTTPRequest.new()
 	add_child(current_http_req)
 	
@@ -370,7 +379,7 @@ func _on_poll_tick() -> void:
 			stop_polling()
 			opponent_left_or_surrendered.emit()
 	)
-	current_http_req.request(url, PackedStringArray(), HTTPClient.METHOD_GET)
+	current_http_req.request(url, _get_nocache_headers(), HTTPClient.METHOD_GET)
 
 func _process_room_state(fields: Dictionary) -> void:
 	var dict = _firestore_fields_to_dict(fields)
@@ -452,7 +461,7 @@ func _set_room_status(new_status: String) -> void:
 	var url = _build_patch_url(room_code, update_data)
 	var payload = { "fields": _dict_to_firestore_fields(update_data) }
 	var body = JSON.stringify(payload)
-	var headers = PackedStringArray(["Content-Type: application/json"])
+	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -483,7 +492,7 @@ func send_battle_action(action_dict: Dictionary, callback: Callable = Callable()
 	var url = _build_patch_url(room_code, update_data)
 	var payload = { "fields": _dict_to_firestore_fields(update_data) }
 	var body = JSON.stringify(payload)
-	var headers = PackedStringArray(["Content-Type: application/json"])
+	var headers = _get_nocache_headers(true)
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -505,14 +514,14 @@ func leave_or_delete_room() -> void:
 	if not room_code.is_empty():
 		var code = room_code
 		room_code = ""
-		var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, code, CloudSync.API_KEY]
+		var url = "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, code, CloudSync.API_KEY, Time.get_ticks_msec()]
 		var http = HTTPRequest.new()
 		add_child(http)
 		http.request_completed.connect(func(_res: int, _code: int, _h: PackedStringArray, _b: PackedByteArray):
 			http.queue_free()
 		)
 		if is_host:
-			http.request(url, PackedStringArray(), HTTPClient.METHOD_DELETE)
+			http.request(url, _get_nocache_headers(), HTTPClient.METHOD_DELETE)
 		else:
 			# Si es el invitado, marca la sala como cerrada usando updateMask
 			var update_data = {
@@ -521,7 +530,7 @@ func leave_or_delete_room() -> void:
 			}
 			var patch_url = _build_patch_url(code, update_data)
 			var payload = { "fields": _dict_to_firestore_fields(update_data) }
-			var headers = PackedStringArray(["Content-Type: application/json"])
+			var headers = _get_nocache_headers(true)
 			http.request(patch_url, headers, HTTPClient.METHOD_PATCH, JSON.stringify(payload))
 			
 	reset_session()

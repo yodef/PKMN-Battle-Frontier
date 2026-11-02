@@ -548,9 +548,12 @@ func _ready() -> void:
 	if not CloudSync.google_oauth_completed.is_connected(_on_google_oauth_completed):
 		CloudSync.google_oauth_completed.connect(_on_google_oauth_completed)
 	
-	# Modal Bienvenida (Regalo 15 Gemas)
+	# Modal Bienvenida (Regalo de Bienvenida)
 	btn_welcome_go_shop.pressed.connect(_on_welcome_go_shop_pressed)
-	btn_welcome_enter_lobby.pressed.connect(func(): welcome_modal.visible = false)
+	btn_welcome_enter_lobby.pressed.connect(func():
+		GameData.claim_welcome_gift()
+		welcome_modal.visible = false
+	)
 	if welcome_card:
 		var wc_sb = StyleBoxFlat.new()
 		wc_sb.bg_color = Color("#111722")
@@ -5197,18 +5200,11 @@ func _on_login_play_pressed() -> void:
 	var is_brand_new = not GameData.has_saved_profile()
 	if is_brand_new:
 		GameData.create_new_profile("Trainer", "Guest")
-	elif not GameData.profile_welcome_claimed and GameData.stats_battles_total == 0 and GameData.stats_tournaments_won == 0:
-		if GameData.player_diamonds < GameData.WELCOME_GIFT_DIAMONDS:
-			GameData.player_diamonds = GameData.WELCOME_GIFT_DIAMONDS
-		if GameData.player_rare_candies < GameData.WELCOME_GIFT_RARE_CANDIES:
-			GameData.player_rare_candies = GameData.WELCOME_GIFT_RARE_CANDIES
-		GameData.profile_welcome_claimed = true
-		is_brand_new = true
 	GameData.session_entered_lobby = true
 	login_modal.visible = false
 	_update_lobby_header_badge()
 	GameData.save_profile()
-	if is_brand_new:
+	if GameData.can_claim_welcome_gift():
 		_show_welcome_notification()
 
 func _launch_google_browser_oauth() -> void:
@@ -5271,12 +5267,6 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 			
 		if exists:
 			# Cuenta ya existente en Google Cloud -> Cargar y entrar
-			var raw_prof = cloud_data.get("profile", {})
-			var welcome_already_claimed = bool(raw_prof.get("welcome_gift_claimed", false))
-			var battles = int(cloud_data.get("stats", {}).get("battles_total", 0))
-			var tournaments = int(cloud_data.get("stats", {}).get("tournaments_won", 0))
-			var show_welcome_on_login = (not welcome_already_claimed and battles == 0 and tournaments == 0)
-			
 			GameData.apply_save_dict(cloud_data)
 			GameData.profile_email = email
 			GameData.profile_cloud_key = email
@@ -5290,7 +5280,7 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 			_update_lobby_header_badge()
 			refresh_cards_data_from_catalog()
 			print("[Main] Google OAuth: Profile loaded from Cloud for %s (%s)!" % [GameData.profile_name, email])
-			if show_welcome_on_login:
+			if GameData.can_claim_welcome_gift():
 				_show_welcome_notification()
 		else:
 			# Cuenta nueva en Google Cloud -> Conservar cartas locales si existían
@@ -5301,7 +5291,6 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 				GameData.create_new_profile(chosen_alias, "Google Cloud", email, false)
 			else:
 				GameData.create_or_update_profile(chosen_alias, "Google Cloud", email, false)
-			GameData.profile_welcome_claimed = true
 			GameData.profile_email = email
 			GameData.profile_cloud_key = email
 			GameData.profile_name = chosen_alias
@@ -5317,7 +5306,8 @@ func _on_google_oauth_completed(success: bool, email: String, display_name: Stri
 					login_modal.visible = false
 					_update_lobby_header_badge()
 					refresh_cards_data_from_catalog()
-					_show_welcome_notification()
+					if GameData.can_claim_welcome_gift():
+						_show_welcome_notification()
 					print("[Main] Google OAuth: Profile created and synced for %s (%s)!" % [chosen_alias, email])
 				else:
 					if cloud_feedback_lbl:
@@ -5408,12 +5398,6 @@ func _on_cloud_confirm_pressed() -> void:
 		CloudSync.load_profile_from_cloud(entered_email, func(success: bool, data: Dictionary, msg: String):
 			btn_cloud_confirm.disabled = false
 			if success:
-				var raw_prof = data.get("profile", {})
-				var welcome_already_claimed = bool(raw_prof.get("welcome_gift_claimed", false))
-				var battles = int(data.get("stats", {}).get("battles_total", 0))
-				var tournaments = int(data.get("stats", {}).get("tournaments_won", 0))
-				var show_welcome_on_login = (not welcome_already_claimed and battles == 0 and tournaments == 0)
-				
 				GameData.apply_save_dict(data)
 				GameData.profile_email = entered_email
 				GameData.profile_cloud_key = entered_email
@@ -5427,7 +5411,7 @@ func _on_cloud_confirm_pressed() -> void:
 				_update_lobby_header_badge()
 				refresh_cards_data_from_catalog()
 				print("[Main] Profile loaded from Google Cloud for %s (%s)!" % [GameData.profile_name, entered_email])
-				if show_welcome_on_login:
+				if GameData.can_claim_welcome_gift():
 					_show_welcome_notification()
 			else:
 				if cloud_feedback_lbl:
@@ -5477,9 +5461,24 @@ func _on_cloud_confirm_pressed() -> void:
 			if exists:
 				btn_cloud_confirm.disabled = false
 				if cloud_feedback_lbl:
-					cloud_feedback_lbl.text = "⚠️ An account for '%s' already exists in Google Cloud!\n\nClick 'Switch to Log In' below to restore your save, or change the email." % entered_email
+					cloud_feedback_lbl.text = "ℹ️ Cuenta existente encontrada para '%s'. Cargando partida..." % entered_email
 					cloud_feedback_lbl.visible = true
-				btn_cloud_confirm.text = "🔑 Switch to Log In"
+					
+				GameData.apply_save_dict(_data)
+				GameData.profile_email = entered_email
+				GameData.profile_cloud_key = entered_email
+				GameData.profile_auth_provider = "Google Cloud"
+				GameData.save_profile()
+				if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+					JavaScriptBridge.eval("if (window.saveRememberedCloudUser) { window.saveRememberedCloudUser('%s', '%s'); }" % [entered_email.c_escape(), GameData.profile_name.c_escape()])
+				GameData.session_entered_lobby = true
+				cloud_notice_modal.visible = false
+				login_modal.visible = false
+				_update_lobby_header_badge()
+				refresh_cards_data_from_catalog()
+				if GameData.can_claim_welcome_gift():
+					_show_welcome_notification()
+				print("[Main] Auto-restored existing cloud account on signup for %s (%s)!" % [GameData.profile_name, entered_email])
 				return
 				
 			# Brand new cloud account registration!
@@ -5490,7 +5489,6 @@ func _on_cloud_confirm_pressed() -> void:
 				GameData.create_new_profile(entered_alias, "Google Cloud", entered_email, false)
 			else:
 				GameData.create_or_update_profile(entered_alias, "Google Cloud", entered_email, false)
-			GameData.profile_welcome_claimed = true
 			GameData.profile_email = entered_email
 			GameData.profile_cloud_key = entered_email
 			GameData.profile_name = entered_alias
@@ -5507,7 +5505,8 @@ func _on_cloud_confirm_pressed() -> void:
 					refresh_cards_data_from_catalog()
 					if profile_modal and profile_modal.visible:
 						_on_profile_pressed()
-					_show_welcome_notification()
+					if GameData.can_claim_welcome_gift():
+						_show_welcome_notification()
 					if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
 						JavaScriptBridge.eval("if (window.saveRememberedCloudUser) { window.saveRememberedCloudUser('%s', '%s'); }" % [entered_email.c_escape(), entered_alias.c_escape()])
 					print("[Main] New Google Account created and synced for %s (%s)!" % [entered_alias, entered_email])
@@ -5521,10 +5520,14 @@ func _on_cloud_confirm_pressed() -> void:
 func _show_welcome_notification() -> void:
 	if not welcome_modal:
 		return
+	if not GameData.can_claim_welcome_gift():
+		welcome_modal.visible = false
+		return
 	welcome_title.text = "WELCOME, %s!" % GameData.profile_name.to_upper()
 	welcome_modal.visible = true
 
 func _on_welcome_go_shop_pressed() -> void:
+	GameData.claim_welcome_gift()
 	welcome_modal.visible = false
 	_on_shop_pressed()
 

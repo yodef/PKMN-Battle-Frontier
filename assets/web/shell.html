@@ -203,6 +203,21 @@ body {
 			window.getFirebaseAuthStatus = function() {
 				return JSON.stringify(window.firebaseAuthStatus);
 			};
+
+			window.godotSyncFS = function() {
+				try {
+					if (window.FS && typeof FS.syncfs === 'function') {
+						FS.syncfs(false, function(err) {
+							if (err) console.error('[IDBFS] syncfs error:', err);
+							else console.log('[IDBFS] syncfs flushed successfully to IndexedDB');
+						});
+					}
+				} catch(e) {
+					console.warn('[IDBFS] syncfs exception:', e);
+				}
+			};
+			window.addEventListener("beforeunload", function() { if (window.godotSyncFS) window.godotSyncFS(); });
+			window.addEventListener("pagehide", function() { if (window.godotSyncFS) window.godotSyncFS(); });
 		</script>
 		<script>
 const GODOT_CONFIG = $GODOT_CONFIG;

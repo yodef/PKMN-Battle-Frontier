@@ -2765,6 +2765,30 @@ func get_sfx_db() -> float:
 const WELCOME_GIFT_DIAMONDS: int = 25
 const WELCOME_GIFT_RARE_CANDIES: int = 50
 
+func can_claim_welcome_gift() -> bool:
+	if profile_welcome_claimed:
+		return false
+	if stats_packs_opened > 0 or stats_battles_total > 0 or stats_tournaments_won > 0:
+		return false
+	if player_unlocked_ids.size() > 4:
+		return false
+	if campaign_gold > 0 or adventure_current_episode > 1 or adventure_current_stage > 1:
+		return false
+	return true
+
+func claim_welcome_gift() -> bool:
+	if not can_claim_welcome_gift():
+		print("[GameData] ⚠️ Regalo de bienvenida ya reclamado o cuenta con actividad previa.")
+		return false
+	player_diamonds += WELCOME_GIFT_DIAMONDS
+	player_rare_candies += WELCOME_GIFT_RARE_CANDIES
+	profile_welcome_claimed = true
+	save_profile(true)
+	diamonds_changed.emit(player_diamonds)
+	rare_candies_changed.emit(player_rare_candies)
+	print("[GameData] 🎉 Regalo de bienvenida reclamado con éxito: +%d Gemas, +%d Caramelos!" % [WELCOME_GIFT_DIAMONDS, WELCOME_GIFT_RARE_CANDIES])
+	return true
+
 func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", p_email: String = "", auto_sync_cloud: bool = false) -> void:
 	var clean = p_name.strip_edges()
 	profile_name = clean if clean != "" else "Trainer"
@@ -2779,9 +2803,9 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	stats_battles_won = 0
 	stats_battles_total = 0
 	stats_packs_opened = 0
-	player_diamonds = WELCOME_GIFT_DIAMONDS
-	player_rare_candies = WELCOME_GIFT_RARE_CANDIES
-	profile_welcome_claimed = true
+	player_diamonds = 0
+	player_rare_candies = 0
+	profile_welcome_claimed = false
 	reset_campaign()
 	adventure_current_episode = 1
 	adventure_current_stage = 1
@@ -2807,7 +2831,7 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	save_profile(auto_sync_cloud)
 	diamonds_changed.emit(player_diamonds)
 	rare_candies_changed.emit(player_rare_candies)
-	print("Profile created for Trainer '%s' (Email: '%s') with %d Gems & %d Rare Candies welcome gift!" % [profile_name, profile_email, player_diamonds, player_rare_candies])
+	print("Profile created for Trainer '%s' (Email: '%s'). Welcome gift pending claim!" % [profile_name, profile_email])
 
 func create_or_update_profile(p_name: String, provider: String = "Local", p_email: String = "", auto_sync_cloud: bool = false) -> void:
 	var clean = p_name.strip_edges()
@@ -2914,19 +2938,10 @@ func apply_save_dict(data: Dictionary) -> bool:
 	stats_battles_total = maxi(stats_battles_total, int(st.get("battles_total", 0)))
 	stats_packs_opened = maxi(stats_packs_opened, int(st.get("packs_opened", 0)))
 	
-	# Cargar economía con fusión (mantener el valor más alto entre local y nube)
+	# Cargar economía directa de la partida (sin sobreescribir ni resetear si el jugador tiene 0)
 	var econ = data.get("economy", {})
-	player_diamonds = maxi(player_diamonds, int(econ.get("diamonds", 0)))
-	player_rare_candies = maxi(player_rare_candies, int(econ.get("rare_candies", 0)))
-	
-	# Auto-reparación para asegurar que cuentas iniciales siempre reciban su bono de bienvenida
-	if not profile_welcome_claimed and stats_battles_total == 0 and stats_tournaments_won == 0:
-		if player_diamonds < WELCOME_GIFT_DIAMONDS:
-			player_diamonds = WELCOME_GIFT_DIAMONDS
-		if player_rare_candies < WELCOME_GIFT_RARE_CANDIES:
-			player_rare_candies = WELCOME_GIFT_RARE_CANDIES
-		profile_welcome_claimed = true
-		
+	player_diamonds = int(econ.get("diamonds", 0))
+	player_rare_candies = int(econ.get("rare_candies", 0))
 	diamonds_changed.emit(player_diamonds)
 	rare_candies_changed.emit(player_rare_candies)
 	
@@ -2939,6 +2954,10 @@ func apply_save_dict(data: Dictionary) -> bool:
 			if not (int_id in player_unlocked_ids) and pokemon_catalog.has(int_id):
 				player_unlocked_ids.append(int_id)
 		player_unlocked_ids.sort()
+		
+	# Si la cuenta ya tiene cartas obtenidas, sobres abiertos, batallas o torneos, el regalo inicial ya expiró o fue usado
+	if stats_packs_opened > 0 or stats_battles_total > 0 or stats_tournaments_won > 0 or player_unlocked_ids.size() > 4 or (typeof(unl) == TYPE_ARRAY and unl.size() > 4):
+		profile_welcome_claimed = true
 		
 	# Cargar stocks (mantener la cantidad más alta de cada carta)
 	var raw_stocks = col.get("stocks", {})
@@ -2993,6 +3012,9 @@ func apply_save_dict(data: Dictionary) -> bool:
 		reset_adventure_episode(adventure_current_episode)
 	elif adventure_current_stage > total_ep_stages:
 		reset_adventure_episode(adventure_current_episode)
+		
+	if campaign_gold > 0 or adventure_current_episode > 1 or adventure_current_stage > 1:
+		profile_welcome_claimed = true
 	
 	# Cargar ajustes
 	var sett = data.get("settings", {})
@@ -3032,6 +3054,10 @@ func save_profile(trigger_cloud_sync: bool = true) -> bool:
 	file.close()
 	print("Profile saved successfully to: ", SAVE_FILE_PATH)
 	
+	# En Web: Sincronizar sistema de archivos de memoria con IndexedDB del navegador
+	if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+		JavaScriptBridge.eval("if (window.godotSyncFS) { window.godotSyncFS(); } else if (window.FS && FS.syncfs) { FS.syncfs(false, function(err){}); }")
+	
 	# Sincronización automática en segundo plano con Google Cloud si la cuenta está ligada
 	if trigger_cloud_sync and profile_auth_provider.begins_with("Google"):
 		var main_loop = Engine.get_main_loop()
@@ -3066,6 +3092,9 @@ func load_profile() -> bool:
 func erase_profile() -> void:
 	if FileAccess.file_exists(SAVE_FILE_PATH):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_FILE_PATH))
+		
+	if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+		JavaScriptBridge.eval("if (window.godotSyncFS) { window.godotSyncFS(); } else if (window.FS && FS.syncfs) { FS.syncfs(false, function(err){}); }")
 		
 	profile_name = "Trainer"
 	profile_email = ""
