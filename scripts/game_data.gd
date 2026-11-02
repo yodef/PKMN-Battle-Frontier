@@ -405,12 +405,23 @@ func load_types_from_csv() -> void:
 	print("Global type chart loaded successfully. Total registered types: ", global_type_chart.size())
 
 func _ready() -> void:
+	_setup_global_font_fallbacks()
 	if OS.has_feature("mobile") or OS.has_feature("android") or OS.has_feature("ios"):
 		DisplayServer.screen_set_orientation(DisplayServer.SCREEN_PORTRAIT)
 	load_types_from_csv()
 	load_moves_from_csv()
 	load_pokemon_from_csv()
 	load_profile()
+
+func _setup_global_font_fallbacks() -> void:
+	var emoji_path = "res://assets/fonts/emoji_font.ttf"
+	if ResourceLoader.exists(emoji_path):
+		var emoji_font = load(emoji_path)
+		if emoji_font:
+			var default_font = ThemeDB.fallback_font
+			if default_font is Font and not default_font.fallbacks.has(emoji_font):
+				default_font.fallbacks.append(emoji_font)
+				print("[GameData] 🔤 Global emoji font fallback registered on ThemeDB!")
 
 func load_moves_from_csv() -> void:
 	moves_catalog.clear()
