@@ -42,6 +42,7 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var btn_hub_adventure: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure/Margin/AdvVBox/BtnHubAdventure
 @onready var tourn_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox/TournStatus
 @onready var btn_hub_tournament: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox/BtnHubTournament
+@onready var btn_stadium_guide: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox/BtnStadiumGuide
 @onready var btn_close_campaign_hub: Button = $CampaignHubModal/Box/BtnCloseCampaignHub
 
 # --- MODAL ADVENTURE EPISODES ---
@@ -84,6 +85,12 @@ var campaign_track_diagram: CampaignTrackDiagram = null
 @onready var btn_change_campaign_team: Button = $CampaignModal/Box/ActionsBox/NavRow/BtnChangeCampaignTeam
 @onready var btn_reset_campaign: Button = $CampaignModal/Box/ActionsBox/BtnResetCampaign
 @onready var btn_close_campaign: Button = $CampaignModal/Box/ActionsBox/NavRow/BtnCloseCampaign
+@onready var btn_camp_stadium_guide: Button = $CampaignModal/Box/ActionsBox/BtnCampStadiumGuide
+
+# --- MODAL STADIUM GUIDE ---
+@onready var stadium_guide_modal: Control = $StadiumGuideModal
+@onready var btn_close_stadium_guide: Button = $StadiumGuideModal/Box/BtnCloseStadiumGuide
+var _stadium_guide_return_modal: Control = null
 
 # --- CAMP TOOLBAR & MODALS (SHOP, MOCHILA, INSPECTOR) ---
 var camp_toolbar: HBoxContainer = null
@@ -440,13 +447,37 @@ func _ready() -> void:
 		update_campaign_hub_ui()
 		campaign_hub_modal.visible = true
 	)
+
+	# Modal Stadium Encounters Guide
+	btn_stadium_guide.pressed.connect(func():
+		_stadium_guide_return_modal = campaign_hub_modal
+		campaign_hub_modal.visible = false
+		stadium_guide_modal.visible = true
+	)
+	btn_camp_stadium_guide.pressed.connect(func():
+		_stadium_guide_return_modal = campaign_modal
+		campaign_modal.visible = false
+		stadium_guide_modal.visible = true
+	)
+	btn_close_stadium_guide.pressed.connect(func():
+		stadium_guide_modal.visible = false
+		if _stadium_guide_return_modal:
+			_stadium_guide_return_modal.visible = true
+			_stadium_guide_return_modal = null
+	)
+
 	for card_path in [
 		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial",
 		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure",
 		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament",
+		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates",
 		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1",
 		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2",
-		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3"
+		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3",
+		"StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase1Card",
+		"StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase2Card",
+		"StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase3Card",
+		"StadiumGuideModal/Box/GuideScroll/GuideVBox/RulesCard"
 	]:
 		var card_node = get_node_or_null(card_path)
 		if card_node:
@@ -719,6 +750,8 @@ func _ready() -> void:
 	# Ocultar modales al inicio
 	campaign_hub_modal.visible = false
 	adventure_episodes_modal.visible = false
+	if stadium_guide_modal:
+		stadium_guide_modal.visible = false
 	team_select_modal.visible = false
 	campaign_modal.visible = false
 	collection_modal.visible = false
@@ -1309,6 +1342,8 @@ func update_campaign_ui() -> void:
 	var camp_title = campaign_modal.get_node_or_null("Box/Title")
 	var camp_desc = campaign_modal.get_node_or_null("Box/Desc")
 	var camp_team_header = campaign_modal.get_node_or_null("Box/TeamHeader")
+	if btn_camp_stadium_guide:
+		btn_camp_stadium_guide.visible = (GameData.campaign_submode != "ADVENTURE")
 	if GameData.campaign_submode == "ADVENTURE":
 		btn_close_campaign.text = "⬅ Abandon Episode (Resets Run)"
 		var ep_id = GameData.adventure_current_episode
@@ -3845,6 +3880,19 @@ func _apply_pokemon_ui_theme() -> void:
 		scan_rect_adv_ep.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		adv_ep_bg_node.add_child(scan_rect_adv_ep)
 
+	var stadium_guide_bg_node = get_node_or_null("StadiumGuideModal/StadiumGuideBg")
+	if stadium_guide_bg_node and not stadium_guide_bg_node.get_node_or_null("Scanlines"):
+		var scan_rect_stadium = TextureRect.new()
+		scan_rect_stadium.name = "Scanlines"
+		scan_rect_stadium.texture = scan_tex
+		scan_rect_stadium.stretch_mode = TextureRect.STRETCH_TILE
+		scan_rect_stadium.anchors_preset = Control.PRESET_FULL_RECT
+		scan_rect_stadium.anchor_right = 1.0
+		scan_rect_stadium.anchor_bottom = 1.0
+		scan_rect_stadium.modulate = Color(1, 1, 1, 0.12)
+		scan_rect_stadium.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		stadium_guide_bg_node.add_child(scan_rect_stadium)
+
 	# Badges for Campaign
 	var hub_badge_node = get_node_or_null("CampaignHubModal/Box/HubWalletBadge")
 	if hub_badge_node is Label:
@@ -3874,6 +3922,9 @@ func _apply_pokemon_ui_theme() -> void:
 	var card_ep3 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3")
 	if card_ep3 is PanelContainer:
 		card_ep3.add_theme_stylebox_override("panel", teal_sb.duplicate())
+	var card_loot = get_node_or_null("CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates")
+	if card_loot is PanelContainer:
+		card_loot.add_theme_stylebox_override("panel", teal_sb.duplicate())
 
 	# Camp Supply Shop Panel
 	var camp_shop_panel = find_child("ShopSection", true, false)
@@ -3884,6 +3935,7 @@ func _apply_pokemon_ui_theme() -> void:
 	_apply_retro_button_style(btn_hub_tutorial, Color(0.20, 0.65, 0.35), Color(0.35, 0.85, 0.50), true)
 	_apply_retro_button_style(btn_hub_adventure, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 	_apply_retro_button_style(btn_hub_tournament, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), true)
+	_apply_retro_button_style(btn_stadium_guide, Color(0.25, 0.60, 0.85), Color(0.40, 0.85, 1.00), true)
 	_apply_retro_button_style(btn_close_campaign_hub, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
 
 	_apply_retro_button_style(btn_hub_adventure_ep1, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
@@ -3895,6 +3947,9 @@ func _apply_pokemon_ui_theme() -> void:
 	_apply_retro_button_style(btn_buy_remedy, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), false)
 	_apply_retro_button_style(btn_buy_ether, Color(0.50, 0.35, 0.85), Color(0.70, 0.55, 1.00), false)
 	_apply_retro_button_style(btn_buy_revive, Color(0.84, 0.62, 0.18), Color(1.00, 0.85, 0.35), false)
+
+	_apply_retro_button_style(btn_camp_stadium_guide, Color(0.25, 0.60, 0.85), Color(0.40, 0.85, 1.00), true)
+	_apply_retro_button_style(btn_close_stadium_guide, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
 
 	_apply_retro_button_style(btn_start_campaign_battle, Color(0.28, 0.73, 0.47), Color(0.45, 0.95, 0.65), true)
 	_apply_retro_button_style(btn_change_campaign_team, Color(0.22, 0.70, 0.67), Color(0.35, 0.90, 0.85), true)

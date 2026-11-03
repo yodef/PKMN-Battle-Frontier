@@ -563,6 +563,113 @@ theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
 theme_override_font_sizes/font_size = 13
 text = "⚔️ Enter Pokémon Stadium"
 
+[node name="BtnStadiumGuide" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "📖 View Encounters Guide (All 9 Rounds)"
+
+[node name="CardLootRates" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="LootVBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LootTitle" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 15
+text = "🎁 Combat Loot Rates (Per Pokémon Defeated)"
+
+[node name="LootDesc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "In Campaign battles (Adventure & Stadium), defeating rival Pokémon drops dynamic Gold (G) and Diamonds (💎) according to their Tier / Rarity & Stage:"
+autowrap_mode = 2
+
+[node name="LootGrid" type="GridContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 4
+columns = 2
+
+[node name="Row1Label" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox/LootGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "⚪ Common (Basic):"
+
+[node name="Row1Value" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox/LootGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "💰 1-3 G (100%)  |  💎 1 (15%)"
+
+[node name="Row2Label" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox/LootGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "🟢 Uncommon:"
+
+[node name="Row2Value" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox/LootGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "💰 2-5 G (100%)  |  💎 1-2 (25%)"
+
+[node name="Row3Label" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox/LootGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "🔵 Rare / Stage 1:"
+
+[node name="Row3Value" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox/LootGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "💰 4-7 G (100%)  |  💎 1-3 (45%)"
+
+[node name="Row4Label" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox/LootGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "🟣 Epic / Stage 2:"
+
+[node name="Row4Value" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox/LootGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "💰 8-12 G (100%)  |  💎 2-4 (75%)"
+
+[node name="Row5Label" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox/LootGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 12
+text = "🟡 Legendary (Boss):"
+
+[node name="Row5Value" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox/LootGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "💰 15-25 G (100%)  |  💎 3-5 (100%)"
+
+[node name="LootTip" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.85, 0.95, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "💡 Gold is preserved for Camp Shop supplies. Diamonds are permanently added to your trainer wallet!"
+autowrap_mode = 2
+
 [node name="BtnCloseCampaignHub" type="Button" parent="CampaignHubModal/Box"]
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
@@ -780,6 +887,179 @@ custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "⬅ Back to Campaign Modes"
+
+[node name="StadiumGuideModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StadiumGuideBg" type="ColorRect" parent="StadiumGuideModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.07, 0.12, 0.95)
+
+[node name="Box" type="VBoxContainer" parent="StadiumGuideModal"]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -280.0
+offset_right = 230.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="StadiumGuideModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 20
+text = "🏟️ POKÉMON STADIUM: ENCOUNTERS"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="StadiumGuideModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Roadmap of all 9 rounds across 3 phases, rival team compositions, allowed tiers, and rewards:"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="GuideScroll" type="ScrollContainer" parent="StadiumGuideModal/Box"]
+custom_minimum_size = Vector2(0, 420)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GuideVBox" type="VBoxContainer" parent="StadiumGuideModal/Box/GuideScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="Phase1Card" type="PanelContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase1Card"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="P1VBox" type="VBoxContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase1Card/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="P1Header" type="Label" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase1Card/Margin/P1VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 15
+text = "🥊 PHASE 1: CLASSIFICATION (Rounds 1 - 3)"
+
+[node name="P1Info" type="Label" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase1Card/Margin/P1VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "• Round 1 (Warmup): 1 Basic PKMN (Tier D / C). Fast opening duel.\n  Reward: 💰 10 G  |  💎 1 Diamond\n\n• Round 2 (Duo Clash): 2 Basic PKMN (Tier C / B). Fast-paced 2v2.\n  Reward: 💰 15 G  |  💎 2 Diamonds\n\n• Round 3 (Phase Finale): 1 Basic (Tier B/C) + 1 Stage 1 (Tier B/A).\n  Reward: 💰 25 G  |  💎 5 Diamonds (+5 💎 Phase 1 Bonus!)"
+autowrap_mode = 2
+
+[node name="Phase2Card" type="PanelContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase2Card"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="P2VBox" type="VBoxContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase2Card/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="P2Header" type="Label" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase2Card/Margin/P2VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "⚡ PHASE 2: ELIMINATION (Rounds 4 - 6)"
+
+[node name="P2Info" type="Label" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase2Card/Margin/P2VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "• Round 4 (Speed Duel): 1 Stage 1 PKMN (Tier B / A). Evolved clash.\n  Reward: 💰 20 G  |  💎 2 Diamonds\n\n• Round 5 (Tag Team): 1 Stage 1 + 1 Basic PKMN (Tier B / A).\n  Reward: 💰 25 G  |  💎 3 Diamonds\n\n• Round 6 (Phase Finale): 2 Stage 1 / Tier A powerhouses.\n  Reward: 💰 40 G  |  💎 10 Diamonds (+10 💎 Phase 2 Bonus!)"
+autowrap_mode = 2
+
+[node name="Phase3Card" type="PanelContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase3Card"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="P3VBox" type="VBoxContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase3Card/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="P3Header" type="Label" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase3Card/Margin/P3VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 15
+text = "🏆 PHASE 3: GRAND FINALE (Rounds 7 - 9)"
+
+[node name="P3Info" type="Label" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase3Card/Margin/P3VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "• Round 7 (Quarterfinals): 1 Stage 2 (Tier A/B) + 1 Stage 1 (Tier A/B).\n  Reward: 💰 30 G  |  💎 4 Diamonds\n\n• Round 8 (Semifinals): 1 Stage 2 (Tier A) + 1 Elite Tier A PKMN.\n  Reward: 💰 40 G  |  💎 5 Diamonds\n\n• Round 9 (Championship): 3 Elite Tier A PKMN (1 Stage 2 + 2 Tier A allies).\n  Reward: 💰 75 G  |  💎 25 Diamonds (+25 💎 Trophy Bonus!)"
+autowrap_mode = 2
+
+[node name="RulesCard" type="PanelContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/RulesCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="RulesVBox" type="VBoxContainer" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/RulesCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RulesHeader" type="Label" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/RulesCard/Margin/RulesVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.75, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+text = "⚖️ STADIUM RULES & GENERATION CRITERIA"
+
+[node name="RulesBody" type="Label" parent="StadiumGuideModal/Box/GuideScroll/GuideVBox/RulesCard/Margin/RulesVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "• Banned for Rivals: All Legendaries and Tier S/S+ (Venusaur, Alakazam, etc.) are strictly prohibited.\n• Fair Progression: Early rounds use Tier D/C; middle rounds feature Tier B/A; finale uses Tier A and Stage 2.\n• Party Persistence: HP & Status carry over across matches. Buy Potions & Revives at the Camp Shop.\n• In-Camp Evolutions: Evolve your Pokémon between matches whenever their EXP threshold is reached!"
+autowrap_mode = 2
+
+[node name="BtnCloseStadiumGuide" type="Button" parent="StadiumGuideModal/Box"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "⬅ Close Guide"
 
 [node name="CampaignModal" type="Control" parent="."]
 visible = false
@@ -1047,6 +1327,13 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "⬅ Main Menu"
+
+[node name="BtnCampStadiumGuide" type="Button" parent="CampaignModal/Box/ActionsBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "📖 Stadium Encounters Guide (All 9 Rounds)"
 
 [node name="BtnResetCampaign" type="Button" parent="CampaignModal/Box/ActionsBox"]
 custom_minimum_size = Vector2(0, 32)
