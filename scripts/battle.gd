@@ -25,6 +25,9 @@ var combat_history: Array[String] = []
 var is_battle_over: bool = false
 var sandstorm_turns: int = 0
 var grassy_terrain_turns: int = 0
+var pending_opponent_actions: Array[Dictionary] = []
+var is_waiting_for_online_opponent: bool = false
+var is_processing_opponent_action: bool = false
 
 # --- RECOMPENSAS DINÁMICAS Y SEGUIMIENTO DE RIVALES DERROTADOS ---
 var defeated_enemy_indices: Array[int] = []
@@ -968,6 +971,9 @@ func start_new_game() -> void:
 	defeated_rewards_summary.clear()
 	sandstorm_turns = 0
 	grassy_terrain_turns = 0
+	pending_opponent_actions.clear()
+	is_waiting_for_online_opponent = false
+	is_processing_opponent_action = false
 	
 	if GameData.is_campaign_mode:
 		var team_state = GameData.get_active_campaign_team_state()
@@ -1098,6 +1104,8 @@ func start_new_round() -> void:
 	is_busy = false
 	can_player_act = false
 	is_player_turn = false
+	is_waiting_for_online_opponent = false
+	is_processing_opponent_action = false
 	set_controls_enabled(false)
 		
 	round_number += 1
@@ -1135,7 +1143,7 @@ func start_new_round() -> void:
 	turn_badge.text = "ROUND %d (%s starts)" % [round_number, starter_name]
 	turn_badge.modulate = Color(1.0, 0.85, 0.2)
 	
-	var timer = get_tree().create_timer(2.0)
+	var timer = get_tree().create_timer(1.2)
 	timer.timeout.connect(execute_round_turn)
 
 func execute_round_turn() -> void:
@@ -1318,6 +1326,8 @@ func start_player_turn() -> void:
 	is_busy = false
 	is_player_turn = true
 	can_player_act = false
+	is_waiting_for_online_opponent = false
+	is_processing_opponent_action = false
 	set_controls_enabled(false)
 	reset_selected_energy()
 	var p = get_active_player()
@@ -1349,6 +1359,8 @@ func end_player_turn() -> void:
 	is_busy = false
 	can_player_act = false
 	is_player_turn = false
+	is_waiting_for_online_opponent = false
+	is_processing_opponent_action = false
 	set_controls_enabled(false)
 	var active_p = get_active_player()
 	if active_p:
@@ -1359,7 +1371,7 @@ func end_player_turn() -> void:
 		
 	if round_step == 0:
 		round_step = 1
-		var timer = get_tree().create_timer(2.0)
+		var timer = get_tree().create_timer(1.2)
 		timer.timeout.connect(execute_round_turn)
 	else:
 		_finish_round()
@@ -1375,6 +1387,8 @@ func start_enemy_turn() -> void:
 	is_busy = false
 	is_player_turn = false
 	can_player_act = false
+	is_waiting_for_online_opponent = false
+	is_processing_opponent_action = false
 	set_controls_enabled(false)
 	var e = get_active_enemy()
 	var p = get_active_player()
@@ -1393,9 +1407,11 @@ func start_enemy_turn() -> void:
 		return
 			
 	if GameData.is_online_pvp:
+		is_waiting_for_online_opponent = true
 		can_player_act = false
 		update_ui()
 		set_controls_enabled(false)
+		_try_process_next_opponent_action()
 	elif GameData.is_pvp_mode:
 		can_player_act = true
 		reset_selected_energy()
@@ -1417,6 +1433,8 @@ func end_enemy_turn() -> void:
 	is_busy = false
 	can_player_act = false
 	is_player_turn = false
+	is_waiting_for_online_opponent = false
+	is_processing_opponent_action = false
 	set_controls_enabled(false)
 	var active_e = get_active_enemy()
 	if active_e:
@@ -1427,7 +1445,7 @@ func end_enemy_turn() -> void:
 		
 	if round_step == 0:
 		round_step = 1
-		var timer = get_tree().create_timer(2.0)
+		var timer = get_tree().create_timer(1.2)
 		timer.timeout.connect(execute_round_turn)
 	else:
 		_finish_round()
@@ -1436,6 +1454,8 @@ func _finish_round() -> void:
 	is_busy = false
 	can_player_act = false
 	is_player_turn = false
+	is_waiting_for_online_opponent = false
+	is_processing_opponent_action = false
 	set_controls_enabled(false)
 	if is_battle_over or check_team_defeat():
 		return
@@ -1535,7 +1555,7 @@ func _finish_round() -> void:
 		
 	update_ui()
 	
-	var timer = get_tree().create_timer(2.0)
+	var timer = get_tree().create_timer(1.2)
 	timer.timeout.connect(start_new_round)
 
 func execute_enemy_ai() -> void:
@@ -3324,7 +3344,7 @@ func _on_recover_pressed() -> void:
 	if GameData.is_online_pvp:
 		OnlineManager.send_battle_action({ "type": "RECHARGE" })
 	
-	var timer = get_tree().create_timer(2.0)
+	var timer = get_tree().create_timer(1.4)
 	timer.timeout.connect(func():
 		if is_battle_over:
 			return
@@ -3438,10 +3458,11 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 		if GameData.is_online_pvp:
 			OnlineManager.send_battle_action({
 				"type": "SWAP",
-				"benched_slot_idx": benched_slot_idx
+				"benched_slot_idx": benched_slot_idx,
+				"target_name": target_pkmn.name
 			})
 		
-		var timer = get_tree().create_timer(2.0)
+		var timer = get_tree().create_timer(1.6)
 		timer.timeout.connect(func():
 			if is_battle_over:
 				return
@@ -3456,9 +3477,48 @@ func _on_boost_toggled(_pressed: bool) -> void:
 func _on_online_opponent_action(action: Dictionary) -> void:
 	if is_battle_over:
 		return
-	is_busy = false
+	print("[OnlineBattle] 📥 Enqueueing opponent action (type=%s, seq=%s)" % [str(action.get("type", "")), str(action.get("seq", ""))])
+	pending_opponent_actions.append(action)
+	_try_process_next_opponent_action()
+
+func _try_process_next_opponent_action() -> void:
+	if not GameData.is_online_pvp:
+		return
+	if is_battle_over:
+		return
+	if pending_opponent_actions.is_empty():
+		return
+	if is_processing_opponent_action:
+		print("[OnlineBattle] ⏳ Already processing an opponent action, waiting...")
+		return
+	if is_enemy_fainting or is_player_fainting:
+		print("[OnlineBattle] ⏳ Waiting for faint animation to complete...")
+		var t = get_tree().create_timer(0.3)
+		t.timeout.connect(_try_process_next_opponent_action)
+		return
+		
+	# SURRENDER can be executed immediately regardless of whose turn it is
+	if pending_opponent_actions[0].get("type", "") == "SURRENDER":
+		var surr_action = pending_opponent_actions.pop_front()
+		_execute_opponent_action(surr_action)
+		return
+		
+	# Game actions must strictly wait until start_enemy_turn() is active
+	if not is_waiting_for_online_opponent:
+		print("[OnlineBattle] ⏳ Action waiting in queue (current state: round %d, step %d, player_turn=%s)" % [round_number, round_step, str(is_player_turn)])
+		return
+		
+	var next_action = pending_opponent_actions.pop_front()
+	_execute_opponent_action(next_action)
+
+func _execute_opponent_action(action: Dictionary) -> void:
+	if is_battle_over:
+		return
+	is_processing_opponent_action = true
+	is_busy = true
 	can_player_act = false
 	set_controls_enabled(false)
+	
 	var action_type = str(action.get("type", ""))
 	if action_type == "MOVE":
 		var move_name = str(action.get("move_name", ""))
@@ -3470,6 +3530,8 @@ func _on_online_opponent_action(action: Dictionary) -> void:
 		
 		if not actor or not defender:
 			print("[OnlineBattle] ⚠️ Missing actor or defender for opponent action!")
+			is_processing_opponent_action = false
+			is_busy = false
 			end_enemy_turn()
 			return
 		
@@ -3484,6 +3546,8 @@ func _on_online_opponent_action(action: Dictionary) -> void:
 				
 		if not move:
 			print("[OnlineBattle] ⚠️ Opponent move '%s' not found on active enemy!" % move_name)
+			is_processing_opponent_action = false
+			is_busy = false
 			end_enemy_turn()
 			return
 			
@@ -3492,18 +3556,36 @@ func _on_online_opponent_action(action: Dictionary) -> void:
 		var timer = get_tree().create_timer(2.4)
 		timer.timeout.connect(func():
 			if is_battle_over:
+				is_processing_opponent_action = false
+				is_busy = false
 				return
 			if is_enemy_fainting or is_player_fainting:
 				var wait_t = get_tree().create_timer(0.4)
-				wait_t.timeout.connect(end_enemy_turn)
+				wait_t.timeout.connect(func():
+					if is_battle_over:
+						is_processing_opponent_action = false
+						is_busy = false
+						return
+					end_enemy_turn()
+				)
 				return
 			end_enemy_turn()
 		)
 	elif action_type == "SWAP":
-		var benched_slot_idx = int(action.get("benched_slot_idx", 0))
-		var benched_indices = get_benched_enemy_indices()
-		if benched_slot_idx < benched_indices.size():
-			var target_idx = benched_indices[benched_slot_idx]
+		var target_name = str(action.get("target_name", ""))
+		var target_idx = -1
+		if not target_name.is_empty():
+			for i in range(enemy_team.size()):
+				if i != active_enemy_idx and enemy_team[i].name == target_name and enemy_team[i].current_hp > 0:
+					target_idx = i
+					break
+		if target_idx == -1:
+			var benched_slot_idx = int(action.get("benched_slot_idx", 0))
+			var benched_indices = get_benched_enemy_indices()
+			if benched_slot_idx < benched_indices.size():
+				target_idx = benched_indices[benched_slot_idx]
+				
+		if target_idx != -1 and target_idx < enemy_team.size():
 			var current = get_active_enemy()
 			active_enemy_idx = target_idx
 			var target_pkmn = enemy_team[target_idx]
@@ -3528,9 +3610,11 @@ func _on_online_opponent_action(action: Dictionary) -> void:
 					enemy_card_img.modulate = Color.WHITE
 			)
 			
-		var timer = get_tree().create_timer(2.0)
+		var timer = get_tree().create_timer(1.8)
 		timer.timeout.connect(func():
 			if is_battle_over:
+				is_processing_opponent_action = false
+				is_busy = false
 				return
 			end_enemy_turn()
 		)
@@ -3541,13 +3625,17 @@ func _on_online_opponent_action(action: Dictionary) -> void:
 		log_action("🌐 %s charged energy (+%d ⚡)." % [GameData.online_rival_name, rec])
 		update_ui()
 		set_controls_enabled(false)
-		var timer = get_tree().create_timer(1.8)
+		var timer = get_tree().create_timer(1.6)
 		timer.timeout.connect(func():
 			if is_battle_over:
+				is_processing_opponent_action = false
+				is_busy = false
 				return
 			end_enemy_turn()
 		)
 	elif action_type == "SURRENDER":
+		is_processing_opponent_action = false
+		is_busy = false
 		_on_online_opponent_surrender()
 
 func _on_online_opponent_surrender() -> void:

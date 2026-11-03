@@ -509,20 +509,26 @@ func _process_room_state(fields: Dictionary) -> void:
 		return
 		
 	# Caso 4: Sincronización de acción de combate por turnos
-	var seq = int(dict.get("action_seq", 0))
-	if seq > last_processed_seq:
-		var raw_action = str(dict.get("last_action_json", "{}"))
-		var action_data = JSON.parse_string(raw_action)
-		if typeof(action_data) == TYPE_DICTIONARY:
-			var action_by = str(action_data.get("by", ""))
-			# Solo procesar acciones realizadas por el rival
-			if action_by != my_role:
-				last_processed_seq = seq
-				current_turn_role = str(dict.get("current_turn", "HOST"))
-				print("[OnlineManager] ⚡ Opponent action received (seq %d): %s" % [seq, action_data.get("type", "")])
-				opponent_action_received.emit(action_data)
-			else:
-				last_processed_seq = seq
+	var max_seq = int(dict.get("action_seq", 0))
+	if max_seq > last_processed_seq:
+		for s in range(last_processed_seq + 1, max_seq + 1):
+			var act_key = "action_" + str(s)
+			var raw_action = ""
+			if dict.has(act_key):
+				raw_action = str(dict.get(act_key, "{}"))
+			elif s == max_seq and dict.has("last_action_json"):
+				raw_action = str(dict.get("last_action_json", "{}"))
+				
+			if not raw_action.is_empty() and raw_action != "{}":
+				var action_data = JSON.parse_string(raw_action)
+				if typeof(action_data) == TYPE_DICTIONARY:
+					var action_by = str(action_data.get("by", ""))
+					# Solo procesar acciones realizadas por el rival
+					if action_by != my_role:
+						current_turn_role = str(dict.get("current_turn", "HOST"))
+						print("[OnlineManager] ⚡ Opponent action received (seq %d): %s" % [s, action_data.get("type", "")])
+						opponent_action_received.emit(action_data)
+			last_processed_seq = s
 
 func _set_room_status(new_status: String) -> void:
 	if room_code.is_empty():
@@ -561,6 +567,7 @@ func send_battle_action(action_dict: Dictionary, callback: Callable = Callable()
 		"action_seq": last_processed_seq,
 		"current_turn": next_turn,
 		"last_action_json": JSON.stringify(action_dict),
+		"action_" + str(last_processed_seq): JSON.stringify(action_dict),
 		"updated_at": Time.get_datetime_string_from_system()
 	}
 	var url = _build_patch_url(room_code, update_data)
