@@ -324,8 +324,7 @@ var last_search_results: Array = []
 var active_direct_challenge: Dictionary = {}
 var active_friend_rooms_map: Dictionary = {} # host_email -> room_info
 
-var btn_qb_mode_online: Button = null
-var qb_selected_mode: String = "AI" # "AI", "PVP", "ONLINE"
+var qb_selected_mode: String = "AI" # "AI", "PVP"
 
 # --- AUDIO DE FONDO (BGM) ---
 @onready var bgm_player: AudioStreamPlayer = $BGMPlayer
@@ -533,7 +532,7 @@ func _ready() -> void:
 				if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
 					var is_mobile_web = bool(JavaScriptBridge.eval("/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)"))
 					if is_mobile_web:
-						_prompt_web_input_if_needed(cloud_email_input, "Ingresa tu correo o alias de Google:")
+						_prompt_web_input_if_needed(cloud_email_input, "Enter your Google email or alias:")
 		)
 	if cloud_trainer_input:
 		cloud_trainer_input.gui_input.connect(func(event: InputEvent):
@@ -541,18 +540,18 @@ func _ready() -> void:
 				if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
 					var is_mobile_web = bool(JavaScriptBridge.eval("/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)"))
 					if is_mobile_web:
-						_prompt_web_input_if_needed(cloud_trainer_input, "Ingresa tu Alias de Entrenador:")
+						_prompt_web_input_if_needed(cloud_trainer_input, "Enter your Trainer Alias:")
 		)
 	
-	# Botón ✏️ de ayuda para escribir en web/móvil
+	# Botón ✏️ de ayuda para escribir en móvil
 	if cloud_email_row and not cloud_email_row.has_node("BtnPromptEmail"):
 		var b_pe = Button.new()
 		b_pe.name = "BtnPromptEmail"
 		b_pe.text = "✏️"
-		b_pe.tooltip_text = "Escribir correo o alias"
+		b_pe.tooltip_text = "Type email or alias"
 		b_pe.custom_minimum_size = Vector2(34, 0)
 		b_pe.pressed.connect(func():
-			_prompt_web_input_if_needed(cloud_email_input, "Ingresa tu correo o alias de Google:")
+			_prompt_web_input_if_needed(cloud_email_input, "Enter your Google email or alias:")
 		)
 		cloud_email_row.add_child(b_pe)
 		
@@ -560,10 +559,10 @@ func _ready() -> void:
 		var b_pt = Button.new()
 		b_pt.name = "BtnPromptTrainer"
 		b_pt.text = "✏️"
-		b_pt.tooltip_text = "Escribir alias"
+		b_pt.tooltip_text = "Type alias"
 		b_pt.custom_minimum_size = Vector2(34, 0)
 		b_pt.pressed.connect(func():
-			_prompt_web_input_if_needed(cloud_trainer_input, "Ingresa tu Alias de Entrenador:")
+			_prompt_web_input_if_needed(cloud_trainer_input, "Enter your Trainer Alias:")
 		)
 		cloud_trainer_row.add_child(b_pt)
 
@@ -620,18 +619,18 @@ func _ready() -> void:
 			if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
 				var is_mobile_web = bool(JavaScriptBridge.eval("/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)"))
 				if is_mobile_web:
-					_prompt_web_input_if_needed(join_code_input, "Ingresa el código de 4 caracteres de la sala:")
+					_prompt_web_input_if_needed(join_code_input, "Enter the 4-character room code:")
 	)
 	var j_parent = join_code_input.get_parent()
 	if j_parent and not j_parent.has_node("BtnPromptJoinCode"):
 		var b_pjc = Button.new()
 		b_pjc.name = "BtnPromptJoinCode"
-		b_pjc.text = "✏️ Escribir Código (Móvil / Web)"
+		b_pjc.text = "✏️ Type Room Code"
 		b_pjc.custom_minimum_size = Vector2(0, 32)
 		b_pjc.add_theme_font_size_override("font_size", 11)
 		_apply_retro_button_style(b_pjc, Color(0.2, 0.45, 0.65), Color(0.3, 0.6, 0.85), false)
 		b_pjc.pressed.connect(func():
-			_prompt_web_input_if_needed(join_code_input, "Ingresa el código de 4 caracteres de la sala:")
+			_prompt_web_input_if_needed(join_code_input, "Enter the 4-character room code:")
 		)
 		j_parent.add_child(b_pjc)
 		j_parent.move_child(b_pjc, join_code_input.get_index() + 1)
@@ -652,17 +651,17 @@ func _ready() -> void:
 			if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
 				var is_mobile_web = bool(JavaScriptBridge.eval("/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)"))
 				if is_mobile_web:
-					_prompt_web_input_if_needed(friend_search_input, "Buscar entrenador por Correo o Alias:")
+					_prompt_web_input_if_needed(friend_search_input, "Search trainer by Email or Alias:")
 	)
 	var s_parent = friend_search_input.get_parent()
 	if s_parent and not s_parent.has_node("BtnPromptSearch"):
 		var b_ps = Button.new()
 		b_ps.name = "BtnPromptSearch"
 		b_ps.text = "✏️"
-		b_ps.tooltip_text = "Escribir búsqueda"
+		b_ps.tooltip_text = "Type search"
 		b_ps.custom_minimum_size = Vector2(34, 0)
 		b_ps.pressed.connect(func():
-			_prompt_web_input_if_needed(friend_search_input, "Buscar entrenador por Correo o Alias:")
+			_prompt_web_input_if_needed(friend_search_input, "Search trainer by Email or Alias:")
 		)
 		s_parent.add_child(b_ps)
 		s_parent.move_child(b_ps, friend_search_input.get_index() + 1)
@@ -1740,7 +1739,6 @@ func _setup_camp_modals() -> void:
 	
 	var btn_close_camp_bag = Button.new()
 	btn_close_camp_bag.text = "⬅ Back to Camp"
-	btn_close_camp_bag.text = "⬅ Back to Camp / Volver"
 	btn_close_camp_bag.custom_minimum_size = Vector2(0, 36)
 	btn_close_camp_bag.add_theme_font_size_override("font_size", 12)
 	_apply_retro_button_style(btn_close_camp_bag, Color(0.45, 0.35, 0.20), Color(0.70, 0.55, 0.30), false)
@@ -2284,7 +2282,7 @@ func _open_camp_pokemon_inspector(p: Dictionary) -> void:
 	vbox.add_child(sep3)
 	
 	var btn_done = Button.new()
-	btn_done.text = "⬅ Back to Camp / Volver"
+	btn_done.text = "⬅ Back to Camp"
 	btn_done.custom_minimum_size = Vector2(0, 34)
 	btn_done.add_theme_font_size_override("font_size", 11)
 	_apply_retro_button_style(btn_done, Color(0.25, 0.45, 0.55), Color(0.35, 0.65, 0.80), false)
@@ -2339,7 +2337,7 @@ func _setup_team_select_pvp_controls() -> void:
 	qb_mode_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	
 	btn_qb_mode_ai = Button.new()
-	btn_qb_mode_ai.text = "🤖 VS IA"
+	btn_qb_mode_ai.text = "🤖 VS AI"
 	btn_qb_mode_ai.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_qb_mode_ai.custom_minimum_size = Vector2(0, 34)
 	btn_qb_mode_ai.toggle_mode = true
@@ -2352,16 +2350,8 @@ func _setup_team_select_pvp_controls() -> void:
 	btn_qb_mode_pvp.toggle_mode = true
 	btn_qb_mode_pvp.pressed.connect(func(): _set_quick_battle_mode("PVP"))
 	
-	btn_qb_mode_online = Button.new()
-	btn_qb_mode_online.text = "🌐 En Línea"
-	btn_qb_mode_online.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn_qb_mode_online.custom_minimum_size = Vector2(0, 34)
-	btn_qb_mode_online.toggle_mode = true
-	btn_qb_mode_online.pressed.connect(func(): _set_quick_battle_mode("ONLINE"))
-	
 	qb_mode_row.add_child(btn_qb_mode_ai)
 	qb_mode_row.add_child(btn_qb_mode_pvp)
-	qb_mode_row.add_child(btn_qb_mode_online)
 	
 	var tab_idx = team_select_tabs.get_index()
 	box.add_child(qb_mode_row)
@@ -2369,24 +2359,22 @@ func _setup_team_select_pvp_controls() -> void:
 	_update_qb_mode_buttons_style()
 
 func _set_quick_battle_mode(mode: String) -> void:
+	if mode != "PVP":
+		mode = "AI"
 	qb_selected_mode = mode
 	GameData.is_pvp_mode = (mode == "PVP")
-	GameData.is_online_pvp = (mode == "ONLINE")
-	if mode == "ONLINE":
-		current_team_tab = "PLAYER"
+	GameData.is_online_pvp = false
 	_update_qb_mode_buttons_style()
 	update_team_select_ui()
 
 func _update_qb_mode_buttons_style() -> void:
-	if not btn_qb_mode_ai or not btn_qb_mode_pvp or not btn_qb_mode_online:
+	if not btn_qb_mode_ai or not btn_qb_mode_pvp:
 		return
 	btn_qb_mode_ai.button_pressed = (qb_selected_mode == "AI")
 	btn_qb_mode_pvp.button_pressed = (qb_selected_mode == "PVP")
-	btn_qb_mode_online.button_pressed = (qb_selected_mode == "ONLINE")
 	
 	_style_toggle_btn(btn_qb_mode_ai, qb_selected_mode == "AI", Color("#4CAF50"))
 	_style_toggle_btn(btn_qb_mode_pvp, qb_selected_mode == "PVP", Color("#2196F3"))
-	_style_toggle_btn(btn_qb_mode_online, qb_selected_mode == "ONLINE", Color("#9C27B0"))
 
 func _style_toggle_btn(btn: Button, is_active: bool, accent_color: Color) -> void:
 	var sb = StyleBoxFlat.new()
@@ -2408,6 +2396,10 @@ func _style_toggle_btn(btn: Button, is_active: bool, accent_color: Color) -> voi
 func _on_quick_battle_pressed() -> void:
 	refresh_cards_data_from_catalog()
 	team_select_mode = "QUICK_BATTLE"
+	GameData.is_online_pvp = false
+	if qb_selected_mode != "PVP":
+		qb_selected_mode = "AI"
+	GameData.is_pvp_mode = (qb_selected_mode == "PVP")
 	_setup_team_select_pvp_controls()
 	if qb_mode_row:
 		qb_mode_row.visible = true
@@ -2670,7 +2662,15 @@ func update_team_select_ui() -> void:
 	var is_player = (team_select_mode == "CAMPAIGN" or current_team_tab == "PLAYER")
 	var active_team = selected_player_ids if is_player else selected_enemy_ids
 	
-	if team_select_mode == "CAMPAIGN":
+	if team_select_mode == "ONLINE_LOBBY":
+		if qb_mode_row:
+			qb_mode_row.visible = false
+		team_select_title.text = "🌐 ONLINE TEAM SELECTION"
+		team_select_subtitle.text = "Select 1 to 3 Pokémon from your collection for Online Battle"
+		btn_tab_player.text = "🌐 Your Team (%d/3)" % selected_player_ids.size()
+		btn_tab_enemy.visible = false
+		btn_random_enemy.visible = false
+	elif team_select_mode == "CAMPAIGN":
 		if qb_mode_row:
 			qb_mode_row.visible = false
 		team_select_title.text = "🏆 TOURNAMENT TEAM"
@@ -2682,27 +2682,20 @@ func update_team_select_ui() -> void:
 			qb_mode_row.visible = true
 			_update_qb_mode_buttons_style()
 		team_select_title.text = "⚔️ TEAM SELECTION"
-		if qb_selected_mode == "ONLINE":
-			team_select_title.text = "🌐 ONLINE TEAM SELECTION"
-			team_select_subtitle.text = "Choose 1 to 3 Pokémon from your collection, then Proceed to Online Lobby"
-			btn_tab_player.text = "🌐 Your Team (%d/3)" % selected_player_ids.size()
-			btn_tab_enemy.visible = false
-			btn_random_enemy.visible = false
-			btn_start_battle.text = "🌐  PROCEED TO ONLINE LOBBY"
-		elif GameData.is_pvp_mode:
+		if GameData.is_pvp_mode:
 			btn_tab_enemy.visible = true
 			btn_random_enemy.visible = true
 			team_select_subtitle.text = "👥 Pass & Play: Choose from your unlocked Pokémon for Player 1 and Player 2"
 			btn_tab_player.text = "🔴 Player 1 (%d/3)" % selected_player_ids.size()
 			btn_tab_enemy.text = "🔵 Player 2 (%d/3)" % selected_enemy_ids.size()
-			btn_start_battle.text = "⚔️  START BATTLE"
+			btn_start_battle.text = "⚔️ START BATTLE"
 		else:
 			btn_tab_enemy.visible = true
 			btn_random_enemy.visible = true
 			team_select_subtitle.text = "Configure your team and Rival AI from your unlocked Pokémon (1 to 3 each)"
 			btn_tab_player.text = "👤 Your Team (%d/3)" % selected_player_ids.size()
 			btn_tab_enemy.text = "🤖 Rival AI (%d/3)" % selected_enemy_ids.size()
-			btn_start_battle.text = "⚔️  START BATTLE"
+			btn_start_battle.text = "⚔️ START BATTLE"
 	
 	btn_tab_player.modulate = Color(0.4, 1.0, 0.5) if selected_player_ids.size() >= 1 else Color(1.0, 1.0, 1.0)
 	btn_tab_enemy.modulate = Color(0.3, 0.8, 1.0) if (GameData.is_pvp_mode and selected_enemy_ids.size() >= 1) else (Color(1.0, 0.65, 0.3) if selected_enemy_ids.size() >= 1 else Color(1.0, 1.0, 1.0))
@@ -2816,25 +2809,17 @@ func update_team_select_ui() -> void:
 	else:
 		var p_count = selected_player_ids.size()
 		var e_count = selected_enemy_ids.size()
-		if qb_selected_mode == "ONLINE":
-			var ready = (p_count >= 1 and p_count <= 3)
-			btn_start_battle.disabled = not ready
-			if ready:
-				btn_start_battle.text = "🌐 PROCEED TO ONLINE LOBBY (%d PKMN)" % p_count
+		var ready = (p_count >= 1 and p_count <= 3 and e_count >= 1 and e_count <= 3)
+		btn_start_battle.disabled = not ready
+		if ready:
+			if GameData.is_pvp_mode:
+				btn_start_battle.text = "⚔️ START 2-PLAYER BATTLE (%d vs %d)!" % [p_count, e_count]
 			else:
-				btn_start_battle.text = "Choose 1 to 3 Pokémon for Online Battle"
+				btn_start_battle.text = "⚔️ START BATTLE vs AI (%d vs %d)!" % [p_count, e_count]
+		elif p_count < 1:
+			btn_start_battle.text = "Choose at least 1 for %s" % ("Player 1" if GameData.is_pvp_mode else "Your Team")
 		else:
-			var ready = (p_count >= 1 and p_count <= 3 and e_count >= 1 and e_count <= 3)
-			btn_start_battle.disabled = not ready
-			if ready:
-				if GameData.is_pvp_mode:
-					btn_start_battle.text = "⚔️ START 2-PLAYER BATTLE (%d vs %d)!" % [p_count, e_count]
-				else:
-					btn_start_battle.text = "⚔️ START BATTLE vs AI (%d vs %d)!" % [p_count, e_count]
-			elif p_count < 1:
-				btn_start_battle.text = "Choose at least 1 for %s" % ("Player 1" if GameData.is_pvp_mode else "Your Team")
-			else:
-				btn_start_battle.text = "Choose at least 1 for %s" % ("Player 2" if GameData.is_pvp_mode else "Rival AI")
+			btn_start_battle.text = "Choose at least 1 for %s" % ("Player 2" if GameData.is_pvp_mode else "Rival AI")
 
 func _on_start_battle_pressed() -> void:
 	if team_select_mode == "ONLINE_LOBBY":
@@ -2847,7 +2832,7 @@ func _on_start_battle_pressed() -> void:
 		if not OnlineManager.is_host and OnlineManager.is_guest_ready:
 			OnlineManager.set_guest_ready(false)
 			if btn_guest_ready_toggle:
-				btn_guest_ready_toggle.text = "✅ ¡ESTOY LISTO! (READY)"
+				btn_guest_ready_toggle.text = "✅ READY FOR BATTLE"
 				_apply_retro_button_style(btn_guest_ready_toggle, Color(0.2, 0.7, 0.3), Color(0.3, 0.9, 0.4))
 		return
 		
@@ -2864,10 +2849,6 @@ func _on_start_battle_pressed() -> void:
 		return
 		
 	if selected_player_ids.size() < 1:
-		return
-		
-	if qb_selected_mode == "ONLINE":
-		_open_online_lobby()
 		return
 		
 	if selected_enemy_ids.size() < 1:
@@ -2905,7 +2886,7 @@ func _render_pokemon_team_badges(container: HBoxContainer, team_ids: Array) -> v
 		
 	if team_ids.is_empty():
 		var empty_lbl = Label.new()
-		empty_lbl.text = "⏳ (Esperando selección...)"
+		empty_lbl.text = "⏳ (Waiting for selection...)"
 		empty_lbl.add_theme_font_size_override("font_size", 11)
 		empty_lbl.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
 		container.add_child(empty_lbl)
@@ -2974,33 +2955,33 @@ func _show_online_host_tab() -> void:
 	join_panel.visible = false
 	
 	if host_rival_info_lbl:
-		host_rival_info_lbl.text = "👤 Rival: Esperando conexión..."
+		host_rival_info_lbl.text = "👤 Rival: Waiting for opponent..."
 	if host_rival_ready_badge:
-		host_rival_ready_badge.text = "🔴 Rival: No conectado"
+		host_rival_ready_badge.text = "🔴 Rival: Not connected"
 		host_rival_ready_badge.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
 	if btn_host_start_battle:
 		btn_host_start_battle.disabled = true
-		btn_host_start_battle.text = "⚔️ Esperando que el rival esté LISTO..."
+		btn_host_start_battle.text = "⚔️ Waiting for rival to be READY..."
 		_apply_retro_button_style(btn_host_start_battle, Color(0.3, 0.4, 0.5), Color(0.3, 0.4, 0.5))
 		
 	_update_lobby_teams_ui()
 	
-	# Si ya somos anfitrión y tenemos una sala activa válida, reutilizarla
+	# If already hosting with valid room code, reuse it
 	if OnlineManager.is_host and not OnlineManager.room_code.is_empty():
 		room_code_lbl.text = OnlineManager.room_code
-		host_status_lbl.text = "⏳ Comparte el código %s con tu rival para combatir." % OnlineManager.room_code
+		host_status_lbl.text = "⏳ Share room code %s with your rival to battle." % OnlineManager.room_code
 		return
 		
 	room_code_lbl.text = "----"
-	host_status_lbl.text = "⏳ Creando sala en Google Cloud..."
+	host_status_lbl.text = "⏳ Creating room in Google Cloud..."
 	
 	OnlineManager.create_room(GameData.profile_name, selected_player_ids, func(success: bool, code: String):
 		if success:
 			room_code_lbl.text = code
-			host_status_lbl.text = "⏳ Comparte el código %s con tu rival para combatir." % code
+			host_status_lbl.text = "⏳ Share room code %s with your rival to battle." % code
 		else:
 			room_code_lbl.text = "ERR"
-			host_status_lbl.text = "❌ Error al crear sala. Intenta nuevamente."
+			host_status_lbl.text = "❌ Error creating room. Please try again."
 	)
 
 func _show_online_join_tab() -> void:
@@ -3030,10 +3011,10 @@ func _on_confirm_join_pressed() -> void:
 	if regex.compile("[^A-Z0-9]") == OK:
 		raw_code = regex.sub(raw_code, "", true)
 	if raw_code.length() != 4:
-		join_status_lbl.text = "⚠️ Ingresa el código de 4 caracteres de la sala."
+		join_status_lbl.text = "⚠️ Please enter the 4-character room code."
 		join_status_lbl.add_theme_color_override("font_color", Color("#FF5252"))
 		return
-	join_status_lbl.text = "🔄 Conectando a la sala %s..." % raw_code
+	join_status_lbl.text = "🔄 Connecting to room %s..." % raw_code
 	join_status_lbl.add_theme_color_override("font_color", Color("#81D4FA"))
 	btn_confirm_join.disabled = true
 	
@@ -3045,11 +3026,11 @@ func _on_confirm_join_pressed() -> void:
 			if guest_lobby_section:
 				guest_lobby_section.visible = true
 			if guest_room_info_lbl:
-				guest_room_info_lbl.text = "🏠 Conectado a la sala %s (Anfitrión: %s)" % [raw_code, OnlineManager.opponent_name]
+				guest_room_info_lbl.text = "🏠 Connected to room %s (Host: %s)" % [raw_code, OnlineManager.opponent_name]
 			if btn_guest_ready_toggle:
-				btn_guest_ready_toggle.text = "✅ ¡ESTOY LISTO! (READY)"
+				btn_guest_ready_toggle.text = "✅ READY FOR BATTLE"
 				_apply_retro_button_style(btn_guest_ready_toggle, Color(0.2, 0.7, 0.3), Color(0.3, 0.9, 0.4))
-			join_status_lbl.text = "💡 Modifica tu equipo si lo deseas y presiona ¡ESTOY LISTO! para que el anfitrión inicie el combate."
+			join_status_lbl.text = "💡 Edit your team if desired, then click READY FOR BATTLE."
 			join_status_lbl.add_theme_color_override("font_color", Color("#69F0AE"))
 			_update_lobby_teams_ui()
 		else:
@@ -3063,14 +3044,14 @@ func _on_guest_ready_toggle_pressed() -> void:
 	OnlineManager.set_guest_ready(new_ready, func(_success: bool):
 		btn_guest_ready_toggle.disabled = false
 		if new_ready:
-			btn_guest_ready_toggle.text = "↩️ Cancelar Listo (Modificar Equipo)"
+			btn_guest_ready_toggle.text = "↩️ Cancel Ready (Edit Team)"
 			_apply_retro_button_style(btn_guest_ready_toggle, Color(0.85, 0.5, 0.15), Color(1.0, 0.65, 0.2))
-			join_status_lbl.text = "🟢 ¡Estás Listo! Esperando que el anfitrión inicie el combate..."
+			join_status_lbl.text = "🟢 You are Ready! Waiting for host to start battle..."
 			join_status_lbl.add_theme_color_override("font_color", Color("#69F0AE"))
 		else:
-			btn_guest_ready_toggle.text = "✅ ¡ESTOY LISTO! (READY)"
+			btn_guest_ready_toggle.text = "✅ READY FOR BATTLE"
 			_apply_retro_button_style(btn_guest_ready_toggle, Color(0.2, 0.7, 0.3), Color(0.3, 0.9, 0.4))
-			join_status_lbl.text = "🟡 No estás listo. Modifica tu equipo o presiona ¡ESTOY LISTO!."
+			join_status_lbl.text = "🟡 Not ready. Edit your team or click READY FOR BATTLE."
 			join_status_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
 	)
 
@@ -3095,33 +3076,33 @@ func _open_team_select_for_online() -> void:
 
 func _on_online_guest_connected(guest_name: String, guest_team: Array) -> void:
 	if host_rival_info_lbl:
-		host_rival_info_lbl.text = "👤 Rival Conectado: %s" % guest_name
+		host_rival_info_lbl.text = "👤 Connected Rival: %s" % guest_name
 	if host_rival_team_container:
 		_render_pokemon_team_badges(host_rival_team_container, guest_team)
-	host_status_lbl.text = "👥 %s se ha conectado. Esperando a que esté listo..." % guest_name
+	host_status_lbl.text = "👥 %s has connected. Waiting for rival to be ready..." % guest_name
 	host_status_lbl.add_theme_color_override("font_color", Color("#81D4FA"))
 
 func _on_online_guest_ready_changed(is_ready: bool) -> void:
 	if is_ready:
 		if host_rival_ready_badge:
-			host_rival_ready_badge.text = "🟢 Rival: ¡LISTO PARA EL COMBATE!"
+			host_rival_ready_badge.text = "🟢 Rival: READY FOR BATTLE!"
 			host_rival_ready_badge.add_theme_color_override("font_color", Color(0.3, 1.0, 0.45))
 		if btn_host_start_battle:
 			btn_host_start_battle.disabled = false
 			var rival_str = OnlineManager.opponent_name if not OnlineManager.opponent_name.is_empty() else "Rival"
-			btn_host_start_battle.text = "⚔️ ¡INICIAR COMBATE VS %s!" % rival_str.to_upper()
+			btn_host_start_battle.text = "⚔️ START BATTLE VS %s!" % rival_str.to_upper()
 			_apply_retro_button_style(btn_host_start_battle, Color(0.15, 0.75, 0.3), Color(0.25, 0.95, 0.4))
-		host_status_lbl.text = "✨ ¡Ambos entrenadores están listos! Haz clic en Iniciar Combate."
+		host_status_lbl.text = "✨ Both trainers are ready! Click Start Battle."
 		host_status_lbl.add_theme_color_override("font_color", Color("#69F0AE"))
 	else:
 		if host_rival_ready_badge:
-			host_rival_ready_badge.text = "🔴 Rival: Preparando equipo (NO LISTO)"
+			host_rival_ready_badge.text = "🔴 Rival: Preparing team (NOT READY)"
 			host_rival_ready_badge.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
 		if btn_host_start_battle:
 			btn_host_start_battle.disabled = true
-			btn_host_start_battle.text = "⚔️ Esperando que el rival esté LISTO..."
+			btn_host_start_battle.text = "⚔️ Waiting for rival to be READY..."
 			_apply_retro_button_style(btn_host_start_battle, Color(0.3, 0.4, 0.5), Color(0.3, 0.4, 0.5))
-		host_status_lbl.text = "⏳ El rival está modificando o preparando su equipo..."
+		host_status_lbl.text = "⏳ Rival is modifying or preparing their team..."
 		host_status_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
 
 func _on_online_opponent_team_updated(new_team: Array) -> void:
@@ -3130,7 +3111,7 @@ func _on_online_opponent_team_updated(new_team: Array) -> void:
 
 func _on_host_start_battle_pressed() -> void:
 	btn_host_start_battle.disabled = true
-	btn_host_start_battle.text = "🚀 Cargando Estadio..."
+	btn_host_start_battle.text = "🚀 Loading Stadium..."
 	OnlineManager.start_online_match()
 
 func _on_close_online_lobby_pressed() -> void:
@@ -3138,15 +3119,15 @@ func _on_close_online_lobby_pressed() -> void:
 	online_lobby_modal.visible = false
 
 func _on_online_match_ready() -> void:
-	print("[Main] 🚀 _on_online_match_ready invocado! Role=%s, is_host=%s, _is_online_match_launching=%s" % [OnlineManager.my_role, str(OnlineManager.is_host), str(_is_online_match_launching)])
+	print("[Main] 🚀 _on_online_match_ready invoked! Role=%s, is_host=%s, _is_online_match_launching=%s" % [OnlineManager.my_role, str(OnlineManager.is_host), str(_is_online_match_launching)])
 	if _is_online_match_launching:
 		return
 	_is_online_match_launching = true
 	OnlineManager.stop_polling()
 	
 	var r_name = OnlineManager.opponent_name if not OnlineManager.opponent_name.is_empty() else "Rival"
-	host_status_lbl.text = "🚀 ¡Iniciando combate! Entrenador: %s" % r_name
-	join_status_lbl.text = "🚀 ¡Iniciando combate! Entrenador: %s" % r_name
+	host_status_lbl.text = "🚀 Starting battle! Trainer: %s" % r_name
+	join_status_lbl.text = "🚀 Starting battle! Trainer: %s" % r_name
 	
 	GameData.is_campaign_mode = false
 	GameData.is_pvp_mode = false
@@ -5279,7 +5260,7 @@ func _show_login_screen() -> void:
 				if typeof(remembered_dict) == TYPE_DICTIONARY:
 					var rem_email = str(remembered_dict.get("email", "")).strip_edges()
 					if not rem_email.is_empty():
-						profile_detected_lbl.text = "☁️ Cuenta Google: %s\n⏳ Restaurando partida desde la nube..." % rem_email
+						profile_detected_lbl.text = "☁️ Google Account: %s\n⏳ Restoring game save from cloud..." % rem_email
 						btn_login_play.disabled = true
 						CloudSync.load_profile_from_cloud(rem_email, func(ok: bool, data: Dictionary, _msg: String):
 							btn_login_play.disabled = false
@@ -7246,27 +7227,27 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 
 func _on_search_friend_pressed() -> void:
 	var query = friend_search_input.text.strip_edges()
-	friends_feedback_lbl.text = "⏳ Buscando entrenadores en Google Cloud (Firebase)..."
+	friends_feedback_lbl.text = "⏳ Searching trainers in Google Cloud (Firebase)..."
 	btn_search_friend.disabled = true
 	
 	CloudSync.search_trainers(query, func(success: bool, results: Array, msg: String):
 		btn_search_friend.disabled = false
 		if success:
 			last_search_results = results
-			btn_tab_search_results.text = "🔍 Resultados (%d)" % results.size()
+			btn_tab_search_results.text = "🔍 Results (%d)" % results.size()
 			_show_search_results_tab()
 			if results.is_empty():
 				if query.is_empty():
-					friends_feedback_lbl.text = "⚠️ No hay otros entrenadores registrados en Google Cloud aún."
+					friends_feedback_lbl.text = "⚠️ No other trainers registered in Google Cloud yet."
 				else:
-					friends_feedback_lbl.text = "⚠️ No se encontraron entrenadores con '%s'." % query
+					friends_feedback_lbl.text = "⚠️ No trainers found matching '%s'." % query
 			else:
 				if query.is_empty():
-					friends_feedback_lbl.text = "✅ Mostrando todos los entrenadores registrados (%d en total)" % results.size()
+					friends_feedback_lbl.text = "✅ Showing all registered trainers (%d total)" % results.size()
 				else:
-					friends_feedback_lbl.text = "✅ ¡Se encontraron %d entrenador(es)!" % results.size()
+					friends_feedback_lbl.text = "✅ Found %d trainer(s)!" % results.size()
 		else:
-			friends_feedback_lbl.text = "❌ Error en la búsqueda: %s" % msg
+			friends_feedback_lbl.text = "❌ Search error: %s" % msg
 	)
 
 func _on_clear_search_pressed() -> void:
@@ -7363,24 +7344,24 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	add_btn.add_theme_font_size_override("font_size", 11)
 	
 	if is_self:
-		name_lbl.text = "%s  👤 (Tu perfil)" % alias
+		name_lbl.text = "%s  👤 (Your Profile)" % alias
 		name_lbl.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
-		add_btn.text = "👤 (Tu Perfil)"
+		add_btn.text = "👤 (Your Profile)"
 		add_btn.disabled = true
 		add_btn.add_theme_color_override("font_color", Color(0.65, 0.75, 0.85))
 	elif is_already:
-		add_btn.text = "✓ Amigos"
+		add_btn.text = "✓ Friends"
 		add_btn.disabled = true
 		add_btn.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 	else:
-		add_btn.text = "➕ Añadir Amigo"
+		add_btn.text = "➕ Add Friend"
 		add_btn.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 		add_btn.pressed.connect(func():
 			GameData.add_friend(alias, email, p_id)
-			add_btn.text = "✓ ¡Añadido!"
+			add_btn.text = "✓ Added!"
 			add_btn.disabled = true
 			add_btn.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
-			friends_feedback_lbl.text = "✨ ¡'%s' añadido a tu lista de amigos!" % alias
+			friends_feedback_lbl.text = "✨ '%s' added to your friends list!" % alias
 			_update_friends_ui()
 		)
 	hbox.add_child(add_btn)
@@ -7416,7 +7397,7 @@ func _challenge_friend(f_data: Dictionary) -> void:
 		host_rival_ready_badge.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
 	if btn_host_start_battle:
 		btn_host_start_battle.disabled = true
-		btn_host_start_battle.text = "⚔️ Esperando que el rival esté LISTO..."
+		btn_host_start_battle.text = "⚔️ Waiting for rival to be READY..."
 		_apply_retro_button_style(btn_host_start_battle, Color(0.3, 0.4, 0.5), Color(0.3, 0.4, 0.5))
 		
 	_update_lobby_teams_ui()

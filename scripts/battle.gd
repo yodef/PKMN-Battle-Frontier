@@ -166,7 +166,7 @@ const TYPE_NAMES_EN = {
 }
 
 func _ready() -> void:
-	btn_back_menu.pressed.connect(_on_return_to_menu)
+	btn_back_menu.pressed.connect(_on_back_menu_pressed)
 	btn_game_over_menu.pressed.connect(_on_return_to_menu)
 	btn_move1.pressed.connect(_on_move1_pressed)
 	btn_move2.pressed.connect(_on_move2_pressed)
@@ -454,7 +454,7 @@ func _setup_details_inspector_modal() -> void:
 	
 	# Botón inferior para cerrar
 	var bot_close = Button.new()
-	bot_close.text = "Close / Volver al Combate"
+	bot_close.text = "Close / Return to Battle"
 	bot_close.custom_minimum_size = Vector2(0, 32)
 	bot_close.pressed.connect(func(): details_modal.visible = false)
 	main_vbox.add_child(bot_close)
@@ -710,6 +710,172 @@ func _on_speed_toggle_pressed() -> void:
 		var tw = create_tween()
 		tw.tween_property(btn_speed, "scale", Vector2(1.15, 1.15), 0.06)
 		tw.tween_property(btn_speed, "scale", Vector2.ONE, 0.08)
+
+var forfeit_modal: Control = null
+var forfeit_title_lbl: Label = null
+var forfeit_body_lbl: Label = null
+var btn_confirm_forfeit: Button = null
+var btn_cancel_forfeit: Button = null
+
+func _setup_forfeit_confirmation_modal() -> void:
+	if forfeit_modal:
+		return
+	
+	forfeit_modal = Control.new()
+	forfeit_modal.name = "ForfeitConfirmationModal"
+	forfeit_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	forfeit_modal.visible = false
+	forfeit_modal.mouse_filter = Control.MOUSE_FILTER_STOP
+	forfeit_modal.z_index = 60
+	add_child(forfeit_modal)
+	
+	var backdrop = ColorRect.new()
+	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
+	backdrop.color = Color(0.02, 0.04, 0.08, 0.85)
+	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
+	forfeit_modal.add_child(backdrop)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	forfeit_modal.add_child(center)
+	
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(360, 200)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color("#FF5252")
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	sb.shadow_color = Color(0, 0, 0, 0.7)
+	sb.shadow_size = 14
+	panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(panel)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	panel.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 14)
+	margin.add_child(vbox)
+	
+	forfeit_title_lbl = Label.new()
+	forfeit_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	forfeit_title_lbl.add_theme_font_size_override("font_size", 16)
+	forfeit_title_lbl.add_theme_color_override("font_color", Color("#FF5252"))
+	vbox.add_child(forfeit_title_lbl)
+	
+	forfeit_body_lbl = Label.new()
+	forfeit_body_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	forfeit_body_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	forfeit_body_lbl.custom_minimum_size = Vector2(310, 0)
+	forfeit_body_lbl.add_theme_font_size_override("font_size", 12)
+	forfeit_body_lbl.add_theme_color_override("font_color", Color("#CFD8DC"))
+	vbox.add_child(forfeit_body_lbl)
+	
+	var btn_row = HBoxContainer.new()
+	btn_row.add_theme_constant_override("separation", 10)
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(btn_row)
+	
+	btn_cancel_forfeit = Button.new()
+	btn_cancel_forfeit.text = "⚔️ Keep Battling"
+	btn_cancel_forfeit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_cancel_forfeit.custom_minimum_size = Vector2(0, 38)
+	var sb_cancel = StyleBoxFlat.new()
+	sb_cancel.bg_color = Color(0.12, 0.28, 0.18, 0.95)
+	sb_cancel.border_color = Color("#4CAF50")
+	sb_cancel.set_border_width_all(1)
+	sb_cancel.set_corner_radius_all(6)
+	btn_cancel_forfeit.add_theme_stylebox_override("normal", sb_cancel)
+	btn_cancel_forfeit.add_theme_stylebox_override("hover", sb_cancel)
+	btn_cancel_forfeit.add_theme_color_override("font_color", Color("#81C784"))
+	btn_cancel_forfeit.pressed.connect(func():
+		forfeit_modal.visible = false
+	)
+	btn_row.add_child(btn_cancel_forfeit)
+	
+	btn_confirm_forfeit = Button.new()
+	btn_confirm_forfeit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_confirm_forfeit.custom_minimum_size = Vector2(0, 38)
+	var sb_confirm = StyleBoxFlat.new()
+	sb_confirm.bg_color = Color(0.35, 0.1, 0.1, 0.95)
+	sb_confirm.border_color = Color("#FF5252")
+	sb_confirm.set_border_width_all(1)
+	sb_confirm.set_corner_radius_all(6)
+	btn_confirm_forfeit.add_theme_stylebox_override("normal", sb_confirm)
+	btn_confirm_forfeit.add_theme_stylebox_override("hover", sb_confirm)
+	btn_confirm_forfeit.add_theme_color_override("font_color", Color("#FF8A80"))
+	btn_confirm_forfeit.pressed.connect(_on_confirm_forfeit_pressed)
+	btn_row.add_child(btn_confirm_forfeit)
+
+func _on_back_menu_pressed() -> void:
+	if is_battle_over:
+		_on_return_to_menu()
+	else:
+		_show_forfeit_confirmation_modal()
+
+func _show_forfeit_confirmation_modal() -> void:
+	_setup_forfeit_confirmation_modal()
+	
+	if GameData.is_online_pvp:
+		var r_name = GameData.online_rival_name if not GameData.online_rival_name.is_empty() else "your opponent"
+		forfeit_title_lbl.text = "🏳️ FORFEIT MATCH?"
+		forfeit_body_lbl.text = "Are you sure you want to surrender?\nYou will forfeit the match to %s." % r_name
+		btn_confirm_forfeit.text = "🏳️ Forfeit & Surrender"
+	elif GameData.is_campaign_mode:
+		if GameData.campaign_submode == "ADVENTURE":
+			forfeit_title_lbl.text = "⚠️ RETREAT FROM ADVENTURE?"
+			forfeit_body_lbl.text = "Are you sure you want to retreat?\nCurrent episode progress will be reset.\n(Your earned Gold and Diamonds are safe)."
+		else:
+			forfeit_title_lbl.text = "⚠️ FORFEIT TOURNAMENT?"
+			forfeit_body_lbl.text = "Are you sure you want to retreat?\nYour current tournament run will be abandoned.\n(Your Gold and Diamonds are safe)."
+		btn_confirm_forfeit.text = "🏳️ Retreat"
+	else:
+		forfeit_title_lbl.text = "🚪 EXIT BATTLE?"
+		forfeit_body_lbl.text = "Are you sure you want to exit to the Main Menu?\nCurrent battle progress will be lost."
+		btn_confirm_forfeit.text = "🚪 Exit Battle"
+		
+	forfeit_modal.visible = true
+
+func _on_confirm_forfeit_pressed() -> void:
+	if forfeit_modal:
+		forfeit_modal.visible = false
+	if GameData.is_online_pvp:
+		OnlineManager.send_battle_action({ "type": "SURRENDER" })
+	_on_return_to_menu()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		if forfeit_modal and forfeit_modal.visible:
+			forfeit_modal.visible = false
+			get_viewport().set_input_as_handled()
+		elif details_modal and details_modal.visible:
+			details_modal.visible = false
+			get_viewport().set_input_as_handled()
+		elif bag_modal and bag_modal.visible:
+			bag_modal.visible = false
+			get_viewport().set_input_as_handled()
+		elif not is_battle_over:
+			_show_forfeit_confirmation_modal()
+			get_viewport().set_input_as_handled()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		if forfeit_modal and forfeit_modal.visible:
+			forfeit_modal.visible = false
+		elif details_modal and details_modal.visible:
+			details_modal.visible = false
+		elif bag_modal and bag_modal.visible:
+			bag_modal.visible = false
+		elif not is_battle_over:
+			_show_forfeit_confirmation_modal()
+		else:
+			_on_return_to_menu()
 
 func _on_return_to_menu() -> void:
 	Engine.time_scale = 1.0
@@ -1152,7 +1318,7 @@ func start_player_turn() -> void:
 	var e = get_active_enemy()
 	
 	if GameData.is_online_pvp:
-		turn_badge.text = "ROUND %d • 🟢 TU TURNO (%s)" % [round_number, p.name]
+		turn_badge.text = "ROUND %d • 🟢 YOUR TURN (%s)" % [round_number, p.name]
 		turn_badge.modulate = Color(0.2, 0.9, 0.3)
 	elif GameData.is_pvp_mode:
 		turn_badge.text = "ROUND %d • 🔴 PLAYER 1'S TURN (%s)" % [round_number, p.name]
@@ -1206,7 +1372,7 @@ func start_enemy_turn() -> void:
 	var p = get_active_player()
 	
 	if GameData.is_online_pvp:
-		turn_badge.text = "ROUND %d • ⏳ ESPERANDO A %s..." % [round_number, GameData.online_rival_name.to_upper()]
+		turn_badge.text = "ROUND %d • ⏳ WAITING FOR %s..." % [round_number, GameData.online_rival_name.to_upper()]
 		turn_badge.modulate = Color(0.9, 0.7, 0.2)
 	elif GameData.is_pvp_mode:
 		turn_badge.text = "ROUND %d • 🔵 PLAYER 2'S TURN (%s)" % [round_number, e.name]
@@ -2432,7 +2598,7 @@ func _resolve_battle_victory() -> void:
 	else:
 		GameData.save_profile()
 		if GameData.is_online_pvp:
-			show_game_over("🏆 ¡VICTORIA EN LÍNEA!", "¡Has derrotado a todo el equipo de %s!" % GameData.online_rival_name)
+			show_game_over("🏆 ONLINE VICTORY!", "You defeated %s's entire team!" % GameData.online_rival_name)
 		elif GameData.is_pvp_mode:
 			show_game_over("🏆 PLAYER 1 WINS!", "Player 1 has defeated all of Player 2's Pokémon!")
 		else:
@@ -2481,7 +2647,7 @@ func _resolve_battle_defeat() -> void:
 	else:
 		GameData.save_profile()
 		if GameData.is_online_pvp:
-			show_game_over("💀 DERROTA EN LÍNEA", "%s ha derrotado a todos tus Pokémon." % GameData.online_rival_name)
+			show_game_over("💀 ONLINE DEFEAT", "%s defeated all your Pokémon." % GameData.online_rival_name)
 		elif GameData.is_pvp_mode:
 			show_game_over("🏆 PLAYER 2 WINS!", "Player 2 has defeated all of Player 1's Pokémon!")
 		else:
@@ -3318,7 +3484,7 @@ func _on_online_opponent_action(action: Dictionary) -> void:
 			var current = get_active_enemy()
 			active_enemy_idx = target_idx
 			var target_pkmn = enemy_team[target_idx]
-			log_action("🌐 %s retira a [b]%s[/b] y envía a [b]%s[/b]!" % [GameData.online_rival_name, current.name, target_pkmn.name])
+			log_action("🌐 %s withdraws [b]%s[/b] and sends out [b]%s[/b]!" % [GameData.online_rival_name, current.name, target_pkmn.name])
 			
 			var orig_e_pos = enemy_card_img.position
 			if enemy_card_img.has_meta("original_pos"): orig_e_pos = enemy_card_img.get_meta("original_pos")
@@ -3349,7 +3515,7 @@ func _on_online_opponent_action(action: Dictionary) -> void:
 		var actor = get_active_enemy()
 		var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
 		actor.current_energy += rec
-		log_action("🌐 %s recargó energía (+%d ⚡)." % [GameData.online_rival_name, rec])
+		log_action("🌐 %s charged energy (+%d ⚡)." % [GameData.online_rival_name, rec])
 		update_ui()
 		set_controls_enabled(false)
 		var timer = get_tree().create_timer(1.8)
@@ -3365,7 +3531,7 @@ func _on_online_opponent_surrender() -> void:
 	if is_battle_over:
 		return
 	is_battle_over = true
-	show_game_over("🏆 ¡VICTORIA POR ABANDONO!", "El rival %s ha salido del combate." % GameData.online_rival_name)
+	show_game_over("🏆 VICTORY BY FORFEIT!", "Opponent %s has forfeited or left the battle." % GameData.online_rival_name)
 
 func _setup_battle_hud_theme() -> void:
 	var slate_box = StyleBoxTexture.new()

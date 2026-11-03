@@ -181,7 +181,7 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 		clean_code = regex.sub(clean_code, "", true)
 		
 	if clean_code.length() != 4:
-		var err_msg = "Código de sala no válido (debe tener exactamente 4 letras o números)."
+		var err_msg = "Invalid room code (must be exactly 4 letters or digits)."
 		room_joined.emit(false, err_msg)
 		if callback.is_valid():
 			callback.call(false, err_msg)
@@ -195,7 +195,7 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, b: PackedByteArray):
 		http.queue_free()
 		if my_gen != _session_gen:
-			print("[OnlineManager] ⚠️ join_room respuesta ignorada (sesión cambiada).")
+			print("[OnlineManager] ⚠️ join_room response ignored (session changed).")
 			return
 			
 		if code == 200:
@@ -205,19 +205,19 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 				var dict = _firestore_fields_to_dict(parsed["fields"])
 				var status = str(dict.get("status", ""))
 				if status == "CLOSED":
-					var msg = "La sala '%s' fue cerrada o ya no está disponible." % clean_code
+					var msg = "Room '%s' was closed or is no longer available." % clean_code
 					room_joined.emit(false, msg)
 					if callback.is_valid():
 						callback.call(false, msg)
 					return
 				elif status == "IN_BATTLE":
-					var msg = "La sala '%s' ya está en combate activo." % clean_code
+					var msg = "Room '%s' is already in an active battle." % clean_code
 					room_joined.emit(false, msg)
 					if callback.is_valid():
 						callback.call(false, msg)
 					return
 					
-				# Leer datos del Host
+				# Read Host data
 				room_code = clean_code
 				is_online_match = true
 				is_host = false
@@ -232,21 +232,21 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 				else:
 					opponent_team_ids = []
 					
-				# Actualizar sala con datos del Guest y marcar GUEST_JOINED
+				# Update room with Guest data and set GUEST_JOINED
 				_confirm_guest_join(clean_code, guest_name, guest_team, callback, my_gen)
 				return
 				
-			var msg = "La sala '%s' no contiene datos válidos." % clean_code
+			var msg = "Room '%s' does not contain valid data." % clean_code
 			room_joined.emit(false, msg)
 			if callback.is_valid():
 				callback.call(false, msg)
 		elif code == 404:
-			var msg = "Sala '%s' no encontrada. Verifica que el anfitrión haya creado la sala." % clean_code
+			var msg = "Room '%s' not found. Make sure the host has created the room." % clean_code
 			room_joined.emit(false, msg)
 			if callback.is_valid():
 				callback.call(false, msg)
 		else:
-			var msg = "Error al conectar con la sala (%d)." % code
+			var msg = "Error connecting to room (%d)." % code
 			room_joined.emit(false, msg)
 			if callback.is_valid():
 				callback.call(false, msg)
@@ -254,7 +254,7 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 	var err = http.request(url, _get_nocache_headers(), HTTPClient.METHOD_GET)
 	if err != OK:
 		http.queue_free()
-		var msg = "Error al iniciar conexión HTTP (%d)." % err
+		var msg = "Error initiating HTTP connection (%d)." % err
 		room_joined.emit(false, msg)
 		if callback.is_valid():
 			callback.call(false, msg)
@@ -278,16 +278,16 @@ func _confirm_guest_join(code: String, guest_name: String, guest_team: Array, ca
 	http.request_completed.connect(func(_res: int, resp_code: int, _h: PackedStringArray, _b: PackedByteArray):
 		http.queue_free()
 		if expected_gen != -1 and expected_gen != _session_gen:
-			print("[OnlineManager] ⚠️ _confirm_guest_join ignorado: sesión obsoleta.")
+			print("[OnlineManager] ⚠️ _confirm_guest_join ignored: obsolete session.")
 			return
 		if resp_code >= 200 and resp_code < 300:
-			print("[OnlineManager] 🎮 Unido con éxito a la sala: ", code)
+			print("[OnlineManager] 🎮 Successfully joined room: ", code)
 			start_polling()
-			room_joined.emit(true, "Conectado exitosamente")
+			room_joined.emit(true, "Connected successfully")
 			if callback.is_valid():
-				callback.call(true, "Conectado")
+				callback.call(true, "Connected")
 		else:
-			var msg = "Error actualizando sala como invitado (%d)." % resp_code
+			var msg = "Error updating room as guest (%d)." % resp_code
 			room_joined.emit(false, msg)
 			if callback.is_valid():
 				callback.call(false, msg)
@@ -295,7 +295,7 @@ func _confirm_guest_join(code: String, guest_name: String, guest_team: Array, ca
 	var err = http.request(url, headers, HTTPClient.METHOD_PATCH, body)
 	if err != OK:
 		http.queue_free()
-		var msg = "Error enviando confirmación (%d)." % err
+		var msg = "Error sending confirmation (%d)." % err
 		room_joined.emit(false, msg)
 		if callback.is_valid():
 			callback.call(false, msg)
