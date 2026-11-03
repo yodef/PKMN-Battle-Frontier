@@ -493,7 +493,7 @@ func fetch_public_trainer_profile(account_key: String, callback: Callable) -> vo
 		return
 		
 	var doc_id = sanitize_account_key(clean_key)
-	var url = "%s/%s?key=%s&_cb=%d" % [FIRESTORE_BASE_URL, doc_id, API_KEY, Time.get_ticks_msec()]
+	var url = "%s/%s?key=%s" % [FIRESTORE_BASE_URL, doc_id, API_KEY]
 	var http = HTTPRequest.new()
 	http.timeout = 8.0
 	add_child(http)
@@ -524,7 +524,7 @@ func fetch_public_trainer_profile(account_key: String, callback: Callable) -> vo
 
 func _fetch_public_fallback_search(query_key: String, callback: Callable) -> void:
 	var clean_query = query_key.strip_edges().to_lower()
-	var search_url = "%s?key=%s&pageSize=50&_cb=%d" % [FIRESTORE_BASE_URL, API_KEY, Time.get_ticks_msec()]
+	var search_url = "%s?key=%s&pageSize=50" % [FIRESTORE_BASE_URL, API_KEY]
 	var http_search = HTTPRequest.new()
 	http_search.timeout = 10.0
 	add_child(http_search)

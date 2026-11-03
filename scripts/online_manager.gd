@@ -25,6 +25,7 @@ var opponent_team_ids: Array = []
 var is_guest_ready: bool = false
 var is_starting_match: bool = false
 
+var _session_gen: int = 0
 var last_processed_seq: int = 0
 var current_turn_role: String = "HOST"
 var is_polling: bool = false
@@ -104,7 +105,9 @@ func _build_patch_url(target_code: String, fields_dict: Dictionary) -> String:
 # --- CREAR SALA (HOST) ---
 func create_room(host_name: String, host_team: Array, callback: Callable = Callable(), target_friend: Dictionary = {}) -> void:
 	reset_session()
-	room_code = generate_room_code()
+	var my_gen = _session_gen
+	var target_code = generate_room_code()
+	room_code = target_code
 	is_online_match = true
 	is_host = true
 	my_role = "HOST"
@@ -113,13 +116,13 @@ func create_room(host_name: String, host_team: Array, callback: Callable = Calla
 	is_guest_ready = false
 	is_starting_match = false
 	
-	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
+	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, target_code, CloudSync.API_KEY]
 	var h_email = GameData.profile_email if GameData else ""
 	var t_email = str(target_friend.get("email", ""))
 	var t_alias = str(target_friend.get("alias", ""))
 	
 	var room_data = {
-		"room_code": room_code,
+		"room_code": target_code,
 		"status": "WAITING",
 		"host_name": host_name,
 		"host_email": h_email,
@@ -144,12 +147,15 @@ func create_room(host_name: String, host_team: Array, callback: Callable = Calla
 	add_child(http)
 	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, _b: PackedByteArray):
 		http.queue_free()
+		if my_gen != _session_gen or not is_host or room_code != target_code:
+			print("[OnlineManager] ⚠️ create_room callback ignorado: sesión reiniciada o cancelada.")
+			return
 		if code >= 200 and code < 300:
-			print("[OnlineManager] 🏠 Sala creada con código: ", room_code)
+			print("[OnlineManager] 🏠 Sala creada con código: ", target_code)
 			start_polling()
-			room_created.emit(room_code)
+			room_created.emit(target_code)
 			if callback.is_valid():
-				callback.call(true, room_code)
+				callback.call(true, target_code)
 		else:
 			print("[OnlineManager] ❌ Error creando sala en Firestore: ", code)
 			is_online_match = false
@@ -157,14 +163,25 @@ func create_room(host_name: String, host_team: Array, callback: Callable = Calla
 			if callback.is_valid():
 				callback.call(false, "Error %d" % code)
 	)
-	http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	var err = http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	if err != OK:
+		http.queue_free()
+		is_online_match = false
+		if callback.is_valid():
+			callback.call(false, "Error de red %d" % err)
 
 # --- UNIRSE A SALA (GUEST) ---
 func join_room(target_code: String, guest_name: String, guest_team: Array, callback: Callable = Callable()) -> void:
 	reset_session()
+	var my_gen = _session_gen
+	
 	var clean_code = target_code.strip_edges().to_upper()
-	if clean_code.length() < 3:
-		var err_msg = "Código de sala no válido (debe tener 4 caracteres)."
+	var regex = RegEx.new()
+	if regex.compile("[^A-Z0-9]") == OK:
+		clean_code = regex.sub(clean_code, "", true)
+		
+	if clean_code.length() != 4:
+		var err_msg = "Código de sala no válido (debe tener exactamente 4 letras o números)."
 		room_joined.emit(false, err_msg)
 		if callback.is_valid():
 			callback.call(false, err_msg)
@@ -177,14 +194,24 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 	add_child(http)
 	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, b: PackedByteArray):
 		http.queue_free()
+		if my_gen != _session_gen:
+			print("[OnlineManager] ⚠️ join_room respuesta ignorada (sesión cambiada).")
+			return
+			
 		if code == 200:
 			var resp_text = b.get_string_from_utf8()
 			var parsed = JSON.parse_string(resp_text)
 			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("fields"):
 				var dict = _firestore_fields_to_dict(parsed["fields"])
 				var status = str(dict.get("status", ""))
-				if status != "WAITING" and status != "GUEST_JOINED":
-					var msg = "La sala '%s' ya no está disponible (Estado: %s)." % [clean_code, status]
+				if status == "CLOSED":
+					var msg = "La sala '%s' fue cerrada o ya no está disponible." % clean_code
+					room_joined.emit(false, msg)
+					if callback.is_valid():
+						callback.call(false, msg)
+					return
+				elif status == "IN_BATTLE":
+					var msg = "La sala '%s' ya está en combate activo." % clean_code
 					room_joined.emit(false, msg)
 					if callback.is_valid():
 						callback.call(false, msg)
@@ -206,10 +233,10 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 					opponent_team_ids = []
 					
 				# Actualizar sala con datos del Guest y marcar GUEST_JOINED
-				_confirm_guest_join(clean_code, guest_name, guest_team, callback)
+				_confirm_guest_join(clean_code, guest_name, guest_team, callback, my_gen)
 				return
 				
-			var msg = "La sala '%s' no contiene datos activos o fue cerrada." % clean_code
+			var msg = "La sala '%s' no contiene datos válidos." % clean_code
 			room_joined.emit(false, msg)
 			if callback.is_valid():
 				callback.call(false, msg)
@@ -224,9 +251,15 @@ func join_room(target_code: String, guest_name: String, guest_team: Array, callb
 			if callback.is_valid():
 				callback.call(false, msg)
 	)
-	http.request(url, _get_nocache_headers(), HTTPClient.METHOD_GET)
+	var err = http.request(url, _get_nocache_headers(), HTTPClient.METHOD_GET)
+	if err != OK:
+		http.queue_free()
+		var msg = "Error al iniciar conexión HTTP (%d)." % err
+		room_joined.emit(false, msg)
+		if callback.is_valid():
+			callback.call(false, msg)
 
-func _confirm_guest_join(code: String, guest_name: String, guest_team: Array, callback: Callable) -> void:
+func _confirm_guest_join(code: String, guest_name: String, guest_team: Array, callback: Callable, expected_gen: int = -1) -> void:
 	var update_data = {
 		"status": "GUEST_JOINED",
 		"guest_name": guest_name,
@@ -244,6 +277,9 @@ func _confirm_guest_join(code: String, guest_name: String, guest_team: Array, ca
 	add_child(http)
 	http.request_completed.connect(func(_res: int, resp_code: int, _h: PackedStringArray, _b: PackedByteArray):
 		http.queue_free()
+		if expected_gen != -1 and expected_gen != _session_gen:
+			print("[OnlineManager] ⚠️ _confirm_guest_join ignorado: sesión obsoleta.")
+			return
 		if resp_code >= 200 and resp_code < 300:
 			print("[OnlineManager] 🎮 Unido con éxito a la sala: ", code)
 			start_polling()
@@ -256,7 +292,13 @@ func _confirm_guest_join(code: String, guest_name: String, guest_team: Array, ca
 			if callback.is_valid():
 				callback.call(false, msg)
 	)
-	http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	var err = http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	if err != OK:
+		http.queue_free()
+		var msg = "Error enviando confirmación (%d)." % err
+		room_joined.emit(false, msg)
+		if callback.is_valid():
+			callback.call(false, msg)
 
 # Marca el estado de preparación (Ready / Listo) del invitado en Firestore
 func set_guest_ready(ready: bool, callback: Callable = Callable()) -> void:
@@ -286,7 +328,11 @@ func set_guest_ready(ready: bool, callback: Callable = Callable()) -> void:
 		if callback.is_valid():
 			callback.call(success)
 	)
-	http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	var err = http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	if err != OK:
+		http.queue_free()
+		if callback.is_valid():
+			callback.call(false)
 
 # El Anfitrión inicia la partida cuando el rival está listo
 func start_online_match(callback: Callable = Callable()) -> void:
@@ -316,7 +362,12 @@ func start_online_match(callback: Callable = Callable()) -> void:
 		if callback.is_valid():
 			callback.call(success)
 	)
-	http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	var err = http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	if err != OK:
+		http.queue_free()
+		is_starting_match = false
+		if callback.is_valid():
+			callback.call(false)
 
 # Actualiza el equipo del jugador en Firestore (Host o Guest) mientras está en el lobby
 func update_my_team(new_team: Array, callback: Callable = Callable()) -> void:
@@ -348,7 +399,11 @@ func update_my_team(new_team: Array, callback: Callable = Callable()) -> void:
 		if callback.is_valid():
 			callback.call(success)
 	)
-	http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	var err = http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	if err != OK:
+		http.queue_free()
+		if callback.is_valid():
+			callback.call(false)
 
 # --- POLLING Y SINCRONIZACIÓN ---
 func start_polling(interval: float = 1.0) -> void:
@@ -367,7 +422,7 @@ func _on_poll_tick() -> void:
 	if current_http_req != null and is_instance_valid(current_http_req):
 		return # Ya hay una petición en curso
 		
-	var url = "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY, Time.get_ticks_msec()]
+	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
 	current_http_req = HTTPRequest.new()
 	current_http_req.timeout = 3.5
 	add_child(current_http_req)
@@ -531,6 +586,7 @@ func leave_or_delete_room() -> void:
 	stop_polling()
 	if not room_code.is_empty():
 		var code = room_code
+		var was_host = is_host
 		room_code = ""
 		var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, code, CloudSync.API_KEY]
 		var http = HTTPRequest.new()
@@ -538,22 +594,30 @@ func leave_or_delete_room() -> void:
 		http.request_completed.connect(func(_res: int, _code: int, _h: PackedStringArray, _b: PackedByteArray):
 			http.queue_free()
 		)
-		if is_host:
-			http.request(url, _get_nocache_headers(), HTTPClient.METHOD_DELETE)
+		if was_host:
+			var err = http.request(url, _get_nocache_headers(), HTTPClient.METHOD_DELETE)
+			if err != OK:
+				http.queue_free()
 		else:
-			# Si es el invitado, marca la sala como cerrada usando updateMask
+			# Si es el invitado quien sale, la sala NO debe cerrarse: vuelve a WAITING para permitir que se una de nuevo
 			var update_data = {
-				"status": "CLOSED",
+				"status": "WAITING",
+				"guest_name": "",
+				"guest_team": [],
+				"guest_ready": false,
 				"updated_at": Time.get_datetime_string_from_system()
 			}
 			var patch_url = _build_patch_url(code, update_data)
 			var payload = { "fields": _dict_to_firestore_fields(update_data) }
 			var headers = _get_nocache_headers(true)
-			http.request(patch_url, headers, HTTPClient.METHOD_PATCH, JSON.stringify(payload))
+			var err = http.request(patch_url, headers, HTTPClient.METHOD_PATCH, JSON.stringify(payload))
+			if err != OK:
+				http.queue_free()
 			
 	reset_session()
 
 func reset_session() -> void:
+	_session_gen += 1
 	stop_polling()
 	is_online_match = false
 	is_host = false

@@ -2972,8 +2972,6 @@ func _show_online_host_tab() -> void:
 	_style_toggle_btn(btn_tab_join_room, false, Color("#2196F3"))
 	host_panel.visible = true
 	join_panel.visible = false
-	room_code_lbl.text = "----"
-	host_status_lbl.text = "⏳ Creando sala en Google Cloud..."
 	
 	if host_rival_info_lbl:
 		host_rival_info_lbl.text = "👤 Rival: Esperando conexión..."
@@ -2986,6 +2984,15 @@ func _show_online_host_tab() -> void:
 		_apply_retro_button_style(btn_host_start_battle, Color(0.3, 0.4, 0.5), Color(0.3, 0.4, 0.5))
 		
 	_update_lobby_teams_ui()
+	
+	# Si ya somos anfitrión y tenemos una sala activa válida, reutilizarla
+	if OnlineManager.is_host and not OnlineManager.room_code.is_empty():
+		room_code_lbl.text = OnlineManager.room_code
+		host_status_lbl.text = "⏳ Comparte el código %s con tu rival para combatir." % OnlineManager.room_code
+		return
+		
+	room_code_lbl.text = "----"
+	host_status_lbl.text = "⏳ Creando sala en Google Cloud..."
 	
 	OnlineManager.create_room(GameData.profile_name, selected_player_ids, func(success: bool, code: String):
 		if success:
@@ -3018,16 +3025,19 @@ func _show_online_join_tab() -> void:
 func _on_confirm_join_pressed() -> void:
 	_ensure_default_online_team()
 	_is_online_match_launching = false
-	var code = join_code_input.text.strip_edges().to_upper()
-	if code.length() < 3:
+	var raw_code = join_code_input.text.strip_edges().to_upper()
+	var regex = RegEx.new()
+	if regex.compile("[^A-Z0-9]") == OK:
+		raw_code = regex.sub(raw_code, "", true)
+	if raw_code.length() != 4:
 		join_status_lbl.text = "⚠️ Ingresa el código de 4 caracteres de la sala."
 		join_status_lbl.add_theme_color_override("font_color", Color("#FF5252"))
 		return
-	join_status_lbl.text = "🔄 Conectando a la sala %s..." % code
+	join_status_lbl.text = "🔄 Conectando a la sala %s..." % raw_code
 	join_status_lbl.add_theme_color_override("font_color", Color("#81D4FA"))
 	btn_confirm_join.disabled = true
 	
-	OnlineManager.join_room(code, GameData.profile_name, selected_player_ids, func(success: bool, msg: String):
+	OnlineManager.join_room(raw_code, GameData.profile_name, selected_player_ids, func(success: bool, msg: String):
 		btn_confirm_join.disabled = false
 		if success:
 			if join_input_section:
@@ -3035,7 +3045,7 @@ func _on_confirm_join_pressed() -> void:
 			if guest_lobby_section:
 				guest_lobby_section.visible = true
 			if guest_room_info_lbl:
-				guest_room_info_lbl.text = "🏠 Conectado a la sala %s (Anfitrión: %s)" % [code, OnlineManager.opponent_name]
+				guest_room_info_lbl.text = "🏠 Conectado a la sala %s (Anfitrión: %s)" % [raw_code, OnlineManager.opponent_name]
 			if btn_guest_ready_toggle:
 				btn_guest_ready_toggle.text = "✅ ¡ESTOY LISTO! (READY)"
 				_apply_retro_button_style(btn_guest_ready_toggle, Color(0.2, 0.7, 0.3), Color(0.3, 0.9, 0.4))
@@ -7388,10 +7398,28 @@ func _challenge_friend(f_data: Dictionary) -> void:
 	friends_modal.visible = false
 	online_lobby_modal.visible = true
 	
-	# Mostrar pestaña de Anfitrión (Host)
-	_show_online_host_tab()
+	_is_online_match_launching = false
+	btn_tab_create_room.button_pressed = true
+	btn_tab_join_room.button_pressed = false
+	_style_toggle_btn(btn_tab_create_room, true, Color("#4CAF50"))
+	_style_toggle_btn(btn_tab_join_room, false, Color("#2196F3"))
+	host_panel.visible = true
+	join_panel.visible = false
+	
 	room_code_lbl.text = "...."
-	host_status_lbl.text = "⚔️ Challenging %s...\nCreating room..." % f_data.get("alias", "Friend")
+	host_status_lbl.text = "⚔️ Challenging %s...\nCreating room in Google Cloud..." % f_data.get("alias", "Friend")
+	
+	if host_rival_info_lbl:
+		host_rival_info_lbl.text = "👤 Rival: %s (Direct Challenge)" % f_data.get("alias", "Friend")
+	if host_rival_ready_badge:
+		host_rival_ready_badge.text = "🔴 Rival: Waiting to join..."
+		host_rival_ready_badge.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
+	if btn_host_start_battle:
+		btn_host_start_battle.disabled = true
+		btn_host_start_battle.text = "⚔️ Esperando que el rival esté LISTO..."
+		_apply_retro_button_style(btn_host_start_battle, Color(0.3, 0.4, 0.5), Color(0.3, 0.4, 0.5))
+		
+	_update_lobby_teams_ui()
 	
 	OnlineManager.create_room(GameData.profile_name, selected_player_ids, func(success: bool, code: String):
 		if success:
