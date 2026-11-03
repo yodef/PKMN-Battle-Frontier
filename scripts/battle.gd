@@ -205,6 +205,14 @@ func _ready() -> void:
 		type_chart_modal.visible = false
 	_build_type_chart_matrix()
 	
+	if battle_title_lbl:
+		battle_title_lbl.clip_text = true
+		battle_title_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	if enemy_type_lbl:
+		enemy_type_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if player_type_lbl:
+		player_type_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	
 	var em_sb = StyleBoxFlat.new()
 	em_sb.bg_color = Color("#121722")
 	em_sb.border_color = Color("#384860")
@@ -334,8 +342,8 @@ func _setup_details_inspector_modal() -> void:
 		var btn_info = Button.new()
 		btn_info.name = "BtnDetailsInfo"
 		btn_info.text = "📜 Info"
-		btn_info.custom_minimum_size = Vector2(76, 30)
-		btn_info.add_theme_font_size_override("font_size", 12)
+		btn_info.custom_minimum_size = Vector2(64, 30)
+		btn_info.add_theme_font_size_override("font_size", 11)
 		btn_info.pressed.connect(func():
 			show_pokemon_details(get_active_player(), false)
 		)
@@ -1001,9 +1009,9 @@ func _on_return_to_menu() -> void:
 	if GameData.is_online_pvp:
 		OnlineManager.leave_or_delete_room()
 		GameData.is_online_pvp = false
-	if GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
-		# Los episodios de campaña no se pueden abandonar a mitad de combate manteniendo progreso:
-		# Si sales, se reinicia el progreso del episodio conservando los recursos G y Diamonds
+	if not is_battle_over and GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
+		# Solo si se abandona a mitad de combate (forfeit):
+		# Si sales antes de terminar el combate, se reinicia el progreso del episodio conservando los recursos G y Diamonds
 		GameData.reset_adventure_episode(GameData.adventure_current_episode)
 		GameData.is_campaign_mode = false
 		GameData.save_profile()
@@ -1127,7 +1135,7 @@ func start_new_game() -> void:
 			var total_stages = GameData.get_adventure_total_stages(GameData.adventure_current_episode)
 			var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
 			var trainer_name = stage_info.get("trainer_name", "Trainer")
-			battle_title_lbl.text = "🗺️ Ep. %d - %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name, GameData.adventure_current_stage, total_stages]
+			battle_title_lbl.text = "🗺️ Ep. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name, GameData.adventure_current_stage, total_stages]
 		else:
 			rival_ids = GameData.get_campaign_rival_team(GameData.campaign_match_number)
 			var match_info = GameData.get_tournament_match_info(GameData.campaign_match_number)
@@ -3966,6 +3974,14 @@ func _setup_battle_hud_theme() -> void:
 		spd_hover.border_color = Color("#40c4ff")
 		spd_hover.bg_color = Color("#1a3048")
 		btn_speed.add_theme_stylebox_override("hover", spd_hover)
+		
+	var btn_info_node = $MainContainer/TopBar.get_node_or_null("BtnDetailsInfo") if has_node("MainContainer/TopBar") else null
+	if btn_info_node:
+		btn_info_node.add_theme_stylebox_override("normal", spd_btn_style.duplicate())
+		var info_hover = spd_btn_style.duplicate()
+		info_hover.border_color = Color("#81c784")
+		info_hover.bg_color = Color("#1a3528")
+		btn_info_node.add_theme_stylebox_override("hover", info_hover)
 		
 	# Estilo para el modal de la Tabla de Tipos
 	var tc_diag_box = StyleBoxTexture.new()

@@ -41,33 +41,35 @@ theme_override_constants/separation = 10
 
 [node name="TopBar" type="HBoxContainer" parent="MainContainer" unique_id=1285804470]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="BtnBackMenu" type="Button" parent="MainContainer/TopBar" unique_id=1346424738]
-custom_minimum_size = Vector2(80, 30)
+custom_minimum_size = Vector2(68, 30)
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 text = "⬅ Menu"
 
 [node name="BtnTypeChart" type="Button" parent="MainContainer/TopBar" unique_id=2109250054]
-custom_minimum_size = Vector2(95, 30)
+custom_minimum_size = Vector2(76, 30)
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 text = "⚖️ Types"
 
 [node name="BtnSpeed" type="Button" parent="MainContainer/TopBar" unique_id=1459203810]
-custom_minimum_size = Vector2(76, 30)
+custom_minimum_size = Vector2(64, 30)
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 text = "⏩ 1x"
 
 [node name="BattleTitle" type="Label" parent="MainContainer/TopBar" unique_id=1658137403]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "Quick Battle (3 vs 3)"
 horizontal_alignment = 2
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="EnemySection" type="PanelContainer" parent="MainContainer" unique_id=566976687]
 layout_mode = 2
@@ -108,6 +110,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.8, 0.85, 1)
 theme_override_font_sizes/font_size = 11
 text = "Type: ... | Weak: ... | Res: ..."
+autowrap_mode = 2
 
 [node name="EnemyBenchRow" type="VBoxContainer" parent="MainContainer/EnemySection/HBox/Info" unique_id=2076124255]
 layout_mode = 2
@@ -368,6 +371,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.8, 0.85, 1)
 theme_override_font_sizes/font_size = 11
 text = "Type: ... | Weak: ... | Res: ..."
+autowrap_mode = 2
 
 [node name="BenchRow" type="VBoxContainer" parent="MainContainer/PlayerSection/HBox/Info" unique_id=1078930811]
 layout_mode = 2
