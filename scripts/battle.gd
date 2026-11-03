@@ -2744,24 +2744,27 @@ func _resolve_battle_victory() -> void:
 			var outro_msg = "\n💬 %s: \"%s\"" % [trainer_name, outro_text] if outro_text != "" else ""
 			
 			if cur_stage >= total_stages:
-				# Final boss cleared! (Brock in Episode I)
+				# Final boss cleared! (Brock in Ep I, Misty in Ep II, etc.)
 				var bonus_diamonds = GameData.complete_adventure_episode(ep_id)
 				var badge_str = stage_info.get("badge_name", "Boulder Badge")
+				var ep_info = GameData.get_adventure_episode_info(ep_id)
+				var next_ep_id = ep_id + 1
 				var first_clear_text = ""
 				if bonus_diamonds > 0:
-					first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Episode II Unlocked!" % bonus_diamonds
+					first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Episode %d Unlocked!" % [bonus_diamonds, next_ep_id]
 				else:
 					first_clear_text = "\n(Episode already cleared - replay completed!)"
 					
-				# Reiniciar progreso del run del episodio al terminar para evitar farmear a Brock
+				# Reiniciar progreso del run del episodio al terminar para evitar farmear al jefe
 				GameData.reset_adventure_episode(ep_id)
 				GameData.is_campaign_mode = false
 				GameData.last_adventure_episode_conquered = true
 				GameData.save_profile()
 				show_game_over(
 					"🎉 EPISODE CONQUERED! %s WON!" % badge_str.to_upper(),
-					"You defeated %s and conquered Episode I!%s%s%s\nFinal Gold: %d G | Total Diamonds: 💎 %d%s\nCongratulations on your grand victory!" % [
+					"You defeated %s and conquered %s!%s%s%s\nFinal Gold: %d G | Total Diamonds: 💎 %d%s\nCongratulations on your grand victory!" % [
 						trainer_name,
+						ep_info.get("title", "Episode %d" % ep_id),
 						outro_msg,
 						first_clear_text,
 						loot_details,

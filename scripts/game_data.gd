@@ -337,9 +337,59 @@ const ADVENTURE_EPISODES: Dictionary = {
 	2: {
 		"id": 2,
 		"title": "Episode II: Cerulean City Gym",
-		"subtitle": "Traverse Mt. Moon and Route 4 to challenge Misty!",
+		"subtitle": "Traverse Mt. Moon and Route 4 to challenge Gym Leader Misty!",
+		"reward_diamonds_first_clear": 30,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Bird Keeper",
+				"trainer_name": "Bird Keeper Perry",
+				"intro": "The sky belongs to my bird Pokémon! Spearow and Pidgey, dive in!",
+				"outro": "Grounded already? What a fierce flight!",
+				"team_pokemon_names": ["Spearow", "Pidgey"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Lass",
+				"trainer_name": "Lass Iris",
+				"intro": "Listen closely to my Jigglypuff's soothing melody... sleep tight!",
+				"outro": "My lullaby wasn't enough to stop you!",
+				"team_pokemon_names": ["Jigglypuff"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Team Rocket Grunt",
+				"trainer_name": "Rocket Grunt",
+				"intro": "Hand over your rare cards! Ekans and Zubat, strike from the shadows!",
+				"outro": "Team Rocket is blasting off again?!",
+				"team_pokemon_names": ["Ekans", "Zubat"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Hiker",
+				"trainer_name": "Hiker Marcos",
+				"intro": "Mt. Moon's boulders are tough, but my rock crew is tougher!",
+				"outro": "Crumbled to dust! You've got sheer power!",
+				"team_pokemon_names": ["Geodude", "Rhyhorn"]
+			},
+			{
+				"stage_num": 5,
+				"trainer_title": "Gym Leader Misty",
+				"trainer_name": "Gym Leader Misty",
+				"is_boss": true,
+				"badge_name": "Cascade Badge",
+				"intro": "I'm Misty, the Tomboyish Mermaid! My Water Pokémon will wash you away!",
+				"outro": "You're genuinely talented! You've earned the Cascade Badge!",
+				"team_pokemon_names": ["Staryu", "Psyduck", "Starmie"]
+			}
+		]
+	},
+	3: {
+		"id": 3,
+		"title": "Episode III: Vermilion City Gym",
+		"subtitle": "Board the S.S. Anne and battle through Vermilion to challenge Gym Leader Lt. Surge!",
 		"locked": true,
-		"reward_diamonds_first_clear": 25,
+		"reward_diamonds_first_clear": 40,
 		"stages": []
 	}
 }
@@ -826,6 +876,8 @@ func get_pokemon_id_by_name(pkmn_name: String) -> int:
 		return -1
 	if clean == "onix":
 		clean = "onyx"
+	if clean == "ryhorn":
+		clean = "rhyhorn"
 	for id in all_pokemon_ids:
 		var d = pokemon_catalog.get(id, {})
 		if str(d.get("name", "")).strip_edges().to_lower() == clean:
@@ -3103,10 +3155,10 @@ func get_save_dict() -> Dictionary:
 			"current_episode": adventure_current_episode,
 			"current_stage": adventure_current_stage,
 			"gold": adventure_gold,
-			"inventory": adventure_inventory,
-			"team_state": adventure_player_team_state,
-			"completed_episodes": adventure_completed_episodes,
-			"unlocked_episodes": adventure_unlocked_episodes
+			"inventory": adventure_inventory.duplicate(true),
+			"team_state": adventure_player_team_state.duplicate(true),
+			"completed_episodes": adventure_completed_episodes.duplicate(),
+			"unlocked_episodes": adventure_unlocked_episodes.duplicate()
 		},
 		"settings": {
 			"music_volume": settings_music_volume,

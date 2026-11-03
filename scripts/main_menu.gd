@@ -50,6 +50,8 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var btn_hub_adventure_ep1: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin/Ep1VBox/BtnHubAdventureEp1
 @onready var ep2_status_lbl: Label = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin/Ep2VBox/Ep2Status
 @onready var btn_hub_adventure_ep2: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin/Ep2VBox/BtnHubAdventureEp2
+@onready var ep3_status_lbl: Label = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3/Margin/Ep3VBox/Ep3Status
+@onready var btn_hub_adventure_ep3: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3/Margin/Ep3VBox/BtnHubAdventureEp3
 @onready var btn_close_adventure_episodes: Button = $AdventureEpisodesModal/Box/BtnCloseAdventureEpisodes
 
 var tutorial_confirm_modal: Control = null
@@ -432,6 +434,7 @@ func _ready() -> void:
 	
 	# Modal Adventure Episodes
 	btn_hub_adventure_ep1.pressed.connect(_on_select_adventure_ep1_pressed)
+	btn_hub_adventure_ep2.pressed.connect(_on_select_adventure_ep2_pressed)
 	btn_close_adventure_episodes.pressed.connect(func():
 		adventure_episodes_modal.visible = false
 		update_campaign_hub_ui()
@@ -442,7 +445,8 @@ func _ready() -> void:
 		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure",
 		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament",
 		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1",
-		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2"
+		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2",
+		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3"
 	]:
 		var card_node = get_node_or_null(card_path)
 		if card_node:
@@ -977,13 +981,20 @@ func update_campaign_hub_ui() -> void:
 		btn_hub_adventure.text = "🔒 Locked (Complete Tutorial)"
 	else:
 		var ep1_done = GameData.is_adventure_episode_completed(1)
+		var ep2_done = GameData.is_adventure_episode_completed(2)
 		if not GameData.adventure_player_team_state.is_empty():
-			adv_status_lbl.text = "Status: In Progress • Episode I (Stage %d/%d)" % [
+			var cur_ep_roman = "II" if GameData.adventure_current_episode == 2 else "I"
+			adv_status_lbl.text = "Status: In Progress • Episode %s (Stage %d/%d)" % [
+				cur_ep_roman,
 				GameData.adventure_current_stage,
-				GameData.get_adventure_total_stages(1)
+				GameData.get_adventure_total_stages(GameData.adventure_current_episode)
 			]
 			adv_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
 			btn_hub_adventure.text = "🗺️ Continue Adventure (Episodes) ➜"
+		elif ep2_done:
+			adv_status_lbl.text = "Status: 🔓 Unlocked • Ep. I & II Conquered (Cascade Badge Won!)"
+			adv_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			btn_hub_adventure.text = "🗺️ Enter Adventure Mode (Episodes) ➜"
 		elif ep1_done:
 			adv_status_lbl.text = "Status: 🔓 Unlocked • Episode I Conquered (Boulder Badge Won!)"
 			adv_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
@@ -1025,35 +1036,67 @@ func update_adventure_episodes_ui() -> void:
 		ep1_status_lbl.text = "Status: 🔒 Locked (Complete Tutorial First!)"
 		ep1_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
 		btn_hub_adventure_ep1.text = "🔒 Locked (Complete Tutorial)"
+		btn_hub_adventure_ep1.disabled = false
+	elif GameData.adventure_current_episode == 1 and not GameData.adventure_player_team_state.is_empty():
+		var total_stages1 = GameData.get_adventure_total_stages(1)
+		ep1_status_lbl.text = "Status: In Progress (Stage %d/%d)" % [
+			GameData.adventure_current_stage,
+			total_stages1
+		]
+		ep1_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		btn_hub_adventure_ep1.text = "⛺ Continue Episode I (Camp)"
+		btn_hub_adventure_ep1.disabled = false
 	elif ep1_completed:
 		ep1_status_lbl.text = "Status: 🏅 COMPLETED (Boulder Badge Won!) • Replayable"
 		ep1_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 		btn_hub_adventure_ep1.text = "🗺️ Replay Episode I"
-	elif GameData.adventure_player_team_state.is_empty():
-		ep1_status_lbl.text = "Status: Not started • Ready to embark"
+		btn_hub_adventure_ep1.disabled = false
+	else:
+		ep1_status_lbl.text = "Status: Ready to embark"
 		ep1_status_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
 		btn_hub_adventure_ep1.text = "🗺️ Embark on Episode I"
-	else:
-		var total_stages = GameData.get_adventure_total_stages(1)
-		ep1_status_lbl.text = "Status: In Progress (Stage %d/%d)" % [
-			GameData.adventure_current_stage,
-			total_stages
-		]
-		ep1_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
-		btn_hub_adventure_ep1.text = "⛺ Continue Episode I (Camp)"
+		btn_hub_adventure_ep1.disabled = false
 		
-	# Estado del Episodio II (inhabilitado temporalmente)
+	# Estado del Episodio II
 	var ep2_unlocked = GameData.is_adventure_episode_unlocked(2)
-	if ep2_unlocked:
-		ep2_status_lbl.text = "Status: 🔓 Unlocked! (Disabled for Episode I testing)"
-		ep2_status_lbl.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
-		btn_hub_adventure_ep2.text = "🚧 Coming Soon (Testing Ep. I)"
-		btn_hub_adventure_ep2.disabled = true
-	else:
-		ep2_status_lbl.text = "Status: 🔒 Locked (Clear Episode I first)"
+	var ep2_completed = GameData.is_adventure_episode_completed(2)
+	if not ep2_unlocked:
+		ep2_status_lbl.text = "Status: 🔒 Locked (Complete Episode I first)"
 		ep2_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
-		btn_hub_adventure_ep2.text = "🔒 Locked"
+		btn_hub_adventure_ep2.text = "🔒 Locked (Clear Episode I)"
 		btn_hub_adventure_ep2.disabled = true
+	elif GameData.adventure_current_episode == 2 and not GameData.adventure_player_team_state.is_empty():
+		var total_stages2 = GameData.get_adventure_total_stages(2)
+		ep2_status_lbl.text = "Status: In Progress (Stage %d/%d)" % [
+			GameData.adventure_current_stage,
+			total_stages2
+		]
+		ep2_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		btn_hub_adventure_ep2.text = "⛺ Continue Episode II (Camp)"
+		btn_hub_adventure_ep2.disabled = false
+	elif ep2_completed:
+		ep2_status_lbl.text = "Status: 🏅 COMPLETED (Cascade Badge Won!) • Replayable"
+		ep2_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		btn_hub_adventure_ep2.text = "🗺️ Replay Episode II"
+		btn_hub_adventure_ep2.disabled = false
+	else:
+		ep2_status_lbl.text = "Status: Ready to embark"
+		ep2_status_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		btn_hub_adventure_ep2.text = "🗺️ Embark on Episode II"
+		btn_hub_adventure_ep2.disabled = false
+
+	# Estado del Episodio III (bloqueado hasta completar Ep. II)
+	var ep3_unlocked = GameData.is_adventure_episode_unlocked(3)
+	if not ep3_unlocked:
+		ep3_status_lbl.text = "Status: 🔒 Locked (Complete Episode II first)"
+		ep3_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+		btn_hub_adventure_ep3.text = "🔒 Locked (Clear Episode II)"
+		btn_hub_adventure_ep3.disabled = true
+	else:
+		ep3_status_lbl.text = "Status: 🚧 Coming Soon (In Development)"
+		ep3_status_lbl.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
+		btn_hub_adventure_ep3.text = "🚧 Coming Soon"
+		btn_hub_adventure_ep3.disabled = true
 
 func _on_hub_adventure_pressed() -> void:
 	if not GameData.is_tutorial_completed():
@@ -1073,19 +1116,29 @@ func _on_select_tournament_pressed() -> void:
 		campaign_modal.visible = true
 		_check_and_run_camp_evolutions()
 
-func _on_select_adventure_ep1_pressed() -> void:
+func _on_select_adventure_episode_pressed(episode_id: int) -> void:
 	if not GameData.is_tutorial_completed():
 		_show_tutorial_prompt_for_locked_episode()
 		return
+	if not GameData.is_adventure_episode_unlocked(episode_id):
+		return
 	adventure_episodes_modal.visible = false
 	GameData.campaign_submode = "ADVENTURE"
-	GameData.adventure_current_episode = 1
+	if GameData.adventure_current_episode != episode_id:
+		GameData.reset_adventure_episode(episode_id)
+	GameData.adventure_current_episode = episode_id
 	if GameData.adventure_player_team_state.is_empty():
 		open_team_select_for_campaign()
 	else:
 		update_campaign_ui()
 		campaign_modal.visible = true
 		_check_and_run_camp_evolutions()
+
+func _on_select_adventure_ep1_pressed() -> void:
+	_on_select_adventure_episode_pressed(1)
+
+func _on_select_adventure_ep2_pressed() -> void:
+	_on_select_adventure_episode_pressed(2)
 
 func _on_hub_tutorial_pressed() -> void:
 	_show_tutorial_confirmation_modal()
@@ -1198,7 +1251,8 @@ func open_team_select_for_campaign() -> void:
 	
 	if GameData.campaign_submode == "ADVENTURE":
 		team_select_title.text = "🗺️ ADVENTURE TEAM"
-		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode I (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
+		var ep_roman = "II" if GameData.adventure_current_episode == 2 else "I"
+		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
 	else:
 		team_select_title.text = "🏟️ POKÉMON STADIUM TEAM"
 		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Pokémon Stadium (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
@@ -1272,7 +1326,11 @@ func update_campaign_ui() -> void:
 			camp_team_header.text = "👥 YOUR ADVENTURE TEAM:"
 			
 		if cur_stage > total_stages:
-			campaign_match_lbl.text = "🎉 EPISODE CONQUERED! Boulder Badge Won!"
+			var badge_name = "Badge"
+			var stages = ep_info.get("stages", [])
+			if stages.size() > 0:
+				badge_name = stages[stages.size() - 1].get("badge_name", "Badge")
+			campaign_match_lbl.text = "🎉 EPISODE CONQUERED! %s Won!" % badge_name
 			btn_start_campaign_battle.text = "🏆 Replay Episode"
 			btn_start_campaign_battle.disabled = false
 			if campaign_track_diagram:
@@ -3078,7 +3136,8 @@ func update_team_select_ui() -> void:
 			qb_mode_row.visible = false
 		if GameData.campaign_submode == "ADVENTURE":
 			team_select_title.text = "🗺️ ADVENTURE TEAM"
-			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode I (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
+			var ep_roman = "II" if GameData.adventure_current_episode == 2 else "I"
+			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
 		else:
 			team_select_title.text = "🏟️ POKÉMON STADIUM TEAM"
 			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Pokémon Stadium (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
@@ -3812,6 +3871,9 @@ func _apply_pokemon_ui_theme() -> void:
 	var card_ep2 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2")
 	if card_ep2 is PanelContainer:
 		card_ep2.add_theme_stylebox_override("panel", teal_sb.duplicate())
+	var card_ep3 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3")
+	if card_ep3 is PanelContainer:
+		card_ep3.add_theme_stylebox_override("panel", teal_sb.duplicate())
 
 	# Camp Supply Shop Panel
 	var camp_shop_panel = find_child("ShopSection", true, false)
@@ -3825,7 +3887,8 @@ func _apply_pokemon_ui_theme() -> void:
 	_apply_retro_button_style(btn_close_campaign_hub, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
 
 	_apply_retro_button_style(btn_hub_adventure_ep1, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
-	_apply_retro_button_style(btn_hub_adventure_ep2, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	_apply_retro_button_style(btn_hub_adventure_ep2, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+	_apply_retro_button_style(btn_hub_adventure_ep3, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
 	_apply_retro_button_style(btn_close_adventure_episodes, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
 
 	_apply_retro_button_style(btn_buy_potion, Color(0.20, 0.50, 0.80), Color(0.35, 0.75, 1.00), false)
