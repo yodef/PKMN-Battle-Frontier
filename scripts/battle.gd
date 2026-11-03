@@ -1772,6 +1772,29 @@ func _finish_round() -> void:
 	var timer = get_tree().create_timer(1.2)
 	timer.timeout.connect(start_new_round)
 
+func _is_status_move_redundant(move_data, target) -> bool:
+	if not move_data or not target:
+		return false
+	if move_data.effect_type == "SLEEP":
+		return (target.is_asleep_turns > 0 or target.immune_sleep_rounds > 0)
+	if move_data.effect_type == "PARALYZE":
+		return (target.is_paralyzed or target.paralyze_turns > 0)
+	if move_data.effect_type == "BURN" or move_data.boost_applies_burn:
+		return (target.burn_turns > 0)
+	if move_data.effect_type == "POISON" or move_data.causes_poison:
+		return target.is_poisoned
+	if move_data.effect_type == "CONFUSION":
+		return (target.is_confused or target.confused_turns > 0)
+	if move_data.effect_type == "FREEZE":
+		return (target.is_frozen or target.frozen_turns > 0)
+	if move_data.effect_type == "CONSTRICT":
+		return (target.constricted_turns > 0)
+	if move_data.effect_type == "SEEDED":
+		return (target.is_seeded_turns > 0)
+	if move_data.effect_type == "ENVENOM":
+		return (target.toxic_envenomed or not target.is_poisoned)
+	return false
+
 func execute_enemy_ai() -> void:
 	if is_battle_over or check_team_defeat():
 		return
@@ -1809,6 +1832,10 @@ func execute_enemy_ai() -> void:
 	var move1 = e.moves[0]
 	var move2 = e.moves[1]
 	
+	# Detectar si alguno de los movimientos es puramente de estado (0 DMG) y redundante contra el rival
+	var m2_redundant = (move2.base_damage == 0 and _is_status_move_redundant(move2, p))
+	var m1_redundant = (move1.base_damage == 0 and _is_status_move_redundant(move1, p))
+	
 	# 1. Pichu Thunder Shock
 	if move2.is_pichu_shock and e.current_energy >= move2.cost:
 		perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
@@ -1834,26 +1861,31 @@ func execute_enemy_ai() -> void:
 			bonus = true
 		if bonus or randf() < 0.7:
 			perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
-		elif e.current_energy >= move1.min_energy_req:
+		elif e.current_energy >= move1.min_energy_req and not m1_redundant:
 			perform_attack(e, p, move1, false, move1.cost, enemy_card_img, player_card_img)
 		else:
 			enemy_do_recover()
 			return
 	# 7. Comportamiento general
-	elif e.current_energy >= move2.cost:
+	elif not m2_redundant and e.current_energy >= move2.cost:
 		var rng = randf()
-		if rng < 0.65:
+		if (rng < 0.65 or m1_redundant):
 			perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
-		elif rng < 0.85 and e.current_energy >= move1.min_energy_req:
+		elif rng < 0.85 and e.current_energy >= move1.min_energy_req and not m1_redundant:
 			perform_attack(e, p, move1, false, move1.cost, enemy_card_img, player_card_img)
+		elif m1_redundant:
+			perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
 		else:
 			enemy_do_recover()
 			return
-	elif e.current_energy >= move2.min_energy_req and move2.cost > 1 and randf() < 0.4:
+	elif not m2_redundant and e.current_energy >= move2.min_energy_req and move2.cost > 1 and (randf() < 0.4 or m1_redundant):
 		var spent = min(e.current_energy, move2.cost)
 		perform_attack(e, p, move2, false, spent, enemy_card_img, player_card_img)
-	elif e.current_energy >= move1.min_energy_req:
+	elif not m1_redundant and e.current_energy >= move1.min_energy_req:
 		perform_attack(e, p, move1, false, move1.cost, enemy_card_img, player_card_img)
+	elif not m2_redundant and e.current_energy >= move2.min_energy_req:
+		var spent = min(e.current_energy, move2.cost)
+		perform_attack(e, p, move2, false, spent, enemy_card_img, player_card_img)
 	else:
 		enemy_do_recover()
 		return
@@ -2235,16 +2267,23 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if not effect_annulled and is_full_energy:
 		# Quemadura
 		if (boosted and move.name == "Inferno") or (boosted and (move.boost_applies_burn or move.effect_type == "BURN")) or (move.effect_type == "BURN"):
-			defender.burn_turns = 2
-			defender.burn_dmg = 3 if ("3 DMG" in move.description or move.name == "Inferno") else (2 if ("2 DMG" in move.description or move.name in ["Burn Up", "Fire Fang", "Fire Blast"]) else 1)
-			note_text += " [color=orange]Inflicted BURN (%d DMG x 2 turns)![/color]" % defender.burn_dmg
-			var def_overlay = player_status_overlay if defender == get_active_player() else enemy_status_overlay
-			if def_overlay:
-				def_overlay.trigger_burn_effect()
+			if defender.burn_turns > 0:
+				note_text += " [color=gray](%s is already burned - move had no effect!)[/color]" % defender.name
+				spawn_floating_combat_text(defender_visual, "Already Burned!", Color("#f97316"))
+			else:
+				defender.burn_turns = 2
+				defender.burn_dmg = 3 if ("3 DMG" in move.description or move.name == "Inferno") else (2 if ("2 DMG" in move.description or move.name in ["Burn Up", "Fire Fang", "Fire Blast"]) else 1)
+				note_text += " [color=orange]Inflicted BURN (%d DMG x 2 turns)![/color]" % defender.burn_dmg
+				var def_overlay = player_status_overlay if defender == get_active_player() else enemy_status_overlay
+				if def_overlay:
+					def_overlay.trigger_burn_effect()
 			
 		# Envenenamiento
 		if move.effect_type == "POISON":
-			if not defender.is_poisoned:
+			if defender.is_poisoned:
+				note_text += " [color=gray](%s is already poisoned - move had no effect!)[/color]" % defender.name
+				spawn_floating_combat_text(defender_visual, "Already Poisoned!", Color("#a855f7"))
+			else:
 				defender.is_poisoned = true
 				note_text += " [color=purple]Inflicted POISON (-1 permanent DMG)![/color]"
 				var def_overlay = player_status_overlay if defender == get_active_player() else enemy_status_overlay
@@ -2252,7 +2291,10 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 					def_overlay.trigger_poison_effect()
 		elif move.causes_poison or move.effect_type == "POISON_IF_FASTER":
 			if att_spd > def_spd:
-				if not defender.is_poisoned:
+				if defender.is_poisoned:
+					note_text += " [color=gray](%s is already poisoned - move had no effect!)[/color]" % defender.name
+					spawn_floating_combat_text(defender_visual, "Already Poisoned!", Color("#a855f7"))
+				else:
 					defender.is_poisoned = true
 					note_text += " [color=purple]Inflicted POISON (-1 permanent DMG)![/color]"
 					var def_overlay = player_status_overlay if defender == get_active_player() else enemy_status_overlay
@@ -2263,46 +2305,75 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				
 		# Toxic (ENVENOM)
 		if move.effect_type == "ENVENOM":
-			if defender.is_poisoned:
+			if defender.toxic_envenomed:
+				note_text += " [color=gray](%s is already envenomed with Toxic - move had no effect!)[/color]" % defender.name
+				spawn_floating_combat_text(defender_visual, "Already Envenomed!", Color("#9333ea"))
+			elif defender.is_poisoned:
 				defender.toxic_envenomed = true
 				note_text += " [color=purple]Envenomed with Toxic (1 extra DMG at round end)![/color]"
+			else:
+				note_text += " [color=gray](Toxic requires foe to be poisoned first)[/color]"
 				
 		# Congelación (FREEZE)
 		if move.effect_type == "FREEZE":
-			defender.is_frozen = true
-			defender.frozen_turns = 0
-			note_text += " [color=cyan]Inflicted FREEZE (foe cannot move, max 2 rounds or thaw on Fire)![/color]"
+			if defender.is_frozen or defender.frozen_turns > 0:
+				note_text += " [color=gray](%s is already frozen - move had no effect!)[/color]" % defender.name
+				spawn_floating_combat_text(defender_visual, "Already Frozen!", Color("#38bdf8"))
+			else:
+				defender.is_frozen = true
+				defender.frozen_turns = 0
+				note_text += " [color=cyan]Inflicted FREEZE (foe cannot move, max 2 rounds or thaw on Fire)![/color]"
 			
 		# Sueño (SLEEP)
 		if move.effect_type == "SLEEP":
 			if defender.immune_sleep_rounds > 0:
-				note_text += " [color=gray](Immune to Sleep: recently woke up)[/color]"
+				note_text += " [color=gray](Immune to Sleep: recently woke up - move had no effect!)[/color]"
+				spawn_floating_combat_text(defender_visual, "Sleep Immune!", Color("#94a3b8"))
+			elif defender.is_asleep_turns > 0:
+				note_text += " [color=gray](%s is already asleep - move had no effect!)[/color]" % defender.name
+				spawn_floating_combat_text(defender_visual, "Already Asleep!", Color("#818cf8"))
 			else:
 				defender.is_asleep_turns = 2
 				note_text += " [color=lightblue]Put foe to SLEEP (2 rounds)![/color]"
 			
 		# Parálisis (PARALYZE)
 		if move.effect_type == "PARALYZE":
-			defender.is_paralyzed = true
-			defender.paralyze_turns = 2
-			note_text += " [color=yellow]Inflicted PARALYZE (25% chance cannot act, 2 rounds)![/color]"
+			if defender.is_paralyzed or defender.paralyze_turns > 0:
+				note_text += " [color=gray](%s is already paralyzed - move had no effect!)[/color]" % defender.name
+				spawn_floating_combat_text(defender_visual, "Already Paralyzed!", Color("#facc15"))
+			else:
+				defender.is_paralyzed = true
+				defender.paralyze_turns = 2
+				note_text += " [color=yellow]Inflicted PARALYZE (25% chance cannot act, 2 rounds)![/color]"
 			
 		# Confusión (CONFUSION)
 		if move.effect_type == "CONFUSION":
-			defender.is_confused = true
-			defender.confused_turns = 0
-			note_text += " [color=magenta]Inflicted CONFUSION (35% snap out, max 3 rounds, 2 self-DMG)![/color]"
+			if defender.is_confused or defender.confused_turns > 0:
+				note_text += " [color=gray](%s is already confused - move had no effect!)[/color]" % defender.name
+				spawn_floating_combat_text(defender_visual, "Already Confused!", Color("#e879f9"))
+			else:
+				defender.is_confused = true
+				defender.confused_turns = 0
+				note_text += " [color=magenta]Inflicted CONFUSION (35% snap out, max 3 rounds, 2 self-DMG)![/color]"
 			
 		# Constricción (CONSTRICT e.g. Sand Tomb / Wrap)
 		if move.effect_type == "CONSTRICT":
-			defender.is_constricted_dmg = 2 if move.name == "Sand Tomb" else 1
-			defender.constricted_turns = 2
-			note_text += " [color=orange]Trapped foe! Cannot switch and takes %d DMG/round for 2 rounds.[/color]" % defender.is_constricted_dmg
+			if defender.constricted_turns > 0:
+				note_text += " [color=gray](%s is already trapped - move had no effect!)[/color]" % defender.name
+				spawn_floating_combat_text(defender_visual, "Already Trapped!", Color("#fb923c"))
+			else:
+				defender.is_constricted_dmg = 2 if move.name == "Sand Tomb" else 1
+				defender.constricted_turns = 2
+				note_text += " [color=orange]Trapped foe! Cannot switch and takes %d DMG/round for 2 rounds.[/color]" % defender.is_constricted_dmg
 			
 		# Drenadoras (SEEDED e.g. Leech Seed)
 		if move.effect_type == "SEEDED":
-			defender.is_seeded_turns = 3
-			note_text += " [color=green]Planted Leech Seed on foe (saps 2 HP x 3 rounds)![/color]"
+			if defender.is_seeded_turns > 0:
+				note_text += " [color=gray](%s is already seeded - move had no effect!)[/color]" % defender.name
+				spawn_floating_combat_text(defender_visual, "Already Seeded!", Color("#4ade80"))
+			else:
+				defender.is_seeded_turns = 3
+				note_text += " [color=green]Planted Leech Seed on foe (saps 2 HP x 3 rounds)![/color]"
 			
 		# Flinch
 		var flinch_rate = 1.0 if boosted else (0.30 if "30%" in move.description else (0.20 if "20%" in move.description else (0.15 if "15%" in move.description else 0.0)))
@@ -5231,6 +5302,42 @@ func spawn_floating_combat_number(target_node: Control, amount: int, is_heal: bo
 	tw.tween_property(label, "global_position:y", end_y, 0.8).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.tween_property(label, "global_position:x", start_pos.x + drift_x, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
+	tw.chain().tween_callback(label.queue_free)
+
+# Genera texto flotante con efectos visuales para avisos de combate (ej. "Already Asleep!", "No Effect!")
+func spawn_floating_combat_text(target_node: Control, msg: String, color: Color = Color("#cbd5e1")) -> void:
+	if msg.is_empty():
+		return
+	if not target_node or not is_instance_valid(target_node):
+		return
+	var container: Control = floating_numbers_layer if (floating_numbers_layer and is_instance_valid(floating_numbers_layer)) else self
+	
+	var label = Label.new()
+	label.text = msg
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_font_size_override("font_size", 16)
+	label.add_theme_color_override("font_outline_color", Color(0.04, 0.04, 0.08, 0.95))
+	label.add_theme_constant_override("outline_size", 6)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	var rect = target_node.get_global_rect()
+	var center = rect.get_center()
+	var start_pos = center + Vector2(-36.0, -32.0)
+	
+	label.global_position = start_pos
+	label.pivot_offset = Vector2(36, 12)
+	label.scale = Vector2(0.5, 0.5)
+	label.modulate.a = 0.0
+	
+	container.add_child(label)
+	
+	var tw = create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(label, "modulate:a", 1.0, 0.1)
+	tw.tween_property(label, "modulate:a", 0.0, 0.4).set_delay(0.65)
+	tw.tween_property(label, "scale", Vector2(1.15, 1.15), 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(label, "scale", Vector2(1.0, 1.0), 0.15).set_delay(0.14)
+	tw.tween_property(label, "global_position:y", start_pos.y - 42.0, 0.9).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.chain().tween_callback(label.queue_free)
 
 # --- SISTEMA DE MOCHILA / ITEMS EN COMBATE ---
