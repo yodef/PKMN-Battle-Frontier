@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b1movebaltest01"]
+
+[ext_resource type="Script" path="res://tests/test_move_balance.gd" id="1_bal"]
+
+[node name="TestMoveBalance" type="Node"]
+script = ExtResource("1_bal")
