@@ -187,13 +187,6 @@
     }
 
     window.triggerGoogleLogin = triggerGoogleLogin;
-
-    window.addEventListener('DOMContentLoaded', () => {
-      // Auto-disparar si vino con parámetro de sesión
-      setTimeout(() => {
-        try { triggerGoogleLogin(); } catch(e) {}
-      }, 500);
-    });
   </script>
 </head>
 <body>
