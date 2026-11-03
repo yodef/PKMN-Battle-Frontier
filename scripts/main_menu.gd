@@ -82,6 +82,15 @@ var camp_bag_targets_container: VBoxContainer = null
 var camp_bag_prompt_lbl: Label = null
 var camp_bag_selected_item: String = ""
 var camp_pokemon_inspector_modal: Control = null
+var camp_evo_modal: Control = null
+var camp_evo_title_lbl: Label = null
+var camp_evo_sub_lbl: Label = null
+var camp_evo_sprite: TextureRect = null
+var camp_evo_stats_lbl: Label = null
+var btn_camp_evo_continue: Button = null
+var current_camp_evo_tween: Tween = null
+var _camp_evo_queue: Array[Dictionary] = []
+var _is_camp_evo_active: bool = false
 
 # --- MODAL COLECCIÓN (CUADRÍCULA Y DETALLE) ---
 @onready var collection_modal: Control = $CollectionModal
@@ -438,6 +447,7 @@ func _ready() -> void:
 		if camp_shop_modal: camp_shop_modal.visible = false
 		if camp_bag_modal: camp_bag_modal.visible = false
 		if camp_pokemon_inspector_modal: camp_pokemon_inspector_modal.visible = false
+		if camp_evo_modal: camp_evo_modal.visible = false
 		update_campaign_hub_ui()
 		campaign_hub_modal.visible = true
 		_update_lobby_header_badge()
@@ -728,6 +738,7 @@ func _ready() -> void:
 		if active_state.size() > 0:
 			update_campaign_ui()
 			campaign_modal.visible = true
+			_check_and_run_camp_evolutions()
 
 func refresh_cards_data_from_catalog() -> void:
 	cards_data.clear()
@@ -973,6 +984,7 @@ func _on_select_tournament_pressed() -> void:
 	else:
 		update_campaign_ui()
 		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
 
 func _on_select_adventure_ep1_pressed() -> void:
 	campaign_hub_modal.visible = false
@@ -983,6 +995,7 @@ func _on_select_adventure_ep1_pressed() -> void:
 	else:
 		update_campaign_ui()
 		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
 
 func open_team_select_for_campaign() -> void:
 	refresh_cards_data_from_catalog()
@@ -1040,14 +1053,14 @@ func update_campaign_ui() -> void:
 	campaign_ether_count_lbl.text = "Inventory: %d Ethers" % ethers
 	campaign_revive_count_lbl.text = "Inventory: %d Revives" % revives
 	
-	btn_buy_potion.disabled = (cur_gold < 3)
-	btn_buy_potion.text = "Buy (3 G)"
-	btn_buy_remedy.disabled = (cur_gold < 2)
-	btn_buy_remedy.text = "Buy (2 G)"
-	btn_buy_ether.disabled = (cur_gold < 3)
-	btn_buy_ether.text = "Buy (3 G)"
-	btn_buy_revive.disabled = (cur_gold < 6)
-	btn_buy_revive.text = "Buy (6 G)"
+	btn_buy_potion.disabled = (cur_gold < GameData.ITEM_COST_POTION)
+	btn_buy_potion.text = "Buy (%d G)" % GameData.ITEM_COST_POTION
+	btn_buy_remedy.disabled = (cur_gold < GameData.ITEM_COST_REMEDY)
+	btn_buy_remedy.text = "Buy (%d G)" % GameData.ITEM_COST_REMEDY
+	btn_buy_ether.disabled = (cur_gold < GameData.ITEM_COST_ETHER)
+	btn_buy_ether.text = "Buy (%d G)" % GameData.ITEM_COST_ETHER
+	btn_buy_revive.disabled = (cur_gold < GameData.ITEM_COST_REVIVE)
+	btn_buy_revive.text = "Buy (%d G)" % GameData.ITEM_COST_REVIVE
 	
 	var camp_title = campaign_modal.get_node_or_null("Box/Title")
 	var camp_desc = campaign_modal.get_node_or_null("Box/Desc")
@@ -1302,7 +1315,10 @@ func update_campaign_ui() -> void:
 			exp_bar.value = min(req_exp, cur_exp)
 			var target_id = GameData.get_evolution_target_id(int(p["id"]))
 			if cur_exp >= req_exp:
-				if target_id != -1 and GameData.is_pokemon_unlocked(target_id):
+				if int(p.get("current_hp", 0)) <= 0:
+					exp_lbl.text = "EXP: %d/%d (💀 KO - Revive to Evolve!)" % [cur_exp, req_exp]
+					exp_lbl.add_theme_color_override("font_color", Color("#FF8A80"))
+				elif target_id != -1 and GameData.is_pokemon_unlocked(target_id):
 					var target_name = GameData.pokemon_catalog.get(target_id, {}).get("name", "evolution")
 					exp_lbl.text = "EXP: %d/%d (Ready to Evolve!)" % [cur_exp, req_exp]
 					exp_lbl.add_theme_color_override("font_color", Color("#FFD700"))
@@ -1750,6 +1766,9 @@ func _setup_camp_modals() -> void:
 	
 	# 4. Configurar CampPokemonInspectorModal
 	_setup_camp_pokemon_inspector_modal()
+	
+	# 5. Configurar CampEvolutionModal
+	_setup_camp_evolution_modal()
 
 func _refresh_camp_bag_items_ui() -> void:
 	if not camp_bag_items_view:
@@ -2025,6 +2044,12 @@ func _show_camp_bag_targets(item_id: String) -> void:
 				if success:
 					GameData.play_combat_sfx("use")
 					update_campaign_ui()
+					if cur_it == "revive":
+						var pending = GameData.get_pending_campaign_evolutions()
+						if not pending.is_empty():
+							camp_bag_modal.visible = false
+							_check_and_run_camp_evolutions()
+							return
 					_show_camp_bag_targets(cur_it)
 			)
 		else:
@@ -2288,6 +2313,182 @@ func _open_camp_pokemon_inspector(p: Dictionary) -> void:
 	_apply_retro_button_style(btn_done, Color(0.25, 0.45, 0.55), Color(0.35, 0.65, 0.80), false)
 	btn_done.pressed.connect(func(): camp_pokemon_inspector_modal.visible = false)
 	vbox.add_child(btn_done)
+
+# --- CAMP EVOLUTION SYSTEM ---
+func _setup_camp_evolution_modal() -> void:
+	if camp_evo_modal != null:
+		return
+	camp_evo_modal = Control.new()
+	camp_evo_modal.name = "CampEvolutionModal"
+	camp_evo_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	camp_evo_modal.visible = false
+	camp_evo_modal.z_index = 25
+	add_child(camp_evo_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.04, 0.08, 0.88)
+	camp_evo_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	camp_evo_modal.add_child(center)
+	
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(440, 480)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.11, 0.17, 0.98)
+	sb.border_color = Color(1.0, 0.84, 0.0, 0.95)
+	sb.set_border_width_all(3)
+	sb.set_corner_radius_all(12)
+	sb.content_margin_left = 20
+	sb.content_margin_right = 20
+	sb.content_margin_top = 18
+	sb.content_margin_bottom = 18
+	panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	panel.add_child(vbox)
+	
+	camp_evo_title_lbl = Label.new()
+	camp_evo_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	camp_evo_title_lbl.text = "🌟 POKÉMON EVOLUTION! 🌟"
+	camp_evo_title_lbl.add_theme_font_size_override("font_size", 18)
+	camp_evo_title_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+	vbox.add_child(camp_evo_title_lbl)
+	
+	camp_evo_sub_lbl = Label.new()
+	camp_evo_sub_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	camp_evo_sub_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	camp_evo_sub_lbl.text = "Your Pokémon is evolving at Camp!"
+	camp_evo_sub_lbl.add_theme_font_size_override("font_size", 13)
+	camp_evo_sub_lbl.add_theme_color_override("font_color", Color("#B0BEC5"))
+	vbox.add_child(camp_evo_sub_lbl)
+	
+	var sprite_box = CenterContainer.new()
+	sprite_box.custom_minimum_size = Vector2(0, 180)
+	vbox.add_child(sprite_box)
+	
+	camp_evo_sprite = TextureRect.new()
+	camp_evo_sprite.custom_minimum_size = Vector2(160, 160)
+	camp_evo_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	camp_evo_sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	sprite_box.add_child(camp_evo_sprite)
+	
+	var stats_panel = PanelContainer.new()
+	var s_sb = StyleBoxFlat.new()
+	s_sb.bg_color = Color(0.12, 0.16, 0.24, 0.9)
+	s_sb.border_color = Color(0.3, 0.45, 0.6, 0.7)
+	s_sb.set_border_width_all(1)
+	s_sb.set_corner_radius_all(8)
+	s_sb.content_margin_left = 12
+	s_sb.content_margin_right = 12
+	s_sb.content_margin_top = 8
+	s_sb.content_margin_bottom = 8
+	stats_panel.add_theme_stylebox_override("panel", s_sb)
+	vbox.add_child(stats_panel)
+	
+	camp_evo_stats_lbl = Label.new()
+	camp_evo_stats_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	camp_evo_stats_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	camp_evo_stats_lbl.add_theme_font_size_override("font_size", 12)
+	camp_evo_stats_lbl.add_theme_color_override("font_color", Color("#ECEFF1"))
+	stats_panel.add_child(camp_evo_stats_lbl)
+	
+	btn_camp_evo_continue = Button.new()
+	btn_camp_evo_continue.text = "Continue ➔"
+	btn_camp_evo_continue.custom_minimum_size = Vector2(0, 38)
+	btn_camp_evo_continue.add_theme_font_size_override("font_size", 13)
+	_apply_retro_button_style(btn_camp_evo_continue, Color(0.20, 0.65, 0.35), Color(0.35, 0.85, 0.50), false)
+	btn_camp_evo_continue.pressed.connect(_on_camp_evo_continue_pressed)
+	vbox.add_child(btn_camp_evo_continue)
+
+func _check_and_run_camp_evolutions() -> void:
+	if _is_camp_evo_active:
+		return
+	var pending = GameData.get_pending_campaign_evolutions()
+	if pending.is_empty():
+		return
+	_camp_evo_queue = pending.duplicate()
+	_run_camp_evolution_queue()
+
+func _run_camp_evolution_queue() -> void:
+	if _camp_evo_queue.is_empty():
+		_is_camp_evo_active = false
+		if camp_evo_modal:
+			camp_evo_modal.visible = false
+		update_campaign_ui()
+		return
+		
+	_is_camp_evo_active = true
+	var evo = _camp_evo_queue.pop_front()
+	_play_camp_evolution_sequence(evo)
+
+func _play_camp_evolution_sequence(evo: Dictionary) -> void:
+	if not camp_evo_modal:
+		_setup_camp_evolution_modal()
+	camp_evo_modal.visible = true
+	
+	btn_camp_evo_continue.disabled = true
+	btn_camp_evo_continue.visible = false
+	
+	var from_name = str(evo.get("from_name", "Pokémon"))
+	var to_name = str(evo.get("to_name", "Evolution"))
+	var from_tex_path = str(evo.get("from_texture", ""))
+	var to_tex_path = str(evo.get("to_texture", ""))
+	var new_stage = str(evo.get("new_stage", "Stage 1"))
+	var new_max_hp = int(evo.get("new_max_hp", 20))
+	
+	camp_evo_title_lbl.text = "🌟 POKÉMON EVOLUTION! 🌟"
+	camp_evo_sub_lbl.text = "What? %s is evolving in the Camp!" % from_name
+	camp_evo_sub_lbl.add_theme_color_override("font_color", Color("#B0BEC5"))
+	camp_evo_sprite.texture = GameData.get_pokemon_texture(from_tex_path)
+	camp_evo_sprite.scale = Vector2.ONE
+	camp_evo_sprite.modulate = Color.WHITE
+	camp_evo_stats_lbl.text = "Evolving into %s (%s)...\nRestoring full HP (%d HP) & cleansing conditions!" % [to_name, new_stage, new_max_hp]
+	
+	GameData.play_combat_sfx("use")
+	
+	if current_camp_evo_tween and current_camp_evo_tween.is_valid():
+		current_camp_evo_tween.kill()
+		
+	var tw = create_tween()
+	current_camp_evo_tween = tw
+	
+	tw.tween_property(camp_evo_sprite, "scale", Vector2(1.15, 1.15), 0.35)
+	tw.tween_property(camp_evo_sprite, "scale", Vector2(0.9, 0.9), 0.3)
+	tw.parallel().tween_property(camp_evo_sprite, "modulate", Color(2.0, 2.0, 2.0, 1.0), 0.3)
+	
+	tw.tween_callback(func():
+		GameData.apply_single_campaign_evolution(evo)
+		camp_evo_sprite.texture = GameData.get_pokemon_texture(to_tex_path)
+		GameData.play_combat_sfx("heal")
+		camp_evo_sub_lbl.text = "🎉 Congratulations! Your %s evolved into %s!" % [from_name, to_name]
+		camp_evo_sub_lbl.add_theme_color_override("font_color", Color("#81C784"))
+		camp_evo_stats_lbl.text = "✨ Stage: %s\n💚 HP: %d/%d (Fully Restored!)\n⚡ Status conditions cleared!" % [new_stage, new_max_hp, new_max_hp]
+	)
+	
+	tw.tween_property(camp_evo_sprite, "scale", Vector2(1.2, 1.2), 0.25)
+	tw.parallel().tween_property(camp_evo_sprite, "modulate", Color.WHITE, 0.25)
+	tw.tween_property(camp_evo_sprite, "scale", Vector2.ONE, 0.2)
+	
+	tw.tween_callback(func():
+		btn_camp_evo_continue.visible = true
+		btn_camp_evo_continue.disabled = false
+		btn_camp_evo_continue.grab_focus()
+	)
+
+func _on_camp_evo_continue_pressed() -> void:
+	if not _camp_evo_queue.is_empty():
+		_run_camp_evolution_queue()
+	else:
+		_is_camp_evo_active = false
+		if camp_evo_modal:
+			camp_evo_modal.visible = false
+		update_campaign_ui()
 
 func _on_reset_campaign_pressed() -> void:
 	if GameData.campaign_submode == "ADVENTURE":
@@ -3716,14 +3917,16 @@ func _setup_shop_sections() -> void:
 	
 	var grid_margin = MarginContainer.new()
 	grid_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid_margin.add_theme_constant_override("margin_left", 4)
-	grid_margin.add_theme_constant_override("margin_right", 4)
+	grid_margin.add_theme_constant_override("margin_left", 12)
+	grid_margin.add_theme_constant_override("margin_right", 12)
+	grid_margin.add_theme_constant_override("margin_top", 10)
+	grid_margin.add_theme_constant_override("margin_bottom", 16)
 	
 	hidden_shop_grid = GridContainer.new()
 	hidden_shop_grid.columns = 3
 	hidden_shop_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hidden_shop_grid.add_theme_constant_override("h_separation", 8)
-	hidden_shop_grid.add_theme_constant_override("v_separation", 8)
+	hidden_shop_grid.add_theme_constant_override("h_separation", 14)
+	hidden_shop_grid.add_theme_constant_override("v_separation", 16)
 	grid_margin.add_child(hidden_shop_grid)
 	hid_scroll.add_child(grid_margin)
 	hidden_shop_container.add_child(hid_scroll)
@@ -3962,6 +4165,7 @@ func _populate_hidden_shop_view() -> void:
 		var card_panel = PanelContainer.new()
 		card_panel.custom_minimum_size = Vector2(144, 205)
 		card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		card_panel.mouse_filter = Control.MOUSE_FILTER_PASS
 		
 		var sb = StyleBoxFlat.new()
 		sb.bg_color = Color(0.07, 0.09, 0.14, 0.95)
@@ -3974,6 +4178,7 @@ func _populate_hidden_shop_view() -> void:
 		var vbox = VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 2)
 		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		vbox.mouse_filter = Control.MOUSE_FILTER_PASS
 		card_panel.add_child(vbox)
 		
 		# Name and Dex #
@@ -3983,6 +4188,7 @@ func _populate_hidden_shop_view() -> void:
 		name_lbl.add_theme_font_size_override("font_size", 10)
 		name_lbl.add_theme_color_override("font_color", Color.WHITE)
 		name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		vbox.add_child(name_lbl)
 		
 		# Thumbnail
@@ -3992,6 +4198,7 @@ func _populate_hidden_shop_view() -> void:
 		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex_rect.texture = GameData.get_pokemon_texture(str(card.get("texture_path", "")))
+		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		if not is_owned:
 			tex_rect.modulate = Color(0.85, 0.85, 0.85, 0.85)
 		vbox.add_child(tex_rect)
@@ -4002,12 +4209,14 @@ func _populate_hidden_shop_view() -> void:
 		type_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		type_lbl.add_theme_font_size_override("font_size", 8)
 		type_lbl.add_theme_color_override("font_color", r_info.get("color", Color("#81D4FA")))
+		type_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		vbox.add_child(type_lbl)
 		
 		# Ownership status
 		var status_lbl = Label.new()
 		status_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		status_lbl.add_theme_font_size_override("font_size", 9)
+		status_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		if is_owned:
 			status_lbl.text = "Owned: x%d" % stock
 			status_lbl.add_theme_color_override("font_color", Color("#4ade80") if stock == 1 else Color("#facc15"))
@@ -4020,6 +4229,7 @@ func _populate_hidden_shop_view() -> void:
 		var btn_buy = Button.new()
 		btn_buy.custom_minimum_size = Vector2(0, 30)
 		btn_buy.add_theme_font_size_override("font_size", 10)
+		btn_buy.mouse_filter = Control.MOUSE_FILTER_STOP
 		var can_afford = (GameData.player_rare_candies >= cost)
 		
 		if not can_afford:

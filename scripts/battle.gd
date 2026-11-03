@@ -2458,9 +2458,7 @@ func check_team_defeat() -> bool:
 				active_team[i]["is_poisoned"] = player_team[i].is_poisoned
 				active_team[i]["is_flinched"] = player_team[i].is_flinched
 				
-		_check_and_run_end_of_combat_evolutions(func():
-			_resolve_battle_victory()
-		)
+		_resolve_battle_victory()
 		return true
 	elif player_all_dead:
 		is_battle_over = true
@@ -2473,9 +2471,7 @@ func check_team_defeat() -> bool:
 				active_team[i]["is_poisoned"] = player_team[i].is_poisoned
 				active_team[i]["is_flinched"] = player_team[i].is_flinched
 				
-		_check_and_run_end_of_combat_evolutions(func():
-			_resolve_battle_defeat()
-		)
+		_resolve_battle_defeat()
 		return true
 	return false
 
@@ -2494,15 +2490,22 @@ func _resolve_battle_victory() -> void:
 			active_team[i]["is_poisoned"] = player_team[i].is_poisoned
 			active_team[i]["is_flinched"] = player_team[i].is_flinched
 			
-		# Revisar y aplicar evoluciones de campaña si alcanzaron la EXP requerida y se tiene la carta desbloqueada
-		var extra_evos = GameData.check_and_apply_campaign_evolutions()
-		for ev in extra_evos:
-			completed_evolutions_this_battle.append(ev)
+		# Las evoluciones ocurren ahora en el Campamento!
+		var pending_evos = GameData.get_pending_campaign_evolutions()
 		var evo_msg = ""
-		if completed_evolutions_this_battle.size() > 0:
-			evo_msg = "\n\n🌟 EVOLUTION IN YOUR TEAM!\n"
-			for ev in completed_evolutions_this_battle:
-				evo_msg += "• %s has evolved into %s! (%s) 🎉\n" % [ev["from_name"], ev["to_name"], ev.get("new_stage", "Stage 1")]
+		if not pending_evos.is_empty():
+			evo_msg = "\n\n⛺ CAMP EVOLUTION READY!\n"
+			for pe in pending_evos:
+				evo_msg += "• %s is ready to evolve in Camp! 🎉\n" % pe["from_name"]
+		else:
+			for p in active_team:
+				var st = str(p.get("stage", "Basic")).strip_edges().to_lower()
+				var req_exp = 10 if st == "basic" else (25 if st == "stage 1" else 0)
+				var cur_exp = int(p.get("current_exp", 0))
+				var cur_hp = int(p.get("current_hp", 0))
+				if req_exp > 0 and cur_exp >= req_exp and cur_hp <= 0:
+					evo_msg = "\n\n💀 %s is KO! Use a Revive in Camp to allow evolution.\n" % p["name"]
+					break
 			
 		if GameData.campaign_submode == "ADVENTURE":
 			var ep_id = GameData.adventure_current_episode
@@ -3490,6 +3493,8 @@ func _try_process_next_opponent_action() -> void:
 		return
 	if is_processing_opponent_action:
 		print("[OnlineBattle] ⏳ Already processing an opponent action, waiting...")
+		var t_proc = get_tree().create_timer(0.2)
+		t_proc.timeout.connect(_try_process_next_opponent_action)
 		return
 	if is_enemy_fainting or is_player_fainting:
 		print("[OnlineBattle] ⏳ Waiting for faint animation to complete...")
@@ -3506,6 +3511,8 @@ func _try_process_next_opponent_action() -> void:
 	# Game actions must strictly wait until start_enemy_turn() is active
 	if not is_waiting_for_online_opponent:
 		print("[OnlineBattle] ⏳ Action waiting in queue (current state: round %d, step %d, player_turn=%s)" % [round_number, round_step, str(is_player_turn)])
+		var t_wait = get_tree().create_timer(0.25)
+		t_wait.timeout.connect(_try_process_next_opponent_action)
 		return
 		
 	var next_action = pending_opponent_actions.pop_front()

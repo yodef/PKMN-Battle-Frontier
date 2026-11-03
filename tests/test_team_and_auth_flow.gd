@@ -64,6 +64,8 @@ func _ready() -> void:
 	print("✅ Clear Team button resets selected_player_ids correctly.")
 	
 	# 4. Test Campaign Team Selection Default (Empty)
+	GameData.campaign_player_team_state.clear()
+	GameData.adventure_player_team_state.clear()
 	menu.selected_player_ids.clear()
 	menu.open_team_select_for_campaign()
 	assert(menu.selected_player_ids.is_empty(), "Campaign team select should default to empty for new run!")

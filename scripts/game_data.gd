@@ -263,6 +263,11 @@ var is_online_pvp: bool = false
 var online_rival_name: String = "Rival"
 
 # Modo Torneo:
+const ITEM_COST_POTION: int = 5
+const ITEM_COST_REVIVE: int = 9
+const ITEM_COST_REMEDY: int = 3
+const ITEM_COST_ETHER: int = 5
+
 var campaign_match_number: int = 1 # 1 to 9 (10 = Tournament Champion)
 var campaign_gold: int = 0
 var campaign_inventory: Dictionary = {"potion": 0, "revive": 0, "remedy": 0, "ether": 0}
@@ -1537,6 +1542,14 @@ func apply_foil_overlay(target_node: Control, rarity_str: String, force_showcase
 		return null
 		
 	var existing: ColorRect = target_node.get_node_or_null("FoilOverlay") as ColorRect
+	
+	# Common and Uncommon cards NEVER have holographic foil
+	var r_clean = rarity_str.strip_edges().to_lower()
+	if r_clean in ["common", "uncommon"]:
+		if existing:
+			existing.visible = false
+		return null
+		
 	var mat = create_card_foil_material(rarity_str)
 	if not mat and force_showcase_foil:
 		mat = create_card_foil_material("showcase")
@@ -2169,6 +2182,11 @@ func check_and_apply_campaign_evolutions() -> Array[Dictionary]:
 	var team_state = get_active_campaign_team_state()
 	for i in range(team_state.size()):
 		var p = team_state[i]
+		var cur_hp = int(p.get("current_hp", 0))
+		# Si está KO (current_hp <= 0), no evoluciona hasta que se le use un Revive!
+		if cur_hp <= 0:
+			continue
+			
 		var current_id = int(p["id"])
 		var st = str(p.get("stage", "Basic")).strip_edges().to_lower()
 		var req_exp = 10 if st == "basic" else (25 if st == "stage 1" else 0)
@@ -2192,21 +2210,92 @@ func check_and_apply_campaign_evolutions() -> Array[Dictionary]:
 					p["speed"] = target_inst.speed
 					p["texture_path"] = target_inst.texture_path
 					p["max_hp"] = new_max
-					p["current_hp"] = min(new_max, int(p["current_hp"]) + max(0, hp_gain))
+					p["current_hp"] = new_max # Evolucionar en el campamento cura por completo al Pokémon
 					p["current_exp"] = 0 # El siguiente stage llega con 0 EXP
 					p["max_exp"] = target_inst.get_required_exp()
+					p["burn_turns"] = 0
+					p["is_poisoned"] = false
+					p["is_flinched"] = false
 					
 					evolutions_occurred.append({
+						"index": i,
 						"from_name": from_name,
 						"to_name": to_name,
 						"from_id": current_id,
 						"to_id": target_id,
+						"from_texture": p.get("texture_path", ""),
+						"to_texture": target_inst.texture_path,
+						"old_hp": cur_hp,
+						"new_max_hp": new_max,
+						"hp_healed": max(1, new_max - cur_hp),
 						"new_stage": target_inst.stage
 					})
 			else:
 				# No evoluciona porque falta tener la carta conseguida
 				p["current_exp"] = min(cur_exp, req_exp)
+	if not evolutions_occurred.is_empty():
+		save_profile()
 	return evolutions_occurred
+
+func get_pending_campaign_evolutions() -> Array[Dictionary]:
+	var pending: Array[Dictionary] = []
+	var team_state = get_active_campaign_team_state()
+	for i in range(team_state.size()):
+		var p = team_state[i]
+		var cur_hp = int(p.get("current_hp", 0))
+		# Si está KO (current_hp <= 0), no evoluciona hasta que se le use un Revive!
+		if cur_hp <= 0:
+			continue
+		var current_id = int(p["id"])
+		var st = str(p.get("stage", "Basic")).strip_edges().to_lower()
+		var req_exp = 10 if st == "basic" else (25 if st == "stage 1" else 0)
+		var cur_exp = int(p.get("current_exp", 0))
+		if req_exp > 0 and cur_exp >= req_exp:
+			var target_id = get_evolution_target_id(current_id)
+			if target_id != -1 and is_pokemon_unlocked(target_id):
+				var target_inst = create_pokemon_instance(target_id)
+				if target_inst:
+					pending.append({
+						"index": i,
+						"from_name": p["name"],
+						"to_name": target_inst.name,
+						"from_id": current_id,
+						"to_id": target_id,
+						"from_texture": p.get("texture_path", ""),
+						"to_texture": target_inst.texture_path,
+						"old_hp": cur_hp,
+						"new_max_hp": target_inst.max_hp,
+						"hp_healed": max(1, target_inst.max_hp - cur_hp),
+						"new_stage": target_inst.stage
+					})
+	return pending
+
+func apply_single_campaign_evolution(evo: Dictionary) -> void:
+	var team_state = get_active_campaign_team_state()
+	var idx = int(evo.get("index", -1))
+	if idx < 0 or idx >= team_state.size():
+		return
+	var p = team_state[idx]
+	var target_id = int(evo.get("to_id", -1))
+	if target_id == -1:
+		return
+	var target_inst = create_pokemon_instance(target_id)
+	if not target_inst:
+		return
+	p["id"] = target_id
+	p["name"] = target_inst.name
+	p["stage"] = target_inst.stage
+	p["type"] = target_inst.type
+	p["speed"] = target_inst.speed
+	p["texture_path"] = target_inst.texture_path
+	p["max_hp"] = target_inst.max_hp
+	p["current_hp"] = target_inst.max_hp
+	p["current_exp"] = 0
+	p["max_exp"] = target_inst.get_required_exp()
+	p["burn_turns"] = 0
+	p["is_poisoned"] = false
+	p["is_flinched"] = false
+	save_profile()
 
 func use_potion_on_campaign_pkmn(index: int) -> bool:
 	var inv = get_active_campaign_inventory()
@@ -2244,8 +2333,8 @@ func use_revive_on_campaign_pkmn(index: int) -> bool:
 func buy_campaign_potion() -> bool:
 	var cur_gold = get_active_campaign_gold()
 	var inv = get_active_campaign_inventory()
-	if cur_gold >= 3:
-		set_active_campaign_gold(cur_gold - 3)
+	if cur_gold >= ITEM_COST_POTION:
+		set_active_campaign_gold(cur_gold - ITEM_COST_POTION)
 		inv["potion"] = inv.get("potion", 0) + 1
 		return true
 	return false
@@ -2253,8 +2342,8 @@ func buy_campaign_potion() -> bool:
 func buy_campaign_revive() -> bool:
 	var cur_gold = get_active_campaign_gold()
 	var inv = get_active_campaign_inventory()
-	if cur_gold >= 6:
-		set_active_campaign_gold(cur_gold - 6)
+	if cur_gold >= ITEM_COST_REVIVE:
+		set_active_campaign_gold(cur_gold - ITEM_COST_REVIVE)
 		inv["revive"] = inv.get("revive", 0) + 1
 		return true
 	return false
@@ -2289,8 +2378,8 @@ func use_remedy_on_campaign_pkmn(index: int) -> bool:
 func buy_campaign_remedy() -> bool:
 	var cur_gold = get_active_campaign_gold()
 	var inv = get_active_campaign_inventory()
-	if cur_gold >= 2:
-		set_active_campaign_gold(cur_gold - 2)
+	if cur_gold >= ITEM_COST_REMEDY:
+		set_active_campaign_gold(cur_gold - ITEM_COST_REMEDY)
 		inv["remedy"] = inv.get("remedy", 0) + 1
 		return true
 	return false
@@ -2298,8 +2387,8 @@ func buy_campaign_remedy() -> bool:
 func buy_campaign_ether() -> bool:
 	var cur_gold = get_active_campaign_gold()
 	var inv = get_active_campaign_inventory()
-	if cur_gold >= 3:
-		set_active_campaign_gold(cur_gold - 3)
+	if cur_gold >= ITEM_COST_ETHER:
+		set_active_campaign_gold(cur_gold - ITEM_COST_ETHER)
 		inv["ether"] = inv.get("ether", 0) + 1
 		return true
 	return false

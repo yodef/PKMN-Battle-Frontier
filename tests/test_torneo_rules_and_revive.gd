@@ -59,31 +59,31 @@ func _ready() -> void:
 	print("✓ init_campaign_team aceptó equipo completo de 3 Pokémon Basic")
 	
 	# -------------------------------------------------------------
-	# TEST 3: TIENDA, PRECIOS (POCIÓN 3 G, REVIVE 6 G) Y RECOMPENSAS
+	# TEST 3: TIENDA, PRECIOS (POCIÓN 5 G, REVIVE 9 G) Y RECOMPENSAS
 	# -------------------------------------------------------------
 	print("\n--- TEST 3: Precios de Tienda y Economía del Torneo ---")
 	
-	GameData.campaign_gold = 10
+	GameData.campaign_gold = 15
 	assert(GameData.campaign_inventory["potion"] == 0, "Pociones iniciales 0")
 	assert(GameData.campaign_inventory["revive"] == 0, "Revives iniciales 0")
 	
-	# Comprar Poción por 3 G (debe quedar en 7 G)
+	# Comprar Poción por 5 G (debe quedar en 10 G)
 	var bought_pot = GameData.buy_campaign_potion()
-	assert(bought_pot == true, "Debe poder comprar poción con 10 G")
-	assert(GameData.campaign_gold == 7, "Oro restante debe ser 7 G (10 - 3), actual: %d" % GameData.campaign_gold)
+	assert(bought_pot == true, "Debe poder comprar poción con 15 G")
+	assert(GameData.campaign_gold == 10, "Oro restante debe ser 10 G (15 - 5), actual: %d" % GameData.campaign_gold)
 	assert(GameData.campaign_inventory["potion"] == 1, "Inventario de pociones debe ser 1")
-	print("✓ Poción comprada por 3 G exitosamente (Oro restante: 7 G)")
+	print("✓ Poción comprada por 5 G exitosamente (Oro restante: 10 G)")
 	
-	# Comprar Revive por 6 G (debe quedar en 1 G)
+	# Comprar Revive por 9 G (debe quedar en 1 G)
 	var bought_rev = GameData.buy_campaign_revive()
-	assert(bought_rev == true, "Debe poder comprar revive con 7 G")
-	assert(GameData.campaign_gold == 1, "Oro restante debe ser 1 G (7 - 6), actual: %d" % GameData.campaign_gold)
+	assert(bought_rev == true, "Debe poder comprar revive con 10 G")
+	assert(GameData.campaign_gold == 1, "Oro restante debe ser 1 G (10 - 9), actual: %d" % GameData.campaign_gold)
 	assert(GameData.campaign_inventory["revive"] == 1, "Inventario de revives debe ser 1")
-	print("✓ Revive comprado por 6 G exitosamente (Oro restante: 1 G)")
+	print("✓ Revive comprado por 9 G exitosamente (Oro restante: 1 G)")
 	
 	# Intentar comprar otro Revive o Poción sin suficiente oro (tiene 1 G)
-	assert(GameData.buy_campaign_potion() == false, "No debe permitir comprar poción sin al menos 3 G")
-	assert(GameData.buy_campaign_revive() == false, "No debe permitir comprar revive sin al menos 6 G")
+	assert(GameData.buy_campaign_potion() == false, "No debe permitir comprar poción sin al menos 5 G")
+	assert(GameData.buy_campaign_revive() == false, "No debe permitir comprar revive sin al menos 9 G")
 	print("✓ Control de fondos en tienda verificado correctamente")
 	
 	# -------------------------------------------------------------
@@ -124,6 +124,35 @@ func _ready() -> void:
 	print("✓ Poción curó a Bulbasaur vivo hasta HP máximo (10/10)")
 	
 	# -------------------------------------------------------------
+	# TEST 4B: REGLA DE EVOLUCIÓN EN CAMPAMENTO Y BLOQUEO POR KO
+	# -------------------------------------------------------------
+	print("\n--- TEST 4B: Regla de Evolución en Campamento y restricción por KO ---")
+	var target_evo_id = GameData.get_evolution_target_id(0)
+	GameData.unlock_pokemon(target_evo_id) # Desbloquear Ivysaur
+	bulba["current_exp"] = 10 # EXP requerida para evolucionar de Basic
+	bulba["current_hp"] = 0   # Pero está en estado KO
+	
+	var pending_while_ko = GameData.get_pending_campaign_evolutions()
+	assert(pending_while_ko.is_empty(), "Un Pokémon en KO NO debe poder evolucionar hasta recibir Revive")
+	print("✓ Pokémon con EXP completa pero en KO no puede evolucionar")
+	
+	GameData.campaign_inventory["revive"] = 1
+	var rev_res = GameData.use_revive_on_campaign_pkmn(0)
+	assert(rev_res == true, "Revive aplicado")
+	assert(bulba["current_hp"] > 0, "Pokémon revivido exitosamente")
+	
+	var pending_revived = GameData.get_pending_campaign_evolutions()
+	assert(pending_revived.size() == 1, "Bulbasaur revivido ahora sí puede evolucionar en Camp")
+	assert(pending_revived[0]["to_name"] == "Ivysaur", "Destino de evolución debe ser Ivysaur")
+	
+	GameData.apply_single_campaign_evolution(pending_revived[0])
+	assert(bulba["id"] == target_evo_id, "Bulbasaur evolucionó a Ivysaur")
+	assert(bulba["name"] == "Ivysaur", "Nombre actualizado a Ivysaur")
+	assert(bulba["current_hp"] == bulba["max_hp"], "Evolución en campamento restaura el 100% de los HP")
+	assert(bulba["current_exp"] == 0, "EXP se reinicia a 0 tras evolucionar")
+	print("✓ Evolución en Campamento completada con éxito tras Revive!")
+	
+	# -------------------------------------------------------------
 	# TEST 5: RECOMPENSAS DE COMBATE EN BATTLE SCENE
 	# -------------------------------------------------------------
 	print("\n--- TEST 5: Recompensas de Combate del Torneo en battle.gd ---")
@@ -146,9 +175,10 @@ func _ready() -> void:
 		
 	var ended = battle.check_team_defeat()
 	assert(ended == true, "El combate debe finalizar al morir todos los rivales")
-	assert(GameData.campaign_gold == 4, "Combate 1 debe otorgar 4 G, actual: %d G" % GameData.campaign_gold)
+	assert(GameData.campaign_gold >= 10, "Combate 1 debe otorgar 10 G base + drops aleatorios, actual: %d G" % GameData.campaign_gold)
 	assert(GameData.campaign_match_number == 2, "Debe avanzar al Combate 2")
-	print("✓ Victoria en Combate 1 otorgó exactamente +4 G (Total: %d G)" % GameData.campaign_gold)
+	var gold_after_m1 = GameData.campaign_gold
+	print("✓ Victoria en Combate 1 otorgó recompensas (Total: %d G)" % gold_after_m1)
 	
 	# Simular victoria en Combate 2:
 	battle.start_new_game()
@@ -157,20 +187,21 @@ func _ready() -> void:
 		e.current_hp = 0
 	ended = battle.check_team_defeat()
 	assert(ended == true, "El combate 2 debe finalizar")
-	assert(GameData.campaign_gold == 11, "Combate 2 debe otorgar +7 G (4 + 7 = 11 G), actual: %d G" % GameData.campaign_gold)
+	assert(GameData.campaign_gold >= gold_after_m1 + 15, "Combate 2 debe otorgar al menos 15 G base, actual: %d G" % GameData.campaign_gold)
 	assert(GameData.campaign_match_number == 3, "Debe avanzar al Combate 3")
-	print("✓ Victoria en Combate 2 otorgó exactamente +7 G (Total: %d G)" % GameData.campaign_gold)
+	var gold_after_m2 = GameData.campaign_gold
+	print("✓ Victoria en Combate 2 otorgó recompensas (Total: %d G)" % gold_after_m2)
 	
-	# Simular victoria en Combate 3 (Cierre):
+	# Simular victoria en Combate 3 (Fase 1 Finale):
 	battle.start_new_game()
 	await get_tree().process_frame
 	for e in battle.enemy_team:
 		e.current_hp = 0
 	ended = battle.check_team_defeat()
 	assert(ended == true, "El combate 3 debe finalizar")
-	assert(GameData.campaign_gold == 11, "Combate 3 debe otorgar +0 G (Total permanece en 11 G), actual: %d G" % GameData.campaign_gold)
-	assert(GameData.campaign_match_number == 4, "Torneo debe marcarse como completado (match 4)")
-	print("✓ Victoria en Combate 3 otorgó +0 G (Cierre de Torneo, total acumulado: %d G)" % GameData.campaign_gold)
+	assert(GameData.campaign_gold >= gold_after_m2 + 25, "Combate 3 debe otorgar al menos 25 G base, actual: %d G" % GameData.campaign_gold)
+	assert(GameData.campaign_match_number == 4, "Avanza a Fase 2 (match 4)")
+	print("✓ Victoria en Combate 3 otorgó recompensas (Fase 1 completada, total acumulado: %d G)" % GameData.campaign_gold)
 	
 	# -------------------------------------------------------------
 	# TEST 6: HISTORIAL DE CHAT DE COMBATE

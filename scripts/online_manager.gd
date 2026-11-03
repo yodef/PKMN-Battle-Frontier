@@ -406,6 +406,8 @@ func update_my_team(new_team: Array, callback: Callable = Callable()) -> void:
 			callback.call(false)
 
 # --- POLLING Y SINCRONIZACIÓN ---
+var poll_request_start_msec: int = 0
+
 func start_polling(interval: float = 1.0) -> void:
 	poll_timer.wait_time = interval
 	is_polling = true
@@ -420,9 +422,17 @@ func _on_poll_tick() -> void:
 		stop_polling()
 		return
 	if current_http_req != null and is_instance_valid(current_http_req):
-		return # Ya hay una petición en curso
+		# Watchdog: si la petición lleva más de 4.0 segundos sin responder, liberarla
+		if (Time.get_ticks_msec() - poll_request_start_msec) > 4000:
+			print("[OnlineManager] ⚠️ Watchdog: polling request timed out, resetting...")
+			current_http_req.cancel_request()
+			current_http_req.queue_free()
+			current_http_req = null
+		else:
+			return # Petición en curso
 		
-	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
+	var url = "%s/%s?key=%s&_ts=%d" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY, Time.get_ticks_msec()]
+	poll_request_start_msec = Time.get_ticks_msec()
 	current_http_req = HTTPRequest.new()
 	current_http_req.timeout = 3.5
 	add_child(current_http_req)
@@ -550,7 +560,7 @@ func _set_room_status(new_status: String) -> void:
 	)
 	http.request(url, headers, HTTPClient.METHOD_PATCH, body)
 
-# Envía una acción de combate realizada por el jugador local al documento de la sala
+# Envía una acción de combate realizada por el jugador local al documento de la sala (con reintentos automáticos)
 func send_battle_action(action_dict: Dictionary, callback: Callable = Callable()) -> void:
 	if not is_online_match or room_code.is_empty():
 		return
@@ -575,20 +585,43 @@ func send_battle_action(action_dict: Dictionary, callback: Callable = Callable()
 	var body = JSON.stringify(payload)
 	var headers = _get_nocache_headers(true)
 	
+	_dispatch_battle_action_http(url, headers, body, last_processed_seq, 0, callback)
+
+func _dispatch_battle_action_http(url: String, headers: PackedStringArray, body: String, seq: int, attempt: int, callback: Callable) -> void:
 	var http = HTTPRequest.new()
-	http.timeout = 8.0
+	http.timeout = 5.0
 	add_child(http)
 	http.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, _b: PackedByteArray):
 		http.queue_free()
 		var success = (code >= 200 and code < 300)
 		if success:
-			print("[OnlineManager] 📤 Acción enviada a la sala (seq %d)" % last_processed_seq)
+			print("[OnlineManager] 📤 Acción enviada a la sala (seq %d, intento %d)" % [seq, attempt + 1])
+			if callback.is_valid():
+				callback.call(true)
 		else:
-			print("[OnlineManager] ❌ Error enviando acción: ", code)
-		if callback.is_valid():
-			callback.call(success)
+			print("[OnlineManager] ⚠️ Error enviando acción (seq %d, code %d, intento %d)" % [seq, code, attempt + 1])
+			if attempt < 3 and is_online_match:
+				var retry_delay = 0.35 * (attempt + 1)
+				var t = get_tree().create_timer(retry_delay)
+				t.timeout.connect(func():
+					_dispatch_battle_action_http(url, headers, body, seq, attempt + 1, callback)
+				)
+			else:
+				print("[OnlineManager] ❌ Falló definitivamente el envío de la acción seq %d tras reintentos." % seq)
+				if callback.is_valid():
+					callback.call(false)
 	)
-	http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	var err = http.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	if err != OK:
+		print("[OnlineManager] ⚠️ Error inmediato en request HTTP PATCH: ", err)
+		http.queue_free()
+		if attempt < 3 and is_online_match:
+			var t = get_tree().create_timer(0.35)
+			t.timeout.connect(func():
+				_dispatch_battle_action_http(url, headers, body, seq, attempt + 1, callback)
+			)
+		elif callback.is_valid():
+			callback.call(false)
 
 # Cierra o elimina la sala al terminar
 func leave_or_delete_room() -> void:
