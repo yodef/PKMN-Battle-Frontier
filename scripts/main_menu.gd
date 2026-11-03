@@ -36,6 +36,8 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 
 # --- MODAL CAMPAIGN HUB (TORNEO & AVENTURA) ---
 @onready var campaign_hub_modal: Control = $CampaignHubModal
+@onready var tutorial_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial/Margin/TutorialVBox/TutorialStatus
+@onready var btn_hub_tutorial: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial/Margin/TutorialVBox/BtnHubTutorial
 @onready var tourn_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox/TournStatus
 @onready var btn_hub_tournament: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox/BtnHubTournament
 @onready var ep1_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox/Ep1Status
@@ -43,6 +45,12 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var ep2_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox/Ep2Status
 @onready var btn_hub_adventure_ep2: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox/BtnHubAdventureEp2
 @onready var btn_close_campaign_hub: Button = $CampaignHubModal/Box/BtnCloseCampaignHub
+
+var tutorial_confirm_modal: Control = null
+var tutorial_confirm_title_lbl: Label = null
+var tutorial_confirm_msg_lbl: Label = null
+var btn_confirm_tutorial: Button = null
+var btn_cancel_tutorial: Button = null
 
 # --- MODAL CAMPAÑA (TORNEO POKÉMON & CAMPAMENTO) ---
 const CampaignTrackDiagram = preload("res://scripts/campaign_track_diagram.gd")
@@ -408,6 +416,7 @@ func _ready() -> void:
 	update_team_sort_buttons_ui()
 	
 	# Modal Campaign Hub
+	btn_hub_tutorial.pressed.connect(_on_hub_tutorial_pressed)
 	btn_hub_tournament.pressed.connect(_on_select_tournament_pressed)
 	btn_hub_adventure_ep1.pressed.connect(_on_select_adventure_ep1_pressed)
 	btn_close_campaign_hub.pressed.connect(func():
@@ -415,6 +424,7 @@ func _ready() -> void:
 		_update_lobby_header_badge()
 	)
 	for card_path in [
+		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial",
 		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament",
 		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1",
 		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2"
@@ -728,8 +738,12 @@ func _ready() -> void:
 	else:
 		login_modal.visible = false
 		
-	# Si regresamos de un combate de campaña o de conquistar un episodio
-	if GameData.last_adventure_episode_conquered:
+	# Si regresamos de completar el tutorial, un combate de campaña o de conquistar un episodio
+	if GameData.just_completed_tutorial:
+		GameData.just_completed_tutorial = false
+		update_campaign_hub_ui()
+		campaign_hub_modal.visible = true
+	elif GameData.last_adventure_episode_conquered:
 		GameData.last_adventure_episode_conquered = false
 		update_campaign_hub_ui()
 		campaign_hub_modal.visible = true
@@ -926,6 +940,16 @@ func update_campaign_hub_ui() -> void:
 	if hub_desc:
 		hub_desc.text = "Choose your path: compete in the Tournament or embark on Story Adventure!"
 		
+	# Estado del Tutorial
+	if GameData.is_tutorial_completed():
+		tutorial_status_lbl.text = "Status: ✅ Completed (💎 5 Diamonds Claimed) • Replayable"
+		tutorial_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		btn_hub_tutorial.text = "🔄 Replay Tutorial (Practice)"
+	else:
+		tutorial_status_lbl.text = "Status: ⏳ Not completed • First Clear: 💎 5 Diamonds"
+		tutorial_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
+		btn_hub_tutorial.text = "🎓 Start Tutorial"
+
 	# Estado del Torneo
 	if GameData.campaign_player_team_state.is_empty():
 		tourn_status_lbl.text = "Status: No active run • Ready to start"
@@ -946,7 +970,11 @@ func update_campaign_hub_ui() -> void:
 			
 	# Estado del Episodio I
 	var ep1_completed = GameData.is_adventure_episode_completed(1)
-	if ep1_completed:
+	if not GameData.is_tutorial_completed():
+		ep1_status_lbl.text = "Status: 🔒 Locked (Complete Tutorial First!)"
+		ep1_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+		btn_hub_adventure_ep1.text = "🔒 Locked (Complete Tutorial)"
+	elif ep1_completed:
 		ep1_status_lbl.text = "Status: 🏅 COMPLETED (Boulder Badge Won!) • Replayable"
 		ep1_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 		btn_hub_adventure_ep1.text = "🗺️ Replay Episode I"
@@ -987,6 +1015,9 @@ func _on_select_tournament_pressed() -> void:
 		_check_and_run_camp_evolutions()
 
 func _on_select_adventure_ep1_pressed() -> void:
+	if not GameData.is_tutorial_completed():
+		_show_tutorial_prompt_for_locked_episode()
+		return
 	campaign_hub_modal.visible = false
 	GameData.campaign_submode = "ADVENTURE"
 	GameData.adventure_current_episode = 1
@@ -996,6 +1027,105 @@ func _on_select_adventure_ep1_pressed() -> void:
 		update_campaign_ui()
 		campaign_modal.visible = true
 		_check_and_run_camp_evolutions()
+
+func _on_hub_tutorial_pressed() -> void:
+	_show_tutorial_confirmation_modal()
+
+func _setup_tutorial_confirmation_modal() -> void:
+	if tutorial_confirm_modal != null:
+		return
+	tutorial_confirm_modal = Control.new()
+	tutorial_confirm_modal.name = "TutorialConfirmModal"
+	tutorial_confirm_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tutorial_confirm_modal.visible = false
+	tutorial_confirm_modal.z_index = 50
+	add_child(tutorial_confirm_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.04, 0.08, 0.85)
+	tutorial_confirm_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tutorial_confirm_modal.add_child(center)
+	
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(400, 0)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color(0.3, 0.75, 0.85, 0.9)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	sb.content_margin_left = 18
+	sb.content_margin_right = 18
+	sb.content_margin_top = 16
+	sb.content_margin_bottom = 16
+	panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	panel.add_child(vbox)
+	
+	tutorial_confirm_title_lbl = Label.new()
+	tutorial_confirm_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tutorial_confirm_title_lbl.text = "🎓 Start Combat Tutorial?"
+	tutorial_confirm_title_lbl.add_theme_font_size_override("font_size", 17)
+	tutorial_confirm_title_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+	vbox.add_child(tutorial_confirm_title_lbl)
+	
+	tutorial_confirm_msg_lbl = Label.new()
+	tutorial_confirm_msg_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tutorial_confirm_msg_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tutorial_confirm_msg_lbl.text = "You will enter a guided 1v1 battle with Charmander vs Bulbasaur to learn the fundamentals of Pokémon combat.\n\n🎁 Reward: 💎 5 Diamonds & unlocks Episode I!"
+	tutorial_confirm_msg_lbl.add_theme_font_size_override("font_size", 12)
+	tutorial_confirm_msg_lbl.add_theme_color_override("font_color", Color("#CFD8DC"))
+	vbox.add_child(tutorial_confirm_msg_lbl)
+	
+	var btn_row = HBoxContainer.new()
+	btn_row.add_theme_constant_override("separation", 10)
+	vbox.add_child(btn_row)
+	
+	btn_cancel_tutorial = Button.new()
+	btn_cancel_tutorial.text = "Cancel"
+	btn_cancel_tutorial.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_cancel_tutorial.custom_minimum_size = Vector2(0, 36)
+	_apply_retro_button_style(btn_cancel_tutorial, Color(0.35, 0.35, 0.40), Color(0.50, 0.50, 0.55), false)
+	btn_cancel_tutorial.pressed.connect(func(): tutorial_confirm_modal.visible = false)
+	btn_row.add_child(btn_cancel_tutorial)
+	
+	btn_confirm_tutorial = Button.new()
+	btn_confirm_tutorial.text = "⚔️ Start Tutorial"
+	btn_confirm_tutorial.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_confirm_tutorial.custom_minimum_size = Vector2(0, 36)
+	_apply_retro_button_style(btn_confirm_tutorial, Color(0.20, 0.65, 0.35), Color(0.35, 0.85, 0.50), false)
+	btn_confirm_tutorial.pressed.connect(_on_confirm_start_tutorial_pressed)
+	btn_row.add_child(btn_confirm_tutorial)
+
+func _show_tutorial_confirmation_modal() -> void:
+	_setup_tutorial_confirmation_modal()
+	tutorial_confirm_title_lbl.text = "🎓 Start Combat Tutorial?"
+	tutorial_confirm_msg_lbl.text = "You will enter a guided 1v1 battle with Charmander against Bulbasaur to learn the fundamentals of Pokémon TCG combat.\n\nFirst completion reward: 💎 5 Diamonds & unlocks Episode I!\n\nDo you want to start now?"
+	btn_confirm_tutorial.text = "⚔️ Start Tutorial"
+	tutorial_confirm_modal.visible = true
+
+func _show_tutorial_prompt_for_locked_episode() -> void:
+	_setup_tutorial_confirmation_modal()
+	tutorial_confirm_title_lbl.text = "🔒 Episode I is Locked!"
+	tutorial_confirm_msg_lbl.text = "You must complete the Combat Tutorial first before embarking on Adventure Mode!\n\nWould you like to start the Tutorial now?"
+	btn_confirm_tutorial.text = "🎓 Start Tutorial"
+	tutorial_confirm_modal.visible = true
+
+func _on_confirm_start_tutorial_pressed() -> void:
+	if tutorial_confirm_modal:
+		tutorial_confirm_modal.visible = false
+	campaign_hub_modal.visible = false
+	GameData.is_tutorial_mode = true
+	GameData.is_campaign_mode = false
+	GameData.is_pvp_mode = false
+	GameData.is_online_pvp = false
+	get_tree().change_scene_to_file("res://scenes/battle.tscn")
 
 func open_team_select_for_campaign() -> void:
 	refresh_cards_data_from_catalog()
@@ -3593,6 +3723,7 @@ func _apply_pokemon_ui_theme() -> void:
 		camp_shop_panel.add_theme_stylebox_override("panel", teal_sb.duplicate())
 
 	# Retro stylebox overrides for Campaign Hub & Camp buttons
+	_apply_retro_button_style(btn_hub_tutorial, Color(0.20, 0.65, 0.35), Color(0.35, 0.85, 0.50), true)
 	_apply_retro_button_style(btn_hub_tournament, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), true)
 	_apply_retro_button_style(btn_hub_adventure_ep1, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 	_apply_retro_button_style(btn_hub_adventure_ep2, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)

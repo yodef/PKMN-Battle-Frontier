@@ -262,6 +262,12 @@ var is_pvp_mode: bool = false
 var is_online_pvp: bool = false
 var online_rival_name: String = "Rival"
 
+# Modo Tutorial de Combate:
+var is_tutorial_mode: bool = false
+var tutorial_completed: bool = false
+var tutorial_reward_claimed: bool = false
+var just_completed_tutorial: bool = false
+
 # Modo Torneo:
 const ITEM_COST_POTION: int = 5
 const ITEM_COST_REVIVE: int = 9
@@ -2156,8 +2162,13 @@ func get_adventure_rival_team(episode_id: int, stage_num: int) -> Array[int]:
 			team.append(pid)
 	return team
 
+func is_tutorial_completed() -> bool:
+	return tutorial_completed
+
 func is_adventure_episode_unlocked(episode_id: int) -> bool:
-	return episode_id in adventure_unlocked_episodes
+	if episode_id == 1:
+		return tutorial_completed
+	return (episode_id in adventure_unlocked_episodes) and tutorial_completed
 
 func is_adventure_episode_completed(episode_id: int) -> bool:
 	return episode_id in adventure_completed_episodes
@@ -2949,6 +2960,10 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	player_rare_candies = 0
 	profile_welcome_claimed = false
 	reset_campaign()
+	is_tutorial_mode = false
+	tutorial_completed = false
+	tutorial_reward_claimed = false
+	just_completed_tutorial = false
 	adventure_current_episode = 1
 	adventure_current_stage = 1
 	adventure_gold = 0
@@ -3032,7 +3047,9 @@ func get_save_dict() -> Dictionary:
 			"match_number": campaign_match_number,
 			"gold": campaign_gold,
 			"inventory": campaign_inventory,
-			"team_state": campaign_player_team_state
+			"team_state": campaign_player_team_state,
+			"tutorial_completed": tutorial_completed,
+			"tutorial_reward_claimed": tutorial_reward_claimed
 		},
 		"adventure": {
 			"current_episode": adventure_current_episode,
@@ -3160,6 +3177,8 @@ func apply_save_dict(data: Dictionary) -> bool:
 	if not campaign_inventory.has("ether"):
 		campaign_inventory["ether"] = 0
 	campaign_player_team_state = camp.get("team_state", [])
+	tutorial_completed = bool(camp.get("tutorial_completed", false))
+	tutorial_reward_claimed = bool(camp.get("tutorial_reward_claimed", false))
 	
 	# Cargar aventura
 	var adv = data.get("adventure", {})
@@ -3291,6 +3310,10 @@ func erase_profile() -> void:
 	player_rare_candies = 0
 	
 	reset_campaign()
+	is_tutorial_mode = false
+	tutorial_completed = false
+	tutorial_reward_claimed = false
+	just_completed_tutorial = false
 	adventure_current_episode = 1
 	adventure_current_stage = 1
 	adventure_gold = 0

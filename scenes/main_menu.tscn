@@ -443,6 +443,46 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 14
 
+[node name="CardTutorial" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="TutorialVBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TutorialTitle" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial/Margin/TutorialVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+text = "🎓 Battle Tutorial"
+
+[node name="TutorialDesc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial/Margin/TutorialVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Master combat fundamentals: HP, Energy costs, Speed priority, Type advantages, and Recharging in a guided 1v1 battle (Charmander vs Bulbasaur)."
+autowrap_mode = 2
+
+[node name="TutorialStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial/Margin/TutorialVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: Not started • First Clear: 💎 5 Diamonds"
+
+[node name="BtnHubTutorial" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial/Margin/TutorialVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+text = "🎓 Start Tutorial"
+
 [node name="CardTournament" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
 layout_mode = 2
 

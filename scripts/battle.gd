@@ -148,6 +148,15 @@ var current_evo_tween: Tween = null
 var current_evo_finish_cb: Callable = Callable()
 var completed_evolutions_this_battle: Array[Dictionary] = []
 
+# --- TUTORIAL DE COMBATE ---
+var tutorial_callout_modal: Control = null
+var tutorial_callout_badge_lbl: Label = null
+var tutorial_callout_title_lbl: Label = null
+var tutorial_callout_text_lbl: RichTextLabel = null
+var btn_tutorial_callout_next: Button = null
+var tutorial_callout_callback: Callable = Callable()
+var tutorial_steps_shown: Dictionary = {}
+
 var type_chart_cell_buttons: Dictionary = {}
 
 const TYPE_CHART_ORDER = [
@@ -816,6 +825,107 @@ func _setup_forfeit_confirmation_modal() -> void:
 	btn_confirm_forfeit.pressed.connect(_on_confirm_forfeit_pressed)
 	btn_row.add_child(btn_confirm_forfeit)
 
+func _setup_tutorial_callout_modal() -> void:
+	if tutorial_callout_modal:
+		return
+		
+	tutorial_callout_modal = Control.new()
+	tutorial_callout_modal.name = "TutorialCalloutModal"
+	tutorial_callout_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tutorial_callout_modal.visible = false
+	tutorial_callout_modal.mouse_filter = Control.MOUSE_FILTER_STOP
+	tutorial_callout_modal.z_index = 65
+	add_child(tutorial_callout_modal)
+	
+	var backdrop = ColorRect.new()
+	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
+	backdrop.color = Color(0.02, 0.04, 0.08, 0.85)
+	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
+	tutorial_callout_modal.add_child(backdrop)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tutorial_callout_modal.add_child(center)
+	
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(380, 0)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color("#FFD700")
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	sb.shadow_color = Color(0, 0, 0, 0.8)
+	sb.shadow_size = 16
+	panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(panel)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	panel.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	margin.add_child(vbox)
+	
+	tutorial_callout_badge_lbl = Label.new()
+	tutorial_callout_badge_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tutorial_callout_badge_lbl.add_theme_font_size_override("font_size", 11)
+	tutorial_callout_badge_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+	vbox.add_child(tutorial_callout_badge_lbl)
+	
+	tutorial_callout_title_lbl = Label.new()
+	tutorial_callout_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tutorial_callout_title_lbl.add_theme_font_size_override("font_size", 16)
+	tutorial_callout_title_lbl.add_theme_color_override("font_color", Color("#FFFFFF"))
+	vbox.add_child(tutorial_callout_title_lbl)
+	
+	tutorial_callout_text_lbl = RichTextLabel.new()
+	tutorial_callout_text_lbl.bbcode_enabled = true
+	tutorial_callout_text_lbl.fit_content = true
+	tutorial_callout_text_lbl.scroll_active = false
+	tutorial_callout_text_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tutorial_callout_text_lbl.custom_minimum_size = Vector2(340, 0)
+	tutorial_callout_text_lbl.add_theme_font_size_override("normal_font_size", 12)
+	tutorial_callout_text_lbl.add_theme_color_override("default_color", Color("#CFD8DC"))
+	vbox.add_child(tutorial_callout_text_lbl)
+	
+	btn_tutorial_callout_next = Button.new()
+	btn_tutorial_callout_next.text = "Understood! ➡️"
+	btn_tutorial_callout_next.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_tutorial_callout_next.custom_minimum_size = Vector2(0, 38)
+	var sb_btn = StyleBoxFlat.new()
+	sb_btn.bg_color = Color(0.15, 0.45, 0.25, 0.95)
+	sb_btn.border_color = Color("#4CAF50")
+	sb_btn.set_border_width_all(2)
+	sb_btn.set_corner_radius_all(6)
+	btn_tutorial_callout_next.add_theme_stylebox_override("normal", sb_btn)
+	btn_tutorial_callout_next.add_theme_stylebox_override("hover", sb_btn)
+	btn_tutorial_callout_next.add_theme_color_override("font_color", Color("#E8F5E9"))
+	btn_tutorial_callout_next.pressed.connect(_on_tutorial_callout_next_pressed)
+	vbox.add_child(btn_tutorial_callout_next)
+
+func _show_tutorial_callout(step_key: String, badge: String, title: String, text_bbcode: String, btn_text: String = "Understood! ➡️", callback: Callable = Callable()) -> void:
+	_setup_tutorial_callout_modal()
+	tutorial_callout_badge_lbl.text = badge.to_upper()
+	tutorial_callout_title_lbl.text = title
+	tutorial_callout_text_lbl.text = text_bbcode
+	btn_tutorial_callout_next.text = btn_text
+	tutorial_callout_callback = callback
+	tutorial_steps_shown[step_key] = true
+	tutorial_callout_modal.visible = true
+
+func _on_tutorial_callout_next_pressed() -> void:
+	if tutorial_callout_modal:
+		tutorial_callout_modal.visible = false
+	var cb = tutorial_callout_callback
+	tutorial_callout_callback = Callable()
+	if cb.is_valid():
+		cb.call()
+
 func _on_back_menu_pressed() -> void:
 	if is_battle_over:
 		_on_return_to_menu()
@@ -825,7 +935,11 @@ func _on_back_menu_pressed() -> void:
 func _show_forfeit_confirmation_modal() -> void:
 	_setup_forfeit_confirmation_modal()
 	
-	if GameData.is_online_pvp:
+	if GameData.is_tutorial_mode:
+		forfeit_title_lbl.text = "🎓 EXIT TUTORIAL?"
+		forfeit_body_lbl.text = "Are you sure you want to exit the Tutorial?\nYou can restart it anytime to learn mechanics and claim your 💎 5 Diamonds."
+		btn_confirm_forfeit.text = "🚪 Exit Tutorial"
+	elif GameData.is_online_pvp:
 		var r_name = GameData.online_rival_name if not GameData.online_rival_name.is_empty() else "your opponent"
 		forfeit_title_lbl.text = "🏳️ FORFEIT MATCH?"
 		forfeit_body_lbl.text = "Are you sure you want to surrender?\nYou will forfeit the match to %s." % r_name
@@ -882,6 +996,8 @@ func _notification(what: int) -> void:
 
 func _on_return_to_menu() -> void:
 	Engine.time_scale = 1.0
+	if GameData.is_tutorial_mode:
+		GameData.is_tutorial_mode = false
 	if GameData.is_online_pvp:
 		OnlineManager.leave_or_delete_room()
 		GameData.is_online_pvp = false
@@ -897,6 +1013,8 @@ func _on_return_to_menu() -> void:
 
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
+	if GameData.is_tutorial_mode:
+		GameData.is_tutorial_mode = false
 	if GameData.is_online_pvp:
 		OnlineManager.leave_or_delete_room()
 		GameData.is_online_pvp = false
@@ -975,7 +1093,12 @@ func start_new_game() -> void:
 	is_waiting_for_online_opponent = false
 	is_processing_opponent_action = false
 	
-	if GameData.is_campaign_mode:
+	if GameData.is_tutorial_mode:
+		tutorial_steps_shown.clear()
+		player_team = [GameData.create_pokemon_instance(1)]
+		enemy_team = [GameData.create_pokemon_instance(0)]
+		battle_title_lbl.text = "🎓 Battle Tutorial (Charmander vs Bulbasaur)"
+	elif GameData.is_campaign_mode:
 		var team_state = GameData.get_active_campaign_team_state()
 		if team_state.is_empty():
 			if GameData.campaign_submode == "ADVENTURE":
@@ -1056,7 +1179,9 @@ func start_new_game() -> void:
 	round_step = 0
 	
 	var mode_str = "QUICK BATTLE"
-	if GameData.is_online_pvp:
+	if GameData.is_tutorial_mode:
+		mode_str = "COMBAT TUTORIAL"
+	elif GameData.is_online_pvp:
 		mode_str = "ONLINE BATTLE"
 	elif GameData.is_campaign_mode:
 		if GameData.campaign_submode == "ADVENTURE":
@@ -1128,6 +1253,8 @@ func start_new_round() -> void:
 		if GameData.is_online_pvp:
 			var host_wins = (round_number % 2 == 1)
 			coin = host_wins if OnlineManager.is_host else (not host_wins)
+		elif GameData.is_tutorial_mode:
+			coin = true
 		if coin:
 			round_order = ["PLAYER", "ENEMY"]
 			initiative_msg = "[b]━━━ ROUND %d ━━━[/b]\nSpeed Tie (SPD %d vs %d)! 🪙 [color=yellow]Coin Toss:[/color] [b]%s[/b] wins the tiebreaker and takes the first turn." % [round_number, p_spd, e_spd, p.name]
@@ -1142,6 +1269,27 @@ func start_new_round() -> void:
 	var starter_name = p.name if round_order[0] == "PLAYER" else e.name
 	turn_badge.text = "ROUND %d (%s starts)" % [round_number, starter_name]
 	turn_badge.modulate = Color(1.0, 0.85, 0.2)
+	
+	if GameData.is_tutorial_mode and round_number == 1 and not tutorial_steps_shown.get("step1", false):
+		_show_tutorial_callout(
+			"step1",
+			"TUTORIAL • STEP 1 OF 5",
+			"🎓 Welcome to Pokémon Combat!",
+			"This is a tactical card battle arena.\n\n• [b]Active Pokémon[/b]: Your [color=coral]Charmander[/color] is at the bottom; rival [color=lightgreen]Bulbasaur[/color] is at the top.\n• [b]HP Bar (Hit Points)[/b]: Displays remaining life. When a Pokémon's HP reaches 0, it is knocked out (KO)!\n• [b]⚡ Energy Bar[/b]: Required to power attacks and special moves.",
+			"Next ➡️",
+			func():
+				_show_tutorial_callout(
+					"step2",
+					"TUTORIAL • STEP 2 OF 5",
+					"⏩ Speed & Initiative Priority",
+					"Every round starts with an initiative check based on each Pokémon's [b]Speed (SPD)[/b].\n\n• The faster Pokémon acts first!\n• In a tie (SPD 1 vs SPD 1), a 🪙 [b]Coin Toss[/b] decides who gets the first turn.\n\nCharmander won the coin toss and will attack first this round!",
+					"Got It! ➡️",
+					func():
+						var t_next = get_tree().create_timer(0.6)
+						t_next.timeout.connect(execute_round_turn)
+				)
+		)
+		return
 	
 	var timer = get_tree().create_timer(1.2)
 	timer.timeout.connect(execute_round_turn)
@@ -1346,6 +1494,34 @@ func start_player_turn() -> void:
 	if _process_turn_start_status(p, e, player_card_img, enemy_card_img, true):
 		return
 			
+	if GameData.is_tutorial_mode and round_number == 1 and not tutorial_steps_shown.get("step3", false):
+		_show_tutorial_callout(
+			"step3",
+			"TUTORIAL • STEP 3 OF 5",
+			"🔥 Attacking & Type Advantage",
+			"It is your turn! Inspect your available moves below:\n\n• [b]Scratch[/b]: Normal-type move. Deals 3 DMG. (Cost: 0 ⚡)\n• [b]Ember[/b]: Fire-type move. Deals 4 DMG. (Cost: 1 ⚡)\n\n⭐ [color=yellow][b]Type Weakness (+2 DMG):[/b][/color] Bulbasaur is GRASS type, which is weak to FIRE! Using [b]Ember[/b] triggers the Weakness bonus to deal [b]6 DAMAGE[/b] (4 + 2)!\n\n💡 [i]Recharge:[/i] If low on energy, tap [b]⚡ Recharge (+2 ⚡)[/b] instead of attacking.\n\nTap [b]Ember[/b] below to strike Bulbasaur!",
+			"Let's Battle! ⚔️",
+			func():
+				can_player_act = true
+				update_ui()
+				set_controls_enabled(true)
+		)
+		return
+	elif GameData.is_tutorial_mode and not tutorial_steps_shown.get("step5", false):
+		if e and e.current_hp <= 6:
+			_show_tutorial_callout(
+				"step5",
+				"TUTORIAL • STEP 5 OF 5",
+				"💥 Delivering the Knockout!",
+				"Bulbasaur is critically weakened from your previous Fire attack!\n\nDepleting its remaining HP to 0 will knock it out and secure victory.\n\nWin this battle to claim your [color=gold]💎 5 Diamonds[/color] and unlock [b]Episode I of Adventure Mode[/b]!",
+				"Finish It! 🏆",
+				func():
+					can_player_act = true
+					update_ui()
+					set_controls_enabled(true)
+			)
+			return
+
 	can_player_act = true
 	update_ui()
 	set_controls_enabled(true)
@@ -1421,6 +1597,18 @@ func start_enemy_turn() -> void:
 		can_player_act = false
 		update_ui()
 		set_controls_enabled(false)
+		if GameData.is_tutorial_mode and round_number == 1 and not tutorial_steps_shown.get("step4", false):
+			_show_tutorial_callout(
+				"step4",
+				"TUTORIAL • STEP 4 OF 5",
+				"🛡️ Rival Turn & Combat Log",
+				"Now it's Bulbasaur's turn to counterattack!\n\nKeep an eye on the [b]Combat Log[/b] in the center of the arena. It tracks every move, damage calculations, type effectiveness, and coin tosses in real time.",
+				"Watch Rival Turn ➡️",
+				func():
+					var t_ai = get_tree().create_timer(1.0)
+					t_ai.timeout.connect(execute_enemy_ai)
+			)
+			return
 		var timer = get_tree().create_timer(1.6)
 		timer.timeout.connect(execute_enemy_ai)
 
@@ -2479,6 +2667,22 @@ func _resolve_battle_victory() -> void:
 	GameData.stats_battles_total += 1
 	GameData.stats_battles_won += 1
 	GameData.add_daily_mission_progress("win_battles", 1)
+	if GameData.is_tutorial_mode:
+		GameData.tutorial_completed = true
+		GameData.just_completed_tutorial = true
+		var reward_text = ""
+		if not GameData.tutorial_reward_claimed:
+			GameData.player_diamonds += 5
+			GameData.tutorial_reward_claimed = true
+			reward_text = "\n\n🎁 First Clear Reward: 💎 5 Diamonds!\n🔓 Adventure Mode Episode I is now UNLOCKED!"
+		else:
+			reward_text = "\n\n(Tutorial completed - practice cleared!)"
+		GameData.save_profile()
+		show_game_over(
+			"🎓 TUTORIAL COMPLETE!",
+			"Congratulations! You defeated Bulbasaur and mastered the fundamentals of battle!%s\n\nHead to the Campaign Hub to begin Episode I of your Adventure!" % reward_text
+		)
+		return
 	if GameData.is_campaign_mode:
 		GameData.add_daily_mission_progress("defeat_gym", 1)
 		# Guardar la salud, experiencia y estados restantes de los Pokémon en la campaña activa
@@ -2638,6 +2842,12 @@ func _resolve_battle_victory() -> void:
 			show_game_over("VICTORY!", "You defeated the rival team!")
 func _resolve_battle_defeat() -> void:
 	GameData.stats_battles_total += 1
+	if GameData.is_tutorial_mode:
+		show_game_over(
+			"💀 TUTORIAL DEFEATED",
+			"Charmander fainted! Don't worry, you can try the tutorial again anytime to claim your 💎 5 Diamonds reward."
+		)
+		return
 	if GameData.is_campaign_mode:
 		# Conservar Oro y Diamantes obtenidos de los rivales derrotados en este combate
 		if combat_earned_diamonds > 0:
@@ -4622,7 +4832,10 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 	
 	_apply_game_over_banner_styling(title)
 	
-	if GameData.is_online_pvp:
+	if GameData.is_tutorial_mode:
+		btn_restart.visible = false
+		btn_game_over_menu.text = "🏛️ Return to Campaign Hub"
+	elif GameData.is_online_pvp:
 		btn_restart.visible = false
 		btn_game_over_menu.text = "⬅ Main Menu"
 	elif GameData.last_adventure_episode_conquered:
