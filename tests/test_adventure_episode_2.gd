@@ -117,10 +117,12 @@ func _ready() -> void:
 	assert(ep_vbox.get_node_or_null("CardAdventureEp1") != null, "CardAdventureEp1 must exist")
 	assert(ep_vbox.get_node_or_null("CardAdventureEp2") != null, "CardAdventureEp2 must exist")
 	assert(ep_vbox.get_node_or_null("CardAdventureEp3") != null, "CardAdventureEp3 must exist")
+	assert(ep_vbox.get_node_or_null("CardAdventureEp4") != null, "CardAdventureEp4 must exist")
 	
 	menu.update_adventure_episodes_ui()
 	assert(menu.btn_hub_adventure_ep2.disabled == false, "Episode 2 button must be enabled when unlocked")
-	assert(menu.btn_hub_adventure_ep3.disabled == true, "Episode 3 button must be disabled/locked")
+	assert(menu.btn_hub_adventure_ep3.disabled == false, "Episode 3 button must be enabled when unlocked")
+	assert(menu.btn_hub_adventure_ep4.disabled == true, "Episode 4 button must be disabled/locked")
 	
 	# Test team select for Episode 2
 	GameData.campaign_submode = "ADVENTURE"

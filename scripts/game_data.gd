@@ -388,8 +388,74 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"id": 3,
 		"title": "Episode III: Vermilion City Gym",
 		"subtitle": "Board the S.S. Anne and battle through Vermilion to challenge Gym Leader Lt. Surge!",
+		"reward_diamonds_first_clear": 60,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Camper",
+				"trainer_name": "Camper Drew",
+				"intro": "Watch your step! Sandshrew digs into battle with sandstorms and sharp claws!",
+				"outro": "Buried in defeat... you saw right through my defense!",
+				"team_pokemon_names": ["Sandshrew"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Picnicker",
+				"trainer_name": "Picnicker Diana",
+				"intro": "Aren't Clefairy and Pikachu the cutest? But don't underestimate their spark!",
+				"outro": "Oh no, our spark fizzled out!",
+				"team_pokemon_names": ["Clefairy", "Pikachu"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Sailor",
+				"trainer_name": "Sailor Dwayne",
+				"intro": "Ahoy! The S.S. Anne is full of tough sailors. Poliwhirl, deliver a tidal punch!",
+				"outro": "Washed overboard! What a solid fighter you are!",
+				"team_pokemon_names": ["Poliwhirl"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Black Belt",
+				"trainer_name": "Black Belt Toru",
+				"intro": "Martial arts focus! Mankey and Machop, show them our rigorous training!",
+				"outro": "Hoo-hah! Your combat technique was superior!",
+				"team_pokemon_names": ["Mankey", "Machop"]
+			},
+			{
+				"stage_num": 5,
+				"trainer_title": "Rival",
+				"trainer_name": "Rival Blue",
+				"intro": "Hey! Still trailing behind me? Charmeleon and Ivysaur will show you true power!",
+				"outro": "What?! How did you get this strong already? Smell ya later!",
+				"team_pokemon_names": ["Charmeleon", "Ivysaur"]
+			},
+			{
+				"stage_num": 6,
+				"trainer_title": "Team Rocket Grunt",
+				"trainer_name": "Rocket Grunt Jax",
+				"intro": "Team Rocket's shadows lurk everywhere! Arbok and Persian, take their Pokémon!",
+				"outro": "Blast! Boss Giovanni won't be happy with this failure!",
+				"team_pokemon_names": ["Arbok", "Persian"]
+			},
+			{
+				"stage_num": 7,
+				"trainer_title": "Gym Leader Lt. Surge",
+				"trainer_name": "Gym Leader Lt. Surge",
+				"is_boss": true,
+				"badge_name": "Thunder Badge",
+				"intro": "Ten-hut! I'm Lt. Surge, the Lightning American! Electric Pokémon saved me in war... they'll shock you into submission!",
+				"outro": "Whoa! You're the real deal, soldier! Take the Thunder Badge!",
+				"team_pokemon_names": ["Voltorb", "Magneton", "Raichu"]
+			}
+		]
+	},
+	4: {
+		"id": 4,
+		"title": "Episode IV: Celadon City Gym",
+		"subtitle": "Cross Route 9 and the Rock Tunnel to challenge Gym Leader Erika!",
 		"locked": true,
-		"reward_diamonds_first_clear": 40,
+		"reward_diamonds_first_clear": 80,
 		"stages": []
 	}
 }

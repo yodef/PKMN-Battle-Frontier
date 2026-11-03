@@ -835,7 +835,6 @@ theme_override_font_sizes/font_size = 13
 text = "🗺️ Embark on Episode II"
 
 [node name="CardAdventureEp3" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
-modulate = Color(0.7, 0.7, 0.75, 0.8)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3"]
@@ -851,30 +850,77 @@ theme_override_constants/separation = 6
 
 [node name="Ep3Title" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3/Margin/Ep3VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 16
-text = "🔒 Episode III: Vermilion City Gym"
+text = "🗺️ Episode III: Vermilion City Gym"
 
 [node name="Ep3Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3/Margin/Ep3VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 12
 text = "Vermilion City Gym: Board the S.S. Anne and battle through Vermilion to challenge Gym Leader Lt. Surge!"
 autowrap_mode = 2
 
 [node name="Ep3Rewards" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3/Margin/Ep3VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 12
-text = "Battles: 5  |  First Clear: 💎 40 Diamonds & Ep. IV Unlock"
+text = "Battles: 7  |  First Clear: 💎 60 Diamonds & Ep. IV Unlock"
 
 [node name="Ep3Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3/Margin/Ep3VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
+theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
 theme_override_font_sizes/font_size = 12
-text = "Status: 🔒 Locked (Clear Episode II first)"
+text = "Status: Ready to embark"
 
 [node name="BtnHubAdventureEp3" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3/Margin/Ep3VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "🗺️ Embark on Episode III"
+
+[node name="CardAdventureEp4" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
+modulate = Color(0.7, 0.7, 0.75, 0.8)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Ep4VBox" type="VBoxContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Ep4Title" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+text = "🔒 Episode IV: Celadon City Gym"
+
+[node name="Ep4Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Celadon City Gym: Cross Route 9 and the Rock Tunnel to challenge Gym Leader Erika!"
+autowrap_mode = 2
+
+[node name="Ep4Rewards" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Battles: 6  |  First Clear: 💎 80 Diamonds & Ep. V Unlock"
+
+[node name="Ep4Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: 🔒 Locked (Clear Episode III first)"
+
+[node name="BtnHubAdventureEp4" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox"]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 disabled = true
