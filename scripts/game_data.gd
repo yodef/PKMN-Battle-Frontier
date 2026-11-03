@@ -122,6 +122,44 @@ var all_pokemon_ids: Array[int] = []
 # Colección desbloqueada del jugador (todos disponibles)
 var player_unlocked_ids: Array[int] = []
 
+# Cartas favoritas marcadas por el jugador
+var player_favorites: Array[int] = []
+# Top 3 Pokémon favoritos elegidos para exhibir en el perfil
+var profile_showcase_ids: Array[int] = []
+
+func is_pokemon_favorite(id: int) -> bool:
+	return id in player_favorites
+
+func set_pokemon_favorite(id: int, is_fav: bool) -> void:
+	if is_fav:
+		if id not in player_favorites:
+			player_favorites.append(id)
+	else:
+		player_favorites.erase(id)
+
+func toggle_pokemon_favorite(id: int) -> bool:
+	var new_state = not is_pokemon_favorite(id)
+	set_pokemon_favorite(id, new_state)
+	return new_state
+
+func set_profile_showcase(ids: Array) -> void:
+	profile_showcase_ids.clear()
+	for id in ids:
+		var int_id = int(id)
+		if int_id not in profile_showcase_ids and profile_showcase_ids.size() < 3:
+			profile_showcase_ids.append(int_id)
+
+func get_profile_showcase() -> Array[int]:
+	if profile_showcase_ids.is_empty():
+		for fid in player_favorites:
+			if profile_showcase_ids.size() < 3 and fid not in profile_showcase_ids:
+				profile_showcase_ids.append(fid)
+		if profile_showcase_ids.is_empty():
+			for uid in player_unlocked_ids:
+				if profile_showcase_ids.size() < 3 and uid not in profile_showcase_ids:
+					profile_showcase_ids.append(uid)
+	return profile_showcase_ids
+
 # --- PERFIL Y PROGRESO DEL JUGADOR ---
 const SAVE_FILE_PATH: String = "user://profile_save.json"
 
@@ -1478,15 +1516,30 @@ func create_card_foil_material(rarity_str: String) -> ShaderMaterial:
 		mat.set_shader_parameter("intensity", 1.20)
 		mat.set_shader_parameter("shimmer_speed", 1.25)
 		return mat
+	elif r in ["showcase", "holo_common", "subtle"]:
+		var mat = ShaderMaterial.new()
+		mat.shader = s
+		mat.set_shader_parameter("foil_style", 0) # Estilo plateado / prisma sutil
+		mat.set_shader_parameter("foil_color_1", Color("#E0F7FA", 0.60))
+		mat.set_shader_parameter("foil_color_2", Color("#FFFFFF", 0.45))
+		mat.set_shader_parameter("sheen_width", 0.18)
+		mat.set_shader_parameter("rainbow_mix", 0.20)
+		mat.set_shader_parameter("sparkle_strength", 0.20)
+		mat.set_shader_parameter("ambient_foil", 0.05)
+		mat.set_shader_parameter("intensity", 0.70)
+		mat.set_shader_parameter("shimmer_speed", 0.85)
+		return mat
 		
 	return null
 
-func apply_foil_overlay(target_node: Control, rarity_str: String) -> ColorRect:
+func apply_foil_overlay(target_node: Control, rarity_str: String, force_showcase_foil: bool = false) -> ColorRect:
 	if not target_node:
 		return null
 		
 	var existing: ColorRect = target_node.get_node_or_null("FoilOverlay") as ColorRect
 	var mat = create_card_foil_material(rarity_str)
+	if not mat and force_showcase_foil:
+		mat = create_card_foil_material("showcase")
 	
 	if not mat:
 		if existing:
@@ -2828,6 +2881,12 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 			if not player_card_stocks.has(id) or player_card_stocks[id] < 1:
 				player_card_stocks[id] = 1
 				
+	player_favorites.clear()
+	profile_showcase_ids.clear()
+	for id in player_unlocked_ids:
+		if profile_showcase_ids.size() < 3:
+			profile_showcase_ids.append(id)
+				
 	save_profile(auto_sync_cloud)
 	diamonds_changed.emit(player_diamonds)
 	rare_candies_changed.emit(player_rare_candies)
@@ -2861,8 +2920,11 @@ func get_save_dict() -> Dictionary:
 			"is_logged_in": profile_is_logged_in,
 			"created_at": profile_created_at,
 			"cloud_key": profile_cloud_key,
-			"welcome_gift_claimed": profile_welcome_claimed
+			"welcome_gift_claimed": profile_welcome_claimed,
+			"favorite_showcase": profile_showcase_ids.duplicate()
 		},
+		"favorites": player_favorites.duplicate(),
+		"favorite_showcase": profile_showcase_ids.duplicate(),
 		"stats": {
 			"tournaments_won": stats_tournaments_won,
 			"battles_won": stats_battles_won,
@@ -2941,7 +3003,25 @@ func apply_save_dict(data: Dictionary) -> bool:
 		for item in raw_friends:
 			if typeof(item) == TYPE_DICTIONARY:
 				player_friends.append(item.duplicate(true))
-	
+				
+	# Cargar favoritos
+	player_favorites.clear()
+	var raw_favs = data.get("favorites", prof.get("favorites", []))
+	if typeof(raw_favs) == TYPE_ARRAY:
+		for fid in raw_favs:
+			var int_fid = int(fid)
+			if int_fid not in player_favorites:
+				player_favorites.append(int_fid)
+
+	# Cargar showcase de 3 favoritos
+	profile_showcase_ids.clear()
+	var raw_showcase = data.get("favorite_showcase", prof.get("favorite_showcase", []))
+	if typeof(raw_showcase) == TYPE_ARRAY:
+		for sid in raw_showcase:
+			var int_sid = int(sid)
+			if int_sid not in profile_showcase_ids and profile_showcase_ids.size() < 3:
+				profile_showcase_ids.append(int_sid)
+				
 	# Cargar estadísticas con fusión (mantener el máximo progreso alcanzado)
 	var st = data.get("stats", {})
 	stats_tournaments_won = maxi(stats_tournaments_won, int(st.get("tournaments_won", 0)))

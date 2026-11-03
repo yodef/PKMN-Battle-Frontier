@@ -351,6 +351,13 @@ var opt_col_stage: OptionButton = null
 var opt_col_rarity: OptionButton = null
 var opt_col_tier: OptionButton = null
 var btn_col_reset_filters: Button = null
+var btn_col_fav_toggle: Button = null
+
+# Showcase de Favoritos y Perfil de Amigos
+var profile_showcase_card: PanelContainer = null
+var showcase_picker_modal: Control = null
+var temp_showcase_selection: Array[int] = []
+var friend_profile_modal: Control = null
 
 # Selección de equipos
 var team_select_mode: String = "QUICK_BATTLE" # "QUICK_BATTLE" o "CAMPAIGN"
@@ -3010,6 +3017,7 @@ func _show_online_join_tab() -> void:
 
 func _on_confirm_join_pressed() -> void:
 	_ensure_default_online_team()
+	_is_online_match_launching = false
 	var code = join_code_input.text.strip_edges().to_upper()
 	if code.length() < 3:
 		join_status_lbl.text = "⚠️ Ingresa el código de 4 caracteres de la sala."
@@ -3120,6 +3128,7 @@ func _on_close_online_lobby_pressed() -> void:
 	online_lobby_modal.visible = false
 
 func _on_online_match_ready() -> void:
+	print("[Main] 🚀 _on_online_match_ready invocado! Role=%s, is_host=%s, _is_online_match_launching=%s" % [OnlineManager.my_role, str(OnlineManager.is_host), str(_is_online_match_launching)])
 	if _is_online_match_launching:
 		return
 	_is_online_match_launching = true
@@ -4502,17 +4511,19 @@ func _setup_collection_filters() -> void:
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	collection_filter_panel.add_child(grid)
 	
-	# 1. Filtro Owned (Estado de posesión)
+	# 1. Filtro Owned (Estado de posesión y Favoritos)
 	opt_col_owned = OptionButton.new()
 	opt_col_owned.name = "OptColOwned"
 	opt_col_owned.add_item("📦 Status: All", 0)
 	opt_col_owned.add_item("📦 Owned Only", 1)
 	opt_col_owned.add_item("📦 Missing Only", 2)
+	opt_col_owned.add_item("⭐ Favorites Only", 3)
 	_style_filter_option(opt_col_owned)
 	opt_col_owned.item_selected.connect(func(idx: int):
 		match idx:
 			1: col_filter_owned = "OWNED"
 			2: col_filter_owned = "MISSING"
+			3: col_filter_owned = "FAVORITES"
 			_: col_filter_owned = "ALL"
 		_update_filter_button_visuals()
 		populate_collection_grid()
@@ -4688,10 +4699,12 @@ func get_filtered_collection_cards() -> Array:
 		var cid = int(card["id"])
 		var is_unlocked = GameData.is_pokemon_unlocked(cid)
 		
-		# 1. Filtro Owned (Estado de posesión)
+		# 1. Filtro Owned (Estado de posesión y Favoritos)
 		if col_filter_owned == "OWNED" and not is_unlocked:
 			continue
 		elif col_filter_owned == "MISSING" and is_unlocked:
+			continue
+		elif col_filter_owned == "FAVORITES" and not GameData.is_pokemon_favorite(cid):
 			continue
 			
 		# 2. Filtro Types (Tipo elemental)
@@ -4877,6 +4890,37 @@ func populate_collection_grid() -> void:
 			tier_thumb_badge.add_child(tb_lbl)
 			thumb_btn.add_child(tier_thumb_badge)
 			
+			# Marcador de Favoritos (⭐) interactivo en la miniatura
+			var is_fav = GameData.is_pokemon_favorite(cid)
+			var fav_btn = Button.new()
+			fav_btn.custom_minimum_size = Vector2(24, 20)
+			fav_btn.position = Vector2(38, 6)
+			fav_btn.focus_mode = Control.FOCUS_NONE
+			fav_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			fav_btn.text = "⭐" if is_fav else "☆"
+			fav_btn.tooltip_text = "Favorite"
+			fav_btn.add_theme_font_size_override("font_size", 10)
+			
+			var sb_fav = StyleBoxFlat.new()
+			sb_fav.set_corner_radius_all(4)
+			sb_fav.bg_color = Color(0, 0, 0, 0.85) if is_fav else Color(0, 0, 0, 0.45)
+			sb_fav.border_color = Color("#FFD700") if is_fav else Color(1, 1, 1, 0.3)
+			sb_fav.set_border_width_all(1)
+			fav_btn.add_theme_stylebox_override("normal", sb_fav)
+			fav_btn.add_theme_stylebox_override("hover", sb_fav)
+			fav_btn.add_theme_stylebox_override("pressed", sb_fav)
+			
+			fav_btn.pressed.connect(func():
+				var new_state = GameData.toggle_pokemon_favorite(cid)
+				GameData.save_profile()
+				fav_btn.text = "⭐" if new_state else "☆"
+				sb_fav.bg_color = Color(0, 0, 0, 0.85) if new_state else Color(0, 0, 0, 0.45)
+				sb_fav.border_color = Color("#FFD700") if new_state else Color(1, 1, 1, 0.3)
+				if col_filter_owned == "FAVORITES":
+					populate_collection_grid()
+			)
+			thumb_btn.add_child(fav_btn)
+			
 			# Efecto Foil Holográfico en la miniatura de cartas Raras/Épicas/Legendarias
 			GameData.apply_foil_overlay(thumb_btn, str(card.get("rarity", "Common")))
 		else:
@@ -4948,6 +4992,34 @@ func show_collection_card(index: int) -> void:
 	# 1. Ensamble dinámico de la carta (desbloqueada o misterio)
 	if assembled_card:
 		assembled_card.setup(card, is_unlocked)
+		
+	# Botón interactivo de Favorito en TopNav
+	if btn_col_fav_toggle == null:
+		var top_nav = get_node_or_null("CollectionModal/DetailView/TopNav")
+		if top_nav:
+			btn_col_fav_toggle = Button.new()
+			btn_col_fav_toggle.name = "BtnDetailFavToggle"
+			btn_col_fav_toggle.custom_minimum_size = Vector2(150, 36)
+			btn_col_fav_toggle.add_theme_font_size_override("font_size", 12)
+			top_nav.add_child(btn_col_fav_toggle)
+			top_nav.move_child(btn_col_fav_toggle, 1)
+			
+	if btn_col_fav_toggle:
+		if is_unlocked:
+			btn_col_fav_toggle.visible = true
+			var is_fav = GameData.is_pokemon_favorite(cid)
+			_update_detail_fav_button_visuals(is_fav)
+			for conn in btn_col_fav_toggle.pressed.get_connections():
+				btn_col_fav_toggle.pressed.disconnect(conn["callable"])
+			btn_col_fav_toggle.pressed.connect(func():
+				var new_state = GameData.toggle_pokemon_favorite(cid)
+				GameData.save_profile()
+				_update_detail_fav_button_visuals(new_state)
+				if col_filter_owned == "FAVORITES":
+					populate_collection_grid()
+			)
+		else:
+			btn_col_fav_toggle.visible = false
 		
 	# 2. Panel lateral con desglose
 	if is_unlocked:
@@ -5097,6 +5169,16 @@ func show_collection_card(index: int) -> void:
 		
 	# 3. Actualizar página y botones
 	collection_page_lbl.text = "%d / %d" % [index + 1, current_sorted_collection.size()]
+
+func _update_detail_fav_button_visuals(is_fav: bool) -> void:
+	if not btn_col_fav_toggle:
+		return
+	if is_fav:
+		btn_col_fav_toggle.text = "⭐ Favorited"
+		_apply_retro_button_style(btn_col_fav_toggle, Color(0.85, 0.70, 0.15), Color(1.0, 0.85, 0.25))
+	else:
+		btn_col_fav_toggle.text = "☆ Add to Favorites"
+		_apply_retro_button_style(btn_col_fav_toggle, Color(0.25, 0.40, 0.55), Color(0.35, 0.55, 0.75))
 
 func _on_prev_card_pressed() -> void:
 	if current_sorted_collection.is_empty():
@@ -5863,6 +5945,7 @@ func _on_profile_pressed() -> void:
 		stat_gold_lbl.text = "💰 Campaign Gold: %d G" % GameData.campaign_gold
 	if profile_feedback_lbl:
 		profile_feedback_lbl.visible = false
+	_update_profile_showcase_ui()
 	profile_modal.visible = true
 
 func _on_save_progress_pressed() -> void:
@@ -5902,6 +5985,737 @@ func _on_confirm_erase_pressed() -> void:
 	_apply_audio_settings()
 	_update_lobby_header_badge()
 	_show_login_screen()
+
+# --- SHOWCASE DE POKÉMON FAVORITOS Y PERFIL DE AMIGOS ---
+
+func _update_profile_showcase_ui() -> void:
+	var p_box = get_node_or_null("ProfileModal/ProfileBox")
+	if not p_box:
+		return
+		
+	if profile_showcase_card == null:
+		profile_showcase_card = PanelContainer.new()
+		profile_showcase_card.name = "FavoriteShowcaseCard"
+		var sb_panel = StyleBoxFlat.new()
+		sb_panel.bg_color = Color(0.08, 0.12, 0.18, 0.95)
+		sb_panel.border_color = Color(0.25, 0.52, 0.60)
+		sb_panel.set_border_width_all(2)
+		sb_panel.set_corner_radius_all(8)
+		profile_showcase_card.add_theme_stylebox_override("panel", sb_panel)
+		
+		var stats_card = p_box.get_node_or_null("StatsCard")
+		if stats_card:
+			p_box.add_child(profile_showcase_card)
+			p_box.move_child(profile_showcase_card, stats_card.get_index() + 1)
+		else:
+			p_box.add_child(profile_showcase_card)
+			
+	for c in profile_showcase_card.get_children():
+		c.queue_free()
+		
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	profile_showcase_card.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	margin.add_child(vbox)
+	
+	var header_hbox = HBoxContainer.new()
+	header_hbox.add_theme_constant_override("separation", 8)
+	vbox.add_child(header_hbox)
+	
+	var title_lbl = Label.new()
+	title_lbl.text = "⭐ TOP 3 FAVORITE POKÉMON"
+	title_lbl.add_theme_font_size_override("font_size", 13)
+	title_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_hbox.add_child(title_lbl)
+	
+	var btn_edit_showcase = Button.new()
+	btn_edit_showcase.text = "✏️ Edit Showcase"
+	btn_edit_showcase.custom_minimum_size = Vector2(130, 28)
+	btn_edit_showcase.add_theme_font_size_override("font_size", 11)
+	_apply_retro_button_style(btn_edit_showcase, Color(0.2, 0.6, 0.7), Color(0.3, 0.8, 0.9))
+	btn_edit_showcase.pressed.connect(func(): _open_showcase_picker_modal())
+	header_hbox.add_child(btn_edit_showcase)
+	
+	var slots_hbox = HBoxContainer.new()
+	slots_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	slots_hbox.add_theme_constant_override("separation", 10)
+	vbox.add_child(slots_hbox)
+	
+	var current_showcase = GameData.get_profile_showcase()
+	for i in range(3):
+		var pid = current_showcase[i] if i < current_showcase.size() else -1
+		var card_node = _build_showcase_card_node(pid, i, true, func(_slot_idx: int):
+			_open_showcase_picker_modal()
+		)
+		slots_hbox.add_child(card_node)
+
+func _build_showcase_card_node(pokemon_id: int, slot_idx: int, is_editable: bool = false, on_clicked: Callable = Callable()) -> Control:
+	var container = PanelContainer.new()
+	container.custom_minimum_size = Vector2(106, 150)
+	container.mouse_filter = Control.MOUSE_FILTER_STOP if is_editable else Control.MOUSE_FILTER_IGNORE
+	if is_editable:
+		container.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		if on_clicked.is_valid():
+			container.gui_input.connect(func(event: InputEvent):
+				if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+					on_clicked.call(slot_idx)
+			)
+			
+	if pokemon_id < 0 or not GameData.pokemon_catalog.has(pokemon_id):
+		var sb_empty = StyleBoxFlat.new()
+		sb_empty.bg_color = Color(0.06, 0.09, 0.14, 0.85)
+		sb_empty.border_color = Color(0.25, 0.35, 0.50, 0.7)
+		sb_empty.set_border_width_all(2)
+		sb_empty.set_corner_radius_all(6)
+		container.add_theme_stylebox_override("panel", sb_empty)
+		
+		var empty_center = CenterContainer.new()
+		empty_center.set_anchors_preset(Control.PRESET_FULL_RECT)
+		container.add_child(empty_center)
+		
+		var empty_vbox = VBoxContainer.new()
+		empty_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		empty_vbox.add_theme_constant_override("separation", 4)
+		empty_center.add_child(empty_vbox)
+		
+		var plus_lbl = Label.new()
+		plus_lbl.text = "➕"
+		plus_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		plus_lbl.add_theme_font_size_override("font_size", 22)
+		empty_vbox.add_child(plus_lbl)
+		
+		var slot_lbl = Label.new()
+		slot_lbl.text = "Slot %d\n(Empty)" % (slot_idx + 1)
+		slot_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		slot_lbl.add_theme_font_size_override("font_size", 10)
+		slot_lbl.add_theme_color_override("font_color", Color(0.5, 0.65, 0.8))
+		empty_vbox.add_child(slot_lbl)
+		
+		return container
+
+	var card = GameData.pokemon_catalog[pokemon_id]
+	var type_key = str(card.get("type", "NORMAL")).to_upper()
+	var theme = AssembledCardScript.TYPE_THEMES.get(type_key, AssembledCardScript.TYPE_THEMES["NORMAL"])
+	
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = theme["bg"]
+	sb.border_color = theme["border"]
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(6)
+	container.add_theme_stylebox_override("panel", sb)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 4)
+	margin.add_theme_constant_override("margin_top", 4)
+	margin.add_theme_constant_override("margin_right", 4)
+	margin.add_theme_constant_override("margin_bottom", 4)
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS
+	container.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 2)
+	vbox.mouse_filter = Control.MOUSE_FILTER_PASS
+	margin.add_child(vbox)
+	
+	# Fila 1: Icono Tipo + Nombre + Estrella
+	var top_hbox = HBoxContainer.new()
+	top_hbox.add_theme_constant_override("separation", 3)
+	top_hbox.mouse_filter = Control.MOUSE_FILTER_PASS
+	vbox.add_child(top_hbox)
+	
+	var type_icon = TextureRect.new()
+	type_icon.custom_minimum_size = Vector2(14, 14)
+	type_icon.texture = GameData.get_type_icon_texture(type_key)
+	type_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	type_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	top_hbox.add_child(type_icon)
+	
+	var name_lbl = Label.new()
+	name_lbl.text = str(card.get("short_name", "PKMN"))
+	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_lbl.add_theme_font_size_override("font_size", 10)
+	name_lbl.add_theme_color_override("font_color", Color.WHITE)
+	top_hbox.add_child(name_lbl)
+	
+	var star_lbl = Label.new()
+	star_lbl.text = "⭐"
+	star_lbl.add_theme_font_size_override("font_size", 9)
+	top_hbox.add_child(star_lbl)
+	
+	# Fila 2: Sprite centrado
+	var sprite_box = CenterContainer.new()
+	sprite_box.custom_minimum_size = Vector2(0, 94)
+	sprite_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sprite_box.mouse_filter = Control.MOUSE_FILTER_PASS
+	vbox.add_child(sprite_box)
+	
+	var sprite = TextureRect.new()
+	var tex_file = str(card.get("texture_path", card.get("texture_file", "")))
+	sprite.texture = GameData.get_pokemon_texture(tex_file)
+	sprite.custom_minimum_size = Vector2(84, 84)
+	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	sprite_box.add_child(sprite)
+	
+	# Fila 3: Tier Badge + Rarity Stars
+	var bot_hbox = HBoxContainer.new()
+	bot_hbox.add_theme_constant_override("separation", 3)
+	bot_hbox.mouse_filter = Control.MOUSE_FILTER_PASS
+	vbox.add_child(bot_hbox)
+	
+	var tier_val = str(card.get("tier", "C")).strip_edges().to_upper()
+	if tier_val == "":
+		tier_val = "C"
+	var t_col = GameData.get_tier_color(tier_val)
+	var tier_lbl = Label.new()
+	tier_lbl.text = "Tier " + tier_val
+	tier_lbl.add_theme_font_size_override("font_size", 9)
+	tier_lbl.add_theme_color_override("font_color", t_col)
+	tier_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bot_hbox.add_child(tier_lbl)
+	
+	var r_info = GameData.get_rarity_display_info(str(card.get("rarity", "Common")))
+	var stars_lbl = Label.new()
+	stars_lbl.text = str(r_info.get("stars", "⭐"))
+	stars_lbl.add_theme_font_size_override("font_size", 9)
+	stars_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	bot_hbox.add_child(stars_lbl)
+	
+	# Efecto Foil Holográfico continuo
+	var rarity_str = str(card.get("rarity", "Common"))
+	var foil_rect = GameData.apply_foil_overlay(container, rarity_str, true)
+	if foil_rect:
+		container.move_child(foil_rect, container.get_child_count() - 1)
+		
+	return container
+
+func _open_showcase_picker_modal() -> void:
+	temp_showcase_selection = GameData.get_profile_showcase().duplicate()
+	_build_or_update_showcase_picker_ui()
+	if showcase_picker_modal:
+		showcase_picker_modal.visible = true
+
+func _build_or_update_showcase_picker_ui() -> void:
+	if showcase_picker_modal == null:
+		showcase_picker_modal = Control.new()
+		showcase_picker_modal.name = "ShowcasePickerModal"
+		showcase_picker_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+		showcase_picker_modal.z_index = 95
+		add_child(showcase_picker_modal)
+		
+	for c in showcase_picker_modal.get_children():
+		c.queue_free()
+		
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.04, 0.06, 0.10, 0.95)
+	showcase_picker_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	showcase_picker_modal.add_child(center)
+	
+	var card_panel = PanelContainer.new()
+	card_panel.custom_minimum_size = Vector2(450, 620)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color(0.25, 0.52, 0.60)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	card_panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(card_panel)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 14)
+	margin.add_theme_constant_override("margin_top", 14)
+	margin.add_theme_constant_override("margin_right", 14)
+	margin.add_theme_constant_override("margin_bottom", 14)
+	card_panel.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	margin.add_child(vbox)
+	
+	var title = Label.new()
+	title.text = "⭐ CHOOSE SHOWCASE POKÉMON"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 17)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	vbox.add_child(title)
+	
+	var sub_lbl = Label.new()
+	sub_lbl.text = "Select up to 3 Pokémon from your collection (%d/3 selected)" % temp_showcase_selection.size()
+	sub_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub_lbl.add_theme_font_size_override("font_size", 11)
+	sub_lbl.add_theme_color_override("font_color", Color(0.45, 0.75, 0.95))
+	vbox.add_child(sub_lbl)
+	
+	var scroll = ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+	
+	var grid = GridContainer.new()
+	grid.columns = 4
+	grid.add_theme_constant_override("h_separation", 6)
+	grid.add_theme_constant_override("v_separation", 6)
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(grid)
+	
+	# Población de Pokémon desbloqueados
+	for cid in GameData.player_unlocked_ids:
+		if not GameData.pokemon_catalog.has(cid):
+			continue
+		var card = GameData.pokemon_catalog[cid]
+		var is_selected = cid in temp_showcase_selection
+		var sel_idx = temp_showcase_selection.find(cid)
+		
+		var p_btn = Button.new()
+		p_btn.custom_minimum_size = Vector2(98, 126)
+		p_btn.focus_mode = Control.FOCUS_NONE
+		p_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		
+		var type_key = str(card.get("type", "NORMAL")).to_upper()
+		var theme = AssembledCardScript.TYPE_THEMES.get(type_key, AssembledCardScript.TYPE_THEMES["NORMAL"])
+		
+		var btn_sb = StyleBoxFlat.new()
+		btn_sb.bg_color = theme["bg"]
+		btn_sb.border_color = Color("#FFD700") if is_selected else theme["border"]
+		btn_sb.set_border_width_all(3 if is_selected else 1)
+		btn_sb.set_corner_radius_all(6)
+		p_btn.add_theme_stylebox_override("normal", btn_sb)
+		p_btn.add_theme_stylebox_override("hover", btn_sb)
+		p_btn.add_theme_stylebox_override("pressed", btn_sb)
+		
+		var tex_file = str(card.get("texture_path", card.get("texture_file", "")))
+		p_btn.icon = GameData.get_pokemon_texture(tex_file)
+		p_btn.expand_icon = true
+		p_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		p_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+		
+		if is_selected:
+			var sel_badge = PanelContainer.new()
+			sel_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			sel_badge.position = Vector2(4, 4)
+			var sb_badge = StyleBoxFlat.new()
+			sb_badge.bg_color = Color(0, 0, 0, 0.85)
+			sb_badge.border_color = Color("#FFD700")
+			sb_badge.set_border_width_all(1)
+			sb_badge.set_corner_radius_all(4)
+			sel_badge.add_theme_stylebox_override("panel", sb_badge)
+			var sel_lbl = Label.new()
+			sel_lbl.text = "⭐ #%d" % (sel_idx + 1)
+			sel_lbl.add_theme_font_size_override("font_size", 9)
+			sel_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+			sel_badge.add_child(sel_lbl)
+			p_btn.add_child(sel_badge)
+			
+		var c_id_cap = cid
+		p_btn.pressed.connect(func():
+			if c_id_cap in temp_showcase_selection:
+				temp_showcase_selection.erase(c_id_cap)
+			elif temp_showcase_selection.size() < 3:
+				temp_showcase_selection.append(c_id_cap)
+			_build_or_update_showcase_picker_ui()
+		)
+		grid.add_child(p_btn)
+		
+	# Barra de botones inferiores
+	var bot_hbox = HBoxContainer.new()
+	bot_hbox.add_theme_constant_override("separation", 8)
+	vbox.add_child(bot_hbox)
+	
+	var btn_use_favs = Button.new()
+	btn_use_favs.text = "⭐ Use Favorites"
+	btn_use_favs.custom_minimum_size = Vector2(0, 36)
+	btn_use_favs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_use_favs.add_theme_font_size_override("font_size", 11)
+	_apply_retro_button_style(btn_use_favs, Color(0.85, 0.7, 0.2), Color(1.0, 0.85, 0.3))
+	btn_use_favs.pressed.connect(func():
+		temp_showcase_selection.clear()
+		for fid in GameData.player_favorites:
+			if temp_showcase_selection.size() < 3 and fid not in temp_showcase_selection:
+				temp_showcase_selection.append(fid)
+		if temp_showcase_selection.is_empty():
+			for uid in GameData.player_unlocked_ids:
+				if temp_showcase_selection.size() < 3 and uid not in temp_showcase_selection:
+					temp_showcase_selection.append(uid)
+		_build_or_update_showcase_picker_ui()
+	)
+	bot_hbox.add_child(btn_use_favs)
+	
+	var btn_clear = Button.new()
+	btn_clear.text = "🗑️ Clear"
+	btn_clear.custom_minimum_size = Vector2(65, 36)
+	btn_clear.add_theme_font_size_override("font_size", 11)
+	_apply_retro_button_style(btn_clear, Color(0.6, 0.3, 0.3), Color(0.8, 0.4, 0.4))
+	btn_clear.pressed.connect(func():
+		temp_showcase_selection.clear()
+		_build_or_update_showcase_picker_ui()
+	)
+	bot_hbox.add_child(btn_clear)
+	
+	var btn_save = Button.new()
+	btn_save.text = "💾 Save"
+	btn_save.custom_minimum_size = Vector2(75, 36)
+	btn_save.add_theme_font_size_override("font_size", 11)
+	_apply_retro_button_style(btn_save, Color(0.2, 0.7, 0.3), Color(0.3, 0.9, 0.4))
+	btn_save.pressed.connect(func():
+		GameData.set_profile_showcase(temp_showcase_selection)
+		GameData.save_profile(true)
+		showcase_picker_modal.visible = false
+		_update_profile_showcase_ui()
+	)
+	bot_hbox.add_child(btn_save)
+	
+	var btn_cancel = Button.new()
+	btn_cancel.text = "Cancel"
+	btn_cancel.custom_minimum_size = Vector2(65, 36)
+	btn_cancel.add_theme_font_size_override("font_size", 11)
+	_apply_retro_button_style(btn_cancel, Color(0.4, 0.4, 0.4), Color(0.6, 0.6, 0.6))
+	btn_cancel.pressed.connect(func():
+		showcase_picker_modal.visible = false
+	)
+	bot_hbox.add_child(btn_cancel)
+
+# --- VISOR DEL PERFIL DE AMIGOS ---
+
+func _open_friend_profile_modal(f_data: Dictionary) -> void:
+	var f_alias = str(f_data.get("alias", "Trainer"))
+	var f_email = str(f_data.get("email", ""))
+	var f_id = str(f_data.get("id", ""))
+	var query_key = f_email if not f_email.is_empty() else (f_id if not f_id.is_empty() else f_alias)
+	
+	_show_friend_profile_modal_loading(f_alias, f_email, f_id)
+	
+	CloudSync.fetch_public_trainer_profile(query_key, func(success: bool, save_data: Dictionary, err: String):
+		if not is_instance_valid(self):
+			return
+		if success and not save_data.is_empty():
+			_render_friend_profile_data(save_data, f_data)
+		else:
+			_show_friend_profile_modal_error(f_alias, err)
+	)
+
+func _show_friend_profile_modal_loading(f_alias: String, _f_email: String, _f_id: String) -> void:
+	if friend_profile_modal == null:
+		friend_profile_modal = Control.new()
+		friend_profile_modal.name = "FriendProfileModal"
+		friend_profile_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+		friend_profile_modal.z_index = 92
+		add_child(friend_profile_modal)
+		
+	for c in friend_profile_modal.get_children():
+		c.queue_free()
+		
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.04, 0.06, 0.10, 0.95)
+	friend_profile_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	friend_profile_modal.add_child(center)
+	
+	var card_panel = PanelContainer.new()
+	card_panel.custom_minimum_size = Vector2(440, 300)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color(0.25, 0.52, 0.60)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	card_panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(card_panel)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_top", 20)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_bottom", 20)
+	card_panel.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 12)
+	margin.add_child(vbox)
+	
+	var title = Label.new()
+	title.text = "👤 TRAINER PROFILE: %s" % f_alias
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	vbox.add_child(title)
+	
+	var spinner_lbl = Label.new()
+	spinner_lbl.text = "⏳ Loading Trainer profile and cards from Google Cloud..."
+	spinner_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	spinner_lbl.add_theme_font_size_override("font_size", 12)
+	spinner_lbl.add_theme_color_override("font_color", Color(0.45, 0.75, 0.95))
+	vbox.add_child(spinner_lbl)
+	
+	var btn_close = Button.new()
+	btn_close.text = "Cancel"
+	btn_close.custom_minimum_size = Vector2(100, 32)
+	btn_close.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_apply_retro_button_style(btn_close, Color(0.4, 0.4, 0.4), Color(0.6, 0.6, 0.6))
+	btn_close.pressed.connect(func(): friend_profile_modal.visible = false)
+	vbox.add_child(btn_close)
+	
+	friend_profile_modal.visible = true
+
+func _show_friend_profile_modal_error(f_alias: String, err_msg: String) -> void:
+	if not friend_profile_modal:
+		return
+	for c in friend_profile_modal.get_children():
+		c.queue_free()
+		
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.04, 0.06, 0.10, 0.95)
+	friend_profile_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	friend_profile_modal.add_child(center)
+	
+	var card_panel = PanelContainer.new()
+	card_panel.custom_minimum_size = Vector2(400, 240)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color(0.8, 0.3, 0.3)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	card_panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(card_panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 12)
+	card_panel.add_child(vbox)
+	
+	var title = Label.new()
+	title.text = "👤 TRAINER PROFILE: %s" % f_alias
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	vbox.add_child(title)
+	
+	var err_lbl = Label.new()
+	err_lbl.text = "⚠️ Could not load profile from Google Cloud.\n%s" % err_msg
+	err_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	err_lbl.add_theme_font_size_override("font_size", 12)
+	err_lbl.add_theme_color_override("font_color", Color(1.0, 0.45, 0.45))
+	vbox.add_child(err_lbl)
+	
+	var btn_close = Button.new()
+	btn_close.text = "⬅ Back to Friends"
+	btn_close.custom_minimum_size = Vector2(140, 36)
+	btn_close.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_apply_retro_button_style(btn_close, Color(0.4, 0.4, 0.4), Color(0.6, 0.6, 0.6))
+	btn_close.pressed.connect(func(): friend_profile_modal.visible = false)
+	vbox.add_child(btn_close)
+
+func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> void:
+	if not friend_profile_modal:
+		return
+	for c in friend_profile_modal.get_children():
+		c.queue_free()
+		
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.04, 0.06, 0.10, 0.95)
+	friend_profile_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	friend_profile_modal.add_child(center)
+	
+	var card_panel = PanelContainer.new()
+	card_panel.custom_minimum_size = Vector2(440, 600)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color(0.25, 0.52, 0.60)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	card_panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(card_panel)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 14)
+	margin.add_theme_constant_override("margin_top", 12)
+	margin.add_theme_constant_override("margin_right", 14)
+	margin.add_theme_constant_override("margin_bottom", 12)
+	card_panel.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	margin.add_child(vbox)
+	
+	# Header
+	var prof = save_data.get("profile", {})
+	var alias = str(prof.get("trainer_alias", prof.get("name", f_data.get("alias", "Trainer")))).strip_edges()
+	var email = str(prof.get("email", f_data.get("email", ""))).strip_edges()
+	var p_id = str(prof.get("id", f_data.get("id", ""))).strip_edges()
+	
+	var title = Label.new()
+	title.text = "👤 TRAINER PROFILE"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	vbox.add_child(title)
+	
+	# Trainer info card
+	var info_panel = PanelContainer.new()
+	var sb_info = StyleBoxFlat.new()
+	sb_info.bg_color = Color(0.06, 0.09, 0.14, 0.9)
+	sb_info.border_color = Color(0.2, 0.4, 0.55)
+	sb_info.set_border_width_all(1)
+	sb_info.set_corner_radius_all(6)
+	info_panel.add_theme_stylebox_override("panel", sb_info)
+	vbox.add_child(info_panel)
+	
+	var info_margin = MarginContainer.new()
+	info_margin.add_theme_constant_override("margin_left", 10)
+	info_margin.add_theme_constant_override("margin_top", 8)
+	info_margin.add_theme_constant_override("margin_right", 10)
+	info_margin.add_theme_constant_override("margin_bottom", 8)
+	info_panel.add_child(info_margin)
+	
+	var info_vbox = VBoxContainer.new()
+	info_vbox.add_theme_constant_override("separation", 3)
+	info_margin.add_child(info_vbox)
+	
+	var name_lbl = Label.new()
+	name_lbl.text = "Trainer: %s" % alias
+	name_lbl.add_theme_font_size_override("font_size", 15)
+	name_lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.35))
+	info_vbox.add_child(name_lbl)
+	
+	var sub_lbl = Label.new()
+	var sub_text = email if not email.is_empty() else ("ID: " + p_id)
+	if not email.is_empty() and not p_id.is_empty():
+		sub_text += "  •  " + p_id
+	sub_lbl.text = sub_text
+	sub_lbl.add_theme_font_size_override("font_size", 11)
+	sub_lbl.add_theme_color_override("font_color", Color(0.45, 0.75, 0.95))
+	info_vbox.add_child(sub_lbl)
+	
+	var cloud_status = Label.new()
+	cloud_status.text = "🟢 Google Cloud Verified Trainer"
+	cloud_status.add_theme_font_size_override("font_size", 11)
+	cloud_status.add_theme_color_override("font_color", Color(0.3, 1.0, 0.45))
+	info_vbox.add_child(cloud_status)
+	
+	# Stats card
+	var stats = save_data.get("stats", {})
+	var econ = save_data.get("economy", {})
+	var col = save_data.get("collection", {})
+	var unl_ids = col.get("unlocked_ids", [])
+	
+	var stats_panel_node = PanelContainer.new()
+	var sb_stats = StyleBoxFlat.new()
+	sb_stats.bg_color = Color(0.06, 0.09, 0.14, 0.9)
+	sb_stats.border_color = Color(0.2, 0.4, 0.55)
+	sb_stats.set_border_width_all(1)
+	sb_stats.set_corner_radius_all(6)
+	stats_panel_node.add_theme_stylebox_override("panel", sb_stats)
+	vbox.add_child(stats_panel_node)
+	
+	var stats_margin = MarginContainer.new()
+	stats_margin.add_theme_constant_override("margin_left", 10)
+	stats_margin.add_theme_constant_override("margin_top", 8)
+	stats_margin.add_theme_constant_override("margin_right", 10)
+	stats_margin.add_theme_constant_override("margin_bottom", 8)
+	stats_panel_node.add_child(stats_margin)
+	
+	var stats_grid = GridContainer.new()
+	stats_grid.columns = 2
+	stats_grid.add_theme_constant_override("h_separation", 16)
+	stats_grid.add_theme_constant_override("v_separation", 4)
+	stats_margin.add_child(stats_grid)
+	
+	var diamonds = int(econ.get("diamonds", 0))
+	var candies = int(econ.get("rare_candies", 0))
+	var tourneys = int(stats.get("tournaments_won", 0))
+	var b_won = int(stats.get("battles_won", 0))
+	var b_tot = int(stats.get("battles_total", 0))
+	var win_rate = (float(b_won) / float(b_tot) * 100.0) if b_tot > 0 else 0.0
+	var packs = int(stats.get("packs_opened", 0))
+	var total_cards = max(1, GameData.pokemon_catalog.size())
+	var col_pct = (float(unl_ids.size()) / float(total_cards)) * 100.0
+	
+	var stat_items = [
+		"💎 Diamonds: %d" % diamonds,
+		"🍬 Rare Candies: %d" % candies,
+		"🏆 Tournaments Won: %d" % tourneys,
+		"⚔️ Battles: %d/%d (%.0f%%)" % [b_won, b_tot, win_rate],
+		"🎴 Cards: %d/%d (%.0f%%)" % [unl_ids.size(), total_cards, col_pct],
+		"📦 Packs Opened: %d" % packs
+	]
+	for s_text in stat_items:
+		var s_lbl = Label.new()
+		s_lbl.text = s_text
+		s_lbl.add_theme_font_size_override("font_size", 11)
+		stats_grid.add_child(s_lbl)
+		
+	# Showcase Section con Foils
+	var showcase_box = VBoxContainer.new()
+	showcase_box.add_theme_constant_override("separation", 6)
+	vbox.add_child(showcase_box)
+	
+	var sc_title = Label.new()
+	sc_title.text = "⭐ TOP 3 FAVORITE POKÉMON"
+	sc_title.add_theme_font_size_override("font_size", 13)
+	sc_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	showcase_box.add_child(sc_title)
+	
+	var sc_slots_row = HBoxContainer.new()
+	sc_slots_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	sc_slots_row.add_theme_constant_override("separation", 10)
+	showcase_box.add_child(sc_slots_row)
+	
+	var f_showcase = save_data.get("favorite_showcase", prof.get("favorite_showcase", []))
+	if typeof(f_showcase) != TYPE_ARRAY or f_showcase.is_empty():
+		f_showcase = save_data.get("favorites", unl_ids)
+		
+	for i in range(3):
+		var pid = int(f_showcase[i]) if (typeof(f_showcase) == TYPE_ARRAY and i < f_showcase.size()) else -1
+		var c_node = _build_showcase_card_node(pid, i, false)
+		sc_slots_row.add_child(c_node)
+		
+	# Botones de Acción
+	var act_hbox = HBoxContainer.new()
+	act_hbox.add_theme_constant_override("separation", 10)
+	vbox.add_child(act_hbox)
+	
+	var btn_chal = Button.new()
+	btn_chal.text = "⚔️ Challenge to Battle"
+	btn_chal.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_chal.custom_minimum_size = Vector2(0, 38)
+	btn_chal.add_theme_font_size_override("font_size", 12)
+	_apply_retro_button_style(btn_chal, Color(0.85, 0.65, 0.15), Color(1.0, 0.8, 0.25))
+	btn_chal.pressed.connect(func():
+		friend_profile_modal.visible = false
+		_challenge_friend(f_data)
+	)
+	act_hbox.add_child(btn_chal)
+	
+	var btn_close = Button.new()
+	btn_close.text = "⬅ Back to Friends"
+	btn_close.custom_minimum_size = Vector2(130, 38)
+	btn_close.add_theme_font_size_override("font_size", 12)
+	_apply_retro_button_style(btn_close, Color(0.4, 0.4, 0.4), Color(0.6, 0.6, 0.6))
+	btn_close.pressed.connect(func():
+		friend_profile_modal.visible = false
+	)
+	act_hbox.add_child(btn_close)
 
 # --- MODAL MISIONES Y RECOMPENSAS DIARIAS ---
 func _on_daily_missions_pressed() -> void:
@@ -6371,6 +7185,17 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 	actions_hbox.add_theme_constant_override("separation", 6)
 	hbox.add_child(actions_hbox)
 	
+	# Botón Ver Perfil
+	var profile_btn = Button.new()
+	profile_btn.text = "👁️ Profile"
+	profile_btn.custom_minimum_size = Vector2(75, 34)
+	profile_btn.add_theme_font_size_override("font_size", 11)
+	_apply_retro_button_style(profile_btn, Color(0.2, 0.6, 0.8), Color(0.3, 0.8, 1.0))
+	profile_btn.pressed.connect(func():
+		_open_friend_profile_modal(f_data)
+	)
+	actions_hbox.add_child(profile_btn)
+	
 	if has_room:
 		# Botón para unirse a la sala activa de este amigo
 		var join_btn = Button.new()
@@ -6511,6 +7336,18 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	# Acciones
 	var is_self = bool(res_data.get("is_self", false))
 	var is_already = GameData.is_friend(email) or GameData.is_friend(p_id) or GameData.is_friend(alias)
+	
+	if not is_self:
+		var profile_btn = Button.new()
+		profile_btn.text = "👁️ Profile"
+		profile_btn.custom_minimum_size = Vector2(75, 34)
+		profile_btn.add_theme_font_size_override("font_size", 11)
+		_apply_retro_button_style(profile_btn, Color(0.2, 0.6, 0.8), Color(0.3, 0.8, 1.0))
+		profile_btn.pressed.connect(func():
+			_open_friend_profile_modal(res_data)
+		)
+		hbox.add_child(profile_btn)
+		
 	var add_btn = Button.new()
 	add_btn.custom_minimum_size = Vector2(110, 34)
 	add_btn.add_theme_font_size_override("font_size", 11)

@@ -282,6 +282,7 @@ func set_guest_ready(ready: bool, callback: Callable = Callable()) -> void:
 		var success = (code >= 200 and code < 300)
 		if success:
 			print("[OnlineManager] 🟢 Estado Listo del invitado actualizado: ", ready)
+			call_deferred("_on_poll_tick")
 		if callback.is_valid():
 			callback.call(success)
 	)
@@ -363,18 +364,19 @@ func _on_poll_tick() -> void:
 	if not is_online_match or room_code.is_empty():
 		stop_polling()
 		return
-	if current_http_req != null:
+	if current_http_req != null and is_instance_valid(current_http_req):
 		return # Ya hay una petición en curso
 		
-	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
+	var url = "%s/%s?key=%s&_cb=%d" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY, Time.get_ticks_msec()]
 	current_http_req = HTTPRequest.new()
-	current_http_req.timeout = 5.0
+	current_http_req.timeout = 3.5
 	add_child(current_http_req)
 	
 	current_http_req.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, b: PackedByteArray):
-		if current_http_req:
-			current_http_req.queue_free()
-			current_http_req = null
+		var req = current_http_req
+		current_http_req = null
+		if req and is_instance_valid(req):
+			req.queue_free()
 			
 		if code == 200:
 			var resp_text = b.get_string_from_utf8()
@@ -386,7 +388,12 @@ func _on_poll_tick() -> void:
 			stop_polling()
 			opponent_left_or_surrendered.emit()
 	)
-	current_http_req.request(url, _get_nocache_headers(), HTTPClient.METHOD_GET)
+	var err = current_http_req.request(url, _get_nocache_headers(), HTTPClient.METHOD_GET)
+	if err != OK:
+		print("[OnlineManager] ⚠️ Error iniciando poll request: ", err)
+		if current_http_req and is_instance_valid(current_http_req):
+			current_http_req.queue_free()
+		current_http_req = null
 
 func _process_room_state(fields: Dictionary) -> void:
 	var dict = _firestore_fields_to_dict(fields)
@@ -429,6 +436,7 @@ func _process_room_state(fields: Dictionary) -> void:
 		elif status == "IN_BATTLE":
 			if not is_starting_match:
 				is_starting_match = true
+				print("[OnlineManager] 🚀 [HOST] Sala en IN_BATTLE. Emitiendo match_ready_to_start...")
 				match_ready_to_start.emit()
 				return
 	else:
@@ -436,6 +444,7 @@ func _process_room_state(fields: Dictionary) -> void:
 		if status == "IN_BATTLE":
 			if not is_starting_match:
 				is_starting_match = true
+				print("[OnlineManager] 🚀 [GUEST] Sala en IN_BATTLE detectada! Emitiendo match_ready_to_start...")
 				match_ready_to_start.emit()
 				return
 		

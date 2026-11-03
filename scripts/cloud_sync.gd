@@ -484,6 +484,88 @@ func _try_search_fallback_on_404(account_key: String, callback: Callable) -> voi
 		if callback.is_valid():
 			callback.call(false, {}, msg)
 
+# Consulta pública de un perfil para que amigos o rivales puedan inspeccionar su perfil y showcase sin interferir con la sesión
+func fetch_public_trainer_profile(account_key: String, callback: Callable) -> void:
+	var clean_key = account_key.strip_edges()
+	if clean_key.is_empty():
+		if callback.is_valid():
+			callback.call(false, {}, "Empty account key provided.")
+		return
+		
+	var doc_id = sanitize_account_key(clean_key)
+	var url = "%s/%s?key=%s&_cb=%d" % [FIRESTORE_BASE_URL, doc_id, API_KEY, Time.get_ticks_msec()]
+	var http = HTTPRequest.new()
+	http.timeout = 8.0
+	add_child(http)
+	
+	http.request_completed.connect(func(_res: int, code: int, _hdrs: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if code == 200:
+			var txt = body.get_string_from_utf8()
+			var parsed = JSON.parse_string(txt)
+			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("fields"):
+				var save_data = parse_trainer_doc_to_save_data(parsed["fields"])
+				if callback.is_valid():
+					callback.call(true, save_data, "")
+				return
+		elif code == 404:
+			# Fallback: buscar en colección por correo, alias o profile_id
+			_fetch_public_fallback_search(clean_key, callback)
+			return
+			
+		if callback.is_valid():
+			callback.call(false, {}, "Could not load trainer profile (HTTP %d)." % code)
+	)
+	var err = http.request(url, _get_nocache_headers(), HTTPClient.METHOD_GET)
+	if err != OK:
+		http.queue_free()
+		if callback.is_valid():
+			callback.call(false, {}, "HTTP error %d initiating request." % err)
+
+func _fetch_public_fallback_search(query_key: String, callback: Callable) -> void:
+	var clean_query = query_key.strip_edges().to_lower()
+	var search_url = "%s?key=%s&pageSize=50&_cb=%d" % [FIRESTORE_BASE_URL, API_KEY, Time.get_ticks_msec()]
+	var http_search = HTTPRequest.new()
+	http_search.timeout = 10.0
+	add_child(http_search)
+	
+	http_search.request_completed.connect(func(_res: int, code: int, _hdrs: PackedStringArray, body: PackedByteArray):
+		http_search.queue_free()
+		if code >= 200 and code < 300:
+			var txt = body.get_string_from_utf8()
+			var parsed = JSON.parse_string(txt)
+			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("documents"):
+				var docs = parsed.get("documents", [])
+				for doc in docs:
+					if typeof(doc) != TYPE_DICTIONARY or not doc.has("fields"):
+						continue
+					var fields = doc["fields"]
+					var t_email = str(fields.get("email", {}).get("stringValue", "")).to_lower()
+					var t_alias = str(fields.get("trainer_alias", fields.get("trainer_name", {})).get("stringValue", "")).to_lower()
+					var t_id = str(fields.get("profile_id", {}).get("stringValue", "")).to_lower()
+					
+					var match_found = false
+					if t_email == clean_query or t_alias == clean_query or t_id == clean_query:
+						match_found = true
+					elif clean_query.contains("@") and t_email == clean_query:
+						match_found = true
+					elif not clean_query.contains("@") and (t_email.begins_with(clean_query + "@") or t_alias == clean_query):
+						match_found = true
+						
+					if match_found:
+						var save_data = parse_trainer_doc_to_save_data(fields)
+						if callback.is_valid():
+							callback.call(true, save_data, "")
+						return
+		if callback.is_valid():
+			callback.call(false, {}, "Trainer not found in Google Cloud.")
+	)
+	var err = http_search.request(search_url, _get_nocache_headers(), HTTPClient.METHOD_GET)
+	if err != OK:
+		http_search.queue_free()
+		if callback.is_valid():
+			callback.call(false, {}, "Search request failed.")
+
 # Guarda automáticamente el perfil actual si tiene cuenta de nube activa
 func sync_current_profile_to_cloud(callback: Callable = Callable()) -> void:
 	if not GameData:
