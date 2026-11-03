@@ -1862,7 +1862,7 @@ func enemy_do_recover() -> void:
 # --- EJECUCIÓN DE ATAQUES Y HABILIDADES ---
 func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: int, attacker_visual: Node, defender_visual: Node) -> void:
 	attacker.current_energy -= energy_to_spend
-	if attacker == get_active_player():
+	if attacker == get_active_player() and GameData.is_campaign_mode:
 		GameData.add_daily_mission_progress("play_moves", 1)
 	
 	var is_full_energy: bool = (energy_to_spend >= move.cost or move.cost == 0)
@@ -2184,7 +2184,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		note_text += " [color=green]Drained health and recovered +%d HP![/color]" % heal_amount
 		spawn_floating_combat_number(attacker_visual, heal_amount, true)
 		GameData.play_combat_sfx("heal")
-		if attacker == get_active_player():
+		if attacker == get_active_player() and GameData.is_campaign_mode:
 			GameData.add_daily_mission_progress("heal_hp", 1)
 
 	# Recoil (Double-Edge, Take Down)
@@ -2459,7 +2459,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		spawn_floating_combat_number(defender_visual, -final_damage, false, is_weakness)
 		if is_weakness:
 			GameData.play_combat_sfx("hit_super")
-			if attacker == get_active_player():
+			if attacker == get_active_player() and GameData.is_campaign_mode:
 				GameData.add_daily_mission_progress("super_effective", 1)
 		elif is_resist:
 			GameData.play_combat_sfx("hit_weak")
@@ -2480,9 +2480,12 @@ func process_defeated_enemies() -> void:
 		var e = enemy_team[i]
 		if e.current_hp <= 0 and not (i in defeated_enemy_indices):
 			defeated_enemy_indices.append(i)
+			GameData.add_daily_mission_progress("defeat_pokemon", 1)
 			var drop = GameData.calculate_pkmn_defeat_reward(e.rarity, e.stage)
 			var g_drop = int(drop.get("gold", 0))
 			var d_drop = int(drop.get("diamonds", 0))
+			if g_drop > 0:
+				GameData.add_daily_mission_progress("earn_gold", g_drop)
 			combat_earned_gold += g_drop
 			combat_earned_diamonds += d_drop
 			defeated_rewards_summary.append({
@@ -2674,7 +2677,6 @@ func check_team_defeat() -> bool:
 func _resolve_battle_victory() -> void:
 	GameData.stats_battles_total += 1
 	GameData.stats_battles_won += 1
-	GameData.add_daily_mission_progress("win_battles", 1)
 	if GameData.is_tutorial_mode:
 		GameData.tutorial_completed = true
 		GameData.just_completed_tutorial = true
@@ -2692,6 +2694,7 @@ func _resolve_battle_victory() -> void:
 		)
 		return
 	if GameData.is_campaign_mode:
+		GameData.add_daily_mission_progress("win_battles", 1)
 		GameData.add_daily_mission_progress("defeat_gym", 1)
 		# Guardar la salud, experiencia y estados restantes de los Pokémon en la campaña activa
 		var active_team = GameData.get_active_campaign_team_state()
@@ -2720,6 +2723,7 @@ func _resolve_battle_victory() -> void:
 					break
 			
 		if GameData.campaign_submode == "ADVENTURE":
+			GameData.add_daily_mission_progress("clear_stage", 1)
 			var ep_id = GameData.adventure_current_episode
 			var cur_stage = GameData.adventure_current_stage
 			var total_stages = GameData.get_adventure_total_stages(ep_id)
@@ -3555,7 +3559,7 @@ func _on_recover_pressed() -> void:
 	set_controls_enabled(false)
 	var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
 	actor.current_energy += rec
-	if not is_p2:
+	if not is_p2 and GameData.is_campaign_mode:
 		GameData.add_daily_mission_progress("recharge_energy", 1)
 	var prefix = "🔵 Player 2's " if is_p2 else ""
 	log_action("%s[b]%s[/b] used [color=cyan]Recharge[/color] and restored [b]+%d[/b] Energy (⚡ %d/%d)." % [prefix, actor.name, rec, actor.current_energy, actor.max_energy])
@@ -3600,7 +3604,7 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 	is_busy = true
 	set_controls_enabled(false)
 	GameData.play_combat_sfx("switch")
-	if not is_p2:
+	if not is_p2 and GameData.is_campaign_mode:
 		GameData.add_daily_mission_progress("switch_pkmn", 1)
 
 	# Clear volatile battle states on outgoing Pokemon (major statuses Burn/Poison/Sleep/Freeze/Paralyze persist)
@@ -5462,10 +5466,13 @@ func apply_item_in_battle(item_id: String, target_idx: int) -> void:
 		
 	play_heal_flash(target_idx)
 	GameData.play_combat_sfx("use")
+	if GameData.is_campaign_mode:
+		GameData.add_daily_mission_progress("use_camp_items", 1)
 	var heal_node: Control = player_card_img if target_idx == active_player_idx else (btn_switch_1 if target_idx == 1 else btn_switch_2)
 	if healed > 0:
 		spawn_floating_combat_number(heal_node, healed, true)
-		GameData.add_daily_mission_progress("heal_hp", 1)
+		if GameData.is_campaign_mode:
+			GameData.add_daily_mission_progress("heal_hp", 1)
 	elif energy_recovered > 0:
 		spawn_floating_combat_number(heal_node, energy_recovered, false, false, true)
 	update_ui()

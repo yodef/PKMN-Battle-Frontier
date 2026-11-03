@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b1dailycampmis01"]
+
+[ext_resource type="Script" path="res://tests/test_daily_campaign_missions.gd" id="1_dcm"]
+
+[node name="TestDailyCampaignMissions" type="Node"]
+script = ExtResource("1_dcm")

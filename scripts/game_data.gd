@@ -1204,83 +1204,119 @@ const DAILY_MISSION_POOL: Array[Dictionary] = [
 	{
 		"id": "win_battles",
 		"icon": "⚔️",
-		"title": "Frontier Champion",
-		"desc": "Win 3 Battles (Campaign or Quick Battle)",
+		"title": "Campaign Victory",
+		"desc": "Win 2 Battles in Campaign (Adventure or Tournament)",
 		"type": "win_battles",
-		"target": 3,
+		"target": 2,
 		"reward_diamonds": 6
+	},
+	{
+		"id": "clear_stage",
+		"icon": "🗺️",
+		"title": "Frontier Explorer",
+		"desc": "Clear 2 Stages in Campaign Adventure",
+		"type": "clear_stage",
+		"target": 2,
+		"reward_diamonds": 7
+	},
+	{
+		"id": "defeat_pokemon",
+		"icon": "🥊",
+		"title": "Rival Crusher",
+		"desc": "Knock out 5 rival Pokémon in Campaign",
+		"type": "defeat_pokemon",
+		"target": 5,
+		"reward_diamonds": 6
+	},
+	{
+		"id": "defeat_gym",
+		"icon": "🏆",
+		"title": "Tournament Contender",
+		"desc": "Defeat 2 Trainers in Campaign Tournament",
+		"type": "defeat_gym",
+		"target": 2,
+		"reward_diamonds": 7
 	},
 	{
 		"id": "super_effective",
 		"icon": "💥",
 		"title": "Type Mastery",
-		"desc": "Land 5 Super Effective attacks in Battle",
+		"desc": "Land 4 Super Effective attacks in Campaign",
 		"type": "super_effective",
-		"target": 5,
-		"reward_diamonds": 6
-	},
-	{
-		"id": "switch_pkmn",
-		"icon": "🔄",
-		"title": "Tactical Rotation",
-		"desc": "Switch Pokémon from Bench 3 times",
-		"type": "switch_pkmn",
-		"target": 3,
-		"reward_diamonds": 5
-	},
-	{
-		"id": "open_packs",
-		"icon": "🛍️",
-		"title": "Pack Collector",
-		"desc": "Open 2 Booster Packs in the Shop",
-		"type": "open_packs",
-		"target": 2,
-		"reward_diamonds": 5
-	},
-	{
-		"id": "recycle_cards",
-		"icon": "♻️",
-		"title": "Candy Alchemy",
-		"desc": "Recycle 3 Duplicate Cards for Candies",
-		"type": "recycle_cards",
-		"target": 3,
-		"reward_diamonds": 5
-	},
-	{
-		"id": "defeat_gym",
-		"icon": "🏆",
-		"title": "Tournament Glory",
-		"desc": "Defeat 3 Trainers in Campaign Tournament",
-		"type": "defeat_gym",
-		"target": 3,
-		"reward_diamonds": 8
-	},
-	{
-		"id": "recharge_energy",
-		"icon": "⚡",
-		"title": "Power Surge",
-		"desc": "Recharge Energy 4 times during Battles",
-		"type": "recharge_energy",
 		"target": 4,
-		"reward_diamonds": 5
-	},
-	{
-		"id": "heal_hp",
-		"icon": "🩹",
-		"title": "Field Medic",
-		"desc": "Recover HP 3 times (Moves or Potions)",
-		"type": "heal_hp",
-		"target": 3,
 		"reward_diamonds": 6
 	},
 	{
 		"id": "play_moves",
 		"icon": "🎯",
-		"title": "Move Mastery",
-		"desc": "Execute 8 Moves in Battle",
+		"title": "Combat Tactics",
+		"desc": "Execute 8 Moves in Campaign Battles",
 		"type": "play_moves",
 		"target": 8,
 		"reward_diamonds": 5
+	},
+	{
+		"id": "recharge_energy",
+		"icon": "⚡",
+		"title": "Energy Surge",
+		"desc": "Recharge Energy 4 times in Campaign Battles",
+		"type": "recharge_energy",
+		"target": 4,
+		"reward_diamonds": 5
+	},
+	{
+		"id": "switch_pkmn",
+		"icon": "🔄",
+		"title": "Tactical Rotation",
+		"desc": "Switch Pokémon from Bench 3 times in Campaign",
+		"type": "switch_pkmn",
+		"target": 3,
+		"reward_diamonds": 5
+	},
+	{
+		"id": "heal_hp",
+		"icon": "🩹",
+		"title": "Combat Recovery",
+		"desc": "Recover HP 3 times in Campaign (Moves, Potions or Camp)",
+		"type": "heal_hp",
+		"target": 3,
+		"reward_diamonds": 6
+	},
+	{
+		"id": "use_camp_items",
+		"icon": "🎒",
+		"title": "Field Support",
+		"desc": "Use 2 Items in Campaign (Bag or Camp)",
+		"type": "use_camp_items",
+		"target": 2,
+		"reward_diamonds": 5
+	},
+	{
+		"id": "buy_camp_shop",
+		"icon": "🏪",
+		"title": "Camp Provisioner",
+		"desc": "Purchase 2 Items from the Camp Shop",
+		"type": "buy_camp_shop",
+		"target": 2,
+		"reward_diamonds": 5
+	},
+	{
+		"id": "earn_gold",
+		"icon": "💰",
+		"title": "Bounty Hunter",
+		"desc": "Earn 150 Gold in Campaign Combat",
+		"type": "earn_gold",
+		"target": 150,
+		"reward_diamonds": 6
+	},
+	{
+		"id": "camp_evolution",
+		"icon": "🌟",
+		"title": "Camp Evolution",
+		"desc": "Evolve 1 Pokémon in Camp during a Campaign run",
+		"type": "camp_evolution",
+		"target": 1,
+		"reward_diamonds": 8
 	}
 ]
 
@@ -1300,8 +1336,20 @@ func check_and_update_daily_system() -> void:
 		daily_login_last_date = today
 		dirty = true
 		
-	# 2. Misiones Diarias
-	if daily_missions_date != today or daily_missions.is_empty():
+	# 2. Misiones Diarias (100% exclusivas de Campaña)
+	var has_legacy_mission = false
+	for m in daily_missions:
+		var m_id = m.get("id", "")
+		var found = false
+		for p in DAILY_MISSION_POOL:
+			if p["id"] == m_id:
+				found = true
+				break
+		if not found:
+			has_legacy_mission = true
+			break
+			
+	if daily_missions_date != today or daily_missions.is_empty() or has_legacy_mission:
 		_generate_daily_missions()
 		daily_bonus_chest_claimed = false
 		daily_missions_date = today

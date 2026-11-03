@@ -1604,21 +1604,25 @@ func _apply_compact_order_button_style(btn: Button, border_col: Color, hover_col
 
 func _on_buy_potion_pressed() -> void:
 	if GameData.buy_campaign_potion():
+		GameData.add_daily_mission_progress("buy_camp_shop", 1)
 		GameData.play_combat_sfx("purchase")
 		update_campaign_ui()
 
 func _on_buy_revive_pressed() -> void:
 	if GameData.buy_campaign_revive():
+		GameData.add_daily_mission_progress("buy_camp_shop", 1)
 		GameData.play_combat_sfx("purchase")
 		update_campaign_ui()
 
 func _on_buy_remedy_pressed() -> void:
 	if GameData.buy_campaign_remedy():
+		GameData.add_daily_mission_progress("buy_camp_shop", 1)
 		GameData.play_combat_sfx("purchase")
 		update_campaign_ui()
 
 func _on_buy_ether_pressed() -> void:
 	if GameData.buy_campaign_ether():
+		GameData.add_daily_mission_progress("buy_camp_shop", 1)
 		GameData.play_combat_sfx("purchase")
 		update_campaign_ui()
 
@@ -2173,6 +2177,9 @@ func _show_camp_bag_targets(item_id: String) -> void:
 					success = GameData.use_remedy_on_campaign_pkmn(pkmn_idx)
 				if success:
 					GameData.play_combat_sfx("use")
+					GameData.add_daily_mission_progress("use_camp_items", 1)
+					if cur_it == "potion":
+						GameData.add_daily_mission_progress("heal_hp", 1)
 					update_campaign_ui()
 					if cur_it == "revive":
 						var pending = GameData.get_pending_campaign_evolutions()
@@ -2594,6 +2601,7 @@ func _play_camp_evolution_sequence(evo: Dictionary) -> void:
 	
 	tw.tween_callback(func():
 		GameData.apply_single_campaign_evolution(evo)
+		GameData.add_daily_mission_progress("camp_evolution", 1)
 		camp_evo_sprite.texture = GameData.get_pokemon_texture(to_tex_path)
 		GameData.play_combat_sfx("heal")
 		camp_evo_sub_lbl.text = "🎉 Congratulations! Your %s evolved into %s!" % [from_name, to_name]
@@ -7172,6 +7180,9 @@ func _update_daily_ui() -> void:
 				calendar_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
 				
 	# 3. Lista de 3 Misiones Diarias
+	var reset_hint = daily_modal.find_child("MissionsResetHint", true, false)
+	if reset_hint:
+		reset_hint.text = "🗺️ Campaign Mode Only • ⏳ Resets daily"
 	if missions_list_vbox:
 		for c in missions_list_vbox.get_children():
 			c.queue_free()
