@@ -1095,6 +1095,7 @@ func start_new_round() -> void:
 		t.timeout.connect(start_new_round)
 		return
 		
+	is_busy = false
 	can_player_act = false
 	is_player_turn = false
 	set_controls_enabled(false)
@@ -1143,6 +1144,10 @@ func execute_round_turn() -> void:
 	if is_enemy_fainting or is_player_fainting:
 		var t = get_tree().create_timer(0.4)
 		t.timeout.connect(execute_round_turn)
+		return
+		
+	if round_step < 0 or round_step >= round_order.size():
+		_finish_round()
 		return
 		
 	if round_order[round_step] == "PLAYER":
@@ -1310,6 +1315,7 @@ func start_player_turn() -> void:
 		t.timeout.connect(start_player_turn)
 		return
 		
+	is_busy = false
 	is_player_turn = true
 	can_player_act = false
 	set_controls_enabled(false)
@@ -1340,6 +1346,7 @@ func end_player_turn() -> void:
 		t.timeout.connect(end_player_turn)
 		return
 		
+	is_busy = false
 	can_player_act = false
 	is_player_turn = false
 	set_controls_enabled(false)
@@ -1365,6 +1372,7 @@ func start_enemy_turn() -> void:
 		t.timeout.connect(start_enemy_turn)
 		return
 		
+	is_busy = false
 	is_player_turn = false
 	can_player_act = false
 	set_controls_enabled(false)
@@ -1406,6 +1414,7 @@ func end_enemy_turn() -> void:
 		t.timeout.connect(end_enemy_turn)
 		return
 		
+	is_busy = false
 	can_player_act = false
 	is_player_turn = false
 	set_controls_enabled(false)
@@ -1424,6 +1433,7 @@ func end_enemy_turn() -> void:
 		_finish_round()
 
 func _finish_round() -> void:
+	is_busy = false
 	can_player_act = false
 	is_player_turn = false
 	set_controls_enabled(false)
@@ -2925,6 +2935,7 @@ func execute_player_move(move, boosted: bool, energy_to_spend: int) -> void:
 		if is_enemy_fainting or is_player_fainting:
 			var wait_t = get_tree().create_timer(0.4)
 			wait_t.timeout.connect(func():
+				is_busy = false
 				if is_p2: end_enemy_turn() else: end_player_turn()
 			)
 			return
@@ -3445,6 +3456,7 @@ func _on_boost_toggled(_pressed: bool) -> void:
 func _on_online_opponent_action(action: Dictionary) -> void:
 	if is_battle_over:
 		return
+	is_busy = false
 	can_player_act = false
 	set_controls_enabled(false)
 	var action_type = str(action.get("type", ""))
@@ -3456,13 +3468,24 @@ func _on_online_opponent_action(action: Dictionary) -> void:
 		var actor = get_active_enemy()
 		var defender = get_active_player()
 		
+		if not actor or not defender:
+			print("[OnlineBattle] ⚠️ Missing actor or defender for opponent action!")
+			end_enemy_turn()
+			return
+		
 		var move = null
-		if actor.move1 and actor.move1.name == move_name:
-			move = actor.move1
-		elif actor.move2 and actor.move2.name == move_name:
-			move = actor.move2
-		if not move and actor.move1:
-			move = actor.move1
+		if actor.moves:
+			for m in actor.moves:
+				if m and m.name == move_name:
+					move = m
+					break
+			if not move and actor.moves.size() > 0:
+				move = actor.moves[0]
+				
+		if not move:
+			print("[OnlineBattle] ⚠️ Opponent move '%s' not found on active enemy!" % move_name)
+			end_enemy_turn()
+			return
 			
 		perform_attack(actor, defender, move, boosted, energy_spent, enemy_card_img, player_card_img)
 		

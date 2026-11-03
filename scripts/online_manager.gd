@@ -519,8 +519,10 @@ func _process_room_state(fields: Dictionary) -> void:
 			if action_by != my_role:
 				last_processed_seq = seq
 				current_turn_role = str(dict.get("current_turn", "HOST"))
-				print("[OnlineManager] ⚡ Acción de rival recibida (seq %d): %s" % [seq, action_data.get("type", "")])
+				print("[OnlineManager] ⚡ Opponent action received (seq %d): %s" % [seq, action_data.get("type", "")])
 				opponent_action_received.emit(action_data)
+			else:
+				last_processed_seq = seq
 
 func _set_room_status(new_status: String) -> void:
 	if room_code.is_empty():
@@ -599,9 +601,12 @@ func leave_or_delete_room() -> void:
 			if err != OK:
 				http.queue_free()
 		else:
-			# Si es el invitado quien sale, la sala NO debe cerrarse: vuelve a WAITING para permitir que se una de nuevo
+			# Si es el invitado quien sale:
+			# Si estaba en combate, marcar FINISHED para que el host reciba la victoria por forfeit
+			# Si estaba en el lobby, volver a WAITING para permitir que se una otro invitado
+			var guest_exit_status = "FINISHED" if is_starting_match else "WAITING"
 			var update_data = {
-				"status": "WAITING",
+				"status": guest_exit_status,
 				"guest_name": "",
 				"guest_team": [],
 				"guest_ready": false,
