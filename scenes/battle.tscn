@@ -691,6 +691,7 @@ theme_override_font_sizes/font_size = 12
 text = "Attack 2"
 
 [node name="FloatingNumbersLayer" type="Control" parent="." unique_id=1849204712]
+z_index = 10
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -701,6 +702,7 @@ mouse_filter = 2
 
 [node name="GameOverOverlay" type="Control" parent="." unique_id=1063714212]
 visible = false
+z_index = 75
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -774,6 +776,7 @@ text = "Main Menu"
 
 [node name="EnergyModal" type="Control" parent="." unique_id=740140082]
 visible = false
+z_index = 40
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -858,6 +861,7 @@ text = "✖ Cancel (Choose another action)"
 
 [node name="BagModal" type="Control" parent="." unique_id=2052886283]
 visible = false
+z_index = 40
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -942,6 +946,7 @@ text = "✖ Close Bag (Don't spend turn)"
 
 [node name="TypeChartModal" type="Control" parent="." unique_id=348402561]
 visible = false
+z_index = 45
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1123,6 +1128,7 @@ text = "✖ Return to Battle"
 
 [node name="EvolutionModal" type="Control" parent="." unique_id=987654321]
 visible = false
+z_index = 60
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

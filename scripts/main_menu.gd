@@ -1918,6 +1918,7 @@ func _setup_camp_modals() -> void:
 	camp_shop_modal.name = "CampShopModal"
 	camp_shop_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
 	camp_shop_modal.visible = false
+	camp_shop_modal.z_index = 30
 	add_child(camp_shop_modal)
 	
 	var shop_bg = ColorRect.new()
@@ -2001,6 +2002,7 @@ func _setup_camp_modals() -> void:
 	camp_bag_modal.name = "CampBagModal"
 	camp_bag_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
 	camp_bag_modal.visible = false
+	camp_bag_modal.z_index = 30
 	add_child(camp_bag_modal)
 	
 	var bag_bg = ColorRect.new()
@@ -2406,6 +2408,7 @@ func _setup_camp_pokemon_inspector_modal() -> void:
 	camp_pokemon_inspector_modal.name = "CampPokemonInspectorModal"
 	camp_pokemon_inspector_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
 	camp_pokemon_inspector_modal.visible = false
+	camp_pokemon_inspector_modal.z_index = 50
 	add_child(camp_pokemon_inspector_modal)
 	
 	var insp_bg = ColorRect.new()

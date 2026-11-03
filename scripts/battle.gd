@@ -205,6 +205,14 @@ func _ready() -> void:
 		type_chart_modal.visible = false
 	_build_type_chart_matrix()
 	
+	# Asegurar z_index elevado en todos los modales para que ningún gráfico de cartas (lupa 🔍, status FX o foils) se sobreponga
+	if floating_numbers_layer: floating_numbers_layer.z_index = 10
+	if energy_modal: energy_modal.z_index = 40
+	if bag_modal: bag_modal.z_index = 40
+	if type_chart_modal: type_chart_modal.z_index = 45
+	if evolution_modal: evolution_modal.z_index = 60
+	if game_over_panel: game_over_panel.z_index = 75
+	
 	if battle_title_lbl:
 		battle_title_lbl.clip_text = true
 		battle_title_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -375,7 +383,7 @@ func _setup_details_inspector_modal() -> void:
 	details_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
 	details_modal.visible = false
 	details_modal.mouse_filter = Control.MOUSE_FILTER_STOP
-	details_modal.z_index = 30
+	details_modal.z_index = 50
 	add_child(details_modal)
 	
 	# Backdrop oscuro
@@ -480,20 +488,30 @@ func _setup_details_inspector_modal() -> void:
 	main_vbox.add_child(bot_close)
 
 func _on_player_card_clicked(event: InputEvent) -> void:
+	if (game_over_panel and game_over_panel.visible) or (evolution_modal and evolution_modal.visible):
+		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		show_pokemon_details(get_active_player(), false)
 
 func _on_enemy_card_clicked(event: InputEvent) -> void:
+	if (game_over_panel and game_over_panel.visible) or (evolution_modal and evolution_modal.visible):
+		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		show_pokemon_details(get_active_enemy(), true)
 
 func _on_player_inspect_pressed() -> void:
+	if (game_over_panel and game_over_panel.visible) or (evolution_modal and evolution_modal.visible):
+		return
 	show_pokemon_details(get_active_player(), false)
 
 func _on_enemy_inspect_pressed() -> void:
+	if (game_over_panel and game_over_panel.visible) or (evolution_modal and evolution_modal.visible):
+		return
 	show_pokemon_details(get_active_enemy(), true)
 
 func show_pokemon_details(pkmn, is_enemy: bool = false) -> void:
+	if (game_over_panel and game_over_panel.visible) or (evolution_modal and evolution_modal.visible):
+		return
 	if not details_modal:
 		_setup_details_inspector_modal()
 	if not pkmn:
@@ -746,7 +764,7 @@ func _setup_forfeit_confirmation_modal() -> void:
 	forfeit_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
 	forfeit_modal.visible = false
 	forfeit_modal.mouse_filter = Control.MOUSE_FILTER_STOP
-	forfeit_modal.z_index = 60
+	forfeit_modal.z_index = 65
 	add_child(forfeit_modal)
 	
 	var backdrop = ColorRect.new()
@@ -842,7 +860,7 @@ func _setup_tutorial_callout_modal() -> void:
 	tutorial_callout_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
 	tutorial_callout_modal.visible = false
 	tutorial_callout_modal.mouse_filter = Control.MOUSE_FILTER_STOP
-	tutorial_callout_modal.z_index = 65
+	tutorial_callout_modal.z_index = 70
 	add_child(tutorial_callout_modal)
 	
 	var backdrop = ColorRect.new()
@@ -4849,6 +4867,20 @@ func show_game_over(title: String, subtitle: String) -> void:
 
 func _show_game_over_internal(title: String, subtitle: String) -> void:
 	set_controls_enabled(false)
+	if details_modal and is_instance_valid(details_modal):
+		details_modal.visible = false
+	if energy_modal and is_instance_valid(energy_modal):
+		energy_modal.visible = false
+	if bag_modal and is_instance_valid(bag_modal):
+		bag_modal.visible = false
+	if type_chart_modal and is_instance_valid(type_chart_modal):
+		type_chart_modal.visible = false
+	if forfeit_modal and is_instance_valid(forfeit_modal):
+		forfeit_modal.visible = false
+	if tutorial_callout_modal and is_instance_valid(tutorial_callout_modal):
+		tutorial_callout_modal.visible = false
+	if game_over_panel:
+		game_over_panel.z_index = 75
 	game_over_title.text = title
 	game_over_subtitle.text = subtitle
 	game_over_panel.visible = true
