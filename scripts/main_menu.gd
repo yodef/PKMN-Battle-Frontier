@@ -34,17 +34,23 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var btn_clear_team: Button = $TeamSelectModal/Box/Actions/TeamActionsRow/BtnClearTeam
 @onready var btn_close_team_select: Button = $TeamSelectModal/Box/Actions/TeamActionsRow/BtnCloseTeamSelect
 
-# --- MODAL CAMPAIGN HUB (TORNEO & AVENTURA) ---
+# --- MODAL CAMPAIGN HUB (TUTORIAL, AVENTURA & POKÉMON STADIUM) ---
 @onready var campaign_hub_modal: Control = $CampaignHubModal
 @onready var tutorial_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial/Margin/TutorialVBox/TutorialStatus
 @onready var btn_hub_tutorial: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial/Margin/TutorialVBox/BtnHubTutorial
+@onready var adv_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure/Margin/AdvVBox/AdvStatus
+@onready var btn_hub_adventure: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure/Margin/AdvVBox/BtnHubAdventure
 @onready var tourn_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox/TournStatus
 @onready var btn_hub_tournament: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox/BtnHubTournament
-@onready var ep1_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox/Ep1Status
-@onready var btn_hub_adventure_ep1: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox/BtnHubAdventureEp1
-@onready var ep2_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox/Ep2Status
-@onready var btn_hub_adventure_ep2: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox/BtnHubAdventureEp2
 @onready var btn_close_campaign_hub: Button = $CampaignHubModal/Box/BtnCloseCampaignHub
+
+# --- MODAL ADVENTURE EPISODES ---
+@onready var adventure_episodes_modal: Control = $AdventureEpisodesModal
+@onready var ep1_status_lbl: Label = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin/Ep1VBox/Ep1Status
+@onready var btn_hub_adventure_ep1: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin/Ep1VBox/BtnHubAdventureEp1
+@onready var ep2_status_lbl: Label = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin/Ep2VBox/Ep2Status
+@onready var btn_hub_adventure_ep2: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin/Ep2VBox/BtnHubAdventureEp2
+@onready var btn_close_adventure_episodes: Button = $AdventureEpisodesModal/Box/BtnCloseAdventureEpisodes
 
 var tutorial_confirm_modal: Control = null
 var tutorial_confirm_title_lbl: Label = null
@@ -417,17 +423,26 @@ func _ready() -> void:
 	
 	# Modal Campaign Hub
 	btn_hub_tutorial.pressed.connect(_on_hub_tutorial_pressed)
+	btn_hub_adventure.pressed.connect(_on_hub_adventure_pressed)
 	btn_hub_tournament.pressed.connect(_on_select_tournament_pressed)
-	btn_hub_adventure_ep1.pressed.connect(_on_select_adventure_ep1_pressed)
 	btn_close_campaign_hub.pressed.connect(func():
 		campaign_hub_modal.visible = false
 		_update_lobby_header_badge()
 	)
+	
+	# Modal Adventure Episodes
+	btn_hub_adventure_ep1.pressed.connect(_on_select_adventure_ep1_pressed)
+	btn_close_adventure_episodes.pressed.connect(func():
+		adventure_episodes_modal.visible = false
+		update_campaign_hub_ui()
+		campaign_hub_modal.visible = true
+	)
 	for card_path in [
 		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial",
+		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure",
 		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament",
-		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1",
-		"CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2"
+		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1",
+		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2"
 	]:
 		var card_node = get_node_or_null(card_path)
 		if card_node:
@@ -458,8 +473,12 @@ func _ready() -> void:
 		if camp_bag_modal: camp_bag_modal.visible = false
 		if camp_pokemon_inspector_modal: camp_pokemon_inspector_modal.visible = false
 		if camp_evo_modal: camp_evo_modal.visible = false
-		update_campaign_hub_ui()
-		campaign_hub_modal.visible = true
+		if GameData.campaign_submode == "ADVENTURE":
+			update_adventure_episodes_ui()
+			adventure_episodes_modal.visible = true
+		else:
+			update_campaign_hub_ui()
+			campaign_hub_modal.visible = true
 		_update_lobby_header_badge()
 	)
 	
@@ -695,6 +714,7 @@ func _ready() -> void:
 	
 	# Ocultar modales al inicio
 	campaign_hub_modal.visible = false
+	adventure_episodes_modal.visible = false
 	team_select_modal.visible = false
 	campaign_modal.visible = false
 	collection_modal.visible = false
@@ -745,8 +765,8 @@ func _ready() -> void:
 		campaign_hub_modal.visible = true
 	elif GameData.last_adventure_episode_conquered:
 		GameData.last_adventure_episode_conquered = false
-		update_campaign_hub_ui()
-		campaign_hub_modal.visible = true
+		update_adventure_episodes_ui()
+		adventure_episodes_modal.visible = true
 	elif GameData.is_campaign_mode:
 		var active_state = GameData.get_active_campaign_team_state()
 		if active_state.size() > 0:
@@ -938,36 +958,67 @@ func update_campaign_hub_ui() -> void:
 		]
 	var hub_desc = campaign_hub_modal.get_node_or_null("Box/Desc")
 	if hub_desc:
-		hub_desc.text = "Choose your path: compete in the Tournament or embark on Story Adventure!"
+		hub_desc.text = "Choose your path: learn battle tactics, explore Adventure episodes, or challenge Pokémon Stadium!"
 		
-	# Estado del Tutorial
+	# 1. Estado del Tutorial
 	if GameData.is_tutorial_completed():
 		tutorial_status_lbl.text = "Status: ✅ Completed (💎 5 Diamonds Claimed) • Replayable"
 		tutorial_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 		btn_hub_tutorial.text = "🔄 Replay Tutorial (Practice)"
 	else:
-		tutorial_status_lbl.text = "Status: ⏳ Not completed • First Clear: 💎 5 Diamonds"
+		tutorial_status_lbl.text = "Status: ⏳ Not completed • First Clear: 💎 5 Diamonds & Unlocks Adventure"
 		tutorial_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
 		btn_hub_tutorial.text = "🎓 Start Tutorial"
 
-	# Estado del Torneo
+	# 2. Estado de Adventure Mode
+	if not GameData.is_tutorial_completed():
+		adv_status_lbl.text = "Status: 🔒 Locked (Complete Battle Tutorial to unlock!)"
+		adv_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+		btn_hub_adventure.text = "🔒 Locked (Complete Tutorial)"
+	else:
+		var ep1_done = GameData.is_adventure_episode_completed(1)
+		if not GameData.adventure_player_team_state.is_empty():
+			adv_status_lbl.text = "Status: In Progress • Episode I (Stage %d/%d)" % [
+				GameData.adventure_current_stage,
+				GameData.get_adventure_total_stages(1)
+			]
+			adv_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			btn_hub_adventure.text = "🗺️ Continue Adventure (Episodes) ➜"
+		elif ep1_done:
+			adv_status_lbl.text = "Status: 🔓 Unlocked • Episode I Conquered (Boulder Badge Won!)"
+			adv_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			btn_hub_adventure.text = "🗺️ Enter Adventure Mode (Episodes) ➜"
+		else:
+			adv_status_lbl.text = "Status: 🔓 Unlocked • Ready to embark!"
+			adv_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			btn_hub_adventure.text = "🗺️ Enter Adventure Mode (Episodes) ➜"
+
+	# 3. Estado de Pokémon Stadium (Arcade Tournament)
 	if GameData.campaign_player_team_state.is_empty():
-		tourn_status_lbl.text = "Status: No active run • Ready to start"
+		tourn_status_lbl.text = "Status: No active run • Ready to challenge"
 		tourn_status_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
-		btn_hub_tournament.text = "⚔️ Start Tournament"
+		btn_hub_tournament.text = "⚔️ Enter Pokémon Stadium"
 	else:
 		if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES:
-			tourn_status_lbl.text = "Status: 🏆 Tournament Champion! Ready for new run"
+			tourn_status_lbl.text = "Status: 🏆 Stadium Champion! Ready for new run"
 			tourn_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-			btn_hub_tournament.text = "🏆 Review / Restart Tournament"
+			btn_hub_tournament.text = "🏆 Review / Restart Pokémon Stadium"
 		else:
 			tourn_status_lbl.text = "Status: In Progress (Battle %d/%d)" % [
 				GameData.campaign_match_number,
 				GameData.TOURNAMENT_TOTAL_MATCHES
 			]
 			tourn_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
-			btn_hub_tournament.text = "⛺ Continue Tournament (Camp)"
-			
+			btn_hub_tournament.text = "⛺ Continue Stadium Run (Camp)"
+
+func update_adventure_episodes_ui() -> void:
+	var ep_badge = adventure_episodes_modal.get_node_or_null("Box/EpisodesWalletBadge")
+	if ep_badge:
+		ep_badge.text = "💰 Campaign Gold: %d G  |  💎 %d Diamonds" % [
+			GameData.campaign_gold,
+			GameData.player_diamonds
+		]
+		
 	# Estado del Episodio I
 	var ep1_completed = GameData.is_adventure_episode_completed(1)
 	if not GameData.is_tutorial_completed():
@@ -1004,6 +1055,14 @@ func update_campaign_hub_ui() -> void:
 		btn_hub_adventure_ep2.text = "🔒 Locked"
 		btn_hub_adventure_ep2.disabled = true
 
+func _on_hub_adventure_pressed() -> void:
+	if not GameData.is_tutorial_completed():
+		_show_tutorial_prompt_for_locked_episode()
+		return
+	campaign_hub_modal.visible = false
+	update_adventure_episodes_ui()
+	adventure_episodes_modal.visible = true
+
 func _on_select_tournament_pressed() -> void:
 	campaign_hub_modal.visible = false
 	GameData.campaign_submode = "TOURNAMENT"
@@ -1018,7 +1077,7 @@ func _on_select_adventure_ep1_pressed() -> void:
 	if not GameData.is_tutorial_completed():
 		_show_tutorial_prompt_for_locked_episode()
 		return
-	campaign_hub_modal.visible = false
+	adventure_episodes_modal.visible = false
 	GameData.campaign_submode = "ADVENTURE"
 	GameData.adventure_current_episode = 1
 	if GameData.adventure_player_team_state.is_empty():
@@ -1112,8 +1171,8 @@ func _show_tutorial_confirmation_modal() -> void:
 
 func _show_tutorial_prompt_for_locked_episode() -> void:
 	_setup_tutorial_confirmation_modal()
-	tutorial_confirm_title_lbl.text = "🔒 Episode I is Locked!"
-	tutorial_confirm_msg_lbl.text = "You must complete the Combat Tutorial first before embarking on Adventure Mode!\n\nWould you like to start the Tutorial now?"
+	tutorial_confirm_title_lbl.text = "🔒 Adventure Mode is Locked!"
+	tutorial_confirm_msg_lbl.text = "You must complete the Battle Tutorial first before entering Adventure Mode!\n\nWould you like to start the Tutorial now?"
 	btn_confirm_tutorial.text = "🎓 Start Tutorial"
 	tutorial_confirm_modal.visible = true
 
@@ -1121,6 +1180,7 @@ func _on_confirm_start_tutorial_pressed() -> void:
 	if tutorial_confirm_modal:
 		tutorial_confirm_modal.visible = false
 	campaign_hub_modal.visible = false
+	adventure_episodes_modal.visible = false
 	GameData.is_tutorial_mode = true
 	GameData.is_campaign_mode = false
 	GameData.is_pvp_mode = false
@@ -1140,8 +1200,8 @@ func open_team_select_for_campaign() -> void:
 		team_select_title.text = "🗺️ ADVENTURE TEAM"
 		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode I (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
 	else:
-		team_select_title.text = "🏆 TOURNAMENT TEAM"
-		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
+		team_select_title.text = "🏟️ POKÉMON STADIUM TEAM"
+		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Pokémon Stadium (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
 	team_select_tabs.visible = false
 	
 	# Cargar selección del equipo de la campaña activa
@@ -1238,20 +1298,21 @@ func update_campaign_ui() -> void:
 			if campaign_track_diagram:
 				campaign_track_diagram.set_campaign_progress(total_stages, cur_stage, false, true)
 	else:
-		# Modo Torneo
+		# Modo Pokémon Stadium
+		btn_close_campaign.text = "⬅ Exit Stadium Camp"
 		btn_change_campaign_team.visible = (GameData.campaign_match_number == 1)
-		btn_reset_campaign.text = "🔄 Restart Tournament (Resets Match Progress)"
+		btn_reset_campaign.text = "🔄 Restart Stadium Run (Resets Match Progress)"
 		
 		if camp_title:
-			camp_title.text = "🏆 POKÉMON TOURNAMENT"
+			camp_title.text = "🏟️ POKÉMON STADIUM"
 		if camp_desc:
-			camp_desc.text = "Manage your team and purchase battle items between matches!"
+			camp_desc.text = "Arcade adventure: manage your team and purchase battle items between rounds!"
 		if camp_team_header:
-			camp_team_header.text = "👥 YOUR TOURNAMENT TEAM:"
+			camp_team_header.text = "👥 YOUR STADIUM TEAM:"
 			
 		if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES:
-			campaign_match_lbl.text = "🎉 TOURNAMENT CHAMPION!"
-			btn_start_campaign_battle.text = "🏆 Start New Tournament!"
+			campaign_match_lbl.text = "🎉 STADIUM CHAMPION!"
+			btn_start_campaign_battle.text = "🏆 Start New Stadium Run!"
 			btn_start_campaign_battle.disabled = false
 			if campaign_track_diagram:
 				campaign_track_diagram.set_campaign_progress(GameData.TOURNAMENT_TOTAL_MATCHES, GameData.TOURNAMENT_TOTAL_MATCHES, true, false)
@@ -2774,6 +2835,9 @@ func _on_close_team_select_pressed() -> void:
 		if state.size() > 0:
 			update_campaign_ui()
 			campaign_modal.visible = true
+		elif GameData.campaign_submode == "ADVENTURE":
+			update_adventure_episodes_ui()
+			adventure_episodes_modal.visible = true
 		else:
 			update_campaign_hub_ui()
 			campaign_hub_modal.visible = true
@@ -3012,8 +3076,12 @@ func update_team_select_ui() -> void:
 	elif team_select_mode == "CAMPAIGN":
 		if qb_mode_row:
 			qb_mode_row.visible = false
-		team_select_title.text = "🏆 TOURNAMENT TEAM"
-		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
+		if GameData.campaign_submode == "ADVENTURE":
+			team_select_title.text = "🗺️ ADVENTURE TEAM"
+			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode I (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
+		else:
+			team_select_title.text = "🏟️ POKÉMON STADIUM TEAM"
+			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Pokémon Stadium (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
 		btn_tab_player.text = "👤 Your Team (%d/3)" % selected_player_ids.size()
 		btn_tab_enemy.text = "🤖 Rival AI (%d/3)" % selected_enemy_ids.size()
 	else:
@@ -3705,23 +3773,43 @@ func _apply_pokemon_ui_theme() -> void:
 		scan_rect_camp.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		camp_bg_node.add_child(scan_rect_camp)
 
+	var adv_ep_bg_node = get_node_or_null("AdventureEpisodesModal/AdventureEpisodesBg")
+	if adv_ep_bg_node and not adv_ep_bg_node.get_node_or_null("Scanlines"):
+		var scan_rect_adv_ep = TextureRect.new()
+		scan_rect_adv_ep.name = "Scanlines"
+		scan_rect_adv_ep.texture = scan_tex
+		scan_rect_adv_ep.stretch_mode = TextureRect.STRETCH_TILE
+		scan_rect_adv_ep.anchors_preset = Control.PRESET_FULL_RECT
+		scan_rect_adv_ep.anchor_right = 1.0
+		scan_rect_adv_ep.anchor_bottom = 1.0
+		scan_rect_adv_ep.modulate = Color(1, 1, 1, 0.12)
+		scan_rect_adv_ep.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		adv_ep_bg_node.add_child(scan_rect_adv_ep)
+
 	# Badges for Campaign
 	var hub_badge_node = get_node_or_null("CampaignHubModal/Box/HubWalletBadge")
 	if hub_badge_node is Label:
 		hub_badge_node.add_theme_stylebox_override("normal", badge_sb.duplicate())
 
+	var ep_badge_node = get_node_or_null("AdventureEpisodesModal/Box/EpisodesWalletBadge")
+	if ep_badge_node is Label:
+		ep_badge_node.add_theme_stylebox_override("normal", badge_sb.duplicate())
+
 	var camp_status_card = get_node_or_null("CampaignModal/Box/StatusCard")
 	if camp_status_card is PanelContainer:
 		camp_status_card.add_theme_stylebox_override("panel", badge_sb.duplicate())
 
-	# Mode Cards in Campaign Hub
+	# Mode Cards in Campaign Hub & Adventure Episodes
+	var card_adv = get_node_or_null("CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure")
+	if card_adv is PanelContainer:
+		card_adv.add_theme_stylebox_override("panel", teal_sb.duplicate())
 	var card_tourn = get_node_or_null("CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament")
 	if card_tourn is PanelContainer:
 		card_tourn.add_theme_stylebox_override("panel", teal_sb.duplicate())
-	var card_ep1 = get_node_or_null("CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1")
+	var card_ep1 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1")
 	if card_ep1 is PanelContainer:
 		card_ep1.add_theme_stylebox_override("panel", teal_sb.duplicate())
-	var card_ep2 = get_node_or_null("CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2")
+	var card_ep2 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2")
 	if card_ep2 is PanelContainer:
 		card_ep2.add_theme_stylebox_override("panel", teal_sb.duplicate())
 
@@ -3732,10 +3820,13 @@ func _apply_pokemon_ui_theme() -> void:
 
 	# Retro stylebox overrides for Campaign Hub & Camp buttons
 	_apply_retro_button_style(btn_hub_tutorial, Color(0.20, 0.65, 0.35), Color(0.35, 0.85, 0.50), true)
+	_apply_retro_button_style(btn_hub_adventure, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 	_apply_retro_button_style(btn_hub_tournament, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), true)
+	_apply_retro_button_style(btn_close_campaign_hub, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+
 	_apply_retro_button_style(btn_hub_adventure_ep1, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 	_apply_retro_button_style(btn_hub_adventure_ep2, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
-	_apply_retro_button_style(btn_close_campaign_hub, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+	_apply_retro_button_style(btn_close_adventure_episodes, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
 
 	_apply_retro_button_style(btn_buy_potion, Color(0.20, 0.50, 0.80), Color(0.35, 0.75, 1.00), false)
 	_apply_retro_button_style(btn_buy_remedy, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), false)

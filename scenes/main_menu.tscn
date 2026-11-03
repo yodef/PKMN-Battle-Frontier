@@ -483,6 +483,46 @@ theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
 theme_override_font_sizes/font_size = 13
 text = "🎓 Start Tutorial"
 
+[node name="CardAdventure" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="AdvVBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="AdvTitle" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure/Margin/AdvVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 16
+text = "🗺️ Adventure Mode"
+
+[node name="AdvDesc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure/Margin/AdvVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Embark on an episodic Pokémon journey across regions! Battle gym leaders, level up your party, and conquer regional badges."
+autowrap_mode = 2
+
+[node name="AdvStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure/Margin/AdvVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: 🔒 Locked (Complete Battle Tutorial to unlock!)"
+
+[node name="BtnHubAdventure" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure/Margin/AdvVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "🗺️ Enter Adventure Mode ➜"
+
 [node name="CardTournament" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
 layout_mode = 2
 
@@ -501,13 +541,13 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.88, 0.5, 1)
 theme_override_font_sizes/font_size = 16
-text = "🏆 Pokémon Tournament"
+text = "🏟️ Pokémon Stadium"
 
 [node name="TournDesc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
 theme_override_font_sizes/font_size = 12
-text = "Survive 9 back-to-back matches across 3 phases.\nDynamic loot drops & phase completion bonuses!"
+text = "Arcade adventure tournament: battle through challenging trainer rounds, manage your camp inventory, and claim victory!"
 autowrap_mode = 2
 
 [node name="TournStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox"]
@@ -521,89 +561,161 @@ custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
 theme_override_font_sizes/font_size = 13
-text = "⚔️ Enter Tournament"
+text = "⚔️ Enter Pokémon Stadium"
 
-[node name="CardAdventureEp1" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
+[node name="BtnCloseCampaignHub" type="Button" parent="CampaignHubModal/Box"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "⬅ Back to Main Menu"
+
+[node name="AdventureEpisodesModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AdventureEpisodesBg" type="ColorRect" parent="AdventureEpisodesModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.07, 0.12, 0.95)
+
+[node name="Box" type="VBoxContainer" parent="AdventureEpisodesModal"]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -280.0
+offset_right = 230.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="AdventureEpisodesModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 20
+text = "🗺️ ADVENTURE EPISODES"
+horizontal_alignment = 1
+
+[node name="EpisodesWalletBadge" type="Label" parent="AdventureEpisodesModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "💰 Campaign Gold: 0 G  |  💎 0 Diamonds"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="AdventureEpisodesModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Select an episode to embark with your party and conquer gym badges:"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="EpisodesScroll" type="ScrollContainer" parent="AdventureEpisodesModal/Box"]
+custom_minimum_size = Vector2(0, 420)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EpisodesVBox" type="VBoxContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="CardAdventureEp1" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
 layout_mode = 2
 
-[node name="Margin" type="MarginContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1"]
+[node name="Margin" type="MarginContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 10
 
-[node name="Ep1VBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin"]
+[node name="Ep1VBox" type="VBoxContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="Ep1Title" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox"]
+[node name="Ep1Title" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin/Ep1VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 16
-text = "🗺️ Adventure: Episode I"
+text = "🗺️ Episode I: Pewter City Gym"
 
-[node name="Ep1Desc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox"]
+[node name="Ep1Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin/Ep1VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 12
 text = "Pewter City Gym: Journey from Route 2 through Viridian Forest to defeat Gym Leader Brock!"
 autowrap_mode = 2
 
-[node name="Ep1Rewards" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox"]
+[node name="Ep1Rewards" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin/Ep1VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "Battles: 4  |  First Clear: 💎 20 Diamonds & Ep. II Unlock"
 
-[node name="Ep1Status" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox"]
+[node name="Ep1Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin/Ep1VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
 theme_override_font_sizes/font_size = 12
 text = "Status: Ready to embark"
 
-[node name="BtnHubAdventureEp1" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp1/Margin/Ep1VBox"]
+[node name="BtnHubAdventureEp1" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin/Ep1VBox"]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 13
 text = "🗺️ Embark on Episode I"
 
-[node name="CardAdventureEp2" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
+[node name="CardAdventureEp2" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
 modulate = Color(0.7, 0.7, 0.75, 0.8)
 layout_mode = 2
 
-[node name="Margin" type="MarginContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2"]
+[node name="Margin" type="MarginContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 10
 
-[node name="Ep2VBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin"]
+[node name="Ep2VBox" type="VBoxContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="Ep2Title" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox"]
+[node name="Ep2Title" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin/Ep2VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 16
-text = "🔒 Adventure: Episode II"
+text = "🔒 Episode II: Cerulean City Gym"
 
-[node name="Ep2Desc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox"]
+[node name="Ep2Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin/Ep2VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 12
 text = "Cerulean City Gym: Traverse Mt. Moon to challenge Gym Leader Misty!"
 autowrap_mode = 2
 
-[node name="Ep2Status" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox"]
+[node name="Ep2Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin/Ep2VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
 theme_override_font_sizes/font_size = 12
 text = "(Locked - In Development)"
 
-[node name="BtnHubAdventureEp2" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventureEp2/Margin/Ep2VBox"]
+[node name="BtnHubAdventureEp2" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin/Ep2VBox"]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 disabled = true
@@ -611,11 +723,11 @@ theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 13
 text = "🔒 Locked (In Development)"
 
-[node name="BtnCloseCampaignHub" type="Button" parent="CampaignHubModal/Box"]
+[node name="BtnCloseAdventureEpisodes" type="Button" parent="AdventureEpisodesModal/Box"]
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
-text = "⬅ Back to Main Menu"
+text = "⬅ Back to Campaign Modes"
 
 [node name="CampaignModal" type="Control" parent="."]
 visible = false

@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b1dailycampmis01"]
+[gd_scene format=3 uid="uid://bsw3ps8hkc63q"]
 
 [ext_resource type="Script" path="res://tests/test_daily_campaign_missions.gd" id="1_dcm"]
 
