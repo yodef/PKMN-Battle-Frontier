@@ -6169,17 +6169,17 @@ func _on_cloud_confirm_pressed() -> void:
 					if check_ok and not is_verified:
 						_pending_verify_id_token = id_token
 						_pending_verify_email = entered_email
-						_pending_verify_alias = entered_email.split("@")[0].capitalize()
+						_pending_verify_alias = entered_alias if not entered_alias.is_empty() else entered_email.split("@")[0].capitalize()
 						_pending_verify_password = entered_pass
 						btn_cloud_confirm.disabled = false
 						_switch_to_verification_view(entered_email)
 						return
 						
-					_load_cloud_profile_and_enter(entered_email)
+					_load_cloud_profile_and_enter(entered_email, true, entered_alias)
 				)
 			)
 		else:
-			_load_cloud_profile_and_enter(entered_email)
+			_load_cloud_profile_and_enter(entered_email, false, entered_alias)
 		
 	elif cloud_action_mode == "SIGNUP_GOOGLE":
 		if entered_email.is_empty():
@@ -6234,11 +6234,33 @@ func _on_cloud_confirm_pressed() -> void:
 			CloudSync.firebase_auth_sign_up(entered_email, entered_pass, func(sign_ok: bool, id_token: String, sign_err: String):
 				if not sign_ok:
 					btn_cloud_confirm.disabled = false
-					if sign_err.to_lower().contains("already exists"):
+					if sign_err.to_lower().contains("already exists") or sign_err.contains("EMAIL_EXISTS"):
 						if cloud_feedback_lbl:
-							cloud_feedback_lbl.text = "ℹ️ An account with this email already exists. Switching to Log In..."
+							cloud_feedback_lbl.text = "ℹ️ Account already exists. Signing in..."
 							cloud_feedback_lbl.visible = true
-						_on_login_cloud_pressed()
+						CloudSync.firebase_auth_sign_in(entered_email, entered_pass, func(s_ok: bool, s_token: String, _s_err: String):
+							if not s_ok:
+								btn_cloud_confirm.disabled = false
+								if cloud_feedback_lbl:
+									cloud_feedback_lbl.text = "ℹ️ An account with this email already exists.\nPlease enter your registered password in Log In."
+									cloud_feedback_lbl.visible = true
+								_on_login_cloud_pressed()
+								return
+								
+							CloudSync.firebase_auth_check_verified(s_token, func(chk_ok: bool, is_ver: bool, _chk_e: String):
+								if chk_ok and not is_ver:
+									_pending_verify_id_token = s_token
+									_pending_verify_email = entered_email
+									_pending_verify_alias = entered_alias
+									_pending_verify_password = entered_pass
+									btn_cloud_confirm.disabled = false
+									_switch_to_verification_view(entered_email)
+									return
+									
+								_load_cloud_profile_and_enter(entered_email, true, entered_alias)
+							)
+						)
+						return
 					else:
 						if cloud_feedback_lbl:
 							cloud_feedback_lbl.text = "❌ Registration failed: %s" % sign_err
@@ -6277,41 +6299,39 @@ func _switch_to_verification_view(email: String) -> void:
 	btn_cloud_confirm.disabled = false
 
 func _check_email_verification_status() -> void:
-	if _pending_verify_id_token.is_empty():
-		if not _pending_verify_email.is_empty() and not _pending_verify_password.is_empty():
-			btn_cloud_confirm.disabled = true
-			if cloud_feedback_lbl:
-				cloud_feedback_lbl.text = "⏳ Refreshing session..."
-				cloud_feedback_lbl.visible = true
-			CloudSync.firebase_auth_sign_in(_pending_verify_email, _pending_verify_password, func(s_ok: bool, new_token: String, _s_err: String):
-				if s_ok:
-					_pending_verify_id_token = new_token
-					_check_email_verification_status()
-				else:
-					btn_cloud_confirm.disabled = false
-					if cloud_feedback_lbl:
-						cloud_feedback_lbl.text = "⚠️ Session expired. Please log in or register again."
-						cloud_feedback_lbl.visible = true
-			)
-			return
-		else:
-			if cloud_feedback_lbl:
-				cloud_feedback_lbl.text = "⚠️ Session token missing. Please register again."
-				cloud_feedback_lbl.visible = true
-			return
-			
 	btn_cloud_confirm.disabled = true
 	if cloud_feedback_lbl:
 		cloud_feedback_lbl.text = "⏳ Checking email verification with Firebase..."
 		cloud_feedback_lbl.visible = true
 		
-	CloudSync.firebase_auth_check_verified(_pending_verify_id_token, func(success: bool, is_verified: bool, err_msg: String):
+	# Reautenticar siempre si conocemos la contraseña para obtener un token fresco con el estado emailVerified actualizado
+	if not _pending_verify_email.is_empty() and not _pending_verify_password.is_empty():
+		CloudSync.firebase_auth_sign_in(_pending_verify_email, _pending_verify_password, func(s_ok: bool, new_token: String, _s_err: String):
+			if s_ok:
+				_pending_verify_id_token = new_token
+				_finalize_verification_check(new_token)
+			elif not _pending_verify_id_token.is_empty():
+				_finalize_verification_check(_pending_verify_id_token)
+			else:
+				btn_cloud_confirm.disabled = false
+				if cloud_feedback_lbl:
+					cloud_feedback_lbl.text = "⚠️ Session expired. Please log in or register again."
+					cloud_feedback_lbl.visible = true
+				_on_login_cloud_pressed()
+		)
+	elif not _pending_verify_id_token.is_empty():
+		_finalize_verification_check(_pending_verify_id_token)
+	else:
+		btn_cloud_confirm.disabled = false
+		if cloud_feedback_lbl:
+			cloud_feedback_lbl.text = "⚠️ Session token missing. Please register again."
+			cloud_feedback_lbl.visible = true
+		_on_login_cloud_pressed()
+
+func _finalize_verification_check(token_to_check: String) -> void:
+	CloudSync.firebase_auth_check_verified(token_to_check, func(success: bool, is_verified: bool, err_msg: String):
 		btn_cloud_confirm.disabled = false
 		if not success:
-			if not _pending_verify_email.is_empty() and not _pending_verify_password.is_empty():
-				_pending_verify_id_token = ""
-				_check_email_verification_status()
-				return
 			if cloud_feedback_lbl:
 				cloud_feedback_lbl.text = "❌ Verification check failed: %s" % err_msg
 				cloud_feedback_lbl.visible = true
@@ -6400,7 +6420,7 @@ func _on_resend_verification_pressed() -> void:
 				cloud_feedback_lbl.visible = true
 	)
 
-func _load_cloud_profile_and_enter(email: String) -> void:
+func _load_cloud_profile_and_enter(email: String, is_authenticated: bool = false, preferred_alias: String = "") -> void:
 	if cloud_feedback_lbl:
 		cloud_feedback_lbl.text = "⏳ Loading profile from Cloud..."
 		cloud_feedback_lbl.visible = true
@@ -6413,6 +6433,9 @@ func _load_cloud_profile_and_enter(email: String) -> void:
 			if (cloud_alias.is_empty() or cloud_alias == "Trainer") and not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
 				data["profile"]["trainer_alias"] = GameData.profile_name
 				data["profile"]["name"] = GameData.profile_name
+			elif (cloud_alias.is_empty() or cloud_alias == "Trainer") and not preferred_alias.is_empty() and preferred_alias != "Trainer":
+				data["profile"]["trainer_alias"] = preferred_alias
+				data["profile"]["name"] = preferred_alias
 			GameData.apply_save_dict(data)
 			GameData.profile_email = email
 			GameData.profile_cloud_key = email
@@ -6429,6 +6452,49 @@ func _load_cloud_profile_and_enter(email: String) -> void:
 			if GameData.can_claim_welcome_gift():
 				_show_welcome_notification()
 		else:
+			# Si el usuario ya fue autenticado (por contraseña o Firebase Auth) pero aún no tenía documento en Firestore
+			# (por ejemplo, verificó su correo externamente en el navegador o móvil y acaba de iniciar sesión por primera vez):
+			if is_authenticated:
+				print("[Main] Authenticated user without Firestore doc. Provisioning new profile for: %s" % email)
+				var chosen_alias = preferred_alias
+				if chosen_alias.is_empty() and cloud_trainer_input and not cloud_trainer_input.text.strip_edges().is_empty():
+					chosen_alias = cloud_trainer_input.text.strip_edges()
+				if chosen_alias.is_empty() and not _pending_verify_alias.is_empty():
+					chosen_alias = _pending_verify_alias
+				if chosen_alias.is_empty() and not GameData.profile_name.is_empty() and GameData.profile_name != "Trainer":
+					chosen_alias = GameData.profile_name
+				if chosen_alias.is_empty() or chosen_alias == "Trainer":
+					chosen_alias = email.split("@")[0].capitalize()
+					
+				if GameData.player_unlocked_ids.is_empty():
+					GameData.create_new_profile(chosen_alias, "Google Cloud", email, false)
+				else:
+					GameData.create_or_update_profile(chosen_alias, "Google Cloud", email, false)
+				GameData.profile_email = email
+				GameData.profile_cloud_key = email
+				GameData.profile_name = chosen_alias
+				GameData.profile_auth_provider = "Google Cloud"
+				GameData.save_profile(false)
+				
+				if cloud_feedback_lbl:
+					cloud_feedback_lbl.text = "🎉 Welcome %s! Creating your cloud profile..." % chosen_alias
+					cloud_feedback_lbl.visible = true
+					
+				CloudSync.save_profile_to_cloud(email, GameData.get_save_dict(), func(save_ok: bool, save_msg: String):
+					btn_cloud_confirm.disabled = false
+					GameData.session_entered_lobby = true
+					cloud_notice_modal.visible = false
+					login_modal.visible = false
+					_update_lobby_header_badge()
+					refresh_cards_data_from_catalog()
+					if profile_modal and profile_modal.visible:
+						_on_profile_pressed()
+					if GameData.can_claim_welcome_gift():
+						_show_welcome_notification()
+					print("[Main] Initial cloud profile created and entered lobby for %s (%s)!" % [chosen_alias, email])
+				)
+				return
+				
 			if cloud_feedback_lbl:
 				cloud_feedback_lbl.text = "ℹ️ No saved game found for '%s'.\nWould you like to register this email as a new profile?" % email
 				cloud_feedback_lbl.visible = true

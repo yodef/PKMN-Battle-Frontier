@@ -484,6 +484,19 @@ func _try_search_fallback_on_404(account_key: String, callback: Callable) -> voi
 		if callback.is_valid():
 			callback.call(false, {}, msg)
 
+# Elimina un documento de perfil en Google Cloud Firestore
+func delete_cloud_profile(account_key: String, callback: Callable = Callable()) -> void:
+	var doc_id = sanitize_account_key(account_key)
+	var url = "%s/%s?key=%s" % [FIRESTORE_BASE_URL, doc_id, API_KEY]
+	var http = HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(func(_r, _c, _h, _b):
+		http.queue_free()
+		if callback.is_valid():
+			callback.call()
+	)
+	http.request(url, _get_nocache_headers(), HTTPClient.METHOD_DELETE)
+
 # Consulta pública de un perfil para que amigos o rivales puedan inspeccionar su perfil y showcase sin interferir con la sesión
 func fetch_public_trainer_profile(account_key: String, callback: Callable) -> void:
 	var clean_key = account_key.strip_edges()
@@ -1132,7 +1145,7 @@ func _get_oauth_html_content() -> String:
         if (err.code === 'auth/popup-closed-by-user') {
           status.innerHTML = "⚠️ Cancelaste la ventana de inicio de sesión. Haz clic de nuevo para reintentar.";
         } else if (err.code === 'auth/popup-blocked') {
-          status.innerHTML = "⚠️ Tu navegador bloqueó la ventana emergente. Permite ventanas emergentes para continuar.";
+          status.innerHTML = "⚠️ Tu navegador bloqueó la ventana emergente. Permite ventanas emergentes o haz clic nuevamente en el botón.";
         } else {
           status.innerHTML = "❌ Error: " + err.message;
         }
@@ -1140,21 +1153,13 @@ func _get_oauth_html_content() -> String:
     }
 
     window.triggerGoogleLogin = triggerGoogleLogin;
-    
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        try {
-          triggerGoogleLogin();
-        } catch(e) {}
-      }, 400);
-    });
   </script>
 </head>
 <body>
   <div class="card" id="main-card">
     <div style="font-size:36px;margin-bottom:10px;">⚡</div>
     <div class="title-logo">POKÉMON BATTLE FRONTIER</div>
-    <div class="subtitle">Selecciona una de tus cuentas de Google activas en este dispositivo para sincronizar tu perfil, cartas y progreso en la nube.</div>
+    <div class="subtitle">Haz clic en el botón a continuación para elegir tu cuenta de Google y sincronizar tu partida en la nube.</div>
     <button id="btn-google" class="btn-google" onclick="triggerGoogleLogin()">
       <svg width="20" height="20" viewBox="0 0 24 24">
         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -1162,9 +1167,9 @@ func _get_oauth_html_content() -> String:
         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
       </svg>
-      Elegir Cuenta de Google
+      Continuar con Google
     </button>
-    <div class="status-box" id="status-msg">Haz clic arriba para abrir la ventana de cuentas de Google.</div>
+    <div class="status-box" id="status-msg">Haz clic en 'Continuar con Google' arriba para conectar tu cuenta.</div>
     <div class="footer-note">Google Cloud Firestore • Cifrado seguro</div>
   </div>
 </body>
