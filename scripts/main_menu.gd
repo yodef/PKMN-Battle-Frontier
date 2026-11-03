@@ -751,6 +751,13 @@ func _ready() -> void:
 	GameData.friends_updated.connect(_update_friends_ui)
 	friends_modal.visible = false
 	
+	# En modo Web, deshabilitar opciones online para jugar exclusivamente local
+	if OS.has_feature("web"):
+		if btn_online_multiplayer:
+			btn_online_multiplayer.visible = false
+		if btn_friends:
+			btn_friends.visible = false
+	
 	# Ocultar modales al inicio
 	campaign_hub_modal.visible = false
 	adventure_episodes_modal.visible = false
@@ -795,7 +802,15 @@ func _ready() -> void:
 			
 	# Mostrar pantalla de Login al primer acceso de la sesión
 	if not GameData.session_entered_lobby:
-		_show_login_screen()
+		if OS.has_feature("web"):
+			var is_brand_new = not GameData.has_saved_profile()
+			if is_brand_new:
+				GameData.create_new_profile("Trainer", "Guest")
+			GameData.session_entered_lobby = true
+			login_modal.visible = false
+			_update_lobby_header_badge()
+		else:
+			_show_login_screen()
 	else:
 		login_modal.visible = false
 		
@@ -5837,6 +5852,10 @@ func _on_settings_pressed() -> void:
 
 # --- PANTALLA DE ACCESO / LOGIN ---
 func _show_login_screen() -> void:
+	if OS.has_feature("web"):
+		login_modal.visible = false
+		GameData.session_entered_lobby = true
+		return
 	login_modal.visible = true
 	var has_saved = GameData.has_saved_profile()
 	if has_saved:
@@ -6472,7 +6491,9 @@ func _update_lobby_header_badge() -> void:
 		if alias.is_empty():
 			alias = "Trainer"
 		trainer_status_badge.text = "👤 %s  |  💎 %d  |  🍬 %d" % [alias, GameData.player_diamonds, GameData.player_rare_candies]
-		if not GameData.profile_email.is_empty():
+		if OS.has_feature("web"):
+			trainer_status_badge.tooltip_text = "Local Web Trainer\nTrainer ID: %s" % GameData.profile_id
+		elif not GameData.profile_email.is_empty():
 			trainer_status_badge.tooltip_text = "Google Account: %s\nTrainer ID: %s" % [GameData.profile_email, GameData.profile_id]
 		else:
 			trainer_status_badge.tooltip_text = "Local / Guest Account\nTrainer ID: %s" % GameData.profile_id
@@ -6498,12 +6519,30 @@ func _on_profile_pressed() -> void:
 		else:
 			btn_link_google.text = "🌐 Connect with Google Account"
 	if account_status_lbl:
-		if GameData.profile_auth_provider.begins_with("Google"):
+		if OS.has_feature("web"):
+			account_status_lbl.text = "Status: 🌐 Local Web Play (Browser IndexedDB Storage)"
+			account_status_lbl.modulate = Color(0.4, 0.85, 1.0)
+		elif GameData.profile_auth_provider.begins_with("Google"):
 			account_status_lbl.text = "Status: 🟢 Google Cloud Connected (Firebase)\n☁️ Email: %s" % GameData.profile_email
 			account_status_lbl.modulate = Color(0.35, 1.0, 0.5)
 		else:
 			account_status_lbl.text = "Status: ⚪ Local Storage Active (%s)" % GameData.profile_auth_provider
 			account_status_lbl.modulate = Color(0.7, 0.85, 0.95)
+	
+	if OS.has_feature("web"):
+		if trainer_email_row:
+			trainer_email_row.visible = false
+		if btn_link_google:
+			btn_link_google.visible = false
+		if btn_logout:
+			btn_logout.visible = false
+	else:
+		if trainer_email_row:
+			trainer_email_row.visible = true
+		if btn_link_google:
+			btn_link_google.visible = true
+		if btn_logout:
+			btn_logout.visible = true
 	if stat_diamonds_lbl:
 		stat_diamonds_lbl.text = "💎 Diamonds: %d" % GameData.player_diamonds
 	
@@ -6554,10 +6593,10 @@ func _on_save_progress_pressed() -> void:
 		profile_feedback_lbl.visible = true
 
 func _on_logout_pressed() -> void:
+	if OS.has_feature("web"):
+		return
 	profile_modal.visible = false
 	GameData.session_entered_lobby = false
-	if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
-		JavaScriptBridge.eval("if (window.clearRememberedCloudUser) { window.clearRememberedCloudUser(); }")
 	_show_login_screen()
 
 func _on_erase_profile_prompt_pressed() -> void:
@@ -6572,7 +6611,12 @@ func _on_confirm_erase_pressed() -> void:
 	refresh_cards_data_from_catalog()
 	_apply_audio_settings()
 	_update_lobby_header_badge()
-	_show_login_screen()
+	if OS.has_feature("web"):
+		GameData.create_new_profile("Trainer", "Guest")
+		GameData.session_entered_lobby = true
+		_update_lobby_header_badge()
+	else:
+		_show_login_screen()
 
 # --- SHOWCASE DE POKÉMON FAVORITOS Y PERFIL DE AMIGOS ---
 
