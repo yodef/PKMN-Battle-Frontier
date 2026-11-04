@@ -34,6 +34,40 @@ class MoveData:
 		boost_applies_burn = p_burn
 		description = p_desc
 
+func format_move_boost_summary(b_cost: int, b_dmg: int, eff_type: String, desc: String) -> String:
+	if b_cost <= 0:
+		return ""
+	var parts: Array[String] = []
+	if b_dmg > 0:
+		parts.append("+%d Extra DMG" % b_dmg)
+	var d_low = desc.to_lower()
+	if eff_type == "FLINCH":
+		parts.append("Inflicts Flinch")
+	elif eff_type == "BURN" and b_dmg == 0:
+		if "3 dmg" in d_low:
+			parts.append("Inflicts Burn (3 DMG x 2 rds)")
+		elif "2 dmg" in d_low:
+			parts.append("Inflicts Burn (2 DMG x 2 rds)")
+		else:
+			parts.append("Inflicts Burn (1 DMG x 2 rds)")
+	elif eff_type == "CONFUSION" and b_dmg == 0:
+		parts.append("Inflicts Confusion")
+	elif eff_type == "FREEZE" and b_dmg == 0:
+		parts.append("Inflicts Freeze")
+	elif eff_type == "PARALYZE" and b_dmg == 0:
+		parts.append("Inflicts Paralyze")
+	elif eff_type == "RECOIL":
+		parts.append("Avoids Recoil DMG")
+	elif eff_type == "DOUBLE_DMG":
+		parts.append("Deals X2 DMG")
+	elif eff_type == "LIFE_DRAIN" and "100%" in d_low:
+		parts.append("100% HP Drain")
+	elif eff_type == "SLOW_FOE" and ("extra energy" in d_low and "reduce" in d_low):
+		parts.append("-1 Foe Speed")
+	if parts.is_empty():
+		return "Boosted Effect"
+	return " & ".join(parts)
+
 class PokemonData:
 	var id: int
 	var pokedex_num: String

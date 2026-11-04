@@ -689,9 +689,9 @@ func show_pokemon_details(pkmn, is_enemy: bool = false) -> void:
 			boost_lbl.bbcode_enabled = true
 			boost_lbl.fit_content = true
 			boost_lbl.add_theme_font_size_override("normal_font_size", 10)
-			boost_lbl.text = "[color=#FFB74D]🔥 Boost Effect (+%d⚡):[/color] [color=#FFE0B2]+%d Extra Damage%s[/color]" % [
-				m.boost_cost, m.boost_damage,
-				" & applies Burn" if m.boost_applies_burn else ""
+			boost_lbl.text = "[color=#FFB74D]🔥 Boost Effect (+%d⚡):[/color] [color=#FFE0B2]%s[/color]" % [
+				m.boost_cost,
+				GameData.format_move_boost_summary(m.boost_cost, m.boost_damage, m.effect_type, m.description)
 			]
 			m_vbox.add_child(boost_lbl)
 
@@ -1236,12 +1236,53 @@ func start_new_game() -> void:
 	timer.timeout.connect(start_new_round)
 
 # --- REGLA DE DAÑO FRACCIONADO ---
-func calculate_move_damage(move, energy_spent: int) -> int:
+func get_effective_move_cost(move, attacker = null, defender = null) -> int:
+	if not move:
+		return 1
+	if move.name == "Quick Attack" and attacker and defender:
+		if get_pokemon_effective_speed(attacker, defender) > get_pokemon_effective_speed(defender, attacker):
+			return max(1, move.cost - 1)
+	return move.cost
+
+func _get_boost_dmg_type_bonus(move, defender) -> int:
+	if not move or not defender or move.effect_type != "BOOST_DMG_TYPE":
+		return 0
+	var desc_u = move.description.to_upper()
+	var bonus_val = 2
+	if "+5" in desc_u:
+		bonus_val = 5
+	elif "+4" in desc_u:
+		bonus_val = 4
+	elif "+3" in desc_u:
+		bonus_val = 3
+	if "NON-NORMAL" in desc_u:
+		return bonus_val if defender.type != "NORMAL" else 0
+	if "FIGHTING" in desc_u and defender.type == "FIGHTING":
+		return bonus_val
+	if "GRASS" in desc_u and defender.type == "GRASS":
+		return bonus_val
+	if "NORMAL" in desc_u and defender.type == "NORMAL":
+		return bonus_val
+	return 0
+
+func _get_snowball_bonus(move) -> int:
+	if not move:
+		return 4
+	if "+6" in move.description:
+		return 6
+	elif "+3" in move.description:
+		return 3
+	elif "+2" in move.description:
+		return 2
+	return 4
+
+func calculate_move_damage(move, energy_spent: int, eff_cost: int = -1) -> int:
 	if move.effect_type == "MULTI_ATTACK":
 		return 0
-	if move.cost <= 1:
+	var c = eff_cost if eff_cost >= 0 else move.cost
+	if c <= 1 or energy_spent >= c:
 		return move.base_damage
-	var fraction = float(energy_spent) / float(move.cost)
+	var fraction = float(energy_spent) / float(c)
 	return int(round(move.base_damage * fraction))
 
 # --- CICLO DE RONDAS Y TURNOS BASADO EN SPEED ---
@@ -1350,6 +1391,7 @@ func _is_turn_action_allowed() -> bool:
 func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: Node, is_player: bool) -> bool:
 	if not actor or not opponent:
 		return false
+	actor.is_digging = false
 		
 	# 1. Leech Seed (Seeded)
 	if actor.is_seeded_turns > 0:
@@ -1743,10 +1785,6 @@ func _finish_round() -> void:
 					pkmn.shield_reduction = 0
 			if pkmn.ground_boost_turns > 0:
 				pkmn.ground_boost_turns -= 1
-			if pkmn.damage_buff_turns > 0:
-				pkmn.damage_buff_turns -= 1
-				if pkmn.damage_buff_turns == 0:
-					pkmn.damage_buff = 0
 			if pkmn.foe_damage_debuff_turns > 0:
 				pkmn.foe_damage_debuff_turns -= 1
 				if pkmn.foe_damage_debuff_turns == 0:
@@ -1759,7 +1797,6 @@ func _finish_round() -> void:
 					log_action("✨ [b]%s[/b] [color=green]recovered from paralysis![/color]" % pkmn.name)
 			if pkmn.immune_sleep_rounds > 0:
 				pkmn.immune_sleep_rounds -= 1
-			pkmn.is_digging = false
 		
 	# Actualizar historial de Flinch para la siguiente ronda
 	for team in [player_team, enemy_team]:
@@ -1916,12 +1953,15 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if attacker == get_active_player() and GameData.is_campaign_mode:
 		GameData.add_daily_mission_progress("play_moves", 1)
 	
-	var is_full_energy: bool = (energy_to_spend >= move.cost or move.cost == 0)
+	var eff_cost: int = get_effective_move_cost(move, attacker, defender)
+	var is_full_energy: bool = (energy_to_spend >= eff_cost or eff_cost == 0)
 	var raw_damage: int = 0
 	var note_text: String = ""
 	var effect_annulled: bool = false
 	var att_spd = get_pokemon_effective_speed(attacker, defender)
 	var def_spd = get_pokemon_effective_speed(defender, attacker)
+	if eff_cost < move.cost:
+		note_text += " [color=cyan](Quick Attack: -1⚡ cost for higher SPD!)[/color]"
 
 	# 1. Chequeo de Amnesia del rival
 	if defender.amnesia_active:
@@ -2007,21 +2047,19 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		raw_damage = max(1, int(round(defender.current_hp * 0.5)))
 		note_text += " [color=yellow](Anti-Tank: 50%% foe's HP = %d DMG)[/color]" % raw_damage
 	else:
-		raw_damage = calculate_move_damage(move, energy_to_spend)
+		raw_damage = calculate_move_damage(move, energy_to_spend, eff_cost)
 		if boosted:
 			raw_damage += move.boost_damage
-		elif not is_full_energy and move.cost > 1:
-			note_text += " [color=yellow](Partial Energy %d/%d⚡: scaled damage)[/color]" % [energy_to_spend, move.cost]
+			if move.effect_type == "BOOST_DMG" and move.boost_damage == 0:
+				raw_damage += 4
+		elif not is_full_energy and eff_cost > 1:
+			note_text += " [color=yellow](Partial Energy %d/%d⚡: scaled damage)[/color]" % [energy_to_spend, eff_cost]
 		
 		# Close Combat (MINIMIZE): penalización por energía faltante
-		if move.effect_type == "MINIMIZE" and energy_to_spend < move.cost:
-			var missing = move.cost - energy_to_spend
+		if move.effect_type == "MINIMIZE" and energy_to_spend < eff_cost:
+			var missing = eff_cost - energy_to_spend
 			raw_damage = max(1, raw_damage - (missing * 6))
 			note_text += " [color=yellow](Close Combat: -%d DMG for partial energy)[/color]" % (missing * 6)
-			
-		# Aurora Beam (BOOST_DMG): daño extra si boosted
-		if move.effect_type == "BOOST_DMG" and boosted:
-			raw_damage += 4
 
 	# 8. Modificadores de daño del atacante
 	# Focus Energy (Rattata)
@@ -2035,10 +2073,14 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		note_text += " [color=yellow]Flash Cannon (+%d DMG)![/color]" % attacker.shield_breaker_bonus
 		attacker.shield_breaker_bonus = 0
 
-	# Bufos de daño acumulados (Growth, Calm Mind, Belly Drum)
-	if attacker.damage_buff != 0:
+	# Bufos de daño acumulados (Growth, Calm Mind, Belly Drum, Tail Whip, Mist)
+	if attacker.damage_buff != 0 and raw_damage > 0:
 		raw_damage = max(1, raw_damage + attacker.damage_buff)
 		note_text += " [color=cyan]Stat Buff (%+d DMG)![/color]" % attacker.damage_buff
+		if move.effect_type not in ["DMG_BOOST", "RELAXED", "GROWING", "COVER", "METAMORPHOSIS"] and attacker.damage_buff_turns > 0 and attacker.damage_buff_turns < 50:
+			attacker.damage_buff_turns -= 1
+			if attacker.damage_buff_turns <= 0:
+				attacker.damage_buff = 0
 
 	# Terreno y efectos de campo
 	if grassy_terrain_turns > 0 and move.type == "GRASS":
@@ -2054,27 +2096,32 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			raw_damage *= 2
 			note_text += " [color=cyan]Rolling Momentum (x2 DMG)![/color]"
 		elif move.effect_type == "SNOWBALL":
-			raw_damage += 4
-			note_text += " [color=cyan]Snowball Boost (+4 DMG)![/color]"
+			var allows_partial = ("even if not used at full energy" in move.description.to_lower())
+			if is_full_energy or allows_partial:
+				var sb_bonus = _get_snowball_bonus(move)
+				raw_damage += sb_bonus
+				note_text += " [color=cyan]Snowball Boost (+%d DMG)![/color]" % sb_bonus
 
 	# Revenge y Rage (daño recibido el turno anterior)
 	if move.effect_type == "REVENGE" and attacker.took_damage_last_turn:
-		raw_damage += 3
-		note_text += " [color=orange]Revenge (+3 DMG)![/color]"
+		var rev_bonus = 4 if "+4" in move.description else 3
+		raw_damage += rev_bonus
+		note_text += " [color=orange]Revenge (+%d DMG)![/color]" % rev_bonus
 	elif move.effect_type == "RAGE" and attacker.took_damage_last_turn:
 		raw_damage += 4
 		attacker.temp_speed_mod += 1
 		note_text += " [color=orange]Outrage (+4 DMG & +1 Speed)![/color]"
 
 	# Aerial Ace y similares (BOOST_IF_FASTER)
-	if move.effect_type == "BOOST_IF_FASTER" and is_full_energy and att_spd > def_spd:
+	if move.effect_type == "BOOST_IF_FASTER" and move.name != "Quick Attack" and is_full_energy and att_spd > def_spd:
 		raw_damage += 3
 		note_text += " [color=cyan]Speed Advantage (+3 DMG)![/color]"
 
 	# Sinergias con estados negativos del rival
 	if move.effect_type == "BLAZE" and defender.burn_turns > 0:
-		raw_damage += 3
-		note_text += " [color=orange]Blaze vs Burn (+3 DMG)![/color]"
+		var blaze_bonus = 6 if "+6" in move.description else 3
+		raw_damage += blaze_bonus
+		note_text += " [color=orange]Blaze vs Burn (+%d DMG)![/color]" % blaze_bonus
 	if move.effect_type == "BOOST_IF_PARALYZED" and defender.is_paralyzed:
 		raw_damage += 4
 		note_text += " [color=yellow]Bonus vs Paralyzed (+4 DMG)![/color]"
@@ -2083,7 +2130,11 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		defender.is_paralyzed = false
 		defender.paralyze_turns = 0
 		note_text += " [color=yellow]Overcharge (+6 DMG & cured Paralyze)![/color]"
-	if defender.is_poisoned:
+	if move.effect_type == "DOUBLE_DMG" and "extra energy" in move.description.to_lower():
+		if boosted:
+			raw_damage *= 2
+			note_text += " [color=orange]Boosted Tantrum (x2 DMG)![/color]"
+	elif defender.is_poisoned:
 		if move.effect_type in ["DOUBLE_DMG", "SHOCK"]:
 			raw_damage *= 2
 			note_text += " [color=purple]Poison Synergy (x2 DMG)![/color]"
@@ -2091,44 +2142,49 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			raw_damage += 4
 			note_text += " [color=purple]Drown vs Poison (+4 DMG)![/color]"
 	if move.effect_type == "BOOST_CONFUSED" and defender.is_confused:
-		raw_damage += 3
-		note_text += " [color=magenta]Bonus vs Confused (+3 DMG)![/color]"
+		var conf_bonus = 4 if "+4" in move.description else 3
+		raw_damage += conf_bonus
+		note_text += " [color=magenta]Bonus vs Confused (+%d DMG)![/color]" % conf_bonus
 	if defender.is_asleep_turns > 0 and move.name == "Dream Eater":
-		raw_damage += 5
-		note_text += " [color=purple]Dream Eater vs Asleep (+5 DMG)![/color]"
+		raw_damage += 4
+		note_text += " [color=purple]Dream Eater vs Asleep (+4 DMG)![/color]"
 
 	# Bono de daño por tipo objetivo (BOOST_DMG_TYPE)
 	if move.effect_type == "BOOST_DMG_TYPE" and is_full_energy:
-		var desc_u = move.description.to_upper()
-		if "FIGHTING" in desc_u and defender.type == "FIGHTING":
-			var b = 3 if "+3" in desc_u else 2
-			raw_damage += b
-			note_text += " [color=orange]Bonus vs Fighting (+%d DMG)![/color]" % b
-		elif "GRASS" in desc_u and defender.type == "GRASS":
-			raw_damage += 2
-			note_text += " [color=orange]Bonus vs Grass (+2 DMG)![/color]"
-		elif "NORMAL" in desc_u and defender.type == "NORMAL":
-			raw_damage += 2
-			note_text += " [color=orange]Bonus vs Normal (+2 DMG)![/color]"
+		var type_b = _get_boost_dmg_type_bonus(move, defender)
+		if type_b > 0:
+			raw_damage += type_b
+			note_text += " [color=orange]Type Bonus (+%d DMG)![/color]" % type_b
 
 	# Golpe Crítico (CRITICAL)
 	if move.effect_type == "CRITICAL" and randf() < 0.25:
-		raw_damage += 3
-		note_text += " [color=yellow]Critical Hit! (+3 DMG)[/color]"
+		var crit_b = 4 if "+4" in move.description else 3
+		raw_damage += crit_b
+		note_text += " [color=yellow]Critical Hit! (+%d DMG)[/color]" % crit_b
 
-	# Tirada de dado de Pichu Shock
+	# Tirada de dado de Pichu Shock (Thunder Shock)
 	if move.is_pichu_shock:
 		if is_full_energy:
 			var dice_roll = randi_range(1, 6)
 			note_text += " [color=yellow](🎲 Die: %d)[/color]" % dice_roll
 			if dice_roll <= 3:
-				attacker.current_hp = max(0, attacker.current_hp - 2)
+				attacker.current_hp = max(0, attacker.current_hp - 1)
 				attacker.current_energy = min(attacker.max_energy, attacker.current_energy + 1)
-				note_text += " [color=red]Pichu recoils 2 HP and recharges 1⚡![/color]"
-				play_damage_hit(attacker_visual, "ELECTRIC", 2)
-				spawn_floating_combat_number(attacker_visual, -2, false)
+				raw_damage = 0
+				note_text += " [color=red]Pichu recoils 1 HP, recharges 1⚡, and deals 0 DMG![/color]"
+				play_damage_hit(attacker_visual, "ELECTRIC", 1)
+				spawn_floating_combat_number(attacker_visual, -1, false)
 		else:
 			note_text += " [color=gray](Partial Energy: no recoil/recharge)[/color]"
+
+	# Rompe-escudos antes del cálculo de mitigación (Earthquake / Shadow Punch)
+	if move.effect_type == "SHIELD_BREAKER" and is_full_energy and not effect_annulled:
+		if "shatter" in move.description.to_lower() or "shield" in move.description.to_lower():
+			if defender.shield_reduction > 0 or defender.wall_hp > 0:
+				defender.shield_reduction = 0
+				defender.shield_turns = 0
+				defender.wall_hp = 0
+				note_text += " [color=orange]Shattered foe's Shield![/color]"
 
 	# 9. Debilidades y Resistencias
 	var final_damage: int = 0
@@ -2141,7 +2197,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			note_text += " [color=yellow]Adapted to weakness! (+%d DMG)[/color]" % WEAKNESS_BONUS
 		# Movimientos de doble o triple tipo
 		elif move.effect_type in ["DOUBLE_TYPE", "TRIPLE_TYPE"]:
-			var combo_types = ["WATER", "FIRE", "ELECTRIC"] if move.effect_type == "TRIPLE_TYPE" else (["FIGHTING", "PSYCHIC"] if move.name == "Aura Sphere" else ["ICE", "FIGHTING"])
+			var combo_types = ["WATER", "FIRE", "ELECTRIC"] if move.effect_type == "TRIPLE_TYPE" else (["FIGHTING", "PSYCHIC"] if move.name == "Aura Sphere" else ["FIGHTING", "WATER"])
 			var hit_weak = false
 			var all_res = true
 			for ct in combo_types:
@@ -2181,7 +2237,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			final_damage = max(1, final_damage - 1)
 			note_text += " [color=purple](Poison: -1 DMG)[/color]"
 			
-		# Debilitamiento por Smokescreen/Sand Attack
+		# Debilitamiento por Smokescreen/Sand Attack/Fissure
 		if attacker.foe_damage_debuff > 0:
 			final_damage = max(1, final_damage - attacker.foe_damage_debuff)
 			note_text += " [color=gray](Debuff: -%d DMG)[/color]" % attacker.foe_damage_debuff
@@ -2190,6 +2246,9 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		if defender.shield_reduction > 0:
 			final_damage = max(0, final_damage - defender.shield_reduction)
 			note_text += " [color=blue](Shield absorbed %d DMG)[/color]" % defender.shield_reduction
+			if defender.shield_turns == -1:
+				defender.shield_reduction = 0
+				defender.shield_turns = 0
 			
 		# Slimy (Ditto)
 		if defender.has_passive and defender.passive_name == "Slimy":
@@ -2229,7 +2288,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 
 	# Drenaje de Vida (LIFE_DRAIN)
 	if move.effect_type == "LIFE_DRAIN" and is_full_energy and final_damage > 0:
-		var drain_ratio = 1.0 if (boosted or defender.is_asleep_turns > 0) else 0.5
+		var drain_ratio = 1.0 if (boosted and "100%" in move.description) else 0.5
 		var heal_amount = max(1, int(round(final_damage * drain_ratio)))
 		attacker.current_hp = min(attacker.max_hp, attacker.current_hp + heal_amount)
 		note_text += " [color=green]Drained health and recovered +%d HP![/color]" % heal_amount
@@ -2238,12 +2297,20 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		if attacker == get_active_player() and GameData.is_campaign_mode:
 			GameData.add_daily_mission_progress("heal_hp", 1)
 
-	# Recoil (Double-Edge, Take Down)
-	if move.effect_type == "RECOIL" and not boosted and final_damage > 0:
-		var rec_dmg = max(1, int(round(final_damage * 0.25)))
-		attacker.current_hp = max(0, attacker.current_hp - rec_dmg)
-		note_text += " [color=red]Recoil: takes %d DMG![/color]" % rec_dmg
-		spawn_floating_combat_number(attacker_visual, -rec_dmg, false)
+	# Recoil (Double-Edge, Take Down, Flare Blitz, Wood Hammer, Submission)
+	if move.effect_type == "RECOIL" and final_damage > 0:
+		var avoid_recoil = false
+		var recoil_pct = 0.25
+		if move.name == "Flare Blitz":
+			recoil_pct = 0.30
+			avoid_recoil = (defender.burn_turns > 0)
+		else:
+			avoid_recoil = boosted
+		if not avoid_recoil:
+			var rec_dmg = max(1, int(round(final_damage * recoil_pct)))
+			attacker.current_hp = max(0, attacker.current_hp - rec_dmg)
+			note_text += " [color=red]Recoil: takes %d DMG![/color]" % rec_dmg
+			spawn_floating_combat_number(attacker_visual, -rec_dmg, false)
 
 	# Doble Golpe (DOUBLE_HIT / EXTRA_HIT)
 	if move.effect_type in ["DOUBLE_HIT", "EXTRA_HIT"] and is_full_energy and not effect_annulled and final_damage > 0:
@@ -2259,15 +2326,22 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		GameData.add_active_campaign_gold(3)
 		note_text += " [color=gold]Pay Day earned +3 G![/color]"
 
-	# Flash Cannon (SHIELD_BREAKER)
-	if move.effect_type == "SHIELD_BREAKER" and final_damage > 0 and is_full_energy:
+	# Flash Cannon (SHIELD_BREAKER con carga para siguiente movimiento)
+	if move.effect_type == "SHIELD_BREAKER" and final_damage > 0 and is_full_energy and "next move" in move.description.to_lower():
 		attacker.shield_breaker_bonus = 4
 		note_text += " [color=yellow]Flash Cannon charged +4 DMG for next attack![/color]"
 
 	# 12. Aplicación de Estados y Efectos Secundarios (si no fue anulado por Amnesia y con energía completa)
 	if not effect_annulled and is_full_energy:
+		var desc_l = move.description.to_lower()
+		var requires_boost_for_status = ("extra energy" in desc_l and move.boost_damage == 0 and move.can_boost)
 		# Quemadura
-		if (boosted and move.name == "Inferno") or (boosted and (move.boost_applies_burn or move.effect_type == "BURN")) or (move.effect_type == "BURN"):
+		var should_burn = false
+		if move.effect_type == "BURN":
+			should_burn = boosted if requires_boost_for_status else true
+		elif boosted and (move.boost_applies_burn or move.name == "Inferno"):
+			should_burn = true
+		if should_burn:
 			if defender.burn_turns > 0:
 				note_text += " [color=gray](%s is already burned - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Burned!", Color("#f97316"))
@@ -2316,7 +2390,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				note_text += " [color=gray](Toxic requires foe to be poisoned first)[/color]"
 				
 		# Congelación (FREEZE)
-		if move.effect_type == "FREEZE":
+		if move.effect_type == "FREEZE" and (boosted if requires_boost_for_status else true):
 			if defender.is_frozen or defender.frozen_turns > 0:
 				note_text += " [color=gray](%s is already frozen - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Frozen!", Color("#38bdf8"))
@@ -2338,7 +2412,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				note_text += " [color=lightblue]Put foe to SLEEP (2 rounds)![/color]"
 			
 		# Parálisis (PARALYZE)
-		if move.effect_type == "PARALYZE":
+		if move.effect_type == "PARALYZE" and (boosted if requires_boost_for_status else true):
 			if defender.is_paralyzed or defender.paralyze_turns > 0:
 				note_text += " [color=gray](%s is already paralyzed - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Paralyzed!", Color("#facc15"))
@@ -2348,7 +2422,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				note_text += " [color=yellow]Inflicted PARALYZE (25% chance cannot act, 2 rounds)![/color]"
 			
 		# Confusión (CONFUSION)
-		if move.effect_type == "CONFUSION":
+		if move.effect_type == "CONFUSION" and (boosted if requires_boost_for_status else true):
 			if defender.is_confused or defender.confused_turns > 0:
 				note_text += " [color=gray](%s is already confused - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Confused!", Color("#e879f9"))
@@ -2401,9 +2475,12 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 
 		# Reducción de Velocidad al rival (SLOW_FOE / BLIND)
 		if move.reduces_foe_speed or move.effect_type in ["SLOW_FOE", "BLIND"]:
-			defender.temp_speed_mod = -1
-			defender.speed_mod_expires_round = round_number + 1
-			note_text += " [color=lightblue]Reduced foe's Speed by 1 next round![/color]"
+			var slow_requires_boost = ("extra energy" in desc_l and "reduce" in desc_l and move.name in ["Bubble Beam", "Vine Whip"])
+			if boosted if slow_requires_boost else true:
+				var spd_drop = 3 if "-3" in move.description else (2 if "-2" in move.description else 1)
+				defender.temp_speed_mod = -spd_drop
+				defender.speed_mod_expires_round = round_number + 1
+				note_text += " [color=lightblue]Reduced foe's Speed by %d next round![/color]" % spd_drop
 
 		# Debilitamiento al rival (WEAKEN)
 		if move.effect_type == "WEAKEN":
@@ -2435,8 +2512,12 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		# Escudo defensivo (SHIELD / BLOCK / VEIL)
 		if move.effect_type in ["SHIELD", "BLOCK", "VEIL"]:
 			attacker.shield_reduction = 2 if "-2 DMG" in move.description else 1
-			attacker.shield_turns = 3 if "3 rounds" in move.description else 2
-			note_text += " [color=blue]Activated Shield: -%d DMG for %d rounds![/color]" % [attacker.shield_reduction, attacker.shield_turns]
+			if move.effect_type == "BLOCK":
+				attacker.shield_turns = -1
+				note_text += " [color=blue]Activated Block: -%d DMG on next attack![/color]" % attacker.shield_reduction
+			else:
+				attacker.shield_turns = 4 if "4 rounds" in move.description else (3 if "3 rounds" in move.description else 2)
+				note_text += " [color=blue]Activated Shield: -%d DMG for %d rounds![/color]" % [attacker.shield_reduction, attacker.shield_turns]
 
 		# Aumento de ataque propio (DMG_BOOST / RELAXED / GROWING e.g. Belly Drum / Calm Mind / Growth)
 		if move.effect_type in ["DMG_BOOST", "RELAXED", "GROWING"]:
@@ -2445,10 +2526,13 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			note_text += " [color=yellow]Boosted attack power: +%d DMG! [/color]" % attacker.damage_buff
 
 		# Aumento de velocidad propio (RUSH / SPEED_UP e.g. Agility / Bullet Punch)
-		if move.effect_type in ["RUSH", "SPEED_UP"]:
+		if move.effect_type == "RUSH":
+			attacker.speed += 2
+			note_text += " [color=cyan]+2 permanent Speed for the rest of combat![/color]"
+		elif move.effect_type == "SPEED_UP":
 			attacker.temp_speed_mod += 2
-			attacker.speed_mod_expires_round = round_number + 2
-			note_text += " [color=cyan]+2 Speed for next rounds![/color]"
+			attacker.speed_mod_expires_round = round_number + 1
+			note_text += " [color=cyan]+2 Speed next round![/color]"
 
 		# Ralentización propia (SLOW_USER e.g. Hammer Arm)
 		if move.effect_type == "SLOW_USER":
@@ -3302,7 +3386,8 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 		return 0
 	if attacker.has_passive and attacker.passive_name == "Pacifist":
 		return 0
-	var is_full_energy: bool = (energy_spent >= move.cost or move.cost == 0)
+	var eff_cost: int = get_effective_move_cost(move, attacker, defender)
+	var is_full_energy: bool = (energy_spent >= eff_cost or eff_cost == 0)
 	var dmg: int = 0
 	var att_spd = get_pokemon_effective_speed(attacker, defender)
 	var def_spd = get_pokemon_effective_speed(defender, attacker)
@@ -3313,20 +3398,20 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 		var avg_hit = 5 if move.name == "Icicle Spear" else (4 if move.name in ["Bone Rush", "Fury Swipes"] else 3)
 		dmg = max(1, energy_spent) * avg_hit
 	else:
-		dmg = calculate_move_damage(move, energy_spent)
+		dmg = calculate_move_damage(move, energy_spent, eff_cost)
 		if boosted:
 			dmg += move.boost_damage
-		if move.effect_type == "MINIMIZE" and energy_spent < move.cost:
-			dmg = max(1, dmg - ((move.cost - energy_spent) * 6))
-		if move.effect_type == "BOOST_DMG" and boosted:
-			dmg += 4
+			if move.effect_type == "BOOST_DMG" and move.boost_damage == 0:
+				dmg += 4
+		if move.effect_type == "MINIMIZE" and energy_spent < eff_cost:
+			dmg = max(1, dmg - ((eff_cost - energy_spent) * 6))
 
 	# Bonos del atacante
 	if attacker.has_passive and attacker.passive_name == "Focus Energy" and att_spd > def_spd:
 		dmg += 1
 	if attacker.shield_breaker_bonus > 0 and move.effect_type != "SHIELD_BREAKER":
 		dmg += attacker.shield_breaker_bonus
-	if attacker.damage_buff != 0:
+	if attacker.damage_buff != 0 and dmg > 0:
 		dmg = max(1, dmg + attacker.damage_buff)
 	if grassy_terrain_turns > 0 and move.type == "GRASS":
 		dmg += 4
@@ -3338,77 +3423,78 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 		if move.effect_type == "ROLLING":
 			dmg *= 2
 		elif move.effect_type == "SNOWBALL":
-			dmg += 4
+			var allows_partial = ("even if not used at full energy" in move.description.to_lower())
+			if is_full_energy or allows_partial:
+				dmg += _get_snowball_bonus(move)
 
 	# Venganza / Furia
 	if move.effect_type == "REVENGE" and attacker.took_damage_last_turn:
-		dmg += 3
+		dmg += (4 if "+4" in move.description else 3)
 	elif move.effect_type == "RAGE" and attacker.took_damage_last_turn:
 		dmg += 4
 
 	# Velocidad superior
-	if move.effect_type == "BOOST_IF_FASTER" and is_full_energy and att_spd > def_spd:
+	if move.effect_type == "BOOST_IF_FASTER" and move.name != "Quick Attack" and is_full_energy and att_spd > def_spd:
 		dmg += 3
 
 	# Sinergias de estado
 	if move.effect_type == "BLAZE" and defender.burn_turns > 0:
-		dmg += 3
+		dmg += (6 if "+6" in move.description else 3)
 	if move.effect_type == "BOOST_IF_PARALYZED" and defender.is_paralyzed:
 		dmg += 4
 	if move.effect_type == "OVERCHARGE" and defender.is_paralyzed:
 		dmg += 6
-	if defender.is_poisoned:
+	if move.effect_type == "DOUBLE_DMG" and "extra energy" in move.description.to_lower():
+		if boosted:
+			dmg *= 2
+	elif defender.is_poisoned:
 		if move.effect_type in ["DOUBLE_DMG", "SHOCK"]:
 			dmg *= 2
 		elif move.effect_type == "DROWN":
 			dmg += 4
 	if move.effect_type == "BOOST_CONFUSED" and defender.is_confused:
-		dmg += 3
+		dmg += (4 if "+4" in move.description else 3)
 	if defender.is_asleep_turns > 0 and move.name == "Dream Eater":
-		dmg += 5
+		dmg += 4
 
 	# Bono de daño por tipo objetivo
 	if move.effect_type == "BOOST_DMG_TYPE" and is_full_energy:
-		var desc_u = move.description.to_upper()
-		if "FIGHTING" in desc_u and defender.type == "FIGHTING":
-			dmg += 3 if "+3" in desc_u else 2
-		elif "GRASS" in desc_u and defender.type == "GRASS":
-			dmg += 2
-		elif "NORMAL" in desc_u and defender.type == "NORMAL":
-			dmg += 2
+		dmg += _get_boost_dmg_type_bonus(move, defender)
 
 	# Debilidad / Resistencia
-	if move.effect_type in ["WEAK_SPOT", "ADAPT"]:
-		dmg += WEAKNESS_BONUS
-	elif move.effect_type in ["DOUBLE_TYPE", "TRIPLE_TYPE"]:
-		var combo_types = ["WATER", "FIRE", "ELECTRIC"] if move.effect_type == "TRIPLE_TYPE" else (["FIGHTING", "PSYCHIC"] if move.name == "Aura Sphere" else ["ICE", "FIGHTING"])
-		var hit_weak = false
-		var all_res = true
-		for ct in combo_types:
-			if GameData.types_match(defender.weakness, ct):
-				hit_weak = true
-			if not GameData.is_attack_resisted(defender.type, defender.resistant, ct):
-				all_res = false
-		if hit_weak:
+	if dmg > 0:
+		if move.effect_type in ["WEAK_SPOT", "ADAPT"]:
 			dmg += WEAKNESS_BONUS
-		elif all_res:
+		elif move.effect_type in ["DOUBLE_TYPE", "TRIPLE_TYPE"]:
+			var combo_types = ["WATER", "FIRE", "ELECTRIC"] if move.effect_type == "TRIPLE_TYPE" else (["FIGHTING", "PSYCHIC"] if move.name == "Aura Sphere" else ["FIGHTING", "WATER"])
+			var hit_weak = false
+			var all_res = true
+			for ct in combo_types:
+				if GameData.types_match(defender.weakness, ct):
+					hit_weak = true
+				if not GameData.is_attack_resisted(defender.type, defender.resistant, ct):
+					all_res = false
+			if hit_weak:
+				dmg += WEAKNESS_BONUS
+			elif all_res:
+				dmg = max(MIN_DAMAGE_AFTER_RESIST, dmg - RESISTANCE_REDUCTION)
+		elif GameData.types_match(defender.weakness, move.type):
+			dmg += WEAKNESS_BONUS
+		elif GameData.is_attack_resisted(defender.type, defender.resistant, move.type):
 			dmg = max(MIN_DAMAGE_AFTER_RESIST, dmg - RESISTANCE_REDUCTION)
-	elif GameData.types_match(defender.weakness, move.type):
-		dmg += WEAKNESS_BONUS
-	elif GameData.is_attack_resisted(defender.type, defender.resistant, move.type):
-		dmg = max(MIN_DAMAGE_AFTER_RESIST, dmg - RESISTANCE_REDUCTION)
 
-	# Reducciones defensivas
-	if defender.has_passive and defender.passive_name == "Charm" and move.type == "NORMAL":
-		dmg = max(1, dmg - 1)
-	if attacker.is_poisoned:
-		dmg = max(1, dmg - 1)
-	if attacker.foe_damage_debuff > 0:
-		dmg = max(1, dmg - attacker.foe_damage_debuff)
-	if defender.shield_reduction > 0:
-		dmg = max(0, dmg - defender.shield_reduction)
-	if defender.has_passive and defender.passive_name == "Slimy":
-		dmg = max(1, int(ceil(dmg * 0.5)))
+		# Reducciones defensivas
+		if defender.has_passive and defender.passive_name == "Charm" and move.type == "NORMAL":
+			dmg = max(1, dmg - 1)
+		if attacker.is_poisoned:
+			dmg = max(1, dmg - 1)
+		if attacker.foe_damage_debuff > 0:
+			dmg = max(1, dmg - attacker.foe_damage_debuff)
+		var ignore_shield = (move.effect_type == "SHIELD_BREAKER" and is_full_energy and ("shatter" in move.description.to_lower() or "shield" in move.description.to_lower()))
+		if defender.shield_reduction > 0 and not ignore_shield:
+			dmg = max(0, dmg - defender.shield_reduction)
+		if defender.has_passive and defender.passive_name == "Slimy":
+			dmg = max(1, int(ceil(dmg * 0.5)))
 
 	return max(0, dmg)
 
@@ -3466,7 +3552,7 @@ func open_energy_select_modal(move, initial_boosted: bool, max_spend: int) -> vo
 		return
 
 	# Caso 2: Movimiento normal con costo > 1
-	var normal_cost = move.cost
+	var normal_cost = get_effective_move_cost(move, p, e)
 	var can_boost_this = move.can_boost and (p.current_energy >= (normal_cost + move.boost_cost))
 	var upper_limit = min(p.current_energy, normal_cost)
 	
@@ -3486,7 +3572,7 @@ func open_energy_select_modal(move, initial_boosted: bool, max_spend: int) -> vo
 			# Opción parcial
 			var remate_note = ""
 			if dmg >= e.current_hp:
-				remate_note = "  ✨ Sufficient to defeat! (Knockout)"
+				remate_note = "  ✨ Sufficient to defeat! (KO)"
 				btn.modulate = Color(0.3, 1.0, 0.4)
 			else:
 				btn.modulate = Color(1.0, 1.0, 1.0)
@@ -3498,7 +3584,7 @@ func open_energy_select_modal(move, initial_boosted: bool, max_spend: int) -> vo
 			# Opción completa normal (amt == normal_cost)
 			var eff_desc = "Active effect"
 			if move.effect_type == "SLOW_FOE":
-				eff_desc = "Reduces foe's SPD by 1"
+				eff_desc = "Reduces foe's SPD"
 			elif move.effect_type == "BURN":
 				eff_desc = "Inflicts Burn"
 			elif move.effect_type == "POISON" or move.effect_type == "POISON_IF_FASTER":
@@ -3506,13 +3592,13 @@ func open_energy_select_modal(move, initial_boosted: bool, max_spend: int) -> vo
 			elif move.effect_type == "LIFE_DRAIN":
 				eff_desc = "Drains 50% of dealt HP"
 			elif move.effect_type == "SHIELD_BREAKER":
-				eff_desc = "Charges +4 DMG to next move"
+				eff_desc = "Charges +4 DMG to next move" if "next move" in move.description.to_lower() else "Shatters foe's shield"
 			elif move.effect_type == "SUPPORT_BOOST":
 				eff_desc = "Cures status conditions"
 				
 			var remate_note = ""
 			if dmg >= e.current_hp:
-				remate_note = "  ✨ Knockout!"
+				remate_note = "  ✨ KO!"
 				
 			btn.text = "%s Pay %d/%d⚡ ➔ %d DMG%s [Full]%s\n(Triggers effect: %s)" % [
 				lightning, amt, normal_cost, dmg, type_mod_str, remate_note, eff_desc
@@ -3538,17 +3624,11 @@ func open_energy_select_modal(move, initial_boosted: bool, max_spend: int) -> vo
 		for l in range(b_cost):
 			lightning += "⚡"
 			
-		var b_extra = "(+%d DMG & boosted effect)" % move.boost_damage
-		if move.effect_type == "FLINCH":
-			b_extra = "(+%d DMG & inflicts Flinch)" % move.boost_damage
-		elif move.effect_type == "LIFE_DRAIN":
-			b_extra = "(+%d DMG & heals 100%% dealt HP)" % move.boost_damage
-		elif move.effect_type == "BURN":
-			b_extra = "(Inflicts Burn for 2 turns)"
+		var b_extra = "(%s)" % GameData.format_move_boost_summary(move.boost_cost, move.boost_damage, move.effect_type, move.description)
 			
 		var b_remate = ""
 		if b_dmg >= e.current_hp:
-			b_remate = "  ✨ Knockout!"
+			b_remate = "  ✨ KO!"
 			
 		boost_btn.text = "%s Pay %d⚡ ➔ %d DMG%s [BOOSTED 🔥]%s\n%s" % [
 			lightning, b_cost, b_dmg, type_mod_str, b_remate, b_extra
@@ -3571,25 +3651,27 @@ func _on_move_button_pressed(move_idx: int) -> void:
 	if not actor or move_idx >= actor.moves.size():
 		return
 	var move = actor.moves[move_idx]
+	var eff_cost = get_effective_move_cost(move, actor, defender)
+	var eff_min = min(move.min_energy_req, eff_cost)
 	
-	if actor.current_energy < move.min_energy_req:
-		log_action("[color=red]Not enough energy to use %s! Requires at least %d⚡, you have %d⚡.[/color]" % [move.name, move.min_energy_req, actor.current_energy])
+	if actor.current_energy < eff_min:
+		log_action("[color=red]Not enough energy to use %s! Requires at least %d⚡, you have %d⚡.[/color]" % [move.name, eff_min, actor.current_energy])
 		return
 		
 	var selected_spend = selected_energy_move1 if move_idx == 0 else selected_energy_move2
-	var can_afford_boost = move.can_boost and (actor.current_energy >= (move.cost + move.boost_cost))
-	var max_cost = move.cost + (move.boost_cost if can_afford_boost else 0)
+	var can_afford_boost = move.can_boost and (actor.current_energy >= (eff_cost + move.boost_cost))
+	var max_cost = eff_cost + (move.boost_cost if can_afford_boost else 0)
 	
-	if move.cost == 0:
+	if eff_cost == 0:
 		selected_spend = 0
 	else:
-		if selected_spend < move.min_energy_req or selected_spend > max_cost:
-			selected_spend = clamp(actor.current_energy, move.min_energy_req, move.cost)
+		if selected_spend < eff_min or selected_spend > max_cost:
+			selected_spend = clamp(actor.current_energy, eff_min, eff_cost)
 		elif selected_spend > actor.current_energy:
 			log_action("[color=red]Not enough energy to spend %d⚡ (you have %d⚡)![/color]" % [selected_spend, actor.current_energy])
 			return
 			
-	var is_boost_spend = (selected_spend > move.cost)
+	var is_boost_spend = (selected_spend > eff_cost)
 	execute_player_move(move, is_boost_spend, selected_spend)
 
 func _on_move1_pressed() -> void:
@@ -4540,42 +4622,47 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 	elif eff == "DOUBLE_TYPE" or eff == "TRIPLE_TYPE":
 		return "Multi-element attack"
 	elif eff == "CRITICAL":
-		return "25% Critical (+3 DMG)"
+		return "25%% Critical (+%d DMG)" % (4 if "+4" in desc else 3)
 	elif eff == "MULTI_ATTACK":
 		return "Hits = ⚡ spent (25% Crit)"
 	elif eff in ["DOUBLE_HIT", "EXTRA_HIT"]:
 		return "Chance to hit twice"
 	elif eff == "RECOIL":
+		if move.name == "Flare Blitz":
+			return "30% Recoil (0% vs Burn)"
 		return "No Recoil" if boosted else "25% Recoil DMG"
 	elif eff == "SNOWBALL":
-		return "+4 DMG consecutive"
+		return "+%d DMG consecutive" % _get_snowball_bonus(move)
 	elif eff == "ROLLING":
 		return "x2 DMG consecutive"
 	elif eff in ["REVENGE", "RAGE"]:
 		return "Bonus DMG if took hit"
 	elif eff == "BOOST_IF_FASTER":
-		return "+3 DMG if faster"
+		return "-1⚡ cost if faster" if move.name == "Quick Attack" else "+3 DMG if faster"
 	elif eff == "BLAZE":
-		return "+3 DMG vs Burn"
+		return "+%d DMG vs Burn" % (6 if "+6" in desc else 3)
 	elif eff == "BOOST_IF_PARALYZED":
 		return "+4 DMG vs Paralyzed"
 	elif eff == "OVERCHARGE":
 		return "+6 DMG vs Paralyzed"
 	elif eff in ["DOUBLE_DMG", "SHOCK"]:
-		return "x2 DMG vs Poison"
+		return "x2 DMG if Boosted" if "extra energy" in desc.to_lower() else "x2 DMG vs Poison"
 	elif eff == "DROWN":
 		return "+4 DMG vs Poison"
 	elif eff == "BOOST_CONFUSED":
-		return "+3 DMG vs Confused"
+		return "+%d DMG vs Confused" % (4 if "+4" in desc else 3)
 	elif eff == "BOOST_DMG_TYPE":
-		if "FIGHTING" in desc.to_upper(): return "+3 vs Fighting"
-		elif "GRASS" in desc.to_upper(): return "+2 vs Grass"
-		elif "NORMAL" in desc.to_upper(): return "+2 vs Normal"
+		var du = desc.to_upper()
+		if "NON-NORMAL" in du: return "+4 vs non-Normal"
+		elif "FIGHTING" in du and "GRASS" in du: return "+3 vs Grass/Fighting"
+		elif "FIGHTING" in du: return "+3 vs Fighting"
+		elif "GRASS" in du: return "+%d vs Grass" % (5 if "+5" in du else 2)
+		elif "NORMAL" in du: return "+2 vs Normal"
 		return "Bonus vs Type"
 	elif eff == "MISS":
 		return "33% chance to miss"
 	elif eff == "SHIELD_BREAKER":
-		return "Charges +4 DMG next turn"
+		return "Charges +4 DMG next turn" if "next move" in desc.to_lower() else "Shatters foe's shield"
 	elif eff in ["SHIELD", "BLOCK", "VEIL"]:
 		return "Reduces incoming DMG"
 	elif eff == "WALL":
@@ -4705,8 +4792,8 @@ func update_single_move_ui(move_idx: int, move, slots_container: HBoxContainer, 
 	btn.icon = GameData.get_type_icon_texture(move.type)
 	btn.expand_icon = true
 	
-	var base_cost = move.cost
-	var min_cost = move.min_energy_req
+	var base_cost = get_effective_move_cost(move, p, active_e)
+	var min_cost = min(move.min_energy_req, base_cost)
 	var has_boost = move.can_boost and move.boost_cost > 0
 	var max_cost = base_cost + (move.boost_cost if has_boost else 0)
 	var can_fraction = (base_cost > 0 and (min_cost < base_cost or has_boost))
@@ -4769,12 +4856,7 @@ func update_single_move_ui(move_idx: int, move, slots_container: HBoxContainer, 
 
 	if p.current_energy < min_cost:
 		btn.disabled = true
-		if base_cost == 0:
-			btn.text = "%s (%d DMG)\n[Cost: 0⚡ | Req: %d⚡]" % [move.name, move.base_damage, min_cost]
-		elif can_fraction:
-			btn.text = "%s (%d DMG)\n[Cost: %d⚡ | Min: %d⚡]" % [move.name, move.base_damage, base_cost, min_cost]
-		else:
-			btn.text = "%s (%d DMG)\n[Cost: %d⚡]" % [move.name, move.base_damage, base_cost]
+		btn.text = "%s\n%d DMG" % [move.name, move.base_damage]
 		return
 		
 	btn.disabled = not _is_turn_action_allowed()
@@ -4787,49 +4869,22 @@ func update_single_move_ui(move_idx: int, move, slots_container: HBoxContainer, 
 		var per_hit_max = 8 if move.name == "Icicle Spear" else (7 if move.name == "Bone Rush" else (6 if move.name == "Fury Swipes" else 5))
 		var est_min = hits * per_hit_min
 		var est_max = hits * per_hit_max
-		var ko_tag = " ✨ Knockout!" if (active_e and est_min >= active_e.current_hp and active_e.current_hp > 0) else ""
-		btn.text = "%s (%d Hit%s)%s\n[Uses: %d/%d⚡ • %d-%d DMG]" % [
-			move.name, hits, "s" if hits > 1 else "", ko_tag, current_selected, base_cost, est_min, est_max
-		]
-	elif base_cost == 0:
-		var dmg = calculate_predicted_damage(p, active_e, move, 0, false)
-		var ko_tag = " ✨ Knockout!" if (active_e and dmg >= active_e.current_hp and active_e.current_hp > 0) else ""
-		var type_tag = ""
-		if active_e:
-			if GameData.types_match(active_e.weakness, move.type):
-				type_tag = " (+%d)" % WEAKNESS_BONUS
-			elif GameData.is_attack_resisted(active_e.type, active_e.resistant, move.type):
-				type_tag = " (-%d)" % RESISTANCE_REDUCTION
-		btn.text = "%s (%d DMG)%s%s\n[Cost: 0⚡ | Req: %d⚡]" % [move.name, dmg, type_tag, ko_tag, min_cost]
-	elif current_selected < base_cost:
-		var dmg = calculate_predicted_damage(p, active_e, move, current_selected, false)
-		var ko_tag = " ✨ Knockout!" if (active_e and dmg >= active_e.current_hp and active_e.current_hp > 0) else ""
-		btn.text = "%s (%d DMG) [Partial]%s\n[Uses: %d/%d⚡]" % [
-			move.name, dmg, ko_tag, current_selected, base_cost
-		]
-	elif is_boosted:
-		var dmg = calculate_predicted_damage(p, active_e, move, current_selected, true)
-		var ko_tag = " ✨ Knockout!" if (active_e and dmg >= active_e.current_hp and active_e.current_hp > 0) else ""
-		btn.text = "%s (%d DMG) [BOOSTED 🔥]%s\n[Uses: %d⚡]" % [
-			move.name, dmg, ko_tag, current_selected
+		var ko_tag = " • ✨ KO" if (active_e and est_min >= active_e.current_hp and active_e.current_hp > 0) else ""
+		btn.text = "%s (%dx)\n%d-%d DMG%s" % [
+			move.name, hits, est_min, est_max, ko_tag
 		]
 	else:
-		var dmg = calculate_predicted_damage(p, active_e, move, current_selected, false)
-		var ko_tag = " ✨ Knockout!" if (active_e and dmg >= active_e.current_hp and active_e.current_hp > 0) else ""
+		var spend_val = 0 if base_cost == 0 else current_selected
+		var dmg = calculate_predicted_damage(p, active_e, move, spend_val, is_boosted)
+		var ko_tag = " • ✨ KO" if (active_e and dmg >= active_e.current_hp and active_e.current_hp > 0) else ""
 		var type_tag = ""
-		if active_e:
+		if active_e and dmg > 0:
 			if GameData.types_match(active_e.weakness, move.type):
 				type_tag = " (+%d)" % WEAKNESS_BONUS
 			elif GameData.is_attack_resisted(active_e.type, active_e.resistant, move.type):
 				type_tag = " (-%d)" % RESISTANCE_REDUCTION
-		if can_fraction:
-			btn.text = "%s (%d DMG)%s%s\n[Uses: %d/%d⚡]" % [
-				move.name, dmg, type_tag, ko_tag, current_selected, base_cost
-			]
-		else:
-			btn.text = "%s (%d DMG)%s%s\n[Cost: %d⚡]" % [
-				move.name, dmg, type_tag, ko_tag, base_cost
-			]
+		var title_line = ("%s 🔥" % move.name) if is_boosted else move.name
+		btn.text = "%s\n%d DMG%s%s" % [title_line, dmg, type_tag, ko_tag]
 
 func update_move_button_labels() -> void:
 	var is_p2 = (not is_player_turn and GameData.is_pvp_mode)

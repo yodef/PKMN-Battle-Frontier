@@ -2635,9 +2635,9 @@ func _open_camp_pokemon_inspector(p: Dictionary) -> void:
 		
 		if m.can_boost:
 			var b_lbl = Label.new()
-			b_lbl.text = "🔥 Boost (+%d⚡): +%d Extra DMG%s" % [
-				m.boost_cost, m.boost_damage,
-				" & applies Burn" if m.boost_applies_burn else ""
+			b_lbl.text = "🔥 Boost (+%d⚡): %s" % [
+				m.boost_cost,
+				GameData.format_move_boost_summary(m.boost_cost, m.boost_damage, m.effect_type, m.description)
 			]
 			b_lbl.add_theme_font_size_override("font_size", 10)
 			b_lbl.add_theme_color_override("font_color", Color("#FFAB40"))
@@ -5927,10 +5927,8 @@ func show_collection_card(index: int) -> void:
 		m2_sub.text = "Type: %s | Cost: ⚡ %d%s" % [m2_type_val, m2_cost_val, req_text2]
 		if m2_bcost > 0:
 			m2_boost.visible = true
-			var boost_txt = "+%d extra DMG" % m2_bdmg if m2_bdmg > 0 else ""
-			if card.get("m2_effect_type", "") == "BURN":
-				boost_txt += " and inflicts Burn (1 DMG x 2 turns)" if boost_txt != "" else "Inflicts Burn (1 DMG x 2 turns)"
-			m2_boost.text = "🔥 Boost: +%d extra ⚡ -> %s" % [m2_bcost, boost_txt]
+			var boost_txt = GameData.format_move_boost_summary(m2_bcost, m2_bdmg, str(card.get("m2_effect_type", "")), m2_desc_val)
+			m2_boost.text = "🔥 Boost (+%d⚡): %s" % [m2_bcost, boost_txt]
 		else:
 			m2_boost.visible = false
 		m2_desc.text = m2_desc_val if m2_desc_val != "" else "Secondary attack."
