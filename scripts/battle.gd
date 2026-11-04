@@ -2901,8 +2901,7 @@ func _resolve_battle_victory() -> void:
 				evo_msg += "• %s is ready to evolve in Camp! 🎉\n" % pe["from_name"]
 		else:
 			for p in active_team:
-				var st = str(p.get("stage", "Basic")).strip_edges().to_lower()
-				var req_exp = 10 if st == "basic" else (25 if st == "stage 1" else 0)
+				var req_exp = GameData.get_pokemon_required_exp(int(p.get("id", -1)))
 				var cur_exp = int(p.get("current_exp", 0))
 				var cur_hp = int(p.get("current_hp", 0))
 				if req_exp > 0 and cur_exp >= req_exp and cur_hp <= 0:

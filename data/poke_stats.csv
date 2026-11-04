@@ -1,177 +1,177 @@
-﻿id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,texture_file,passive_name,passive_desc,move1,move2,unlocked_start,rarity,evolves_to,tier,region
-0,1,Basic,Bulbasaur,10,3,1,GRASS,,,2,001.png,,,Tackle,Razor Leaf,TRUE,Initial,Ivysaur,D,Kanto
-4,2,Stage 1,Ivysaur,20,5,2,GRASS,,,3,002.png,,,Poison Powder,Vine Whip,FALSE,Rare,Venusaur,C,Kanto
-5,3,Stage 2,Venusaur,32,8,4,GRASS,,,4,003.png,,,Giga Drain,Solar Beam,FALSE,Epic,,S,Kanto
-1,4,Basic,Charmander,10,3,1,FIRE,,,2,004.png,,,Scratch,Ember,TRUE,Initial,Charmeleon,D,Kanto
-6,5,Stage 1,Charmeleon,20,5,2,FIRE,,,3,005.png,,,Slash,Fire Fang,FALSE,Rare,Charizard,C,Kanto
-7,6,Stage 2,Charizard,30,8,5,FIRE,,,4,006.png,,,Aerial Ace,Inferno,FALSE,Epic,,S,Kanto
-2,7,Basic,Squirtle,10,3,1,WATER,,,2,007.png,,,Tackle,Bubble,TRUE,Initial,Wartortle,D,Kanto
-8,8,Stage 1,Wartortle,22,5,2,WATER,,,3,008.png,Protect,"If this PKMN receives DMG from its weakness type, it is swaped to NONE during the rest of this combat.",Rapid Spin,Water Pulse,FALSE,Rare,Blastoise,C,Kanto
-9,9,Stage 2,Blastoise,34,8,3,WATER,,,4,009.png,,,Water Pulse,Hydro Pump,FALSE,Epic,,A,Kanto
-10,10,Basic,Caterpie,10,3,1,GRASS,,,2,010.png,String Shot,Reduces foe's Speed by 1.,Tackle,Bug Bite,FALSE,Common,Metapod,D,Kanto
-11,11,Stage 1,Metapod,20,5,2,GRASS,,,3,011.png,,,Harden,Bug Bite,FALSE,Uncommon,Butterfree,C,Kanto
-12,12,Stage 2,Butterfree,28,8,4,GRASS,,,4,012.png,,,Air Slash,Bug Buzz,FALSE,Rare,,A,Kanto
-13,13,Basic,Weedle,10,3,2,DARK,FIRE,,2,013.png,String Shot,Reduces foe's Speed by 1.,Tackle,Poison Sting,FALSE,Common,Kakuna,D,Kanto
-14,14,Stage 1,Kakuna,18,5,2,DARK,,,3,014.png,,,Harden,Toxic Spikes,FALSE,Uncommon,Beedrill,C,Kanto
-15,15,Stage 2,Beedrill,26,8,4,DARK,,,4,015.png,,,Poison Jab,Venoshock,FALSE,Rare,,B,Kanto
-16,16,Basic,Pidgey,10,3,3,NORMAL,ELECTRIC,NONE,2,016.png,,,Scratch,Gust,FALSE,Common,Pidgeotto,D,Kanto
-17,17,Stage 1,Pidgeotto,18,5,4,NORMAL,ELECTRIC,GROUND,3,017.png,,,Quick Attack,Wing Attack,FALSE,Rare,Pidgeot,B,Kanto
-18,18,Stage 2,Pidgeot,26,8,5,NORMAL,ELECTRIC,GROUND,4,018.png,Agility,,Air Slash,Hurricane,FALSE,Epic,,S+,Kanto
-19,19,Basic,Rattata,10,4,2,NORMAL,,NONE,1,019.png,Focus Energy,"If this PKMN is faster than foe's, increase this PKMN's next Move DMG +1.",Scratch,Bite,FALSE,Common,Raticate,D,Kanto
-20,20,Stage 1,Raticate,24,6,3,NORMAL,,PSYCHIC,3,020.png,,,Crunch,Hyper Fang,FALSE,Rare,,B,Kanto
-21,21,Basic,Spearow,10,4,3,NORMAL,,NONE,1,021.png,,,Peck,Fury Attack,FALSE,Common,Fearow,C,Kanto
-22,22,Stage 1,Fearow,26,6,4,NORMAL,ELECTRIC,GROUND,3,022.png,,,Drill Peck,Take Down,FALSE,Rare,,A,Kanto
-23,23,Basic,Ekans,10,4,3,DARK,,,1,023.png,,,Poison Sting,Bite,FALSE,Common,Arbok,D,Kanto
-24,24,Stage 1,Arbok,24,6,5,DARK,,,3,024.png,,,Crunch,Acid,FALSE,Rare,,B,Kanto
-25,25,Stage 1,Pikachu,20,5,3,ELECTRIC,,,3,025.png,,,Quick Attack,Thunder,FALSE,Rare,Raichu,C,Kanto
-26,26,Stage 2,Raichu,31,8,4,ELECTRIC,,,4,026.png,,,Discharge,Thunder Punch,FALSE,Epic,,A,Kanto
-27,27,Basic,Sandshrew,12,4,2,GROUND,,,1,027.png,,,Sand Attack,Swift,FALSE,Common,Sandslash,D,Kanto
-28,28,Stage 1,Sandslash,24,6,3,GROUND,,,3,028.png,,,Double Edge,Bulldoze,FALSE,Rare,,B,Kanto
-29,29,Basic,Nidoran F,10,3,2,GROUND,,,1,029.png,,,Scratch,Fury Swipes,FALSE,Common,Nidorina,D,Kanto
-30,30,Stage 1,Nidorina,22,5,3,GROUND,,,3,030.png,,,Flatter,Earth Power,FALSE,Rare,Nidoqueen,C,Kanto
-31,31,Stage 2,Nidoqueen,34,8,3,GROUND,,,5,031.png,,,Earth Power,Earthquake,FALSE,Epic,,A,Kanto
-32,32,Basic,Nidoran M,10,3,2,GROUND,,,1,032.png,,,Tackle,Mud-Slap,FALSE,Common,Nidorino,D,Kanto
-33,33,Stage 1,Nidorino,20,5,3,GROUND,,,3,033.png,,,Horn Attack,Rock Tomb,FALSE,Rare,Nidoking,B,Kanto
-34,34,Stage 2,Nidoking,32,8,3,GROUND,,,5,034.png,,,Mega Punch,Earthquake,FALSE,Epic,,S,Kanto
-36,35,Stage 1,Clefairy,20,5,2,NORMAL,,DARK,3,035.png,,,Double Slap,Disarming Voice,FALSE,Rare,Clefable,C,Kanto
-37,36,Stage 2,Clefable,31,8,3,NORMAL,,DARK,5,036.png,,,Moonblast,Metronome,FALSE,Rare,,A,Kanto
-38,37,Basic,Vulpix,16,4,2,FIRE,,,2,037.png,,,Will-O-Wisp,Incinerate,FALSE,Uncommon,Ninetales,C,Kanto
-39,38,Stage 1,Ninetales,26,6,3,FIRE,,,4,038.png,,,Fire Spin,Inferno,FALSE,Rare,,A,Kanto
-41,39,Stage 1,Jigglypuff,21,5,2,NORMAL,,NORMAL,3,039.png,,,Echoed Voice,Sing,FALSE,Rare,Wigglytuff,C,Kanto
-42,40,Stage 2,Wigglytuff,32,8,3,NORMAL,,NORMAL,5,040.png,,,Hyper Voice,Play Rough,FALSE,Rare,,A,Kanto
-43,41,Basic,Zubat,10,3,2,DARK,ELECTRIC,,1,041.png,,,Supersonic,Poison Fang,FALSE,Common,Golbat,D,Kanto
-44,42,Stage 1,Golbat,24,5,4,DARK,ELECTRIC,,3,042.png,,,Air Cutter,Bite,FALSE,Rare,Crobat,B,Kanto
-46,43,Basic,Oddish,10,3,1,GRASS,,,1,043.png,,,Stun Spore,Absorb,FALSE,Common,Gloom,D,Kanto
-47,44,Stage 1,Gloom,22,5,2,GRASS,,,3,044.png,,,Sleep Powder,Mega Drain,FALSE,Rare,Vileplume,B,Kanto
-48,45,Stage 2,Vileplume,35,8,3,GRASS,,,5,045.png,,,Grassy Terrain,Petal Dance,FALSE,Epic,,A,Kanto
-49,46,Basic,Paras,18,4,2,GRASS,,,2,046.png,,,Poison Powder,Slash,FALSE,Uncommon,Parasect,D,Kanto
-50,47,Stage 1,Parasect,28,6,3,GRASS,,,4,047.png,,,Fury Cutter,Poison Claw,FALSE,Rare,,A,Kanto
-51,48,Basic,Venonat,16,4,2,DARK,,,2,048.png,,,Supersonic,Struggle Bug,FALSE,Uncommon,Venomoth,C,Kanto
-52,49,Stage 1,Venomoth,26,6,5,PSYCHIC,,,4,049.png,,,Gust,Psybeam,FALSE,Rare,,A,Kanto
-53,50,Basic,Digglet,18,4,2,GROUND,,,2,050.png,,,Dig,Mud-Slap,FALSE,Uncommon,Dugtrio,D,Kanto
-54,51,Stage 1,Dugtrio,28,6,4,GROUND,,,4,051.png,,,Sand Tomb,Fissure,FALSE,Rare,,A,Kanto
-55,52,Basic,Meowth,15,4,3,NORMAL,,,2,052.png,,,Growl,Fury Swipes,FALSE,Uncommon,Persian,C,Kanto
-56,53,Stage 1,Persian,26,6,4,DARK,,,4,053.png,,,Pay Day,Assurance,FALSE,Rare,,A,Kanto
-57,54,Basic,Psyduck,14,4,1,WATER,,,2,054.png,,,Water Gun,Confusion,FALSE,Uncommon,Golduck,C,Kanto
-58,55,Stage 1,Golduck,24,6,3,PSYCHIC,,,4,055.png,,,Water Pulse,High Confusion,FALSE,Rare,,B,Kanto
-59,56,Basic,Mankey,15,4,2,FIGHTING,,,2,056.png,,,Covet,Low Kick,FALSE,Uncommon,Primeape,C,Kanto
-60,57,Stage 1,Primeape,23,6,3,FIGHTING,,,4,057.png,,,Cross Chop,Close Combat,FALSE,Rare,,A,Kanto
-61,58,Basic,Growlithe,14,4,3,FIRE,,,2,058.png,,,Bite,Fire Fang,FALSE,Uncommon,Arcanine,C,Kanto
-62,59,Stage 1,Arcanine,26,6,5,FIRE,,,5,059.png,,,Flame Wheel,Flare Blitz,FALSE,Epic,,S,Kanto
-63,60,Basic,Poliwag,10,3,2,WATER,,,1,060.png,,,Hypnosis,Water Gun,FALSE,Common,Poliwhirl,D,Kanto
-64,61,Stage 1,Poliwhirl,20,5,2,WATER,,,3,061.png,,,Bubble Beam,Ice Punch,FALSE,Uncommon,Poliwrath,C,Kanto
-65,62,Stage 2,Poliwrath,32,8,3,WATER,,,5,062.png,,,Dynamic Punch,Hydro Pump,FALSE,Epic,,A,Kanto
-66,63,Basic,Abra,10,3,1,PSYCHIC,,,1,063.png,,,Teleport,Zen Headbutt,FALSE,Common,Kadabra,D,Kanto
-67,64,Stage 1,Kadabra,22,5,3,PSYCHIC,,,3,064.png,,,Reflect,Psybeam,FALSE,Rare,Alakazam,B,Kanto
-68,65,Stage 2,Alakazam,30,8,5,PSYCHIC,,,5,065.png,,,Calm Mind,Psychic,FALSE,Epic,,S,Kanto
-69,66,Basic,Machop,12,4,1,FIGHTING,,,1,066.png,,,Bulk Up,Low Sweep,FALSE,Common,Machoke,D,Kanto
-70,67,Stage 1,Machoke,20,5,2,FIGHTING,,,3,067.png,,,Vital Throw,Revenge,FALSE,Rare,Machamp,C,Kanto
-71,68,Stage 2,Machamp,30,8,3,FIGHTING,,,5,068.png,,,Dynamic Punch,Close Combat,FALSE,Epic,,A,Kanto
-72,69,Basic,Bellsprout,10,3,2,GRASS,,,1,069.png,,,Razor Leaf,Wrap,FALSE,Common,Weepinbell,D,Kanto
-73,70,Stage 1,Weepinbell,22,5,2,GRASS,,,3,070.png,,,Razor Leaf,Acid,FALSE,Rare,Victreebel,C,Kanto
-74,71,Stage 2,Victreebel,33,8,3,GRASS,,,5,071.png,,,Leaf Blade,Leaf Tornado,FALSE,Epic,,S,Kanto
-75,72,Basic,Tentacool,16,4,1,WATER,,,2,072.png,,,Water Gun,Acid,FALSE,Uncommon,Tentacruel,D,Kanto
-76,73,Stage 1,Tentacruel,28,6,3,WATER,,,4,073.png,,,Water Pulse,Surf,FALSE,Rare,,A,Kanto
-77,74,Basic,Geodude,11,3,1,GROUND,,,1,074.png,,,Tackle,Rock Throw,FALSE,Common,Graveler,D,Kanto
-78,75,Stage 1,Graveler,25,5,2,GROUND,,,3,075.png,,,Rock Throw,Smack Down,FALSE,Rare,Golem,B,Kanto
-79,76,Stage 2,Golem,36,8,3,GROUND,,,5,076.png,,,Stone Edge,Rock Slide,FALSE,Epic,,S,Kanto
-80,77,Basic,Ponyta,15,4,2,FIRE,,,2,077.png,,,Tail Whip,Flame Charge,FALSE,Uncommon,Rapidash,D,Kanto
-81,78,Stage 1,Rapidash,26,6,4,FIRE,,,4,078.png,,,Agility,Fire Blast,FALSE,Rare,,A,Kanto
-82,79,Basic,Slowpoke,15,4,1,WATER,,,2,079.png,,,Water Gun,Headbutt,FALSE,Uncommon,Slowbro,C,Kanto
-83,80,Stage 1,Slowbro,25,6,2,WATER,,,4,080.png,,,Amnesia,Surf,FALSE,Rare,,B,Kanto
-84,81,Basic,Magnemite,10,3,2,ELECTRIC,,,1,081.png,,,Thunder Shock,Gyro Ball,FALSE,Common,Magneton,D,Kanto
-85,82,Stage 1,Magneton,24,5,3,ELECTRIC,,,3,082.png,,,Sonic Boom,Spark,FALSE,Rare,Magnezone,B,Kanto
-87,83,Basic,Farfetch'd,26,6,4,NORMAL,,,4,083.png,,,Counter-Cut,False Swipe,FALSE,Rare,,C,Kanto
-88,84,Basic,Doduo,14,4,3,NORMAL,,,2,084.png,,,Double Hit,Pluck,FALSE,Common,Dodrio,D,Kanto
-89,85,Stage 1,Dodrio,28,6,5,NORMAL,,,4,085.png,,,Drill Peck,Tri Attack,FALSE,Rare,,A,Kanto
-90,86,Basic,Seel,12,4,1,WATER,,,2,086.png,,,Water Gun,Ice Shard,FALSE,Common,Dewgong,D,Kanto
-91,87,Stage 1,Dewgong,25,6,3,WATER,,,4,087.png,,,Aurora Beam,Brine,FALSE,Rare,,A,Kanto
-92,88,Basic,Grimer,14,4,1,DARK,,,2,088.png,,,Poison Gas,Sludge,FALSE,Common,Muk,D,Kanto
-93,89,Stage 1,Muk,26,6,2,DARK,,,4,089.png,,,Venom Drench,Sludge Bomb,FALSE,Rare,,A,Kanto
-94,90,Basic,Shellder,15,4,1,WATER,,,2,090.png,,,Shell Smash,Razor Shell,FALSE,Uncommon,Cloyster,D,Kanto
-95,91,Stage 1,Cloyster,28,6,2,WATER,,,4,091.png,,,Protect,Icicle Spear,FALSE,Rare,,B,Kanto
-96,92,Basic,Ghastly,10,3,2,DARK,,,1,092.png,,,Spite,Lick,FALSE,Common,Haunter,D,Kanto
-97,93,Stage 1,Haunter,22,5,3,DARK,,,3,093.png,,,Confuse Ray,Shadow Punch,FALSE,Rare,Gengar,A,Kanto
-98,94,Stage 2,Gengar,30,8,4,DARK,,,5,094.png,,,Hypnosis,Dream Eater,FALSE,Epic,,S,Kanto
-99,95,Basic,Onix,20,4,2,GROUND,,,3,095.png,,,Bind,Smack Down,FALSE,Rare,Steelix,C,Kanto
-101,96,Basic,Drowzee,16,4,1,PSYCHIC,,,2,096.png,,,Yawn,Headbutt,FALSE,Uncommon,Hypno,C,Kanto
-102,97,Stage 1,Hypno,24,6,3,PSYCHIC,,,4,097.png,,,Hypnosis,Confusion,FALSE,Rare,,B,Kanto
-103,98,Basic,Krabby,12,4,2,WATER,,,2,098.png,,,Mud Shot,Razor Shell,FALSE,Common,Kingler,D,Kanto
-104,99,Stage 1,Kingler,22,6,3,WATER,,,4,099.png,,,Guillotine,Crabhammer,FALSE,Rare,,B,Kanto
-105,100,Basic,Voltorb,12,4,2,ELECTRIC,,,2,100.png,,,Swift,Spark,FALSE,Uncommon,Electrode,D,Kanto
-106,101,Stage 1,Electrode,26,6,4,ELECTRIC,,,4,101.png,,,Rollout,Electro Ball,FALSE,Rare,,A,Kanto
-107,102,Basic,Exeggcute,15,4,1,GRASS,,,2,102.png,,,Leech Seed,Bullet Seed,FALSE,Common,Exeggcutor,D,Kanto
-108,103,Stage 1,Exeggcutor,28,6,2,GRASS,,,4,103.png,,,Seed Bomb,Extrasensory,FALSE,Rare,,A,Kanto
-109,104,Basic,Cubone,16,4,1,GROUND,,,2,104.png,,,False Swipe,Bone Rush,FALSE,Common,Marowak,D,Kanto
-110,105,Stage 1,Marowak,26,6,3,GROUND,,,4,105.png,,,Bonemerang,Stomping Tantrum,FALSE,Rare,,B,Kanto
-111,106,Basic,Hitmonlee,28,5,3,FIGHTING,,,4,106.png,,,Double Kick,High Jump Kick,FALSE,Epic,,A,Kanto
-112,107,Basic,Hitmonchan,26,5,4,FIGHTING,,,3,107.png,,,Drain Punch,Special Punch,FALSE,Epic,,A,Kanto
-113,108,Basic,Lickitung,24,5,2,NORMAL,,,3,108.png,,,Belly Drum,Slam,FALSE,Rare,,C,Kanto
-114,109,Basic,Koffing,16,4,2,DARK,,,2,109.png,,,Clear Smog,Smog,FALSE,Uncommon,Weezing,D,Kanto
-115,110,Stage 1,Weezing,26,6,3,DARK,,,4,110.png,,,Toxic,Belch,FALSE,Rare,,B,Kanto
-116,111,Basic,Rhyhorn,14,3,1,GROUND,,,2,111.png,,,Tackle,Rock Blast,FALSE,Common,Rhydon,D,Kanto
-117,112,Stage 1,Rhydon,26,5,2,GROUND,,,3,112.png,,,Horn Attack,Drill Run,FALSE,Rare,Rhyperior,B,Kanto
-119,113,Basic,Chansey,27,5,2,NORMAL,,,3,113.png,,,Echoed Voice,Take Down,FALSE,Rare,,B,Kanto
-120,114,Basic,Tangela,16,4,2,GRASS,,,2,114.png,,,Growth,Vine Whip,FALSE,Uncommon,Tangrowth,C,Kanto
-122,115,Basic,Kangaskhan,32,6,3,NORMAL,,,3,115.png,,,Stomp,Last Resort,FALSE,Rare,,A,Kanto
-123,116,Basic,Horsea,11,4,2,WATER,,,1,116.png,,,Smokescreen,Water Gun,FALSE,Common,Seadra,D,Kanto
-124,117,Stage 1,Seadra,20,5,3,WATER,,,3,117.png,,,Bubble Beam,Twister,FALSE,Rare,Kingdra,C,Kanto
-126,118,Basic,Goldeen,14,4,2,WATER,,,2,118.png,,,Peck,Flail,FALSE,Common,Seaking,D,Kanto
-127,119,Stage 1,Seaking,26,6,3,WATER,,,4,119.png,,,Aqua Ring,Megahorn,FALSE,Rare,,B,Kanto
-128,120,Basic,Staryu,14,4,3,WATER,,,2,120.png,,,Water Gun,Rapid Spin,FALSE,Uncommon,Starmie,C,Kanto
-129,121,Stage 1,Starmie,28,6,4,WATER,,,4,121.png,,,Cosmic Power,Brine,FALSE,Rare,,A,Kanto
-131,122,Stage 1,Mr. Mime,26,8,2,PSYCHIC,,,5,122.png,,,Light Screen,Psybeam,FALSE,Epic,,B,Kanto
-132,123,Basic,Scyther,20,5,2,GRASS,,,3,123.png,,,Wing Attack,X-Scissor,FALSE,Rare,Scizor,C,Kanto
-135,124,Stage 1,Jynx,25,6,3,PSYCHIC,,,4,124.png,,,Psycho Cut,Blizzard,FALSE,Epic,,A,Kanto
-137,125,Stage 1,Electabuzz,25,5,2,ELECTRIC,,,3,125.png,,,Thunder Wave,Thunderbolt,FALSE,Rare,Electrivire,B,Kanto
-140,126,Stage 1,Magmar,25,5,2,FIRE,,,3,126.png,,,Fire Punch,Lava Plume,FALSE,Rare,Magmortar,B,Kanto
-142,127,Basic,Pinsir,26,5,3,DARK,,,3,127.png,,,Bug Bite,Guillotine,FALSE,Rare,,B,Kanto
-143,128,Basic,Tauros,22,5,3,NORMAL,,,3,128.png,,,Payback,Thrash,FALSE,Rare,,A,Kanto
-144,129,Basic,Magikarp,14,3,1,WATER,,,1,129.png,,,Tackle,Flail,FALSE,Common,Gyarados,D,Kanto
-145,130,Stage 1,Gyarados,34,8,3,WATER,,,5,130.png,,,Aqua Tail,Hyper Beam,FALSE,Epic,,S+,Kanto
-146,131,Basic,Lapras,36,6,2,WATER,,,4,131.png,,,Mist,Ice Beam,FALSE,Rare,,A,Kanto
-147,132,Basic,Ditto,10,5,3,NORMAL,,,3,132.png,Slimy,This PKMN receives half of the DMG it receives.,Transform,,FALSE,Epic,,D,Kanto
-148,133,Basic,Eevee,20,5,3,NORMAL,,,3,133.png,,,Quick Attack,Double Edge,FALSE,Rare,,B,Kanto
-149,134,Stage 1,Vaporeon,28,8,4,WATER,,,5,134.png,,,Water Gun,Muddy Water,FALSE,Epic,,B,Kanto
-150,135,Stage 1,Jolteon,28,8,4,ELECTRIC,,,5,135.png,,,Thunder Shock,Thunder Fang,FALSE,Epic,,A,Kanto
-151,136,Stage 1,Flareon,28,8,4,FIRE,,,5,136.png,,,Ember,Fire Fang,FALSE,Epic,,A,Kanto
-152,137,Basic,Porygon,24,5,3,PSYCHIC,,,3,137.png,Conversion,"If this PKMN receives DMG from any type, this PKMN becomes that type.",Recycle,Kinetic Beam,FALSE,Rare,,B,Kanto
-153,138,Basic,Omanyte,18,4,2,WATER,,,2,138.png,,,Withdraw,Rollout,FALSE,Uncommon,Omastar,D,Kanto
-154,139,Stage 1,Omastar,26,6,3,WATER,,,4,139.png,,,Withdraw,Brine,FALSE,Epic,,A,Kanto
-155,140,Basic,Kabuto,18,4,2,GROUND,,,2,140.png,,,Aqua Jet,Mud Shot,FALSE,Uncommon,Kabutops,D,Kanto
-156,141,Stage 1,Kabutops,26,6,3,GROUND,,,4,141.png,,,Slash,Liquidation,FALSE,Epic,,B,Kanto
-157,142,Legendary,Aerodactyl,32,10,4,NORMAL,NONE,,5,142.png,,,Ancient Power,Giga Impact,FALSE,Legendary,,S+,Kanto
-158,143,Basic,Snorlax,40,6,1,NORMAL,,,4,143.png,,,Yawn,Hammer Arm,FALSE,Epic,,A,Kanto
-159,144,Legendary,Articuno,32,10,5,WATER,NONE,,6,144.png,,,Agility,Blizzard,FALSE,Legendary,,S,Kanto
-160,145,Legendary,Zapdos,32,10,5,ELECTRIC,NONE,,6,145.png,,,Charge,Discharge,FALSE,Legendary,,A,Kanto
-161,146,Legendary,Moltres,32,10,5,FIRE,NONE,,6,146.png,,,Incinerate,Burn Up,FALSE,Legendary,,S+,Kanto
-162,147,Basic,Dratini,16,3,3,NORMAL,,,2,147.png,,,Thunder Wave,Dragon Breath,FALSE,Uncommon,Dragonair,B,Kanto
-163,148,Stage 1,Dragonair,24,5,4,NORMAL,,,4,148.png,,,Dragon Tail,Dragon Rush,FALSE,Epic,Dragonite,A,Kanto
-164,149,Stage 2,Dragonite,34,8,5,NORMAL,,,6,149.png,,,Outrage,Hurricane,FALSE,Legendary,,S,Kanto
-165,150,Legendary,Mewtwo,38,10,4,PSYCHIC,NONE,,5,150.png,,,Aura Sphere,Mind Bending,FALSE,Legendary,,S+,Kanto
-166,151,Legendary,Mew,24,10,5,PSYCHIC,GRASS,NONE,5,151.png,,,Primal Coat,Might Sphere,FALSE,Legendary,,A,Kanto
-167,152,Basic,Chikorita,10,3,2,GRASS,,,2,152.png,,,Tackle,Razor Leaf,FALSE,Uncommon,Bayleef,D,Johto
-168,153,Stage 1,Bayleef,22,5,3,GRASS,,,3,153.png,,,Tackle,Razor Leaf,FALSE,Rare,Meganium,D,Johto
-169,154,Stage 2,Meganium,34,8,4,GRASS,,,4,154.png,,,Tackle,Razor Leaf,FALSE,Epic,,D,Johto
-170,155,Basic,Cyndaquil,10,3,2,FIRE,,,2,155.png,,,Scratch,Ember,FALSE,Uncommon,Quilava,D,Johto
-171,156,Stage 1,Quilava,24,5,3,FIRE,,,3,156.png,,,Scratch,Ember,FALSE,Rare,Typhlosion,D,Johto
-172,157,Stage 2,Typhlosion,32,8,4,FIRE,,,4,157.png,,,Scratch,Ember,FALSE,Epic,,D,Johto
-173,158,Basic,Totodile,10,3,1,WATER,,,2,158.png,,,Scratch,Water Gun,FALSE,Uncommon,Croconaw,D,Johto
-174,159,Stage 1,Croconaw,24,5,2,WATER,,,3,159.png,,,Scratch,Water Gun,FALSE,Rare,Feraligatr,D,Johto
-175,160,Stage 2,Feraligatr,34,8,4,WATER,,,4,160.png,,,Scratch,Water Gun,FALSE,Epic,,D,Johto
-45,169,Stage 2,Crobat,32,8,5,DARK,ELECTRIC,,5,169.png,,,Leech Life,Cross Poison,FALSE,Epic,,S,Johto
-3,172,Basic,Pichu,10,3,2,ELECTRIC,,,2,172.png,Charm,Reduces -1 DMG taken from NORMAL type attacks.,Scratch,Thunder Shock,TRUE,Initial,Pikachu,D,Johto
-35,173,Basic,Cleffa,12,3,1,NORMAL,,DARK,1,173.png,,,Pound,Sweet Kiss,FALSE,Common,Clefairy,D,Johto
-40,174,Basic,Igglybuff,12,3,1,NORMAL,,NORMAL,1,174.png,,,Pound,Defense Curl,FALSE,Common,Jigglypuff,D,Johto
-100,208,Stage 1,Steelix,32,6,3,GROUND,,,4,208.png,,,Iron Head,Rock Slide,FALSE,Epic,,S,Johto
-133,212,Stage 1,Scizor,34,8,3,GROUND,,,4,212.png,,,Bullet Punch,X-Scissor,FALSE,Epic,,B,Johto
-125,230,Stage 2,Kingdra,32,8,4,WATER,,,5,230.png,,,Dragon Pulse,Hydro Pump,FALSE,Epic,,A,Johto
-134,238,Basic,Smoochum,14,4,2,PSYCHIC,,,2,238.png,,,Powder Snow,Confusion,FALSE,Uncommon,Jynx,B,Johto
-136,239,Basic,Elekid,10,3,1,ELECTRIC,,,1,239.png,,,Thunder Shock,Quick Attack,FALSE,Common,Electabuzz,D,Johto
-139,240,Basic,Magby,10,3,1,FIRE,,,1,240.png,,,Poison Gas,Ember,FALSE,Common,Magmar,D,Johto
-130,439,Basic,Mime Jr.,14,4,2,PSYCHIC,,,2,439.png,,,Tackle,Trick Room,FALSE,Uncommon,Mr. Mime,D,Other
-86,462,Stage 2,Magnezone,34,8,5,ELECTRIC,,,5,462.png,,,Tri Attack,Zap Cannon,FALSE,Epic,,S+,Other
-118,464,Stage 2,Rhyperior,36,8,3,GROUND,,,5,464.png,,,Hammer Arm,Rock Wrecker,FALSE,Epic,,S,Other
-121,465,Stage 1,Tangrowth,26,6,3,GRASS,,,4,465.png,,,Mega Drain,Power Whip,FALSE,Epic,,A,Other
-138,466,Stage 2,Electrivire,32,8,4,ELECTRIC,,,5,466.png,,,Shock Wave,Grand Thunder,FALSE,Epic,,S,Other
-141,467,Stage 2,Magmortar,34,8,3,FIRE,,,5,467.png,,,Heat Wave,Fire Blast,FALSE,Epic,,S,Other
+id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,texture_file,passive_name,passive_desc,move1,move2,unlocked_start,rarity,evolves_to,required_exp,tier,region
+0,1,Basic,Bulbasaur,10,3,1,GRASS,,,2,001.png,,,Tackle,Razor Leaf,TRUE,Initial,Ivysaur,10,D,Kanto
+4,2,Stage 1,Ivysaur,20,5,2,GRASS,,,3,002.png,,,Poison Powder,Vine Whip,FALSE,Rare,Venusaur,25,C,Kanto
+5,3,Stage 2,Venusaur,32,8,4,GRASS,,,4,003.png,,,Giga Drain,Solar Beam,FALSE,Epic,,0,S,Kanto
+1,4,Basic,Charmander,10,3,1,FIRE,,,2,004.png,,,Scratch,Ember,TRUE,Initial,Charmeleon,10,D,Kanto
+6,5,Stage 1,Charmeleon,20,5,2,FIRE,,,3,005.png,,,Slash,Fire Fang,FALSE,Rare,Charizard,25,C,Kanto
+7,6,Stage 2,Charizard,30,8,5,FIRE,,,4,006.png,,,Aerial Ace,Inferno,FALSE,Epic,,0,S,Kanto
+2,7,Basic,Squirtle,10,3,1,WATER,,,2,007.png,,,Tackle,Bubble,TRUE,Initial,Wartortle,10,D,Kanto
+8,8,Stage 1,Wartortle,22,5,2,WATER,,,3,008.png,Protect,"If this PKMN receives DMG from its weakness type, it is swaped to NONE during the rest of this combat.",Rapid Spin,Water Pulse,FALSE,Rare,Blastoise,25,C,Kanto
+9,9,Stage 2,Blastoise,34,8,3,WATER,,,4,009.png,,,Water Pulse,Hydro Pump,FALSE,Epic,,0,A,Kanto
+10,10,Basic,Caterpie,10,3,1,GRASS,,,2,010.png,String Shot,Reduces foe's Speed by 1.,Tackle,Bug Bite,FALSE,Common,Metapod,10,D,Kanto
+11,11,Stage 1,Metapod,20,5,2,GRASS,,,3,011.png,,,Harden,Bug Bite,FALSE,Uncommon,Butterfree,25,C,Kanto
+12,12,Stage 2,Butterfree,28,8,4,GRASS,,,4,012.png,,,Air Slash,Bug Buzz,FALSE,Rare,,0,A,Kanto
+13,13,Basic,Weedle,10,3,2,DARK,FIRE,,2,013.png,String Shot,Reduces foe's Speed by 1.,Tackle,Poison Sting,FALSE,Common,Kakuna,10,D,Kanto
+14,14,Stage 1,Kakuna,18,5,2,DARK,,,3,014.png,,,Harden,Toxic Spikes,FALSE,Uncommon,Beedrill,25,C,Kanto
+15,15,Stage 2,Beedrill,26,8,4,DARK,,,4,015.png,,,Poison Jab,Venoshock,FALSE,Rare,,0,B,Kanto
+16,16,Basic,Pidgey,10,3,3,NORMAL,ELECTRIC,NONE,2,016.png,,,Scratch,Gust,FALSE,Common,Pidgeotto,10,D,Kanto
+17,17,Stage 1,Pidgeotto,18,5,4,NORMAL,ELECTRIC,GROUND,3,017.png,,,Quick Attack,Wing Attack,FALSE,Rare,Pidgeot,25,B,Kanto
+18,18,Stage 2,Pidgeot,26,8,5,NORMAL,ELECTRIC,GROUND,4,018.png,Agility,,Air Slash,Hurricane,FALSE,Epic,,0,S+,Kanto
+19,19,Basic,Rattata,10,4,2,NORMAL,,NONE,1,019.png,Focus Energy,"If this PKMN is faster than foe's, increase this PKMN's next Move DMG +1.",Scratch,Bite,FALSE,Common,Raticate,20,D,Kanto
+20,20,Stage 1,Raticate,24,6,3,NORMAL,,PSYCHIC,3,020.png,,,Crunch,Hyper Fang,FALSE,Rare,,0,B,Kanto
+21,21,Basic,Spearow,10,4,3,NORMAL,,NONE,1,021.png,,,Peck,Fury Attack,FALSE,Common,Fearow,20,C,Kanto
+22,22,Stage 1,Fearow,26,6,4,NORMAL,ELECTRIC,GROUND,3,022.png,,,Drill Peck,Take Down,FALSE,Rare,,0,A,Kanto
+23,23,Basic,Ekans,10,4,3,DARK,,,1,023.png,,,Poison Sting,Bite,FALSE,Common,Arbok,20,D,Kanto
+24,24,Stage 1,Arbok,24,6,5,DARK,,,3,024.png,,,Crunch,Acid,FALSE,Rare,,0,B,Kanto
+25,25,Stage 1,Pikachu,20,5,3,ELECTRIC,,,3,025.png,,,Quick Attack,Thunder,FALSE,Rare,Raichu,25,C,Kanto
+26,26,Stage 2,Raichu,31,8,4,ELECTRIC,,,4,026.png,,,Discharge,Thunder Punch,FALSE,Epic,,0,A,Kanto
+27,27,Basic,Sandshrew,12,4,2,GROUND,,,1,027.png,,,Sand Attack,Swift,FALSE,Common,Sandslash,20,D,Kanto
+28,28,Stage 1,Sandslash,24,6,3,GROUND,,,3,028.png,,,Double Edge,Bulldoze,FALSE,Rare,,0,B,Kanto
+29,29,Basic,Nidoran F,10,3,2,GROUND,,,1,029.png,,,Scratch,Fury Swipes,FALSE,Common,Nidorina,10,D,Kanto
+30,30,Stage 1,Nidorina,22,5,3,GROUND,,,3,030.png,,,Flatter,Earth Power,FALSE,Rare,Nidoqueen,25,C,Kanto
+31,31,Stage 2,Nidoqueen,34,8,3,GROUND,,,5,031.png,,,Earth Power,Earthquake,FALSE,Epic,,0,A,Kanto
+32,32,Basic,Nidoran M,10,3,2,GROUND,,,1,032.png,,,Tackle,Mud-Slap,FALSE,Common,Nidorino,10,D,Kanto
+33,33,Stage 1,Nidorino,20,5,3,GROUND,,,3,033.png,,,Horn Attack,Rock Tomb,FALSE,Rare,Nidoking,25,B,Kanto
+34,34,Stage 2,Nidoking,32,8,3,GROUND,,,5,034.png,,,Mega Punch,Earthquake,FALSE,Epic,,0,S,Kanto
+36,35,Stage 1,Clefairy,20,5,2,NORMAL,,DARK,3,035.png,,,Double Slap,Disarming Voice,FALSE,Rare,Clefable,25,C,Kanto
+37,36,Stage 2,Clefable,31,8,3,NORMAL,,DARK,5,036.png,,,Moonblast,Metronome,FALSE,Rare,,0,A,Kanto
+38,37,Basic,Vulpix,16,4,2,FIRE,,,2,037.png,,,Will-O-Wisp,Incinerate,FALSE,Uncommon,Ninetales,20,C,Kanto
+39,38,Stage 1,Ninetales,26,6,3,FIRE,,,4,038.png,,,Fire Spin,Inferno,FALSE,Rare,,0,A,Kanto
+41,39,Stage 1,Jigglypuff,21,5,2,NORMAL,,NORMAL,3,039.png,,,Echoed Voice,Sing,FALSE,Rare,Wigglytuff,25,C,Kanto
+42,40,Stage 2,Wigglytuff,32,8,3,NORMAL,,NORMAL,5,040.png,,,Hyper Voice,Play Rough,FALSE,Rare,,0,A,Kanto
+43,41,Basic,Zubat,10,3,2,DARK,ELECTRIC,,1,041.png,,,Supersonic,Poison Fang,FALSE,Common,Golbat,10,D,Kanto
+44,42,Stage 1,Golbat,24,5,4,DARK,ELECTRIC,,3,042.png,,,Air Cutter,Bite,FALSE,Rare,Crobat,25,B,Kanto
+46,43,Basic,Oddish,10,3,1,GRASS,,,1,043.png,,,Stun Spore,Absorb,FALSE,Common,Gloom,10,D,Kanto
+47,44,Stage 1,Gloom,22,5,2,GRASS,,,3,044.png,,,Sleep Powder,Mega Drain,FALSE,Rare,Vileplume,25,B,Kanto
+48,45,Stage 2,Vileplume,35,8,3,GRASS,,,5,045.png,,,Grassy Terrain,Petal Dance,FALSE,Epic,,0,A,Kanto
+49,46,Basic,Paras,18,4,2,GRASS,,,2,046.png,,,Poison Powder,Slash,FALSE,Uncommon,Parasect,20,D,Kanto
+50,47,Stage 1,Parasect,28,6,3,GRASS,,,4,047.png,,,Fury Cutter,Poison Claw,FALSE,Rare,,0,A,Kanto
+51,48,Basic,Venonat,16,4,2,DARK,,,2,048.png,,,Supersonic,Struggle Bug,FALSE,Uncommon,Venomoth,20,C,Kanto
+52,49,Stage 1,Venomoth,26,6,5,PSYCHIC,,,4,049.png,,,Gust,Psybeam,FALSE,Rare,,0,A,Kanto
+53,50,Basic,Digglet,18,4,2,GROUND,,,2,050.png,,,Dig,Mud-Slap,FALSE,Uncommon,Dugtrio,20,D,Kanto
+54,51,Stage 1,Dugtrio,28,6,4,GROUND,,,4,051.png,,,Sand Tomb,Fissure,FALSE,Rare,,0,A,Kanto
+55,52,Basic,Meowth,15,4,3,NORMAL,,,2,052.png,,,Growl,Fury Swipes,FALSE,Uncommon,Persian,20,C,Kanto
+56,53,Stage 1,Persian,26,6,4,DARK,,,4,053.png,,,Pay Day,Assurance,FALSE,Rare,,0,A,Kanto
+57,54,Basic,Psyduck,14,4,1,WATER,,,2,054.png,,,Water Gun,Confusion,FALSE,Uncommon,Golduck,20,C,Kanto
+58,55,Stage 1,Golduck,24,6,3,PSYCHIC,,,4,055.png,,,Water Pulse,High Confusion,FALSE,Rare,,0,B,Kanto
+59,56,Basic,Mankey,15,4,2,FIGHTING,,,2,056.png,,,Covet,Low Kick,FALSE,Uncommon,Primeape,20,C,Kanto
+60,57,Stage 1,Primeape,23,6,3,FIGHTING,,,4,057.png,,,Cross Chop,Close Combat,FALSE,Rare,,0,A,Kanto
+61,58,Basic,Growlithe,14,4,3,FIRE,,,2,058.png,,,Bite,Fire Fang,FALSE,Uncommon,Arcanine,20,C,Kanto
+62,59,Stage 1,Arcanine,26,6,5,FIRE,,,5,059.png,,,Flame Wheel,Flare Blitz,FALSE,Epic,,0,S,Kanto
+63,60,Basic,Poliwag,10,3,2,WATER,,,1,060.png,,,Hypnosis,Water Gun,FALSE,Common,Poliwhirl,10,D,Kanto
+64,61,Stage 1,Poliwhirl,20,5,2,WATER,,,3,061.png,,,Bubble Beam,Ice Punch,FALSE,Uncommon,Poliwrath,25,C,Kanto
+65,62,Stage 2,Poliwrath,32,8,3,WATER,,,5,062.png,,,Dynamic Punch,Hydro Pump,FALSE,Epic,,0,A,Kanto
+66,63,Basic,Abra,10,3,1,PSYCHIC,,,1,063.png,,,Teleport,Zen Headbutt,FALSE,Common,Kadabra,10,D,Kanto
+67,64,Stage 1,Kadabra,22,5,3,PSYCHIC,,,3,064.png,,,Reflect,Psybeam,FALSE,Rare,Alakazam,25,B,Kanto
+68,65,Stage 2,Alakazam,30,8,5,PSYCHIC,,,5,065.png,,,Calm Mind,Psychic,FALSE,Epic,,0,S,Kanto
+69,66,Basic,Machop,12,4,1,FIGHTING,,,1,066.png,,,Bulk Up,Low Sweep,FALSE,Common,Machoke,10,D,Kanto
+70,67,Stage 1,Machoke,20,5,2,FIGHTING,,,3,067.png,,,Vital Throw,Revenge,FALSE,Rare,Machamp,25,C,Kanto
+71,68,Stage 2,Machamp,30,8,3,FIGHTING,,,5,068.png,,,Dynamic Punch,Close Combat,FALSE,Epic,,0,A,Kanto
+72,69,Basic,Bellsprout,10,3,2,GRASS,,,1,069.png,,,Razor Leaf,Wrap,FALSE,Common,Weepinbell,10,D,Kanto
+73,70,Stage 1,Weepinbell,22,5,2,GRASS,,,3,070.png,,,Razor Leaf,Acid,FALSE,Rare,Victreebel,25,C,Kanto
+74,71,Stage 2,Victreebel,33,8,3,GRASS,,,5,071.png,,,Leaf Blade,Leaf Tornado,FALSE,Epic,,0,S,Kanto
+75,72,Basic,Tentacool,16,4,1,WATER,,,2,072.png,,,Water Gun,Acid,FALSE,Uncommon,Tentacruel,20,D,Kanto
+76,73,Stage 1,Tentacruel,28,6,3,WATER,,,4,073.png,,,Water Pulse,Surf,FALSE,Rare,,0,A,Kanto
+77,74,Basic,Geodude,11,3,1,GROUND,,,1,074.png,,,Tackle,Rock Throw,FALSE,Common,Graveler,10,D,Kanto
+78,75,Stage 1,Graveler,25,5,2,GROUND,,,3,075.png,,,Rock Throw,Smack Down,FALSE,Rare,Golem,25,B,Kanto
+79,76,Stage 2,Golem,36,8,3,GROUND,,,5,076.png,,,Stone Edge,Rock Slide,FALSE,Epic,,0,S,Kanto
+80,77,Basic,Ponyta,15,4,2,FIRE,,,2,077.png,,,Tail Whip,Flame Charge,FALSE,Uncommon,Rapidash,20,D,Kanto
+81,78,Stage 1,Rapidash,26,6,4,FIRE,,,4,078.png,,,Agility,Fire Blast,FALSE,Rare,,0,A,Kanto
+82,79,Basic,Slowpoke,15,4,1,WATER,,,2,079.png,,,Water Gun,Headbutt,FALSE,Uncommon,Slowbro,20,C,Kanto
+83,80,Stage 1,Slowbro,25,6,2,WATER,,,4,080.png,,,Amnesia,Surf,FALSE,Rare,,0,B,Kanto
+84,81,Basic,Magnemite,10,3,2,ELECTRIC,,,1,081.png,,,Thunder Shock,Gyro Ball,FALSE,Common,Magneton,10,D,Kanto
+85,82,Stage 1,Magneton,24,5,3,ELECTRIC,,,3,082.png,,,Sonic Boom,Spark,FALSE,Rare,Magnezone,25,B,Kanto
+87,83,Basic,Farfetch'd,26,6,4,NORMAL,,,4,083.png,,,Counter-Cut,False Swipe,FALSE,Rare,,0,C,Kanto
+88,84,Basic,Doduo,14,4,3,NORMAL,,,2,084.png,,,Double Hit,Pluck,FALSE,Common,Dodrio,20,D,Kanto
+89,85,Stage 1,Dodrio,28,6,5,NORMAL,,,4,085.png,,,Drill Peck,Tri Attack,FALSE,Rare,,0,A,Kanto
+90,86,Basic,Seel,12,4,1,WATER,,,2,086.png,,,Water Gun,Ice Shard,FALSE,Common,Dewgong,20,D,Kanto
+91,87,Stage 1,Dewgong,25,6,3,WATER,,,4,087.png,,,Aurora Beam,Brine,FALSE,Rare,,0,A,Kanto
+92,88,Basic,Grimer,14,4,1,DARK,,,2,088.png,,,Poison Gas,Sludge,FALSE,Common,Muk,20,D,Kanto
+93,89,Stage 1,Muk,26,6,2,DARK,,,4,089.png,,,Venom Drench,Sludge Bomb,FALSE,Rare,,0,A,Kanto
+94,90,Basic,Shellder,15,4,1,WATER,,,2,090.png,,,Shell Smash,Razor Shell,FALSE,Uncommon,Cloyster,20,D,Kanto
+95,91,Stage 1,Cloyster,28,6,2,WATER,,,4,091.png,,,Protect,Icicle Spear,FALSE,Rare,,0,B,Kanto
+96,92,Basic,Ghastly,10,3,2,DARK,,,1,092.png,,,Spite,Lick,FALSE,Common,Haunter,10,D,Kanto
+97,93,Stage 1,Haunter,22,5,3,DARK,,,3,093.png,,,Confuse Ray,Shadow Punch,FALSE,Rare,Gengar,25,A,Kanto
+98,94,Stage 2,Gengar,30,8,4,DARK,,,5,094.png,,,Hypnosis,Dream Eater,FALSE,Epic,,0,S,Kanto
+99,95,Basic,Onix,20,4,2,GROUND,,,3,095.png,,,Bind,Smack Down,FALSE,Rare,Steelix,20,C,Kanto
+101,96,Basic,Drowzee,16,4,1,PSYCHIC,,,2,096.png,,,Yawn,Headbutt,FALSE,Uncommon,Hypno,20,C,Kanto
+102,97,Stage 1,Hypno,24,6,3,PSYCHIC,,,4,097.png,,,Hypnosis,Confusion,FALSE,Rare,,0,B,Kanto
+103,98,Basic,Krabby,12,4,2,WATER,,,2,098.png,,,Mud Shot,Razor Shell,FALSE,Common,Kingler,20,D,Kanto
+104,99,Stage 1,Kingler,22,6,3,WATER,,,4,099.png,,,Guillotine,Crabhammer,FALSE,Rare,,0,B,Kanto
+105,100,Basic,Voltorb,12,4,2,ELECTRIC,,,2,100.png,,,Swift,Spark,FALSE,Uncommon,Electrode,20,D,Kanto
+106,101,Stage 1,Electrode,26,6,4,ELECTRIC,,,4,101.png,,,Rollout,Electro Ball,FALSE,Rare,,0,A,Kanto
+107,102,Basic,Exeggcute,15,4,1,GRASS,,,2,102.png,,,Leech Seed,Bullet Seed,FALSE,Common,Exeggcutor,20,D,Kanto
+108,103,Stage 1,Exeggcutor,28,6,2,GRASS,,,4,103.png,,,Seed Bomb,Extrasensory,FALSE,Rare,,0,A,Kanto
+109,104,Basic,Cubone,16,4,1,GROUND,,,2,104.png,,,False Swipe,Bone Rush,FALSE,Common,Marowak,20,D,Kanto
+110,105,Stage 1,Marowak,26,6,3,GROUND,,,4,105.png,,,Bonemerang,Stomping Tantrum,FALSE,Rare,,0,B,Kanto
+111,106,Basic,Hitmonlee,28,5,3,FIGHTING,,,4,106.png,,,Double Kick,High Jump Kick,FALSE,Epic,,0,A,Kanto
+112,107,Basic,Hitmonchan,26,5,4,FIGHTING,,,3,107.png,,,Drain Punch,Special Punch,FALSE,Epic,,0,A,Kanto
+113,108,Basic,Lickitung,24,5,2,NORMAL,,,3,108.png,,,Belly Drum,Slam,FALSE,Rare,,0,C,Kanto
+114,109,Basic,Koffing,16,4,2,DARK,,,2,109.png,,,Clear Smog,Smog,FALSE,Uncommon,Weezing,20,D,Kanto
+115,110,Stage 1,Weezing,26,6,3,DARK,,,4,110.png,,,Toxic,Belch,FALSE,Rare,,0,B,Kanto
+116,111,Basic,Rhyhorn,14,3,1,GROUND,,,2,111.png,,,Tackle,Rock Blast,FALSE,Common,Rhydon,10,D,Kanto
+117,112,Stage 1,Rhydon,26,5,2,GROUND,,,3,112.png,,,Horn Attack,Drill Run,FALSE,Rare,Rhyperior,25,B,Kanto
+119,113,Basic,Chansey,27,5,2,NORMAL,,,3,113.png,,,Echoed Voice,Take Down,FALSE,Rare,,0,B,Kanto
+120,114,Basic,Tangela,16,4,2,GRASS,,,2,114.png,,,Growth,Vine Whip,FALSE,Uncommon,Tangrowth,20,C,Kanto
+122,115,Basic,Kangaskhan,32,6,3,NORMAL,,,3,115.png,,,Stomp,Last Resort,FALSE,Rare,,0,A,Kanto
+123,116,Basic,Horsea,11,4,2,WATER,,,1,116.png,,,Smokescreen,Water Gun,FALSE,Common,Seadra,10,D,Kanto
+124,117,Stage 1,Seadra,20,5,3,WATER,,,3,117.png,,,Bubble Beam,Twister,FALSE,Rare,Kingdra,25,C,Kanto
+126,118,Basic,Goldeen,14,4,2,WATER,,,2,118.png,,,Peck,Flail,FALSE,Common,Seaking,20,D,Kanto
+127,119,Stage 1,Seaking,26,6,3,WATER,,,4,119.png,,,Aqua Ring,Megahorn,FALSE,Rare,,0,B,Kanto
+128,120,Basic,Staryu,14,4,3,WATER,,,2,120.png,,,Water Gun,Rapid Spin,FALSE,Uncommon,Starmie,20,C,Kanto
+129,121,Stage 1,Starmie,28,6,4,WATER,,,4,121.png,,,Cosmic Power,Brine,FALSE,Rare,,0,A,Kanto
+131,122,Stage 1,Mr. Mime,26,8,2,PSYCHIC,,,5,122.png,,,Light Screen,Psybeam,FALSE,Epic,,0,B,Kanto
+132,123,Basic,Scyther,20,5,2,GRASS,,,3,123.png,,,Wing Attack,X-Scissor,FALSE,Rare,Scizor,20,C,Kanto
+135,124,Stage 1,Jynx,25,6,3,PSYCHIC,,,4,124.png,,,Psycho Cut,Blizzard,FALSE,Epic,,0,A,Kanto
+137,125,Stage 1,Electabuzz,25,5,2,ELECTRIC,,,3,125.png,,,Thunder Wave,Thunderbolt,FALSE,Rare,Electrivire,25,B,Kanto
+140,126,Stage 1,Magmar,25,5,2,FIRE,,,3,126.png,,,Fire Punch,Lava Plume,FALSE,Rare,Magmortar,25,B,Kanto
+142,127,Basic,Pinsir,26,5,3,DARK,,,3,127.png,,,Bug Bite,Guillotine,FALSE,Rare,,0,B,Kanto
+143,128,Basic,Tauros,22,5,3,NORMAL,,,3,128.png,,,Payback,Thrash,FALSE,Rare,,0,A,Kanto
+144,129,Basic,Magikarp,14,3,1,WATER,,,1,129.png,,,Tackle,Flail,FALSE,Common,Gyarados,20,D,Kanto
+145,130,Stage 1,Gyarados,34,8,3,WATER,,,5,130.png,,,Aqua Tail,Hyper Beam,FALSE,Epic,,0,S+,Kanto
+146,131,Basic,Lapras,36,6,2,WATER,,,4,131.png,,,Mist,Ice Beam,FALSE,Rare,,0,A,Kanto
+147,132,Basic,Ditto,10,5,3,NORMAL,,,3,132.png,Slimy,This PKMN receives half of the DMG it receives.,Transform,,FALSE,Epic,,0,D,Kanto
+148,133,Basic,Eevee,20,5,3,NORMAL,,,3,133.png,,,Quick Attack,Double Edge,FALSE,Rare,,0,B,Kanto
+149,134,Stage 1,Vaporeon,28,8,4,WATER,,,5,134.png,,,Water Gun,Muddy Water,FALSE,Epic,,0,B,Kanto
+150,135,Stage 1,Jolteon,28,8,4,ELECTRIC,,,5,135.png,,,Thunder Shock,Thunder Fang,FALSE,Epic,,0,A,Kanto
+151,136,Stage 1,Flareon,28,8,4,FIRE,,,5,136.png,,,Ember,Fire Fang,FALSE,Epic,,0,A,Kanto
+152,137,Basic,Porygon,24,5,3,PSYCHIC,,,3,137.png,Conversion,"If this PKMN receives DMG from any type, this PKMN becomes that type.",Recycle,Kinetic Beam,FALSE,Rare,,0,B,Kanto
+153,138,Basic,Omanyte,18,4,2,WATER,,,2,138.png,,,Withdraw,Rollout,FALSE,Uncommon,Omastar,20,D,Kanto
+154,139,Stage 1,Omastar,26,6,3,WATER,,,4,139.png,,,Withdraw,Brine,FALSE,Epic,,0,A,Kanto
+155,140,Basic,Kabuto,18,4,2,GROUND,,,2,140.png,,,Aqua Jet,Mud Shot,FALSE,Uncommon,Kabutops,20,D,Kanto
+156,141,Stage 1,Kabutops,26,6,3,GROUND,,,4,141.png,,,Slash,Liquidation,FALSE,Epic,,0,B,Kanto
+157,142,Legendary,Aerodactyl,32,10,4,NORMAL,NONE,,5,142.png,,,Ancient Power,Giga Impact,FALSE,Legendary,,0,S+,Kanto
+158,143,Basic,Snorlax,40,6,1,NORMAL,,,4,143.png,,,Yawn,Hammer Arm,FALSE,Epic,,0,A,Kanto
+159,144,Legendary,Articuno,32,10,5,WATER,NONE,,6,144.png,,,Agility,Blizzard,FALSE,Legendary,,0,S,Kanto
+160,145,Legendary,Zapdos,32,10,5,ELECTRIC,NONE,,6,145.png,,,Charge,Discharge,FALSE,Legendary,,0,A,Kanto
+161,146,Legendary,Moltres,32,10,5,FIRE,NONE,,6,146.png,,,Incinerate,Burn Up,FALSE,Legendary,,0,S+,Kanto
+162,147,Basic,Dratini,16,3,3,NORMAL,,,2,147.png,,,Thunder Wave,Dragon Breath,FALSE,Uncommon,Dragonair,10,B,Kanto
+163,148,Stage 1,Dragonair,24,5,4,NORMAL,,,4,148.png,,,Dragon Tail,Dragon Rush,FALSE,Epic,Dragonite,25,A,Kanto
+164,149,Stage 2,Dragonite,34,8,5,NORMAL,,,6,149.png,,,Outrage,Hurricane,FALSE,Legendary,,0,S,Kanto
+165,150,Legendary,Mewtwo,38,10,4,PSYCHIC,NONE,,5,150.png,,,Aura Sphere,Mind Bending,FALSE,Legendary,,0,S+,Kanto
+166,151,Legendary,Mew,24,10,5,PSYCHIC,GRASS,NONE,5,151.png,,,Primal Coat,Might Sphere,FALSE,Legendary,,0,A,Kanto
+167,152,Basic,Chikorita,10,3,2,GRASS,,,2,152.png,,,Tackle,Razor Leaf,FALSE,Uncommon,Bayleef,10,D,Johto
+168,153,Stage 1,Bayleef,22,5,3,GRASS,,,3,153.png,,,Tackle,Razor Leaf,FALSE,Rare,Meganium,25,D,Johto
+169,154,Stage 2,Meganium,34,8,4,GRASS,,,4,154.png,,,Tackle,Razor Leaf,FALSE,Epic,,0,D,Johto
+170,155,Basic,Cyndaquil,10,3,2,FIRE,,,2,155.png,,,Scratch,Ember,FALSE,Uncommon,Quilava,10,D,Johto
+171,156,Stage 1,Quilava,24,5,3,FIRE,,,3,156.png,,,Scratch,Ember,FALSE,Rare,Typhlosion,25,D,Johto
+172,157,Stage 2,Typhlosion,32,8,4,FIRE,,,4,157.png,,,Scratch,Ember,FALSE,Epic,,0,D,Johto
+173,158,Basic,Totodile,10,3,1,WATER,,,2,158.png,,,Scratch,Water Gun,FALSE,Uncommon,Croconaw,10,D,Johto
+174,159,Stage 1,Croconaw,24,5,2,WATER,,,3,159.png,,,Scratch,Water Gun,FALSE,Rare,Feraligatr,25,D,Johto
+175,160,Stage 2,Feraligatr,34,8,4,WATER,,,4,160.png,,,Scratch,Water Gun,FALSE,Epic,,0,D,Johto
+45,169,Stage 2,Crobat,32,8,5,DARK,ELECTRIC,,5,169.png,,,Leech Life,Cross Poison,FALSE,Epic,,0,S,Johto
+3,172,Basic,Pichu,10,3,2,ELECTRIC,,,2,172.png,Charm,Reduces -1 DMG taken from NORMAL type attacks.,Scratch,Thunder Shock,TRUE,Initial,Pikachu,10,D,Johto
+35,173,Basic,Cleffa,12,3,1,NORMAL,,DARK,1,173.png,,,Pound,Sweet Kiss,FALSE,Common,Clefairy,10,D,Johto
+40,174,Basic,Igglybuff,12,3,1,NORMAL,,NORMAL,1,174.png,,,Pound,Defense Curl,FALSE,Common,Jigglypuff,10,D,Johto
+100,208,Stage 1,Steelix,32,6,3,GROUND,,,4,208.png,,,Iron Head,Rock Slide,FALSE,Epic,,0,S,Johto
+133,212,Stage 1,Scizor,34,8,3,GROUND,,,4,212.png,,,Bullet Punch,X-Scissor,FALSE,Epic,,0,B,Johto
+125,230,Stage 2,Kingdra,32,8,4,WATER,,,5,230.png,,,Dragon Pulse,Hydro Pump,FALSE,Epic,,0,A,Johto
+134,238,Basic,Smoochum,14,4,2,PSYCHIC,,,2,238.png,,,Powder Snow,Confusion,FALSE,Uncommon,Jynx,20,B,Johto
+136,239,Basic,Elekid,10,3,1,ELECTRIC,,,1,239.png,,,Thunder Shock,Quick Attack,FALSE,Common,Electabuzz,10,D,Johto
+139,240,Basic,Magby,10,3,1,FIRE,,,1,240.png,,,Poison Gas,Ember,FALSE,Common,Magmar,10,D,Johto
+130,439,Basic,Mime Jr.,14,4,2,PSYCHIC,,,2,439.png,,,Tackle,Trick Room,FALSE,Uncommon,Mr. Mime,20,D,Other
+86,462,Stage 2,Magnezone,34,8,5,ELECTRIC,,,5,462.png,,,Tri Attack,Zap Cannon,FALSE,Epic,,0,S+,Other
+118,464,Stage 2,Rhyperior,36,8,3,GROUND,,,5,464.png,,,Hammer Arm,Rock Wrecker,FALSE,Epic,,0,S,Other
+121,465,Stage 1,Tangrowth,26,6,3,GRASS,,,4,465.png,,,Mega Drain,Power Whip,FALSE,Epic,,0,A,Other
+138,466,Stage 2,Electrivire,32,8,4,ELECTRIC,,,5,466.png,,,Shock Wave,Grand Thunder,FALSE,Epic,,0,S,Other
+141,467,Stage 2,Magmortar,34,8,3,FIRE,,,5,467.png,,,Heat Wave,Fire Blast,FALSE,Epic,,0,S,Other

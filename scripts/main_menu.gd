@@ -1648,9 +1648,8 @@ func update_campaign_ui() -> void:
 		exp_bar.custom_minimum_size = Vector2(0, 6)
 		exp_bar.show_percentage = false
 		
-		var p_stage_low = str(p.get("stage", "Basic")).strip_edges().to_lower()
 		var cur_exp = int(p.get("current_exp", 0))
-		var req_exp = 10 if p_stage_low == "basic" else (25 if p_stage_low == "stage 1" else 0)
+		var req_exp = GameData.get_pokemon_required_exp(int(p.get("id", -1)))
 		
 		var exp_lbl = Label.new()
 		exp_lbl.add_theme_font_size_override("font_size", 10)
@@ -2551,9 +2550,8 @@ func _open_camp_pokemon_inspector(p: Dictionary) -> void:
 	nrg_lbl.add_theme_color_override("font_color", Color("#FFF176"))
 	stats_box.add_child(nrg_lbl)
 	
-	var p_stage_low = str(p.get("stage", "Basic")).strip_edges().to_lower()
 	var cur_exp = int(p.get("current_exp", 0))
-	var req_exp = 10 if p_stage_low == "basic" else (25 if p_stage_low == "stage 1" else 0)
+	var req_exp = full_inst.get_required_exp()
 	var exp_str = "MAX (Final Stage)" if req_exp <= 0 else "%d / %d" % [cur_exp, req_exp]
 	var exp_lbl = Label.new()
 	exp_lbl.text = "🌟 EXP: %s" % exp_str
@@ -5850,7 +5848,10 @@ func show_collection_card(index: int) -> void:
 		detail_sub.text = "No. %s • Stage: %s • %s Type • %s %s • [Tier %s] • Copies: x%d" % [p_num, stage_raw, theme["name"], r_info.get("stars", "⭐"), r_info.get("name", "Common"), tier_str, stock]
 		
 		stats_panel.visible = true
-		stats_hp.text = "❤️ Max HP: %d HP" % int(card.get("hp", 10))
+		var evo_target = str(card.get("evolves_to", "")).strip_edges()
+		var req_exp_val = GameData.get_pokemon_required_exp(int(card.get("id", -1)))
+		var evo_suffix = ("  |  ⏫ Evolves to %s (%d EXP)" % [evo_target, req_exp_val]) if (evo_target != "" and req_exp_val > 0) else ""
+		stats_hp.text = "❤️ Max HP: %d HP%s" % [int(card.get("hp", 10)), evo_suffix]
 		stats_spd.text = "👟 Speed: %d SPD (Determines turn order)" % int(card.get("speed", 1))
 		stats_energy.text = "🔋 Recovery: +%d EN / turn (Max: %d)  |  🏆 Rank: Tier %s" % [int(card.get("recover", 1)), int(card.get("energy", 3)), tier_str]
 		

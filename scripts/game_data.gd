@@ -130,6 +130,7 @@ class PokemonData:
 	var tier: String = "C"
 	var region: String = "Kanto"
 	var evolves_to: String = ""
+	var required_exp: int = 0
 	var current_exp: int = 0
 	var max_exp: int = 10
 	var moves: Array = [] # Siempre 2 movimientos activos
@@ -137,6 +138,8 @@ class PokemonData:
 	func get_required_exp() -> int:
 		if evolves_to.strip_edges() == "":
 			return 0
+		if required_exp > 0:
+			return required_exp
 		var st = stage.strip_edges().to_lower()
 		if st == "basic":
 			return 10
@@ -889,6 +892,12 @@ func load_pokemon_from_csv() -> void:
 		
 		# Parámetro de Evolución
 		var p_evolves_to = get_val.call("evolves_to", "").strip_edges()
+		var raw_req_exp = get_val.call("required_exp", "")
+		if raw_req_exp == "":
+			raw_req_exp = get_val.call("required exp", "")
+		if raw_req_exp == "":
+			raw_req_exp = get_val.call("req_exp", "")
+		var p_required_exp = int(raw_req_exp) if raw_req_exp != "" else 0
 
 		# Parámetro de Rareza (Rarity) para apertura de sobres
 		var raw_rarity = get_val.call("rarity", "")
@@ -921,6 +930,7 @@ func load_pokemon_from_csv() -> void:
 			"tier": p_tier,
 			"region": p_region,
 			"evolves_to": p_evolves_to,
+			"required_exp": p_required_exp,
 			"name": p_name,
 			"hp": p_hp,
 			"energy": p_energy,
@@ -961,6 +971,9 @@ func load_pokemon_from_csv() -> void:
 		all_pokemon_ids.append(pkmn_id)
 		
 	file.close()
+	# Resolver required_exp automático si algún Pokémon nuevo tiene evolves_to pero required_exp vacío/0
+	for id in all_pokemon_ids:
+		pokemon_catalog[id]["required_exp"] = get_pokemon_required_exp(id)
 	player_unlocked_ids.clear()
 	player_friends.clear()
 	for id in all_pokemon_ids:
@@ -1008,6 +1021,25 @@ func get_evolution_target_id(current_id: int) -> int:
 	if evo_name == "":
 		return -1
 	return get_pokemon_id_by_name(evo_name)
+
+func get_pokemon_required_exp(pkmn_id: int) -> int:
+	if not pokemon_catalog.has(pkmn_id):
+		return 0
+	var d = pokemon_catalog[pkmn_id]
+	var evo_name = str(d.get("evolves_to", "")).strip_edges()
+	if evo_name == "":
+		return 0
+	var csv_req = int(d.get("required_exp", 0))
+	if csv_req > 0:
+		return csv_req
+	var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
+	if st == "basic":
+		var target1_id = get_evolution_target_id(pkmn_id)
+		var target2_id = get_evolution_target_id(target1_id) if target1_id != -1 else -1
+		return 10 if target2_id != -1 else 20
+	elif st == "stage 1":
+		return 25
+	return 0
 
 # Obtiene el estado de evolución de un Pokémon según las cartas que posee el jugador en su colección
 func get_pokemon_evolution_chain_status(pkmn_id: int) -> Dictionary:
@@ -2085,6 +2117,7 @@ func create_pokemon_instance(pkmn_id: int) -> PokemonData:
 	p.tier = d.get("tier", "C")
 	p.region = d.get("region", "Kanto")
 	p.evolves_to = d.get("evolves_to", "")
+	p.required_exp = get_pokemon_required_exp(pkmn_id)
 	p.current_exp = 0
 	p.max_exp = p.get_required_exp()
 	p.name = d["name"]
@@ -2238,7 +2271,7 @@ func init_campaign_team(chosen_ids: Array) -> void:
 					"speed": inst.speed,
 					"texture_path": inst.texture_path,
 					"current_exp": 0,
-					"max_exp": 10,
+					"max_exp": inst.get_required_exp(),
 					"burn_turns": 0,
 					"is_poisoned": false,
 					"is_flinched": false
@@ -2284,7 +2317,7 @@ func change_campaign_team(chosen_ids: Array) -> void:
 					"speed": inst.speed,
 					"texture_path": inst.texture_path,
 					"current_exp": exp_val,
-					"max_exp": 10,
+					"max_exp": inst.get_required_exp(),
 					"burn_turns": burn_val,
 					"is_poisoned": poison_val,
 					"is_flinched": flinch_val
@@ -2323,7 +2356,7 @@ func init_adventure_team(episode_id: int, chosen_ids: Array) -> void:
 					"speed": inst.speed,
 					"texture_path": inst.texture_path,
 					"current_exp": 0,
-					"max_exp": 10,
+					"max_exp": inst.get_required_exp(),
 					"burn_turns": 0,
 					"is_poisoned": false,
 					"is_flinched": false
@@ -2365,7 +2398,7 @@ func change_adventure_team(chosen_ids: Array) -> void:
 					"speed": inst.speed,
 					"texture_path": inst.texture_path,
 					"current_exp": exp_val,
-					"max_exp": 10,
+					"max_exp": inst.get_required_exp(),
 					"burn_turns": burn_val,
 					"is_poisoned": poison_val,
 					"is_flinched": flinch_val
@@ -2434,8 +2467,7 @@ func check_and_apply_campaign_evolutions() -> Array[Dictionary]:
 			continue
 			
 		var current_id = int(p["id"])
-		var st = str(p.get("stage", "Basic")).strip_edges().to_lower()
-		var req_exp = 10 if st == "basic" else (25 if st == "stage 1" else 0)
+		var req_exp = get_pokemon_required_exp(current_id)
 		var cur_exp = int(p.get("current_exp", 0))
 		
 		if req_exp > 0 and cur_exp >= req_exp:
@@ -2493,8 +2525,7 @@ func get_pending_campaign_evolutions() -> Array[Dictionary]:
 		if cur_hp <= 0:
 			continue
 		var current_id = int(p["id"])
-		var st = str(p.get("stage", "Basic")).strip_edges().to_lower()
-		var req_exp = 10 if st == "basic" else (25 if st == "stage 1" else 0)
+		var req_exp = get_pokemon_required_exp(current_id)
 		var cur_exp = int(p.get("current_exp", 0))
 		if req_exp > 0 and cur_exp >= req_exp:
 			var target_id = get_evolution_target_id(current_id)

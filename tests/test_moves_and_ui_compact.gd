@@ -146,6 +146,59 @@ func _ready() -> void:
 	assert("Razor Leaf" in m1_text and "4 DMG" in m1_text and "KO" in m1_text, "btn_move1 should show Name, DMG, and KO")
 	assert(not "Knockout" in m1_text and not "[Uses:" in m1_text and not "[Cost:" in m1_text, "btn_move1 should be compact without Knockout/[Uses:]/[Cost:]")
 	assert("Ember 🔥" in m2_text and "4 DMG" in m2_text and "KO" in m2_text, "btn_move2 should show boosted Name 🔥, DMG, and KO")
+
+	# 3. Verify required_exp column in poke_stats.csv & evolution rules
+	var bulba_id = GameData.get_pokemon_id_by_name("Bulbasaur")
+	var ivysaur_id = GameData.get_pokemon_id_by_name("Ivysaur")
+	var venusaur_id = GameData.get_pokemon_id_by_name("Venusaur")
+	var rattata_id = GameData.get_pokemon_id_by_name("Rattata")
+	var raticate_id = GameData.get_pokemon_id_by_name("Raticate")
+	var magikarp_id = GameData.get_pokemon_id_by_name("Magikarp")
+	var chansey_id = GameData.get_pokemon_id_by_name("Chansey")
 	
-	print("=== ALL MOVES & COMPACT UI TESTS PASSED SUCCESSFULLY! ===")
+	assert(GameData.get_pokemon_required_exp(bulba_id) == 10, "Bulbasaur (Basic -> S1 -> S2) should require 10 EXP")
+	assert(GameData.get_pokemon_required_exp(ivysaur_id) == 25, "Ivysaur (S1 -> S2) should require 25 EXP")
+	assert(GameData.get_pokemon_required_exp(venusaur_id) == 0, "Venusaur (S2 final) should require 0 EXP")
+	assert(GameData.get_pokemon_required_exp(rattata_id) == 20, "Rattata (Basic -> S1 only) should require 20 EXP")
+	assert(GameData.get_pokemon_required_exp(raticate_id) == 0, "Raticate (S1 final) should require 0 EXP")
+	assert(GameData.get_pokemon_required_exp(magikarp_id) == 20, "Magikarp (Basic -> S1 only) should require 20 EXP")
+	assert(GameData.get_pokemon_required_exp(chansey_id) == 0, "Chansey (currently no evo) should require 0 EXP")
+	
+	var rattata_inst = GameData.create_pokemon_instance(rattata_id)
+	assert(rattata_inst.get_required_exp() == 20 and rattata_inst.max_exp == 20, "Rattata instance get_required_exp() must be 20")
+	
+	# Test custom required_exp override (e.g. future Chansey evolution)
+	GameData.pokemon_catalog[chansey_id]["evolves_to"] = "Blissey"
+	GameData.pokemon_catalog[chansey_id]["required_exp"] = 35
+	var chansey_inst = GameData.create_pokemon_instance(chansey_id)
+	assert(chansey_inst.get_required_exp() == 35, "Custom required_exp (35) for Chansey should be respected")
+	GameData.pokemon_catalog[chansey_id]["evolves_to"] = ""
+	GameData.pokemon_catalog[chansey_id]["required_exp"] = 0
+	
+	# Test Campaign Evolution check with Rattata (10 EXP = not ready, 20 EXP = ready)
+	GameData.unlock_pokemon(rattata_id)
+	GameData.unlock_pokemon(raticate_id)
+	GameData.campaign_submode = "TOURNAMENT"
+	GameData.campaign_player_team_state = [{
+		"id": rattata_id,
+		"name": "Rattata",
+		"stage": "Basic",
+		"type": "NORMAL",
+		"current_hp": 10,
+		"max_hp": 10,
+		"speed": 2,
+		"texture_path": rattata_inst.texture_path,
+		"current_exp": 10,
+		"max_exp": 20,
+		"burn_turns": 0,
+		"is_poisoned": false,
+		"is_flinched": false
+	}]
+	var pending_at_10 = GameData.get_pending_campaign_evolutions()
+	assert(pending_at_10.is_empty(), "Rattata should NOT evolve at 10 EXP")
+	GameData.campaign_player_team_state[0]["current_exp"] = 20
+	var pending_at_20 = GameData.get_pending_campaign_evolutions()
+	assert(pending_at_20.size() == 1 and pending_at_20[0]["to_name"] == "Raticate", "Rattata SHOULD evolve into Raticate at 20 EXP")
+
+	print("=== ALL MOVES, COMPACT UI, AND REQUIRED_EXP TESTS PASSED SUCCESSFULLY! ===")
 	get_tree().quit(0)
