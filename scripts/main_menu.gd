@@ -246,7 +246,21 @@ var stat_candies_lbl: Label = null
 @onready var sfx_vol_value_lbl: Label = $SettingsModal/SettingsBox/AudioPanel/AudioVBox/SfxVolHeaderRow/SfxVolValueLbl
 @onready var sfx_slider: HSlider = $SettingsModal/SettingsBox/AudioPanel/AudioVBox/SfxSlider
 @onready var mute_sfx_check: CheckBox = $SettingsModal/SettingsBox/AudioPanel/AudioVBox/MuteSfxCheck
+@onready var info_version_lbl: Label = $SettingsModal/SettingsBox/InfoPanel/InfoVBox/InfoVersionLbl
+@onready var btn_check_update: Button = $SettingsModal/SettingsBox/InfoPanel/InfoVBox/BtnCheckUpdate
+@onready var update_status_lbl: Label = $SettingsModal/SettingsBox/InfoPanel/InfoVBox/UpdateStatusLbl
 @onready var btn_close_settings: Button = $SettingsModal/SettingsBox/BtnCloseSettings
+
+# --- MODAL ACTUALIZACIÓN (UPDATER LEVEL 1) ---
+@onready var update_modal: Control = $UpdateModal
+@onready var update_title: Label = $UpdateModal/UpdateCard/UpdateVBox/UpdateTitle
+@onready var update_subtitle: Label = $UpdateModal/UpdateCard/UpdateVBox/UpdateSubtitle
+@onready var update_notes: Label = $UpdateModal/UpdateCard/UpdateVBox/UpdateNotesScroll/UpdateNotes
+@onready var btn_update_download: Button = $UpdateModal/UpdateCard/UpdateVBox/BtnUpdateDownload
+@onready var btn_update_github: Button = $UpdateModal/UpdateCard/UpdateVBox/UpdateActionsRow/BtnUpdateGitHub
+@onready var btn_update_close: Button = $UpdateModal/UpdateCard/UpdateVBox/UpdateActionsRow/BtnUpdateClose
+var _latest_release_info: Dictionary = {}
+var _target_download_url: String = ""
 
 # --- MODAL CONFIRMACIÓN DE BORRADO DE PERFIL ---
 @onready var erase_confirm_modal: Control = $EraseConfirmModal
@@ -580,6 +594,14 @@ func _ready() -> void:
 	mute_music_check.toggled.connect(_on_mute_music_toggled)
 	sfx_slider.value_changed.connect(_on_sfx_slider_changed)
 	mute_sfx_check.toggled.connect(_on_mute_sfx_toggled)
+	if btn_check_update:
+		btn_check_update.pressed.connect(_on_check_update_pressed)
+	if btn_update_download:
+		btn_update_download.pressed.connect(_on_update_download_pressed)
+	if btn_update_github:
+		btn_update_github.pressed.connect(_on_update_github_pressed)
+	if btn_update_close:
+		btn_update_close.pressed.connect(_on_update_close_pressed)
 	
 	# Modal Confirmar Borrado de Perfil
 	btn_cancel_erase.pressed.connect(func(): erase_confirm_modal.visible = false)
@@ -771,6 +793,8 @@ func _ready() -> void:
 	settings_modal.visible = false
 	erase_confirm_modal.visible = false
 	cloud_notice_modal.visible = false
+	if update_modal:
+		update_modal.visible = false
 	
 	# Aplicar audio y encabezado del lobby
 	_apply_audio_settings()
@@ -3852,6 +3876,9 @@ func _apply_pokemon_ui_theme() -> void:
 	var erase_card = get_node_or_null("EraseConfirmModal/EraseCard")
 	if erase_card is PanelContainer:
 		erase_card.add_theme_stylebox_override("panel", teal_sb.duplicate())
+	var update_card = get_node_or_null("UpdateModal/UpdateCard")
+	if update_card is PanelContainer:
+		update_card.add_theme_stylebox_override("panel", teal_sb.duplicate())
 		
 	# Shop PackPanel
 	var pack_panel = get_node_or_null("ShopModal/Box/PackPanel")
@@ -5903,7 +5930,205 @@ func _on_mute_sfx_toggled(pressed: bool) -> void:
 
 func _on_settings_pressed() -> void:
 	_apply_audio_settings()
+	if info_version_lbl:
+		info_version_lbl.text = "Version: %s • Pokémon Battle Frontier" % GameData.GAME_VERSION
 	settings_modal.visible = true
+
+# ==============================================================================
+# --- SISTEMA DE ACTUALIZACIONES (UPDATER LEVEL 1 - GITHUB RELEASES) ---
+# ==============================================================================
+
+func _compare_versions(v1_str: String, v2_str: String) -> int:
+	var v1_clean = v1_str.strip_edges().trim_prefix("v").trim_prefix("V")
+	var v2_clean = v2_str.strip_edges().trim_prefix("v").trim_prefix("V")
+	
+	var v1_base = v1_clean.split("-")[0].split("+")[0]
+	var v2_base = v2_clean.split("-")[0].split("+")[0]
+	
+	var parts1 = v1_base.split(".")
+	var parts2 = v2_base.split(".")
+	
+	var max_len = max(parts1.size(), parts2.size())
+	for i in range(max_len):
+		var num1 = int(parts1[i]) if i < parts1.size() else 0
+		var num2 = int(parts2[i]) if i < parts2.size() else 0
+		if num1 > num2:
+			return 1
+		elif num1 < num2:
+			return -1
+	return 0
+
+func _format_file_size(bytes: int) -> String:
+	if bytes <= 0:
+		return ""
+	if bytes < 1024 * 1024:
+		return "%.1f KB" % (float(bytes) / 1024.0)
+	return "%.1f MB" % (float(bytes) / (1024.0 * 1024.0))
+
+func _on_check_update_pressed() -> void:
+	if btn_check_update:
+		btn_check_update.disabled = true
+	if update_status_lbl:
+		update_status_lbl.visible = true
+		update_status_lbl.text = "⏳ Checking GitHub for updates..."
+		update_status_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9, 1))
+	
+	var http = HTTPRequest.new()
+	http.name = "UpdateCheckerHTTP"
+	add_child(http)
+	http.request_completed.connect(_on_update_http_completed.bind(http))
+	
+	var url = "https://api.github.com/repos/yodef/PKMN-Battle-Frontier/releases/latest"
+	var headers = [
+		"User-Agent: PKMN-Battle-Frontier-App",
+		"Accept: application/vnd.github.v3+json"
+	]
+	var err = http.request(url, headers)
+	if err != OK:
+		if btn_check_update:
+			btn_check_update.disabled = false
+		if update_status_lbl:
+			update_status_lbl.text = "⚠️ Could not start update request (Error %d)." % err
+			update_status_lbl.add_theme_color_override("font_color", Color(1, 0.45, 0.45, 1))
+		http.queue_free()
+
+func _on_update_http_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http_node: HTTPRequest) -> void:
+	if is_instance_valid(http_node):
+		http_node.queue_free()
+	if btn_check_update:
+		btn_check_update.disabled = false
+		
+	if result != HTTPRequest.RESULT_SUCCESS:
+		if update_status_lbl:
+			update_status_lbl.visible = true
+			if GameData.update_direct_fallback_url != "":
+				update_status_lbl.text = "⚠️ Network error. Fallback URL available."
+			else:
+				update_status_lbl.text = "⚠️ Network error while checking for updates."
+			update_status_lbl.add_theme_color_override("font_color", Color(1, 0.45, 0.45, 1))
+		return
+		
+	if response_code == 404:
+		if update_status_lbl:
+			update_status_lbl.visible = true
+			update_status_lbl.text = "✅ Your game is up to date! (%s)\n(No newer releases found online)" % GameData.GAME_VERSION
+			update_status_lbl.add_theme_color_override("font_color", Color(0.3, 1, 0.45, 1))
+		return
+		
+	if response_code != 200:
+		if update_status_lbl:
+			update_status_lbl.visible = true
+			update_status_lbl.text = "⚠️ Server responded with HTTP code %d." % response_code
+			update_status_lbl.add_theme_color_override("font_color", Color(1, 0.7, 0.3, 1))
+		return
+		
+	var body_text = body.get_string_from_utf8()
+	var json = JSON.new()
+	var parse_err = json.parse(body_text)
+	if parse_err != OK or not (json.data is Dictionary):
+		if update_status_lbl:
+			update_status_lbl.visible = true
+			update_status_lbl.text = "⚠️ Could not parse release information."
+			update_status_lbl.add_theme_color_override("font_color", Color(1, 0.45, 0.45, 1))
+		return
+		
+	var release_data: Dictionary = json.data
+	var tag_name: String = str(release_data.get("tag_name", "")).strip_edges()
+	
+	if tag_name.is_empty():
+		if update_status_lbl:
+			update_status_lbl.visible = true
+			update_status_lbl.text = "✅ Your game is up to date! (%s)" % GameData.GAME_VERSION
+			update_status_lbl.add_theme_color_override("font_color", Color(0.3, 1, 0.45, 1))
+		return
+		
+	var comp = _compare_versions(tag_name, GameData.GAME_VERSION)
+	if comp > 0:
+		if update_status_lbl:
+			update_status_lbl.visible = true
+			update_status_lbl.text = "🎉 New update available: %s!" % tag_name
+			update_status_lbl.add_theme_color_override("font_color", Color(0.35, 0.85, 1, 1))
+		_show_update_modal(release_data)
+	else:
+		if update_status_lbl:
+			update_status_lbl.visible = true
+			update_status_lbl.text = "✅ Your game is up to date! (%s)" % GameData.GAME_VERSION
+			update_status_lbl.add_theme_color_override("font_color", Color(0.3, 1, 0.45, 1))
+
+func _show_update_modal(release_data: Dictionary) -> void:
+	_latest_release_info = release_data
+	var tag_name: String = str(release_data.get("tag_name", ""))
+	var rel_name: String = str(release_data.get("name", ""))
+	var body_txt: String = str(release_data.get("body", ""))
+	
+	if update_title:
+		update_title.text = "🚀 NEW UPDATE AVAILABLE!"
+	if update_subtitle:
+		var display_title = rel_name if not rel_name.is_empty() else tag_name
+		update_subtitle.text = "%s (Installed: %s)" % [display_title, GameData.GAME_VERSION]
+	if update_notes:
+		update_notes.text = body_txt if not body_txt.strip_edges().is_empty() else "No detailed changelog provided."
+		
+	# Select best asset or fallback
+	_target_download_url = ""
+	var assets: Array = release_data.get("assets", [])
+	var os_name: String = OS.get_name().to_lower()
+	var selected_asset_name: String = ""
+	var selected_asset_size: int = 0
+	
+	if os_name == "android":
+		for a in assets:
+			if a is Dictionary:
+				var aname: String = str(a.get("name", "")).to_lower()
+				if aname.ends_with(".apk"):
+					_target_download_url = str(a.get("browser_download_url", ""))
+					selected_asset_name = str(a.get("name", ""))
+					selected_asset_size = int(a.get("size", 0))
+					break
+	elif os_name == "windows":
+		for a in assets:
+			if a is Dictionary:
+				var aname: String = str(a.get("name", "")).to_lower()
+				if aname.ends_with(".zip") or aname.ends_with(".exe") or "windows" in aname or "win" in aname:
+					_target_download_url = str(a.get("browser_download_url", ""))
+					selected_asset_name = str(a.get("name", ""))
+					selected_asset_size = int(a.get("size", 0))
+					break
+					
+	if _target_download_url.is_empty() and GameData.update_direct_fallback_url != "":
+		_target_download_url = GameData.update_direct_fallback_url
+		selected_asset_name = "Direct Link"
+		
+	if _target_download_url.is_empty():
+		_target_download_url = str(release_data.get("html_url", "https://github.com/yodef/PKMN-Battle-Frontier/releases"))
+		selected_asset_name = "GitHub Release"
+		
+	if btn_update_download:
+		if os_name == "web":
+			btn_update_download.text = "🔄 Reload Game to Update"
+		elif not selected_asset_name.is_empty():
+			var size_txt = (" (" + _format_file_size(selected_asset_size) + ")") if selected_asset_size > 0 else ""
+			btn_update_download.text = "📥 Download %s%s" % [selected_asset_name, size_txt]
+		else:
+			btn_update_download.text = "📥 Download Update"
+			
+	if update_modal:
+		update_modal.visible = true
+
+func _on_update_download_pressed() -> void:
+	if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+		JavaScriptBridge.eval("window.location.reload(true);")
+		return
+	if not _target_download_url.is_empty():
+		OS.shell_open(_target_download_url)
+
+func _on_update_github_pressed() -> void:
+	var gh_url: String = str(_latest_release_info.get("html_url", "https://github.com/yodef/PKMN-Battle-Frontier/releases"))
+	OS.shell_open(gh_url)
+
+func _on_update_close_pressed() -> void:
+	if update_modal:
+		update_modal.visible = false
 
 # --- PANTALLA DE ACCESO / LOGIN ---
 func _show_login_screen() -> void:

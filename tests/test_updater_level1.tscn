@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dpo5qd170lebo"]
+
+[ext_resource type="Script" path="res://tests/test_updater_level1.gd" id="1_test"]
+
+[node name="TestUpdaterLevel1" type="Node"]
+script = ExtResource("1_test")

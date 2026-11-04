@@ -2404,6 +2404,24 @@ theme_override_colors/font_color = Color(0.55, 0.7, 0.85, 1)
 theme_override_font_sizes/font_size = 11
 text = "Save Path: user://profile_save.json"
 
+[node name="HSeparatorUpdate" type="HSeparator" parent="SettingsModal/SettingsBox/InfoPanel/InfoVBox"]
+layout_mode = 2
+
+[node name="BtnCheckUpdate" type="Button" parent="SettingsModal/SettingsBox/InfoPanel/InfoVBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔄 Check for Updates"
+
+[node name="UpdateStatusLbl" type="Label" parent="SettingsModal/SettingsBox/InfoPanel/InfoVBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+autowrap_mode = 2
+
 [node name="BtnCloseSettings" type="Button" parent="SettingsModal/SettingsBox"]
 custom_minimum_size = Vector2(160, 44)
 layout_mode = 2
@@ -3351,6 +3369,94 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 14
 text = "⬅ Back to Lobby"
+
+[node name="UpdateModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="UpdateBg" type="ColorRect" parent="UpdateModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.04, 0.08, 0.88)
+
+[node name="UpdateCard" type="PanelContainer" parent="UpdateModal"]
+custom_minimum_size = Vector2(460, 420)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -210.0
+offset_right = 230.0
+offset_bottom = 210.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="UpdateVBox" type="VBoxContainer" parent="UpdateModal/UpdateCard"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="UpdateTitle" type="Label" parent="UpdateModal/UpdateCard/UpdateVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "🚀 NEW UPDATE AVAILABLE!"
+horizontal_alignment = 1
+
+[node name="UpdateSubtitle" type="Label" parent="UpdateModal/UpdateCard/UpdateVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "Version v0.5.1 is available (Current: v0.5.0)"
+horizontal_alignment = 1
+
+[node name="UpdateNotesScroll" type="ScrollContainer" parent="UpdateModal/UpdateCard/UpdateVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="UpdateNotes" type="Label" parent="UpdateModal/UpdateCard/UpdateVBox/UpdateNotesScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Changelog details..."
+autowrap_mode = 2
+
+[node name="BtnUpdateDownload" type="Button" parent="UpdateModal/UpdateCard/UpdateVBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.45, 1)
+theme_override_font_sizes/font_size = 14
+text = "📥 Download Update"
+
+[node name="UpdateActionsRow" type="HBoxContainer" parent="UpdateModal/UpdateCard/UpdateVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnUpdateGitHub" type="Button" parent="UpdateModal/UpdateCard/UpdateVBox/UpdateActionsRow"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "🌐 View on GitHub"
+
+[node name="BtnUpdateClose" type="Button" parent="UpdateModal/UpdateCard/UpdateVBox/UpdateActionsRow"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "Later"
 
 [node name="BGMPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_bgm")
