@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://test_boost_slots_and_moves"]
+
+[ext_resource type="Script" path="res://tests/test_boost_slots_and_moves.gd" id="1_test"]
+
+[node name="TestBoostSlotsAndMoves" type="Node"]
+script = ExtResource("1_test")

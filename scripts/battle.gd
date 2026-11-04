@@ -182,6 +182,7 @@ func _ready() -> void:
 	btn_game_over_menu.pressed.connect(_on_return_to_menu)
 	btn_move1.pressed.connect(_on_move1_pressed)
 	btn_move2.pressed.connect(_on_move2_pressed)
+	chk_boost.visible = false
 	chk_boost.toggled.connect(_on_boost_toggled)
 	btn_passive.pressed.connect(_on_passive_pressed)
 	btn_recover.pressed.connect(_on_recover_pressed)
@@ -3563,15 +3564,14 @@ func _on_move_button_pressed(move_idx: int) -> void:
 		return
 		
 	var selected_spend = selected_energy_move1 if move_idx == 0 else selected_energy_move2
-	var can_afford_boost = (actor.current_energy >= (move.cost + move.boost_cost))
-	var boosted = chk_boost.button_pressed and move.can_boost and can_afford_boost
-	var max_cost = move.cost + (move.boost_cost if boosted else 0)
+	var can_afford_boost = move.can_boost and (actor.current_energy >= (move.cost + move.boost_cost))
+	var max_cost = move.cost + (move.boost_cost if can_afford_boost else 0)
 	
 	if move.cost == 0:
 		selected_spend = 0
 	else:
 		if selected_spend < move.min_energy_req or selected_spend > max_cost:
-			selected_spend = clamp(actor.current_energy, move.min_energy_req, max_cost)
+			selected_spend = clamp(actor.current_energy, move.min_energy_req, move.cost)
 		elif selected_spend > actor.current_energy:
 			log_action("[color=red]Not enough energy to spend %d⚡ (you have %d⚡)![/color]" % [selected_spend, actor.current_energy])
 			return
@@ -4674,7 +4674,7 @@ func _create_slot_button(slot_val: int, current_selected: int, move_idx: int, is
 	)
 	return btn
 
-func update_single_move_ui(move_idx: int, move, slots_container: HBoxContainer, btn: Button, p, active_e, is_boosted_chk: bool) -> void:
+func update_single_move_ui(move_idx: int, move, slots_container: HBoxContainer, btn: Button, p, active_e, _is_boosted_unused: bool = false) -> void:
 	if not move or not btn:
 		return
 		
@@ -4683,9 +4683,9 @@ func update_single_move_ui(move_idx: int, move, slots_container: HBoxContainer, 
 	
 	var base_cost = move.cost
 	var min_cost = move.min_energy_req
-	var can_boost_this = is_boosted_chk and move.can_boost and (p.current_energy >= (base_cost + move.boost_cost))
-	var max_cost = base_cost + (move.boost_cost if can_boost_this else 0)
-	var can_fraction = (base_cost > 0 and min_cost < max_cost)
+	var has_boost = move.can_boost and move.boost_cost > 0
+	var max_cost = base_cost + (move.boost_cost if has_boost else 0)
+	var can_fraction = (base_cost > 0 and (min_cost < base_cost or has_boost))
 	
 	var current_selected = selected_energy_move1 if move_idx == 0 else selected_energy_move2
 	
@@ -4694,19 +4694,19 @@ func update_single_move_ui(move_idx: int, move, slots_container: HBoxContainer, 
 		if move_idx == 0: selected_energy_move1 = 0
 		else: selected_energy_move2 = 0
 	elif not can_fraction:
-		current_selected = max_cost
-		if move_idx == 0: selected_energy_move1 = max_cost
-		else: selected_energy_move2 = max_cost
+		current_selected = base_cost
+		if move_idx == 0: selected_energy_move1 = base_cost
+		else: selected_energy_move2 = base_cost
 	else:
 		if current_selected < min_cost or current_selected > max_cost:
-			if p.current_energy >= max_cost:
-				current_selected = max_cost
+			if p.current_energy >= base_cost:
+				current_selected = base_cost
 			elif p.current_energy >= min_cost:
-				current_selected = min(p.current_energy, max_cost)
+				current_selected = min(p.current_energy, base_cost)
 			else:
 				current_selected = min_cost
 		elif current_selected > p.current_energy and p.current_energy >= min_cost:
-			current_selected = min(p.current_energy, max_cost)
+			current_selected = min(p.current_energy, base_cost)
 			
 		if move_idx == 0:
 			selected_energy_move1 = current_selected
@@ -4815,18 +4815,9 @@ func update_move_button_labels() -> void:
 		return
 	var m1 = actor.moves[0]
 	var m2 = actor.moves[1]
-	var is_boosted = chk_boost.button_pressed
 	
-	update_single_move_ui(0, m1, move1_slots, btn_move1, actor, defender, is_boosted)
-	update_single_move_ui(1, m2, move2_slots, btn_move2, actor, defender, is_boosted)
-	
-	var m1_can_boost = is_boosted and m1.can_boost and (actor.current_energy >= m1.cost + m1.boost_cost)
-	var m1_max_cost = m1.cost + (m1.boost_cost if m1_can_boost else 0)
-	var m1_can_fraction = (m1.cost > 0 and m1.min_energy_req < m1_max_cost)
-	
-	var m2_can_boost = is_boosted and m2.can_boost and (actor.current_energy >= m2.cost + m2.boost_cost)
-	var m2_max_cost = m2.cost + (m2.boost_cost if m2_can_boost else 0)
-	var m2_can_fraction = (m2.cost > 0 and m2.min_energy_req < m2_max_cost)
+	update_single_move_ui(0, m1, move1_slots, btn_move1, actor, defender)
+	update_single_move_ui(1, m2, move2_slots, btn_move2, actor, defender)
 	
 	move1_slots.visible = true
 	move2_slots.visible = true
@@ -4861,15 +4852,7 @@ func update_move_button_labels() -> void:
 	else:
 		btn_passive.visible = false
 	
-	var can_any_boost = false
-	if m1.can_boost and actor.current_energy >= (m1.cost + m1.boost_cost):
-		can_any_boost = true
-	if m2.can_boost and actor.current_energy >= (m2.cost + m2.boost_cost):
-		can_any_boost = true
-	chk_boost.visible = (m1.can_boost or m2.can_boost)
-	chk_boost.disabled = not _is_turn_action_allowed() or not can_any_boost
-	if not can_any_boost and chk_boost.button_pressed:
-		chk_boost.button_pressed = false
+	chk_boost.visible = false
 	btn_recover.text = "🔋 Recharge (+%d⚡)" % actor.recover_amount
 	btn_recover.disabled = not _is_turn_action_allowed() or (actor.current_energy >= actor.max_energy)
 	
