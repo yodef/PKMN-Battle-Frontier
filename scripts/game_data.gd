@@ -94,6 +94,7 @@ class PokemonData:
 	var has_passive: bool = false
 	var rarity: String = "Common"
 	var tier: String = "C"
+	var region: String = "Kanto"
 	var evolves_to: String = ""
 	var current_exp: int = 0
 	var max_exp: int = 10
@@ -650,6 +651,12 @@ func load_moves_from_csv() -> void:
 		var m_effect_type = get_val.call("effect_type", 8, "NONE").to_upper()
 		var m_desc = get_val.call("description", 9, "")
 		var m_sfx = get_val.call("sfx", 10, "")
+		if m_boost_cost == 0:
+			var desc_low = m_desc.to_lower()
+			if "use 1 extra energy" in desc_low:
+				m_boost_cost = 1
+			elif "use 2 extra energy" in desc_low:
+				m_boost_cost = 2
 		
 		var move_entry = {
 			"id": m_id,
@@ -868,12 +875,17 @@ func load_pokemon_from_csv() -> void:
 		if p_tier == "":
 			p_tier = "C"
 
+		var p_region = get_val.call("region", "Kanto").strip_edges()
+		if p_region == "":
+			p_region = "Kanto"
+
 		var raw_dict = {
 			"id": pkmn_id,
 			"pokedex_num": p_num,
 			"stage": p_stage,
 			"rarity": p_rarity,
 			"tier": p_tier,
+			"region": p_region,
 			"evolves_to": p_evolves_to,
 			"name": p_name,
 			"hp": p_hp,
@@ -2037,6 +2049,7 @@ func create_pokemon_instance(pkmn_id: int) -> PokemonData:
 	p.stage = d.get("stage", "Basic")
 	p.rarity = d.get("rarity", "Common")
 	p.tier = d.get("tier", "C")
+	p.region = d.get("region", "Kanto")
 	p.evolves_to = d.get("evolves_to", "")
 	p.current_exp = 0
 	p.max_exp = p.get_required_exp()

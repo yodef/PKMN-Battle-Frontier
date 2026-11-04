@@ -198,6 +198,7 @@ var showcase_is_animating: bool = false
 # --- SHOP EXPANSION: TABS, RECYCLE, HIDDEN SHOP ---
 var shop_active_tab: String = "PACKS" # "PACKS", "RECYCLE", "HIDDEN"
 var hidden_shop_filter: String = "ALL"
+var hidden_shop_region: String = "KANTO" # "KANTO", "JOHTO", "OTHER", "ALL"
 var shop_tabs_row: HBoxContainer = null
 var btn_shop_tab_packs: Button = null
 var btn_shop_tab_recycle: Button = null
@@ -210,6 +211,7 @@ var recycle_scroll_list: VBoxContainer = null
 var recycle_empty_lbl: Label = null
 var hidden_shop_grid: GridContainer = null
 var hidden_filter_buttons: Dictionary = {}
+var hidden_region_buttons: Dictionary = {}
 var stat_candies_lbl: Label = null
 
 # --- MODAL LOGIN (PANTALLA DE ACCESO PREVIA AL LOBBY) ---
@@ -384,13 +386,16 @@ var current_collection_index: int = 0
 var collection_sort_mode: String = "ID" # "ID", "DEX", "NAME"
 var current_sorted_collection: Array = []
 
-# Filtros de Colección (Owned, Types, Stages, Rarity, Tier)
+# Filtros de Colección (Region, Owned, Types, Stages, Rarity, Tier)
+var col_filter_region: String = "KANTO" # "KANTO", "JOHTO", "OTHER", "ALL"
 var col_filter_owned: String = "ALL" # "ALL", "OWNED", "MISSING"
 var col_filter_type: String = "ALL" # "ALL", "NORMAL", "GRASS", "FIRE", "WATER", "ELECTRIC", "DARK", "PSYCHIC", "FIGHTING", "GROUND"
 var col_filter_stage: String = "ALL" # "ALL", "BASIC", "STAGE 1", "STAGE 2"
 var col_filter_rarity: String = "ALL" # "ALL", "COMMON", "RARE", "EPIC", "LEGENDARY"
 var col_filter_tier: String = "ALL" # "ALL", "S+", "S", "A", "B", "C", "D"
 
+var col_region_tabs_row: HBoxContainer = null
+var col_region_buttons: Dictionary = {}
 var collection_filter_panel: PanelContainer = null
 var opt_col_owned: OptionButton = null
 var opt_col_type: OptionButton = null
@@ -868,6 +873,7 @@ func refresh_cards_data_from_catalog() -> void:
 		entry["short_name"] = d["name"]
 		entry["stage"] = d.get("stage", "Basic")
 		entry["rarity"] = d.get("rarity", "Common")
+		entry["region"] = str(d.get("region", "Kanto"))
 		entry["type"] = d["type"]
 		entry["hp"] = d["hp"]
 		entry["spd"] = d["speed"]
@@ -4327,6 +4333,30 @@ func _setup_shop_sections() -> void:
 	hid_header_card.add_child(hh_vbox)
 	hidden_shop_container.add_child(hid_header_card)
 	
+	# Region buttons row for Hidden Shop
+	var hid_region_row = HBoxContainer.new()
+	hid_region_row.name = "HiddenRegionRow"
+	hid_region_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	hid_region_row.add_theme_constant_override("separation", 6)
+	var hid_regions = [
+		{"id": "KANTO", "label": "🗺️ Kanto"},
+		{"id": "JOHTO", "label": "🌿 Johto"},
+		{"id": "OTHER", "label": "✨ Other"},
+		{"id": "ALL", "label": "🌐 All"}
+	]
+	hidden_region_buttons.clear()
+	for reg in hid_regions:
+		var btn_r = Button.new()
+		btn_r.text = reg["label"]
+		btn_r.custom_minimum_size = Vector2(96, 32)
+		btn_r.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn_r.add_theme_font_size_override("font_size", 11)
+		var rid = reg["id"]
+		btn_r.pressed.connect(func(): _on_hidden_region_pressed(rid))
+		hid_region_row.add_child(btn_r)
+		hidden_region_buttons[rid] = btn_r
+	hidden_shop_container.add_child(hid_region_row)
+	
 	# Filter buttons row
 	var filter_scroll = ScrollContainer.new()
 	filter_scroll.custom_minimum_size = Vector2(0, 36)
@@ -4589,6 +4619,10 @@ func _on_recycle_all_card_pressed(cid: int, card_name: String) -> void:
 	_update_shop_currencies()
 	_update_lobby_header_badge()
 
+func _on_hidden_region_pressed(rid: String) -> void:
+	hidden_shop_region = rid
+	_populate_hidden_shop_view()
+
 func _on_hidden_filter_pressed(fid: String) -> void:
 	hidden_shop_filter = fid
 	for k in hidden_filter_buttons:
@@ -4604,7 +4638,24 @@ func _populate_hidden_shop_view() -> void:
 		return
 		
 	for child in hidden_shop_grid.get_children():
+		hidden_shop_grid.remove_child(child)
 		child.queue_free()
+		
+	# Count cards per region for button labels
+	var reg_counts = {"KANTO": 0, "JOHTO": 0, "OTHER": 0, "ALL": all_catalog_cards.size()}
+	for c in all_catalog_cards:
+		var cr = str(c.get("region", "Kanto")).strip_edges().to_upper()
+		if cr == "":
+			cr = "KANTO"
+		if reg_counts.has(cr):
+			reg_counts[cr] += 1
+		else:
+			reg_counts["OTHER"] += 1
+	var reg_labels = {"KANTO": "🗺️ Kanto", "JOHTO": "🌿 Johto", "OTHER": "✨ Other", "ALL": "🌐 All"}
+	for rk in hidden_region_buttons:
+		var rbtn: Button = hidden_region_buttons[rk]
+		rbtn.text = "%s (%d)" % [reg_labels.get(rk, rk), reg_counts.get(rk, 0)]
+		rbtn.modulate = Color(1.3, 1.2, 0.4) if rk == hidden_shop_region else Color(0.85, 0.85, 0.85)
 		
 	for k in hidden_filter_buttons:
 		var btn = hidden_filter_buttons[k]
@@ -4612,6 +4663,12 @@ func _populate_hidden_shop_view() -> void:
 		
 	var sorted_list = get_sorted_cards(all_catalog_cards, "DEX")
 	for card in sorted_list:
+		if hidden_shop_region != "ALL":
+			var card_reg = str(card.get("region", "Kanto")).strip_edges().to_upper()
+			if card_reg == "":
+				card_reg = "KANTO"
+			if card_reg != hidden_shop_region:
+				continue
 		var cid = int(card.get("id", 0))
 		var is_owned = GameData.is_pokemon_unlocked(cid)
 		var r_str = str(card.get("rarity", "Common"))
@@ -5176,6 +5233,34 @@ func _setup_collection_filters() -> void:
 	if not collection_grid_view:
 		return
 		
+	# 0. Barra de Pestañas por Región (Kanto, Johto, Other, All)
+	col_region_tabs_row = HBoxContainer.new()
+	col_region_tabs_row.name = "ColRegionTabsRow"
+	col_region_tabs_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	col_region_tabs_row.add_theme_constant_override("separation", 6)
+	var col_regions = [
+		{"id": "KANTO", "label": "🗺️ Kanto"},
+		{"id": "JOHTO", "label": "🌿 Johto"},
+		{"id": "OTHER", "label": "✨ Other"},
+		{"id": "ALL", "label": "🌐 All"}
+	]
+	col_region_buttons.clear()
+	for reg in col_regions:
+		var btn_r = Button.new()
+		btn_r.name = "BtnColRegion_" + reg["id"]
+		btn_r.text = reg["label"]
+		btn_r.custom_minimum_size = Vector2(96, 32)
+		btn_r.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn_r.add_theme_font_size_override("font_size", 11)
+		var rid = reg["id"]
+		btn_r.pressed.connect(func(): _on_col_region_pressed(rid))
+		col_region_tabs_row.add_child(btn_r)
+		col_region_buttons[rid] = btn_r
+	collection_grid_view.add_child(col_region_tabs_row)
+	var stats_node = collection_grid_view.get_node_or_null("StatsLbl")
+	if stats_node:
+		collection_grid_view.move_child(col_region_tabs_row, stats_node.get_index() + 1)
+		
 	collection_filter_panel = PanelContainer.new()
 	collection_filter_panel.name = "CollectionFilterPanel"
 	var sb_panel = StyleBoxFlat.new()
@@ -5349,7 +5434,37 @@ func _style_filter_option(opt: OptionButton) -> void:
 	opt.add_theme_stylebox_override("pressed", sb_hover)
 	opt.add_theme_stylebox_override("focus", sb_hover)
 
+func _on_col_region_pressed(reg_id: String) -> void:
+	col_filter_region = reg_id
+	_update_col_region_buttons_ui()
+	populate_collection_grid()
+
+func _update_col_region_buttons_ui() -> void:
+	if col_region_buttons.is_empty():
+		return
+	var totals = {"KANTO": 0, "JOHTO": 0, "OTHER": 0, "ALL": all_catalog_cards.size()}
+	var owned = {"KANTO": 0, "JOHTO": 0, "OTHER": 0, "ALL": 0}
+	for c in all_catalog_cards:
+		var cid = int(c.get("id", 0))
+		var is_unl = GameData.is_pokemon_unlocked(cid)
+		if is_unl:
+			owned["ALL"] += 1
+		var cr = str(c.get("region", "Kanto")).strip_edges().to_upper()
+		if cr == "":
+			cr = "KANTO"
+		if not totals.has(cr):
+			cr = "OTHER"
+		totals[cr] += 1
+		if is_unl:
+			owned[cr] += 1
+	var reg_labels = {"KANTO": "🗺️ Kanto", "JOHTO": "🌿 Johto", "OTHER": "✨ Other", "ALL": "🌐 All"}
+	for rk in col_region_buttons:
+		var rbtn: Button = col_region_buttons[rk]
+		rbtn.text = "%s (%d/%d)" % [reg_labels.get(rk, rk), owned.get(rk, 0), totals.get(rk, 0)]
+		rbtn.modulate = Color(1.3, 1.25, 0.45) if rk == col_filter_region else Color(0.85, 0.85, 0.85)
+
 func _update_filter_button_visuals() -> void:
+	_update_col_region_buttons_ui()
 	if opt_col_owned:
 		opt_col_owned.modulate = Color(1.3, 1.25, 0.45) if col_filter_owned != "ALL" else Color.WHITE
 	if opt_col_type:
@@ -5383,6 +5498,14 @@ func get_filtered_collection_cards() -> Array:
 	for card in all_catalog_cards:
 		var cid = int(card["id"])
 		var is_unlocked = GameData.is_pokemon_unlocked(cid)
+		
+		# 0. Filtro Region (Región Pokémon: Kanto, Johto, Other)
+		if col_filter_region != "ALL":
+			var c_region = str(card.get("region", "Kanto")).strip_edges().to_upper()
+			if c_region == "":
+				c_region = "KANTO"
+			if c_region != col_filter_region:
+				continue
 		
 		# 1. Filtro Owned (Estado de posesión y Favoritos)
 		if col_filter_owned == "OWNED" and not is_unlocked:
@@ -5450,8 +5573,9 @@ func populate_collection_grid() -> void:
 			
 	var filtered_cards = get_filtered_collection_cards()
 	current_sorted_collection = get_sorted_cards(filtered_cards, collection_sort_mode)
+	_update_col_region_buttons_ui()
 	
-	var is_filtered = (col_filter_owned != "ALL" or col_filter_type != "ALL" or col_filter_stage != "ALL" or col_filter_rarity != "ALL" or col_filter_tier != "ALL")
+	var is_filtered = (col_filter_region != "ALL" or col_filter_owned != "ALL" or col_filter_type != "ALL" or col_filter_stage != "ALL" or col_filter_rarity != "ALL" or col_filter_tier != "ALL")
 	if collection_stats_lbl:
 		if is_filtered:
 			collection_stats_lbl.text = "Showing: %d / %d cards  |  Collected: %d / %d" % [

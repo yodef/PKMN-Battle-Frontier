@@ -2376,15 +2376,28 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				defender.is_seeded_turns = 3
 				note_text += " [color=green]Planted Leech Seed on foe (saps 2 HP x 3 rounds)![/color]"
 			
-		# Flinch
-		var flinch_rate = 1.0 if boosted else (0.30 if "30%" in move.description else (0.20 if "20%" in move.description else (0.15 if "15%" in move.description else 0.0)))
-		if flinch_rate > 0 and randf() < flinch_rate:
-			if not defender.was_flinched_last_round:
-				defender.is_flinched = true
-				defender.flinched_this_round = true
-				note_text += " [color=yellow]Inflicted FLINCH (loses turn this round)![/color]"
+		# Flinch (FLINCH)
+		if move.effect_type == "FLINCH":
+			var flinch_rate = 0.0
+			if boosted:
+				flinch_rate = 1.0
+			elif "30%" in move.description:
+				flinch_rate = 0.30
+			elif "20%" in move.description:
+				flinch_rate = 0.20
+			elif "15%" in move.description:
+				flinch_rate = 0.15
+			elif "extra energy" in move.description.to_lower():
+				flinch_rate = 0.0
 			else:
-				note_text += " [color=gray](Immune to Flinch: already flinched last round)[/color]"
+				flinch_rate = 1.0
+			if flinch_rate > 0 and randf() < flinch_rate:
+				if not defender.was_flinched_last_round:
+					defender.is_flinched = true
+					defender.flinched_this_round = true
+					note_text += " [color=yellow]Inflicted FLINCH (loses turn this round)![/color]"
+				else:
+					note_text += " [color=gray](Immune to Flinch: already flinched last round)[/color]"
 
 		# Reducción de Velocidad al rival (SLOW_FOE / BLIND)
 		if move.reduces_foe_speed or move.effect_type in ["SLOW_FOE", "BLIND"]:
@@ -4502,7 +4515,18 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 	elif eff == "CONFUSION":
 		return "Confuses foe"
 	elif eff == "FLINCH":
-		return "Inflicts Flinch" if boosted else "Chance to Flinch"
+		if boosted:
+			return "Inflicts Flinch"
+		elif "30%" in move.description:
+			return "30% chance to Flinch"
+		elif "20%" in move.description:
+			return "20% chance to Flinch"
+		elif "15%" in move.description:
+			return "15% chance to Flinch"
+		elif "extra energy" in move.description.to_lower():
+			return "Boost: Inflicts Flinch"
+		else:
+			return "Inflicts Flinch"
 	elif eff == "CONSTRICT":
 		return "Trap foe (%d DMG/rd)" % (2 if move.name == "Sand Tomb" else 1)
 	elif eff == "SEEDED":
