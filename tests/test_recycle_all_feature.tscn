@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://test_recycle_all_feature"]
+
+[ext_resource type="Script" path="res://tests/test_recycle_all_feature.gd" id="1_test"]
+
+[node name="TestRecycleAllFeature" type="Node"]
+script = ExtResource("1_test")

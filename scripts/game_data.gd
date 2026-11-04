@@ -1197,6 +1197,24 @@ func recycle_card_copy(pkmn_id: int) -> int:
 	save_profile()
 	return candies
 
+func recycle_all_copies_of_card(pkmn_id: int) -> Dictionary:
+	var current = get_card_stock(pkmn_id)
+	if current <= 1:
+		return { "recycled_count": 0, "candies_earned": 0 }
+	var excess = current - 1
+	var cat = pokemon_catalog.get(pkmn_id, {})
+	var val = get_recycle_candy_value(str(cat.get("rarity", "Common")))
+	var total_candies = excess * val
+	player_card_stocks[pkmn_id] = 1
+	player_rare_candies += total_candies
+	card_stocks_changed.emit()
+	add_daily_mission_progress("recycle_cards", excess)
+	save_profile()
+	return {
+		"recycled_count": excess,
+		"candies_earned": total_candies
+	}
+
 func recycle_all_duplicates() -> Dictionary:
 	var total_recycled = 0
 	var total_candies = 0

@@ -4214,11 +4214,28 @@ func _setup_shop_sections() -> void:
 	rec_action_bar.alignment = BoxContainer.ALIGNMENT_CENTER
 	
 	btn_bulk_recycle = Button.new()
-	btn_bulk_recycle.custom_minimum_size = Vector2(0, 42)
+	btn_bulk_recycle.custom_minimum_size = Vector2(0, 44)
 	btn_bulk_recycle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn_bulk_recycle.text = "♻️ Bulk Recycle All Duplicates (+0 🍬)"
+	btn_bulk_recycle.text = "♻️ RECYCLE ALL DUPLICATES (+0 🍬)"
 	btn_bulk_recycle.add_theme_font_size_override("font_size", 13)
 	btn_bulk_recycle.add_theme_color_override("font_color", Color("#33FF77"))
+	
+	var sb_bulk_n = StyleBoxFlat.new()
+	sb_bulk_n.bg_color = Color(0.08, 0.20, 0.14, 0.95)
+	sb_bulk_n.border_color = Color("#2ecc71")
+	sb_bulk_n.set_border_width_all(2)
+	sb_bulk_n.set_corner_radius_all(6)
+	sb_bulk_n.set_content_margin_all(8)
+	btn_bulk_recycle.add_theme_stylebox_override("normal", sb_bulk_n)
+	
+	var sb_bulk_h = StyleBoxFlat.new()
+	sb_bulk_h.bg_color = Color(0.12, 0.28, 0.20, 0.95)
+	sb_bulk_h.border_color = Color("#58e89d")
+	sb_bulk_h.set_border_width_all(2)
+	sb_bulk_h.set_corner_radius_all(6)
+	sb_bulk_h.set_content_margin_all(8)
+	btn_bulk_recycle.add_theme_stylebox_override("hover", sb_bulk_h)
+	
 	btn_bulk_recycle.pressed.connect(_on_bulk_recycle_pressed)
 	rec_action_bar.add_child(btn_bulk_recycle)
 	recycle_container.add_child(rec_action_bar)
@@ -4387,7 +4404,7 @@ func _populate_recycle_view() -> void:
 		recycle_empty_lbl.visible = true
 		if btn_bulk_recycle:
 			btn_bulk_recycle.disabled = true
-			btn_bulk_recycle.text = "♻️ Bulk Recycle All Duplicates (0 Duplicates)"
+			btn_bulk_recycle.text = "♻️ RECYCLE ALL (0 Duplicates)"
 		return
 		
 	recycle_empty_lbl.visible = false
@@ -4399,7 +4416,7 @@ func _populate_recycle_view() -> void:
 		
 	if btn_bulk_recycle:
 		btn_bulk_recycle.disabled = false
-		btn_bulk_recycle.text = "♻️ Bulk Recycle All Duplicates (%d extra cards -> +%d 🍬)" % [total_extra, total_candies]
+		btn_bulk_recycle.text = "♻️ RECYCLE ALL DUPLICATES (%d extra cards ➔ +%d 🍬)" % [total_extra, total_candies]
 	
 	for d in dupes:
 		var cid = int(d.get("id", 0))
@@ -4465,18 +4482,37 @@ func _populate_recycle_view() -> void:
 		hbox.add_child(act_vbox)
 		
 		var yield_lbl = Label.new()
-		yield_lbl.text = "+%d 🍬" % candy_val
+		yield_lbl.text = "+%d 🍬 each" % candy_val
 		yield_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		yield_lbl.add_theme_font_size_override("font_size", 11)
+		yield_lbl.add_theme_font_size_override("font_size", 10)
 		yield_lbl.add_theme_color_override("font_color", Color("#33FF77"))
 		act_vbox.add_child(yield_lbl)
 		
+		var btn_row = HBoxContainer.new()
+		btn_row.add_theme_constant_override("separation", 4)
+		btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		act_vbox.add_child(btn_row)
+		
 		var btn_rec_one = Button.new()
-		btn_rec_one.custom_minimum_size = Vector2(90, 28)
+		btn_rec_one.custom_minimum_size = Vector2(75, 28)
 		btn_rec_one.text = "Recycle 1"
+		btn_rec_one.tooltip_text = "Recycle 1 duplicate copy (+%d 🍬)" % candy_val
 		btn_rec_one.add_theme_font_size_override("font_size", 11)
 		btn_rec_one.pressed.connect(func(): _on_recycle_one_pressed(cid, c_name))
-		act_vbox.add_child(btn_rec_one)
+		btn_row.add_child(btn_rec_one)
+		
+		var btn_rec_all = Button.new()
+		btn_rec_all.custom_minimum_size = Vector2(95, 28)
+		if extras > 1:
+			btn_rec_all.text = "Recycle All (%d)" % extras
+			btn_rec_all.tooltip_text = "Recycle all %d duplicate copies (+%d 🍬)" % [extras, extras * candy_val]
+		else:
+			btn_rec_all.text = "Recycle All"
+			btn_rec_all.tooltip_text = "Recycle 1 duplicate copy (+%d 🍬)" % candy_val
+		btn_rec_all.add_theme_font_size_override("font_size", 11)
+		btn_rec_all.add_theme_color_override("font_color", Color("#48e88b"))
+		btn_rec_all.pressed.connect(func(): _on_recycle_all_card_pressed(cid, c_name))
+		btn_row.add_child(btn_rec_all)
 		
 		recycle_scroll_list.add_child(row_panel)
 
@@ -4485,8 +4521,9 @@ func _on_bulk_recycle_pressed() -> void:
 	var count = int(res.get("recycled_count", 0))
 	var earned = int(res.get("candies_earned", 0))
 	if count > 0:
+		GameData.play_combat_sfx("purchase")
 		if shop_feedback_lbl:
-			shop_feedback_lbl.text = "♻️ Successfully recycled %d duplicate cards! Earned +%d 🍬 Rare Candies!" % [count, earned]
+			shop_feedback_lbl.text = "♻️ Successfully recycled all %d duplicate cards! Earned +%d 🍬 Rare Candies!" % [count, earned]
 			shop_feedback_lbl.modulate = Color(0.3, 1.0, 0.4)
 			shop_feedback_lbl.visible = true
 	else:
@@ -4502,8 +4539,23 @@ func _on_bulk_recycle_pressed() -> void:
 func _on_recycle_one_pressed(cid: int, card_name: String) -> void:
 	var earned = GameData.recycle_card_copy(cid)
 	if earned > 0:
+		GameData.play_combat_sfx("purchase")
 		if shop_feedback_lbl:
 			shop_feedback_lbl.text = "♻️ Recycled 1 duplicate copy of %s! Earned +%d 🍬 Rare Candies!" % [card_name, earned]
+			shop_feedback_lbl.modulate = Color(0.3, 1.0, 0.4)
+			shop_feedback_lbl.visible = true
+	_populate_recycle_view()
+	_update_shop_currencies()
+	_update_lobby_header_badge()
+
+func _on_recycle_all_card_pressed(cid: int, card_name: String) -> void:
+	var res = GameData.recycle_all_copies_of_card(cid)
+	var count = int(res.get("recycled_count", 0))
+	var earned = int(res.get("candies_earned", 0))
+	if count > 0:
+		GameData.play_combat_sfx("purchase")
+		if shop_feedback_lbl:
+			shop_feedback_lbl.text = "♻️ Recycled all %d duplicate copies of %s! Earned +%d 🍬 Rare Candies!" % [count, card_name, earned]
 			shop_feedback_lbl.modulate = Color(0.3, 1.0, 0.4)
 			shop_feedback_lbl.visible = true
 	_populate_recycle_view()
