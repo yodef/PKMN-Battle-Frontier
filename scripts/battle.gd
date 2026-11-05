@@ -2015,6 +2015,8 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		return
 
 	# 7. Cálculo del daño base
+	var multi_hit_events: Array[Dictionary] = []
+	var single_hit_crit: bool = false
 	if move.effect_type == "MULTI_ATTACK":
 		var num_hits = max(1, energy_to_spend)
 		var hit_dmgs: Array[String] = []
@@ -2034,9 +2036,10 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				var crit_bonus = 3 if move.name in ["Bone Rush", "Icicle Spear"] else 2
 				base_roll += crit_bonus
 				crits_landed += 1
-				hit_dmgs.append("%d💥" % base_roll)
+				hit_dmgs.append("%d!" % base_roll)
 			else:
 				hit_dmgs.append(str(base_roll))
+			multi_hit_events.append({"dmg": base_roll, "is_crit": is_crit})
 			total_multi_dmg += base_roll
 			
 		raw_damage = total_multi_dmg
@@ -2160,6 +2163,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if move.effect_type == "CRITICAL" and randf() < 0.25:
 		var crit_b = 4 if "+4" in move.description else 3
 		raw_damage += crit_b
+		single_hit_crit = true
 		note_text += " [color=yellow]Critical Hit! (+%d DMG)[/color]" % crit_b
 
 	# Tirada de dado de Pichu Shock (Thunder Shock)
@@ -2318,7 +2322,10 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		if randf() < hit_chance:
 			defender.current_hp = max(0, defender.current_hp - final_damage)
 			note_text += " [color=yellow]Double Hit struck a 2nd time for %d DMG![/color]" % final_damage
-			spawn_floating_combat_number(defender_visual, -final_damage, false)
+			multi_hit_events = [
+				{"dmg": final_damage, "is_crit": single_hit_crit},
+				{"dmg": final_damage, "is_crit": false}
+			]
 
 	# Pay Day (EARNINGS)
 	if move.effect_type == "EARNINGS" and GameData.is_campaign_mode and not attacker.payday_used:
@@ -2642,8 +2649,49 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if final_damage > 0:
 		var is_weakness = GameData.types_match(defender.weakness, move.type)
 		var is_resist = GameData.is_attack_resisted(defender.type, defender.resistant, move.type)
-		play_damage_hit(defender_visual, move.type, final_damage)
-		spawn_floating_combat_number(defender_visual, -final_damage, false, is_weakness)
+		if multi_hit_events.size() > 0:
+			if move.effect_type == "MULTI_ATTACK":
+				var sum_hits = 0
+				for ev in multi_hit_events:
+					sum_hits += int(ev["dmg"])
+				var step_idx = 0
+				while sum_hits < final_damage and multi_hit_events.size() > 0:
+					var idx = step_idx % multi_hit_events.size()
+					multi_hit_events[idx]["dmg"] = int(multi_hit_events[idx]["dmg"]) + 1
+					sum_hits += 1
+					step_idx += 1
+				step_idx = multi_hit_events.size() - 1
+				var safety = 0
+				while sum_hits > final_damage and multi_hit_events.size() > 0 and safety < 100:
+					var idx = posmod(step_idx, multi_hit_events.size())
+					var min_allowed = 1 if final_damage >= multi_hit_events.size() else 0
+					if int(multi_hit_events[idx]["dmg"]) > min_allowed:
+						multi_hit_events[idx]["dmg"] = int(multi_hit_events[idx]["dmg"]) - 1
+						sum_hits -= 1
+					step_idx -= 1
+					safety += 1
+			var hit_interval: float = 0.18 # ~11 frames a 60 FPS entre cada golpe
+			for h_idx in range(multi_hit_events.size()):
+				var ev = multi_hit_events[h_idx]
+				var h_dmg: int = int(ev.get("dmg", 0))
+				if h_dmg <= 0:
+					continue
+				var h_crit: bool = bool(ev.get("is_crit", false))
+				var h_text: String = ("-%d!" % h_dmg) if h_crit else ("-%d" % h_dmg)
+				var delay_t: float = float(h_idx) * hit_interval
+				spawn_floating_combat_number(defender_visual, -h_dmg, false, h_crit or is_weakness, false, h_text, delay_t, h_idx)
+				if delay_t <= 0.0:
+					play_damage_hit(defender_visual, move.type, h_dmg)
+				else:
+					var hit_type = move.type
+					get_tree().create_timer(delay_t).timeout.connect(func():
+						if is_instance_valid(defender_visual):
+							play_damage_hit(defender_visual, hit_type, h_dmg)
+					)
+		else:
+			var single_text: String = ("-%d!" % final_damage) if single_hit_crit else ""
+			play_damage_hit(defender_visual, move.type, final_damage)
+			spawn_floating_combat_number(defender_visual, -final_damage, false, single_hit_crit or is_weakness, false, single_text)
 		if is_weakness:
 			GameData.play_combat_sfx("hit_super")
 			if attacker == get_active_player() and GameData.is_campaign_mode:
@@ -5301,8 +5349,13 @@ func lunge_card(node: Control, is_upward: bool) -> void:
 	tween.tween_property(node, "position", original_pos, 0.15).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 
 # Genera números saltarines flotantes de daño (rojo/dorado), curación (verde) o energía (ámbar)
-func spawn_floating_combat_number(target_node: Control, amount: int, is_heal: bool, is_crit_or_weakness: bool = false, is_energy: bool = false) -> void:
+func spawn_floating_combat_number(target_node: Control, amount: int, is_heal: bool, is_crit_or_weakness: bool = false, is_energy: bool = false, custom_text: String = "", delay_sec: float = 0.0, hit_index: int = 0) -> void:
 	if amount == 0:
+		return
+	if delay_sec > 0.0:
+		get_tree().create_timer(delay_sec).timeout.connect(func():
+			spawn_floating_combat_number(target_node, amount, is_heal, is_crit_or_weakness, is_energy, custom_text, 0.0, hit_index)
+		)
 		return
 	if not target_node or not is_instance_valid(target_node):
 		return
@@ -5312,19 +5365,19 @@ func spawn_floating_combat_number(target_node: Control, amount: int, is_heal: bo
 	var val_abs = abs(amount)
 	
 	if is_energy:
-		label.text = "+%d ⚡" % val_abs
+		label.text = custom_text if custom_text != "" else ("+%d ⚡" % val_abs)
 		label.add_theme_color_override("font_color", Color("#FFD54F")) # Ámbar eléctrico energía
 		label.add_theme_font_size_override("font_size", 26)
 	elif is_heal:
-		label.text = "+%d" % val_abs
+		label.text = custom_text if custom_text != "" else ("+%d" % val_abs)
 		label.add_theme_color_override("font_color", Color("#00E676")) # Verde esmeralda curación
 		label.add_theme_font_size_override("font_size", 26)
 	elif is_crit_or_weakness:
-		label.text = "-%d 💥" % val_abs
+		label.text = custom_text if custom_text != "" else ("-%d 💥" % val_abs)
 		label.add_theme_color_override("font_color", Color("#FFD700")) # Dorado brillante debilidad / crítico
 		label.add_theme_font_size_override("font_size", 28)
 	else:
-		label.text = "-%d" % val_abs
+		label.text = custom_text if custom_text != "" else ("-%d" % val_abs)
 		label.add_theme_color_override("font_color", Color("#FF3B30")) # Rojo vivo daño recibido
 		label.add_theme_font_size_override("font_size", 24)
 		
@@ -5333,11 +5386,13 @@ func spawn_floating_combat_number(target_node: Control, amount: int, is_heal: bo
 	label.add_theme_constant_override("outline_size", 8)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
-	# Coordenadas globales sobre el sprite objetivo
+	# Coordenadas globales sobre el sprite objetivo (con desfase escalonado en ataques multi-hit)
 	var rect = target_node.get_global_rect()
 	var center = rect.get_center()
-	var jitter_x = randf_range(-16.0, 16.0)
-	var jitter_y = randf_range(-10.0, 6.0)
+	var step_x = ((hit_index % 3) - 1) * 18.0 if hit_index > 0 else 0.0
+	var step_y = -float(hit_index % 4) * 8.0 if hit_index > 0 else 0.0
+	var jitter_x = randf_range(-12.0, 12.0) + step_x
+	var jitter_y = randf_range(-8.0, 6.0) + step_y
 	var start_pos = center + Vector2(-24.0 + jitter_x, -36.0 + jitter_y)
 	
 	label.global_position = start_pos
@@ -5354,7 +5409,8 @@ func spawn_floating_combat_number(target_node: Control, amount: int, is_heal: bo
 	tw.tween_property(label, "modulate:a", 0.0, 0.35).set_delay(0.45)
 	
 	# Impacto de escala elástica
-	tw.tween_property(label, "scale", Vector2(1.35, 1.35), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	var pop_scale = Vector2(1.45, 1.45) if custom_text.ends_with("!") else Vector2(1.35, 1.35)
+	tw.tween_property(label, "scale", pop_scale, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(label, "scale", Vector2(1.0, 1.0), 0.15).set_delay(0.12)
 	
 	# Salto ascendente parabólico con leve deriva lateral

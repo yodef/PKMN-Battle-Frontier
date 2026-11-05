@@ -200,5 +200,50 @@ func _ready() -> void:
 	var pending_at_20 = GameData.get_pending_campaign_evolutions()
 	assert(pending_at_20.size() == 1 and pending_at_20[0]["to_name"] == "Raticate", "Rattata SHOULD evolve into Raticate at 20 EXP")
 
-	print("=== ALL MOVES, COMPACT UI, AND REQUIRED_EXP TESTS PASSED SUCCESSFULLY! ===")
+	# 4. Verify Sequential Multi-Hit Floating Numbers & "-X!" Crit Format
+	var layer = battle_scene.floating_numbers_layer
+	for c in layer.get_children():
+		c.queue_free()
+	await get_tree().process_frame
+	
+	# Test direct critical hit formatting "-X!"
+	battle_scene.spawn_floating_combat_number(battle_scene.enemy_card_img, -5, false, true, false, "-5!", 0.0, 0)
+	assert(layer.get_child_count() == 1, "Should have 1 floating label immediately")
+	var crit_lbl = layer.get_child(0) as Label
+	assert(crit_lbl.text == "-5!", "Critical hit floating number must be formatted as '-X!'")
+	crit_lbl.queue_free()
+	await get_tree().process_frame
+	
+	# Test 3-hit MULTI_ATTACK sequential spawning across frames
+	var fury_attack = _make_move("Fury Attack")
+	p.current_energy = 5
+	e.max_hp = 100
+	e.current_hp = 100
+	battle_scene.perform_attack(p, e, fury_attack, false, 3, battle_scene.player_card_img, battle_scene.enemy_card_img)
+	
+	# Immediately at frame 0: only 1st hit label should be present!
+	var count_t0 = layer.get_child_count()
+	print("Multi-hit labels at t=0.00s: %d (text: %s)" % [count_t0, (layer.get_child(0) as Label).text if count_t0 > 0 else "none"])
+	assert(count_t0 == 1, "At t=0 only the 1st multi-hit floating number should be spawned")
+	
+	# Wait ~0.22s for 2nd hit
+	await get_tree().create_timer(0.22).timeout
+	var count_t1 = layer.get_child_count()
+	print("Multi-hit labels at t=0.22s: %d" % count_t1)
+	assert(count_t1 == 2, "At t=0.22s the 2nd multi-hit floating number should have appeared")
+	
+	# Wait ~0.20s more for 3rd hit
+	await get_tree().create_timer(0.20).timeout
+	var count_t2 = layer.get_child_count()
+	var spawned_texts: Array[String] = []
+	for child in layer.get_children():
+		if child is Label:
+			spawned_texts.append(child.text)
+			var txt: String = child.text
+			assert(txt.begins_with("-"), "Each multi-hit label must start with '-'")
+			assert(not "💥" in txt, "Multi-hit crit should use '!' instead of '💥'")
+	print("Multi-hit labels at t=0.42s: %d -> %s" % [count_t2, str(spawned_texts)])
+	assert(count_t2 == 3, "At t=0.42s all 3 multi-hit floating numbers should have appeared sequentially")
+
+	print("=== ALL MOVES, COMPACT UI, REQUIRED_EXP, AND MULTI-HIT FLOATING NUMBERS TESTS PASSED! ===")
 	get_tree().quit(0)
