@@ -1804,7 +1804,22 @@ func _finish_round() -> void:
 			pkmn.is_flinched = false
 			pkmn.was_flinched_last_round = pkmn.flinched_this_round
 			pkmn.flinched_this_round = false
-		
+
+	# Regeneración pasiva de banca (+1⚡ al final de cada ronda para Pokémon vivos en la banca)
+	active_p = get_active_player()
+	active_e = get_active_enemy()
+	var bench_recharged_names: Array[String] = []
+	for pkmn in player_team:
+		if pkmn != active_p and pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
+			pkmn.current_energy = min(pkmn.max_energy, pkmn.current_energy + 1)
+			bench_recharged_names.append("%s (⚡%d/%d)" % [pkmn.name, pkmn.current_energy, pkmn.max_energy])
+	for pkmn in enemy_team:
+		if pkmn != active_e and pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
+			pkmn.current_energy = min(pkmn.max_energy, pkmn.current_energy + 1)
+			bench_recharged_names.append("Rival %s (⚡%d/%d)" % [pkmn.name, pkmn.current_energy, pkmn.max_energy])
+	if not bench_recharged_names.is_empty():
+		log_action("🔋 [color=#FFD54F]Bench Recharge (+1⚡):[/color] %s" % ", ".join(bench_recharged_names))
+
 	update_ui()
 	
 	var timer = get_tree().create_timer(1.2)
@@ -4387,7 +4402,22 @@ func _update_bench_button(btn: Button, team: Array, benched_indices: Array, slot
 		else:
 			hp_lbl.text = "%d/%d" % [pkmn.current_hp, pkmn.max_hp]
 			hp_lbl.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))
-			
+
+	var en_lbl = btn.get_node_or_null("CardContent/Details/HPSection/EnergyText")
+	if not en_lbl:
+		var hp_sec = btn.get_node_or_null("CardContent/Details/HPSection")
+		if hp_sec:
+			en_lbl = Label.new()
+			en_lbl.name = "EnergyText"
+			en_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			en_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			en_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			en_lbl.add_theme_font_size_override("font_size", 9)
+			hp_sec.add_child(en_lbl)
+	if en_lbl:
+		en_lbl.text = "⚡%d/%d" % [pkmn.current_energy, pkmn.max_energy] if is_alive else ""
+		en_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
+
 	_update_bench_card_style(btn, allowed, is_alive)
 
 func _update_enemy_bench_card(card: PanelContainer, team: Array, benched_indices: Array, slot_idx: int) -> void:
@@ -4443,6 +4473,20 @@ func _update_enemy_bench_card(card: PanelContainer, team: Array, benched_indices
 		else:
 			hp_lbl.text = "%d/%d" % [pkmn.current_hp, pkmn.max_hp]
 			hp_lbl.add_theme_color_override("font_color", Color(0.75, 0.85, 0.95))
+
+	var en_lbl = card.get_node_or_null("CardContent/Details/HPSection/EnergyText")
+	if not en_lbl:
+		var hp_sec = card.get_node_or_null("CardContent/Details/HPSection")
+		if hp_sec:
+			en_lbl = Label.new()
+			en_lbl.name = "EnergyText"
+			en_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			en_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			en_lbl.add_theme_font_size_override("font_size", 9)
+			hp_sec.add_child(en_lbl)
+	if en_lbl:
+		en_lbl.text = "⚡%d/%d" % [pkmn.current_energy, pkmn.max_energy] if is_alive else ""
+		en_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
 
 func _update_bench_card_style(btn: Button, allowed: bool, is_alive: bool) -> void:
 	var sb_norm = StyleBoxFlat.new()

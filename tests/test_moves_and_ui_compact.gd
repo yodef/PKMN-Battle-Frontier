@@ -245,5 +245,45 @@ func _ready() -> void:
 	print("Multi-hit labels at t=0.42s: %d -> %s" % [count_t2, str(spawned_texts)])
 	assert(count_t2 == 3, "At t=0.42s all 3 multi-hit floating numbers should have appeared sequentially")
 
-	print("=== ALL MOVES, COMPACT UI, REQUIRED_EXP, AND MULTI-HIT FLOATING NUMBERS TESTS PASSED! ===")
+	# 5. Verify Passive Bench Energy Regeneration (+1⚡ per round in _finish_round)
+	var bench_p1 = GameData.create_pokemon_instance(bulba_id)
+	var bench_p2 = GameData.create_pokemon_instance(rattata_id)
+	p.current_hp = 20
+	p.max_energy = 5
+	p.current_energy = 1 # Active Pokémon should NOT regenerate passively
+	bench_p1.current_hp = 15
+	bench_p1.max_energy = 4
+	bench_p1.current_energy = 1 # Living bench Pokémon (< max) SHOULD gain +1⚡ -> 2
+	bench_p2.current_hp = 0
+	bench_p2.max_energy = 4
+	bench_p2.current_energy = 1 # Fainted bench Pokémon should NOT gain energy
+	battle_scene.player_team = [p, bench_p1, bench_p2]
+	battle_scene.active_player_idx = 0
+
+	var bench_e1 = GameData.create_pokemon_instance(ivysaur_id)
+	e.current_hp = 20
+	e.max_energy = 5
+	e.current_energy = 2 # Active Enemy should NOT regenerate passively
+	bench_e1.current_hp = 18
+	bench_e1.max_energy = 4
+	bench_e1.current_energy = 3 # Living enemy bench (< max) SHOULD gain +1⚡ -> 4 (capped at max)
+	battle_scene.enemy_team = [e, bench_e1]
+	battle_scene.active_enemy_idx = 0
+
+	battle_scene._finish_round()
+	assert(p.current_energy == 1, "Active player Pokémon must NOT gain passive bench energy")
+	assert(bench_p1.current_energy == 2, "Living benched player Pokémon must gain +1⚡ (1 -> 2)")
+	assert(bench_p2.current_energy == 1, "Fainted benched Pokémon must NOT gain passive energy")
+	assert(e.current_energy == 2, "Active enemy Pokémon must NOT gain passive bench energy")
+	assert(bench_e1.current_energy == 4, "Living benched enemy Pokémon must gain +1⚡ (3 -> 4)")
+
+	# Second round finish: bench_e1 is at 4/4 (max), bench_p1 goes 2 -> 3
+	battle_scene._finish_round()
+	assert(bench_p1.current_energy == 3, "Living benched player Pokémon must gain +1⚡ again (2 -> 3)")
+	assert(bench_e1.current_energy == 4, "Benched Pokémon at max_energy must not exceed max_energy")
+
+	var sw1_en_lbl = battle_scene.btn_switch_1.get_node_or_null("CardContent/Details/HPSection/EnergyText") as Label
+	assert(sw1_en_lbl != null and sw1_en_lbl.text == "⚡3/4", "Bench button 1 should display updated energy '⚡3/4'")
+
+	print("=== ALL MOVES, COMPACT UI, REQUIRED_EXP, MULTI-HIT, AND BENCH RECHARGE TESTS PASSED! ===")
 	get_tree().quit(0)
