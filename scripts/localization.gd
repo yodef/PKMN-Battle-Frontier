@@ -379,6 +379,8 @@ const PHRASE_REPLACEMENTS: Array = [
 	["PACKS", "SOBRES"],
 	["RECYCLE", "RECICLAR"],
 	["HIDDEN SHOP", "TIENDA OCULTA"],
+	["Other (", "Otros ("],
+	["All (", "Todos ("],
 	["ALL", "TODOS"],
 	["OTHER", "OTROS"],
 

@@ -91,5 +91,15 @@ func _ready():
 	print("Hidden Shop OTHER grid count: ", menu.hidden_shop_grid.get_child_count())
 	assert(menu.hidden_shop_grid.get_child_count() == 6, "Hidden Shop OTHER should have 6 cards")
 	
+	# 4. Verify region labels have no leading icons
+	assert(menu.col_region_buttons["KANTO"].text.begins_with("Kanto ("), "Col KANTO button should start with 'Kanto (' (got '%s')" % menu.col_region_buttons["KANTO"].text)
+	assert(menu.col_region_buttons["JOHTO"].text.begins_with("Johto ("), "Col JOHTO button should start with 'Johto (' (got '%s')" % menu.col_region_buttons["JOHTO"].text)
+	assert(menu.col_region_buttons["OTHER"].text.begins_with("Other ("), "Col OTHER button should start with 'Other (' (got '%s')" % menu.col_region_buttons["OTHER"].text)
+	assert(menu.col_region_buttons["ALL"].text.begins_with("All ("), "Col ALL button should start with 'All (' (got '%s')" % menu.col_region_buttons["ALL"].text)
+	assert(menu.hidden_region_buttons["KANTO"].text.begins_with("Kanto ("), "Hidden Shop KANTO button should start with 'Kanto ('")
+	assert(menu.hidden_region_buttons["JOHTO"].text.begins_with("Johto ("), "Hidden Shop JOHTO button should start with 'Johto ('")
+	assert(menu.hidden_region_buttons["OTHER"].text.begins_with("Other ("), "Hidden Shop OTHER button should start with 'Other ('")
+	assert(menu.hidden_region_buttons["ALL"].text.begins_with("All ("), "Hidden Shop ALL button should start with 'All ('")
+	
 	print("=== ALL TESTS PASSED! ===")
 	get_tree().quit(0)

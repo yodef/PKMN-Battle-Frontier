@@ -4342,10 +4342,10 @@ func _setup_shop_sections() -> void:
 	hid_region_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	hid_region_row.add_theme_constant_override("separation", 6)
 	var hid_regions = [
-		{"id": "KANTO", "label": "🗺️ Kanto"},
-		{"id": "JOHTO", "label": "🌿 Johto"},
-		{"id": "OTHER", "label": "✨ Other"},
-		{"id": "ALL", "label": "🌐 All"}
+		{"id": "KANTO", "label": "Kanto"},
+		{"id": "JOHTO", "label": "Johto"},
+		{"id": "OTHER", "label": "Other"},
+		{"id": "ALL", "label": "All"}
 	]
 	hidden_region_buttons.clear()
 	for reg in hid_regions:
@@ -4654,7 +4654,7 @@ func _populate_hidden_shop_view() -> void:
 			reg_counts[cr] += 1
 		else:
 			reg_counts["OTHER"] += 1
-	var reg_labels = {"KANTO": "🗺️ Kanto", "JOHTO": "🌿 Johto", "OTHER": "✨ Other", "ALL": "🌐 All"}
+	var reg_labels = {"KANTO": "Kanto", "JOHTO": "Johto", "OTHER": "Other", "ALL": "All"}
 	for rk in hidden_region_buttons:
 		var rbtn: Button = hidden_region_buttons[rk]
 		rbtn.text = "%s (%d)" % [reg_labels.get(rk, rk), reg_counts.get(rk, 0)]
@@ -5242,10 +5242,10 @@ func _setup_collection_filters() -> void:
 	col_region_tabs_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	col_region_tabs_row.add_theme_constant_override("separation", 6)
 	var col_regions = [
-		{"id": "KANTO", "label": "🗺️ Kanto"},
-		{"id": "JOHTO", "label": "🌿 Johto"},
-		{"id": "OTHER", "label": "✨ Other"},
-		{"id": "ALL", "label": "🌐 All"}
+		{"id": "KANTO", "label": "Kanto"},
+		{"id": "JOHTO", "label": "Johto"},
+		{"id": "OTHER", "label": "Other"},
+		{"id": "ALL", "label": "All"}
 	]
 	col_region_buttons.clear()
 	for reg in col_regions:
@@ -5460,7 +5460,7 @@ func _update_col_region_buttons_ui() -> void:
 		totals[cr] += 1
 		if is_unl:
 			owned[cr] += 1
-	var reg_labels = {"KANTO": "🗺️ Kanto", "JOHTO": "🌿 Johto", "OTHER": "✨ Other", "ALL": "🌐 All"}
+	var reg_labels = {"KANTO": "Kanto", "JOHTO": "Johto", "OTHER": "Other", "ALL": "All"}
 	for rk in col_region_buttons:
 		var rbtn: Button = col_region_buttons[rk]
 		rbtn.text = "%s (%d/%d)" % [reg_labels.get(rk, rk), owned.get(rk, 0), totals.get(rk, 0)]
