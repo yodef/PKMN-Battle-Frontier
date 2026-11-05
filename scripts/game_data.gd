@@ -283,10 +283,48 @@ var stats_battles_total: int = 0
 var stats_packs_opened: int = 0
 
 # Ajustes de configuración
+const GameLocalizationScript = preload("res://scripts/localization.gd")
+signal language_changed(new_lang: String)
+var settings_language: String = "en" # "en" (English) or "es" (Español)
 var settings_music_volume: float = 0.8 # 0.0 to 1.0
 var settings_music_muted: bool = false
 var settings_sfx_volume: float = 0.9 # 0.0 to 1.0
 var settings_sfx_muted: bool = false
+
+func normalize_language_code(lang: String) -> String:
+	var c = lang.strip_edges().to_lower()
+	if c in ["es", "esp", "español", "espanol", "spanish", "1"]:
+		return "es"
+	return "en"
+
+func is_spanish() -> bool:
+	return settings_language == "es"
+
+func tr_text(en_text: String, es_text: String = "") -> String:
+	if settings_language == "es":
+		if es_text != "":
+			return es_text
+		return GameLocalizationScript.translate_en_to_es(en_text)
+	return en_text
+
+func set_language(lang: String, persist: bool = true) -> void:
+	var norm = normalize_language_code(lang)
+	var changed = (settings_language != norm)
+	settings_language = norm
+	apply_language_to_scene_tree()
+	if changed:
+		language_changed.emit(settings_language)
+	if persist:
+		save_profile()
+
+func apply_language_to_scene_tree() -> void:
+	var tree = get_tree()
+	if tree and tree.root:
+		GameLocalizationScript.translate_node_tree(tree.root, settings_language)
+
+func _on_scene_node_added(node: Node) -> void:
+	if settings_language == "es" and node:
+		GameLocalizationScript.translate_node_tree(node, settings_language)
 
 # Sesión activa (para mostrar el Login Screen en el primer acceso)
 var session_entered_lobby: bool = false
@@ -611,6 +649,8 @@ func load_types_from_csv() -> void:
 	file.close()
 	print("Global type chart loaded successfully. Total registered types: ", global_type_chart.size())
 
+var _loc_sync_accum: float = 0.0
+
 func _ready() -> void:
 	_setup_global_font_fallbacks()
 	if OS.has_feature("mobile") or OS.has_feature("android") or OS.has_feature("ios"):
@@ -619,6 +659,18 @@ func _ready() -> void:
 	load_moves_from_csv()
 	load_pokemon_from_csv()
 	load_profile()
+	var tree = get_tree()
+	if tree and not tree.node_added.is_connected(_on_scene_node_added):
+		tree.node_added.connect(_on_scene_node_added)
+	if settings_language == "es":
+		call_deferred("apply_language_to_scene_tree")
+
+func _process(delta: float) -> void:
+	if settings_language == "es":
+		_loc_sync_accum += delta
+		if _loc_sync_accum >= 0.12:
+			_loc_sync_accum = 0.0
+			apply_language_to_scene_tree()
 
 func _setup_global_font_fallbacks() -> void:
 	var emoji_path = "res://assets/fonts/emoji_font.ttf"
@@ -3327,6 +3379,7 @@ func get_save_dict() -> Dictionary:
 			"unlocked_episodes": adventure_unlocked_episodes.duplicate()
 		},
 		"settings": {
+			"language": settings_language,
 			"music_volume": settings_music_volume,
 			"music_muted": settings_music_muted,
 			"sfx_volume": settings_sfx_volume,
@@ -3483,10 +3536,12 @@ func apply_save_dict(data: Dictionary) -> bool:
 	
 	# Cargar ajustes
 	var sett = data.get("settings", {})
+	settings_language = normalize_language_code(str(sett.get("language", settings_language)))
 	settings_music_volume = float(sett.get("music_volume", 0.8))
 	settings_music_muted = bool(sett.get("music_muted", false))
 	settings_sfx_volume = float(sett.get("sfx_volume", 0.9))
 	settings_sfx_muted = bool(sett.get("sfx_muted", false))
+	apply_language_to_scene_tree()
 	
 	# Cargar misiones diarias
 	var daily = data.get("daily", {})
@@ -3602,8 +3657,10 @@ func erase_profile() -> void:
 	daily_missions_date = ""
 	daily_missions.clear()
 	daily_bonus_chest_claimed = false
+	settings_language = "en"
 	settings_music_volume = 0.8
 	settings_music_muted = false
 	settings_sfx_volume = 0.9
 	settings_sfx_muted = false
+	apply_language_to_scene_tree()
 	print("Profile erased. Starting fresh!")

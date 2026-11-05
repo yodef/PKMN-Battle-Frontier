@@ -285,5 +285,40 @@ func _ready() -> void:
 	var sw1_en_lbl = battle_scene.btn_switch_1.get_node_or_null("CardContent/Details/HPSection/EnergyText") as Label
 	assert(sw1_en_lbl != null and sw1_en_lbl.text == "⚡3/4", "Bench button 1 should display updated energy '⚡3/4'")
 
-	print("=== ALL MOVES, COMPACT UI, REQUIRED_EXP, MULTI-HIT, AND BENCH RECHARGE TESTS PASSED! ===")
+	# 6. Verify Language Option in SettingsModal (English / Español) & Automatic UI Translation
+	var main_menu_scene = load("res://scenes/main_menu.tscn").instantiate()
+	get_tree().root.add_child(main_menu_scene)
+	await get_tree().process_frame
+
+	var lang_opt: OptionButton = main_menu_scene.get_node_or_null("SettingsModal/SettingsBox/LanguagePanel/LanguageVBox/LanguageRow/LanguageOption")
+	assert(lang_opt != null, "SettingsModal must contain LanguageOption OptionButton")
+	assert(lang_opt.item_count == 2, "LanguageOption must have 2 items")
+	assert(lang_opt.get_item_text(0) == "English", "LanguageOption item 0 must be 'English'")
+	assert(lang_opt.get_item_text(1) == "Español", "LanguageOption item 1 must be 'Español'")
+
+	var settings_title_lbl: Label = main_menu_scene.get_node("SettingsModal/SettingsBox/SettingsTitle")
+	var btn_campaign_node: Button = main_menu_scene.get_node("ContentContainer/MenuButtons/BtnCampaign")
+
+	# Switch to Español via LanguageOption
+	lang_opt.select(1)
+	lang_opt.item_selected.emit(1)
+	assert(GameData.settings_language == "es", "Selecting index 1 must set GameData.settings_language to 'es'")
+	assert(settings_title_lbl.text == "⚙️ AJUSTES", "SettingsTitle must automatically translate to '⚙️ AJUSTES' (got '%s')" % settings_title_lbl.text)
+	assert("CAMPAÑA" in btn_campaign_node.text, "BtnCampaign must automatically translate to Spanish (got '%s')" % btn_campaign_node.text)
+	assert("Recargar" in battle_scene.btn_recover.text, "Battle Recharge button must automatically translate to Spanish (got '%s')" % battle_scene.btn_recover.text)
+	assert(lang_opt.get_item_text(0) == "English" and lang_opt.get_item_text(1) == "Español", "LanguageOption items must remain 'English' and 'Español'")
+
+	# Verify save dictionary persistence
+	var saved_dict = GameData.get_save_dict()
+	assert(saved_dict.get("settings", {}).get("language", "") == "es", "Save dictionary must persist settings.language == 'es'")
+
+	# Switch back to English via LanguageOption
+	lang_opt.select(0)
+	lang_opt.item_selected.emit(0)
+	assert(GameData.settings_language == "en", "Selecting index 0 must set GameData.settings_language to 'en'")
+	assert(settings_title_lbl.text == "⚙️ SETTINGS", "SettingsTitle must automatically restore to '⚙️ SETTINGS' (got '%s')" % settings_title_lbl.text)
+	assert("CAMPAIGN" in btn_campaign_node.text, "BtnCampaign must automatically restore to English (got '%s')" % btn_campaign_node.text)
+	assert("Recharge" in battle_scene.btn_recover.text, "Battle Recharge button must automatically restore to English (got '%s')" % battle_scene.btn_recover.text)
+
+	print("=== ALL MOVES, COMPACT UI, REQUIRED_EXP, MULTI-HIT, BENCH RECHARGE, AND LANGUAGE TESTS PASSED! ===")
 	get_tree().quit(0)

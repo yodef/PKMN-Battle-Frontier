@@ -242,6 +242,7 @@ var stat_candies_lbl: Label = null
 
 # --- MODAL AJUSTES / CONFIGURACIÓN ---
 @onready var settings_modal: Control = $SettingsModal
+@onready var language_option: OptionButton = $SettingsModal/SettingsBox/LanguagePanel/LanguageVBox/LanguageRow/LanguageOption
 @onready var music_vol_value_lbl: Label = $SettingsModal/SettingsBox/AudioPanel/AudioVBox/MusicVolHeaderRow/MusicVolValueLbl
 @onready var music_slider: HSlider = $SettingsModal/SettingsBox/AudioPanel/AudioVBox/MusicSlider
 @onready var mute_music_check: CheckBox = $SettingsModal/SettingsBox/AudioPanel/AudioVBox/MuteMusicCheck
@@ -595,6 +596,10 @@ func _ready() -> void:
 	
 	# Modal Ajustes
 	btn_close_settings.pressed.connect(func(): settings_modal.visible = false)
+	if language_option:
+		language_option.item_selected.connect(_on_language_option_selected)
+	if not GameData.language_changed.is_connected(_on_language_changed):
+		GameData.language_changed.connect(_on_language_changed)
 	music_slider.value_changed.connect(_on_music_slider_changed)
 	mute_music_check.toggled.connect(_on_mute_music_toggled)
 	sfx_slider.value_changed.connect(_on_sfx_slider_changed)
@@ -6004,6 +6009,10 @@ func _on_next_card_pressed() -> void:
 var _last_sfx_preview_time: int = 0
 
 func _apply_audio_settings() -> void:
+	if language_option:
+		var target_idx = 1 if GameData.settings_language == "es" else 0
+		if language_option.selected != target_idx:
+			language_option.select(target_idx)
 	if bgm_player:
 		bgm_player.volume_db = GameData.get_music_db()
 	if music_slider:
@@ -6019,6 +6028,21 @@ func _apply_audio_settings() -> void:
 		sfx_vol_value_lbl.text = "%d%%" % int(GameData.settings_sfx_volume * 100.0)
 	if mute_sfx_check:
 		mute_sfx_check.set_pressed_no_signal(GameData.settings_sfx_muted)
+
+func _on_language_option_selected(index: int) -> void:
+	var new_lang = "es" if index == 1 else "en"
+	GameData.set_language(new_lang)
+	GameData.play_combat_sfx("hit_normal")
+
+func _on_language_changed(_new_lang: String) -> void:
+	if language_option:
+		var target_idx = 1 if GameData.settings_language == "es" else 0
+		if language_option.selected != target_idx:
+			language_option.select(target_idx)
+	_update_lobby_header_badge()
+	if info_version_lbl:
+		info_version_lbl.text = "Version: %s • Pokémon Battle Frontier" % GameData.GAME_VERSION
+	GameData.apply_language_to_scene_tree()
 
 func _on_music_slider_changed(value: float) -> void:
 	GameData.settings_music_volume = value

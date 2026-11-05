@@ -221,6 +221,8 @@ func _ready() -> void:
 		enemy_type_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if player_type_lbl:
 		player_type_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if not GameData.language_changed.is_connected(_on_battle_language_changed):
+		GameData.language_changed.connect(_on_battle_language_changed)
 	
 	var em_sb = StyleBoxFlat.new()
 	em_sb.bg_color = Color("#121722")
@@ -3946,6 +3948,8 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 
 func _on_boost_toggled(_pressed: bool) -> void:
 	update_move_button_labels()
+	if GameData.is_spanish():
+		GameData.apply_language_to_scene_tree()
 
 # --- EVENTOS MULTIJUGADOR EN LÍNEA ---
 func _on_online_opponent_action(action: Dictionary) -> void:
@@ -4657,10 +4661,16 @@ func update_ui() -> void:
 		enemy_status_overlay.update_statuses(active_e)
 	
 	update_move_button_labels()
+	if GameData.is_spanish():
+		GameData.apply_language_to_scene_tree()
 
 func reset_selected_energy() -> void:
 	selected_energy_move1 = -1
 	selected_energy_move2 = -1
+
+func _on_battle_language_changed(_new_lang: String) -> void:
+	update_ui()
+	GameData.apply_language_to_scene_tree()
 
 func get_move_effect_summary(move, boosted: bool) -> String:
 	if not move:
@@ -5035,6 +5045,8 @@ func update_move_button_labels() -> void:
 		else:
 			btn_bag.text = "🎒 Bag"
 			btn_bag.modulate = Color.WHITE
+	if GameData.is_spanish():
+		GameData.apply_language_to_scene_tree()
 
 func get_energy_icons(current: int, maximum: int) -> String:
 	var s = ""
@@ -5070,6 +5082,8 @@ func set_controls_enabled(enabled: bool) -> void:
 				child.disabled = not allow
 	if allow:
 		update_move_button_labels()
+	if GameData.is_spanish():
+		GameData.apply_language_to_scene_tree()
 
 func log_action(text: String) -> void:
 	combat_history.append(text)
@@ -5079,6 +5093,8 @@ func log_action(text: String) -> void:
 		log_label.text = "[center]" + combat_history[0] + "[/center]"
 	else:
 		log_label.text = "[center][color=#788a9c][font_size=11]%s[/font_size][/color]\n[font_size=13]%s[/font_size][/center]" % [combat_history[0], combat_history[1]]
+	if GameData.is_spanish():
+		GameData.apply_language_to_scene_tree()
 
 func show_game_over(title: String, subtitle: String) -> void:
 	if is_enemy_fainting or is_player_fainting:
