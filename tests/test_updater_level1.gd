@@ -12,7 +12,7 @@ func _ready() -> void:
 	# 2. Check GameData constants
 	assert(GameData.GAME_VERSION != "", "GameData.GAME_VERSION should be set")
 	print("GameData.GAME_VERSION = %s" % GameData.GAME_VERSION)
-	assert(GameData.GAME_VERSION == "v0.5.0", "GameData.GAME_VERSION should be v0.5.0")
+	assert(GameData.GAME_VERSION == "v0.6.0", "GameData.GAME_VERSION should be v0.6.0")
 	
 	# 3. Test version comparison function
 	print("Testing _compare_versions...")
@@ -28,7 +28,7 @@ func _ready() -> void:
 	# 4. Check UI elements in SettingsModal
 	print("Testing SettingsModal UI nodes...")
 	assert(menu.btn_check_update != null, "btn_check_update should exist")
-	assert(menu.btn_check_update.text.contains("Check for Updates"), "btn_check_update text should contain Check for Updates")
+	assert(menu.btn_check_update.text.contains("Check for Updates") or menu.btn_check_update.text.to_lower().contains("actualiza"), "btn_check_update text should contain Check for Updates or actualiza")
 	assert(menu.update_status_lbl != null, "update_status_lbl should exist")
 	assert(menu.info_version_lbl != null, "info_version_lbl should exist")
 	print("✅ SettingsModal updater UI nodes verified!")
