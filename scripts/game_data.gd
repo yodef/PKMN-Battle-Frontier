@@ -302,6 +302,9 @@ func normalize_language_code(lang: String) -> String:
 func is_spanish() -> bool:
 	return settings_language == "es"
 
+func get_current_language() -> String:
+	return settings_language
+
 func tr_text(en_text: String, es_text: String = "") -> String:
 	if settings_language == "es":
 		if es_text != "":
@@ -1380,6 +1383,49 @@ signal diamonds_changed(new_diamonds: int)
 signal rare_candies_changed(new_candies: int)
 signal card_stocks_changed()
 
+const BOOSTER_PACKS: Dictionary = {
+	"kanto": {
+		"id": "kanto",
+		"name": "Kanto Booster Pack",
+		"region": "Kanto",
+		"cost": 5,
+		"accent_color": Color("#FFD700"),
+		"texture_path": "res://assets/Kanto Booster Pack.PNG",
+		"fallback_texture": "res://assets/kanto_booster_pack.png",
+		"desc": "Discover the original 151 Pokémon from the Kanto region! Classic Starters, powerful Gym favorites, and the Legendary Birds."
+	},
+	"johto": {
+		"id": "johto",
+		"name": "Johto Booster Pack",
+		"region": "Johto",
+		"cost": 5,
+		"accent_color": Color("#4FC3F7"),
+		"texture_path": "res://assets/Johto Booster Pack.jpg",
+		"fallback_texture": "res://assets/Johto Booster Pack.jpg",
+		"desc": "Journey through the Johto region! Collect 100 new species, Baby Pokémon, and the Legendary Beasts."
+	},
+	"hoenn": {
+		"id": "hoenn",
+		"name": "Hoenn Booster Pack",
+		"region": "Hoenn",
+		"cost": 5,
+		"accent_color": Color("#FF7043"),
+		"texture_path": "res://assets/Hoenn Booster Pack.jpg",
+		"fallback_texture": "res://assets/Hoenn Booster Pack.jpg",
+		"desc": "Venture into the Hoenn region! Ancient weather legends, diverse environments, and heroic Pokémon."
+	},
+	"sinnoh": {
+		"id": "sinnoh",
+		"name": "Sinnoh Booster Pack",
+		"region": "Sinnoh",
+		"cost": 5,
+		"accent_color": Color("#BA68C8"),
+		"texture_path": "res://assets/Sinnoh Booster Pack.jpg",
+		"fallback_texture": "res://assets/Sinnoh Booster Pack.jpg",
+		"desc": "Explore the Sinnoh region! Master cross-generational evolutions and mythic space-time Pokémon."
+	}
+}
+
 var player_diamonds: int = 0:
 	set(val):
 		player_diamonds = val
@@ -2223,7 +2269,7 @@ func play_custom_sfx(stream: AudioStream) -> void:
 	sfx_player_node.volume_db = get_sfx_db()
 	sfx_player_node.play()
 
-func open_booster_pack(pack_type: String = "test", cost_diamonds: int = 0) -> Array[Dictionary]:
+func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> Array[Dictionary]:
 	if player_diamonds < cost_diamonds:
 		return []
 		
@@ -2232,7 +2278,28 @@ func open_booster_pack(pack_type: String = "test", cost_diamonds: int = 0) -> Ar
 	if all_pokemon_ids.is_empty():
 		return result
 		
-	var candidate_ids = all_pokemon_ids.duplicate()
+	var target_region = ""
+	var key = pack_type.to_lower().strip_edges()
+	if BOOSTER_PACKS.has(key):
+		target_region = BOOSTER_PACKS[key].get("region", "")
+	else:
+		for pid in BOOSTER_PACKS:
+			if BOOSTER_PACKS[pid].get("region", "").to_lower() == key:
+				target_region = BOOSTER_PACKS[pid].get("region", "")
+				break
+		if target_region == "":
+			target_region = pack_type
+
+	var candidate_ids: Array[int] = []
+	if target_region != "":
+		for id in all_pokemon_ids:
+			var d = pokemon_catalog.get(id, {})
+			if str(d.get("region", "")).to_lower() == target_region.to_lower():
+				candidate_ids.append(id)
+				
+	if candidate_ids.size() < 3:
+		candidate_ids = all_pokemon_ids.duplicate()
+		
 	candidate_ids.shuffle()
 	
 	var picked_ids: Array[int] = []
@@ -3233,28 +3300,73 @@ func get_item_texture(item_name: String) -> Texture2D:
 				return ImageTexture.create_from_image(img)
 	return null
 
-func get_booster_pack_texture() -> Texture2D:
-	var res_path = "res://assets/kanto_booster_pack.png"
-	if ResourceLoader.exists(res_path):
-		return load(res_path)
-	var paths = [
-		ProjectSettings.globalize_path(res_path),
-		"D:/Games/Pokemon Battle Frontier/ART/Kanto Booster Pack.PNG",
-		"D:/Games/Pokemon Battle Frontier/ART/Kanto Booster Pack.png",
-		"D:/Games/Pokemon Battle Frontier/APP/pkmn-battle-frontier/assets/kanto_booster_pack.png"
-	]
-	for p in paths:
-		if FileAccess.file_exists(p):
-			var img = Image.load_from_file(p)
+var booster_textures_cache: Dictionary = {}
+
+func get_booster_pack_texture(pack_id_or_region: String = "kanto") -> Texture2D:
+	var key = pack_id_or_region.strip_edges().to_lower()
+	if booster_textures_cache.has(key):
+		return booster_textures_cache[key]
+		
+	var pack_info = BOOSTER_PACKS.get(key, {})
+	var candidates: Array[String] = []
+	if not pack_info.is_empty():
+		candidates.append(str(pack_info.get("texture_path", "")))
+		candidates.append(str(pack_info.get("fallback_texture", "")))
+	else:
+		for pid in BOOSTER_PACKS:
+			var p = BOOSTER_PACKS[pid]
+			if p.get("region", "").to_lower() == key:
+				candidates.append(str(p.get("texture_path", "")))
+				candidates.append(str(p.get("fallback_texture", "")))
+				break
+				
+	if candidates.is_empty():
+		candidates.append("res://assets/Kanto Booster Pack.PNG")
+		candidates.append("res://assets/kanto_booster_pack.png")
+		
+	for res_path in candidates:
+		if res_path.is_empty():
+			continue
+		if ResourceLoader.exists(res_path):
+			var tex = load(res_path)
+			if tex:
+				booster_textures_cache[key] = tex
+				return tex
+		var abs_p = ProjectSettings.globalize_path(res_path)
+		if FileAccess.file_exists(abs_p):
+			var img = Image.load_from_file(abs_p)
 			if img:
-				return ImageTexture.create_from_image(img)
+				var itex = ImageTexture.create_from_image(img)
+				booster_textures_cache[key] = itex
+				return itex
+				
 	return null
 
-func get_booster_rarity_rates() -> Array[Dictionary]:
+func get_booster_pack_border_texture() -> Texture2D:
+	var path = "res://assets/ui/borderstextures.png"
+	if ResourceLoader.exists(path):
+		return load(path)
+	var abs_p = ProjectSettings.globalize_path(path)
+	if FileAccess.file_exists(abs_p):
+		var img = Image.load_from_file(abs_p)
+		if img:
+			return ImageTexture.create_from_image(img)
+	return null
+
+func get_booster_rarity_rates(region: String = "") -> Array[Dictionary]:
 	var counts = {}
 	var weighted = {}
 	var total_w = 0.0
-	for id in all_pokemon_ids:
+	var target_ids: Array[int] = []
+	if region.strip_edges() != "":
+		for id in all_pokemon_ids:
+			var d = pokemon_catalog.get(id, {})
+			if str(d.get("region", "")).to_lower() == region.strip_edges().to_lower():
+				target_ids.append(id)
+	if target_ids.is_empty():
+		target_ids = all_pokemon_ids
+		
+	for id in target_ids:
 		var d = pokemon_catalog.get(id, {})
 		var r_info = get_rarity_display_info(str(d.get("rarity", "Common")))
 		var r_name = r_info["name"]

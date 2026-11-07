@@ -198,6 +198,7 @@ var showcase_cycle_count: int = 0
 var showcase_is_animating: bool = false
 
 # --- SHOP EXPANSION: TABS, RECYCLE, HIDDEN SHOP ---
+const GameLocalizationScript = preload("res://scripts/localization.gd")
 var shop_active_tab: String = "PACKS" # "PACKS", "RECYCLE", "HIDDEN"
 var hidden_shop_filter: String = "ALL"
 var hidden_shop_region: String = "KANTO" # "KANTO", "JOHTO", "OTHER", "ALL"
@@ -206,6 +207,12 @@ var btn_shop_tab_packs: Button = null
 var btn_shop_tab_recycle: Button = null
 var btn_shop_tab_hidden: Button = null
 var packs_container: VBoxContainer = null
+var packs_catalog_view: VBoxContainer = null
+var selected_booster_pack_id: String = "kanto"
+var btn_small_cost_pack: Button = null
+var pack_detail_art_container: MarginContainer = null
+var pack_detail_region_lbl: Label = null
+var btn_back_from_detail: Button = null
 var recycle_container: VBoxContainer = null
 var hidden_shop_container: VBoxContainer = null
 var btn_bulk_recycle: Button = null
@@ -4659,7 +4666,7 @@ func _setup_shop_sections() -> void:
 	var dia_idx = shop_diamonds_lbl.get_index()
 	shop_box.move_child(shop_tabs_row, dia_idx + 1)
 	
-	# 3. Create Packs Container and re-parent PackPanel, BtnOpenPack, BtnUnlockAllDev
+	# 3. Create Packs Container, Regional Catalog & Detail Views
 	packs_container = VBoxContainer.new()
 	packs_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	packs_container.add_theme_constant_override("separation", 10)
@@ -4667,14 +4674,19 @@ func _setup_shop_sections() -> void:
 	var pack_panel = shop_box.get_node_or_null("PackPanel")
 	if pack_panel:
 		shop_box.remove_child(pack_panel)
-		packs_container.add_child(pack_panel)
 	if btn_open_pack:
 		shop_box.remove_child(btn_open_pack)
-		packs_container.add_child(btn_open_pack)
+		btn_open_pack.visible = false
 		
 	shop_box.add_child(packs_container)
 	var tabs_idx = shop_tabs_row.get_index()
 	shop_box.move_child(packs_container, tabs_idx + 1)
+	
+	_setup_packs_catalog_view()
+	if pack_panel:
+		_setup_pack_detail_panel(pack_panel)
+		packs_container.add_child(pack_panel)
+		pack_panel.visible = false
 	
 	# 4. Create Recycle Container
 	recycle_container = VBoxContainer.new()
@@ -4911,7 +4923,17 @@ func _switch_shop_tab(tab_name: String) -> void:
 		
 	_update_shop_currencies()
 	if tab_name == "PACKS":
-		_update_shop_showcase_and_rates()
+		var pack_panel = packs_container.get_node_or_null("PackPanel") if packs_container else null
+		if pack_panel and pack_panel.visible:
+			_update_shop_showcase_and_rates()
+		else:
+			if packs_catalog_view:
+				packs_catalog_view.visible = true
+			if pack_panel:
+				pack_panel.visible = false
+			_stop_showcase_timer()
+			if packs_catalog_view and is_inside_tree():
+				GameLocalizationScript.translate_node_tree(packs_catalog_view, GameData.get_current_language())
 	elif tab_name == "RECYCLE":
 		_stop_showcase_timer()
 		_populate_recycle_view()
@@ -5279,6 +5301,351 @@ func _on_buy_hidden_card_pressed(cid: int, card_name: String, cost: int) -> void
 			shop_feedback_lbl.modulate = Color(1.0, 0.4, 0.4)
 			shop_feedback_lbl.visible = true
 
+func _setup_packs_catalog_view() -> void:
+	if packs_catalog_view != null:
+		return
+	packs_catalog_view = VBoxContainer.new()
+	packs_catalog_view.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	packs_catalog_view.add_theme_constant_override("separation", 10)
+	
+	var cat_header = PanelContainer.new()
+	cat_header.add_theme_stylebox_override("panel", _create_pokemon_panel_stylebox())
+	var ch_vbox = VBoxContainer.new()
+	ch_vbox.add_theme_constant_override("separation", 3)
+	
+	var ch_title = Label.new()
+	ch_title.text = "📦 REGIONAL BOOSTER PACKS"
+	ch_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ch_title.add_theme_font_size_override("font_size", 14)
+	ch_title.add_theme_color_override("font_color", Color("#FFD700"))
+	ch_vbox.add_child(ch_title)
+	
+	var ch_desc = Label.new()
+	ch_desc.text = "Choose a Booster Pack to view cards, drop rates & showcases!"
+	ch_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ch_desc.add_theme_font_size_override("font_size", 11)
+	ch_desc.add_theme_color_override("font_color", Color("#E2E8F0"))
+	ch_vbox.add_child(ch_desc)
+	cat_header.add_child(ch_vbox)
+	packs_catalog_view.add_child(cat_header)
+	
+	var scroll = ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size = Vector2(0, 310)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	
+	var row = HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_theme_constant_override("separation", 14)
+	
+	for pid in ["kanto", "johto", "hoenn", "sinnoh"]:
+		var p_info = GameData.BOOSTER_PACKS[pid]
+		var pack_entry = _create_catalog_pack_card(pid, p_info)
+		row.add_child(pack_entry)
+		
+	scroll.add_child(row)
+	packs_catalog_view.add_child(scroll)
+	packs_container.add_child(packs_catalog_view)
+
+func _setup_pack_detail_panel(pack_panel: Control) -> void:
+	var p_vbox = pack_panel.get_node_or_null("VBox")
+	if not p_vbox:
+		return
+		
+	var top_bar = HBoxContainer.new()
+	top_bar.custom_minimum_size = Vector2(0, 32)
+	top_bar.alignment = BoxContainer.ALIGNMENT_BEGIN
+	
+	btn_back_from_detail = Button.new()
+	btn_back_from_detail.text = "⬅ Back to Packs"
+	btn_back_from_detail.custom_minimum_size = Vector2(135, 30)
+	btn_back_from_detail.add_theme_font_size_override("font_size", 12)
+	btn_back_from_detail.add_theme_color_override("font_color", Color("#81D4FA"))
+	
+	var sb_back = StyleBoxFlat.new()
+	sb_back.bg_color = Color(0.08, 0.12, 0.20, 0.95)
+	sb_back.border_color = Color("#29B6F6")
+	sb_back.set_border_width_all(1)
+	sb_back.set_corner_radius_all(6)
+	sb_back.set_content_margin_all(5)
+	btn_back_from_detail.add_theme_stylebox_override("normal", sb_back)
+	
+	var sb_back_h = StyleBoxFlat.new()
+	sb_back_h.bg_color = Color(0.12, 0.18, 0.28, 0.98)
+	sb_back_h.border_color = Color("#81D4FA")
+	sb_back_h.set_border_width_all(2)
+	sb_back_h.set_corner_radius_all(6)
+	sb_back_h.set_content_margin_all(5)
+	btn_back_from_detail.add_theme_stylebox_override("hover", sb_back_h)
+	
+	btn_back_from_detail.pressed.connect(_back_to_packs_catalog)
+	top_bar.add_child(btn_back_from_detail)
+	
+	p_vbox.add_child(top_bar)
+	p_vbox.move_child(top_bar, 0)
+	
+	var header_row = p_vbox.get_node_or_null("PackHeaderRow")
+	if header_row:
+		if pack_art_texture:
+			pack_art_texture.visible = false
+			
+		pack_detail_art_container = MarginContainer.new()
+		pack_detail_art_container.custom_minimum_size = Vector2(120, 168)
+		header_row.add_child(pack_detail_art_container)
+		header_row.move_child(pack_detail_art_container, 0)
+		
+		var header_info = header_row.get_node_or_null("PackHeaderInfo")
+		if header_info:
+			var pack_price = header_info.get_node_or_null("PackPrice")
+			if pack_price:
+				pack_price.visible = false
+				
+			pack_detail_region_lbl = Label.new()
+			pack_detail_region_lbl.add_theme_font_size_override("font_size", 11)
+			pack_detail_region_lbl.add_theme_color_override("font_color", Color("#81D4FA"))
+			header_info.add_child(pack_detail_region_lbl)
+			header_info.move_child(pack_detail_region_lbl, 1)
+			
+			btn_small_cost_pack = Button.new()
+			btn_small_cost_pack.text = "Cost: 5 💎"
+			btn_small_cost_pack.custom_minimum_size = Vector2(130, 36)
+			btn_small_cost_pack.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+			btn_small_cost_pack.add_theme_font_size_override("font_size", 13)
+			btn_small_cost_pack.add_theme_color_override("font_color", Color("#33FF77"))
+			
+			var sb_c_n = StyleBoxFlat.new()
+			sb_c_n.bg_color = Color(0.08, 0.22, 0.14, 0.95)
+			sb_c_n.border_color = Color("#2ecc71")
+			sb_c_n.set_border_width_all(2)
+			sb_c_n.set_corner_radius_all(6)
+			sb_c_n.set_content_margin_all(6)
+			btn_small_cost_pack.add_theme_stylebox_override("normal", sb_c_n)
+			
+			var sb_c_h = StyleBoxFlat.new()
+			sb_c_h.bg_color = Color(0.12, 0.30, 0.20, 0.98)
+			sb_c_h.border_color = Color("#58e89d")
+			sb_c_h.set_border_width_all(2)
+			sb_c_h.set_corner_radius_all(6)
+			sb_c_h.set_content_margin_all(6)
+			btn_small_cost_pack.add_theme_stylebox_override("hover", sb_c_h)
+			
+			btn_small_cost_pack.pressed.connect(_on_open_selected_pack_pressed)
+			header_info.add_child(btn_small_cost_pack)
+
+func _create_booster_pack_visual_widget(pack_id: String, is_large: bool = false) -> Control:
+	var pack_info = GameData.BOOSTER_PACKS.get(pack_id, {})
+	var accent: Color = pack_info.get("accent_color", Color("#FFD700"))
+	var border_tex = GameData.get_booster_pack_border_texture()
+	var pack_tex = GameData.get_booster_pack_texture(pack_id)
+	
+	var w = 150 if not is_large else 120
+	var h = 210 if not is_large else 168
+	var crimp_h = 13 if not is_large else 12
+	
+	var pack_card = PanelContainer.new()
+	pack_card.custom_minimum_size = Vector2(w, h)
+	pack_card.clip_contents = true
+	
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.04, 0.05, 0.08, 0.98)
+	sb.border_color = accent
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(6)
+	sb.content_margin_left = 3
+	sb.content_margin_right = 3
+	sb.content_margin_top = 3
+	sb.content_margin_bottom = 3
+	pack_card.add_theme_stylebox_override("panel", sb)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 2)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	pack_card.add_child(vbox)
+	
+	var top_crimp = TextureRect.new()
+	top_crimp.custom_minimum_size = Vector2(w - 6, crimp_h)
+	top_crimp.texture = border_tex
+	top_crimp.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	top_crimp.stretch_mode = TextureRect.STRETCH_TILE
+	top_crimp.modulate = accent.lerp(Color.WHITE, 0.4)
+	vbox.add_child(top_crimp)
+	
+	var art_container = PanelContainer.new()
+	art_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	art_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	art_container.clip_contents = true
+	
+	var art_rect = TextureRect.new()
+	art_rect.texture = pack_tex
+	art_rect.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	art_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	art_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	art_container.add_child(art_rect)
+	
+	GameData.apply_foil_overlay(art_container, "Legendary")
+	vbox.add_child(art_container)
+	
+	var bot_crimp = TextureRect.new()
+	bot_crimp.custom_minimum_size = Vector2(w - 6, crimp_h)
+	bot_crimp.texture = border_tex
+	bot_crimp.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bot_crimp.stretch_mode = TextureRect.STRETCH_TILE
+	bot_crimp.modulate = accent.lerp(Color.WHITE, 0.4)
+	vbox.add_child(bot_crimp)
+	
+	return pack_card
+
+func _create_catalog_pack_card(pid: String, p_info: Dictionary) -> Control:
+	var accent: Color = p_info.get("accent_color", Color("#FFD700"))
+	var outer = VBoxContainer.new()
+	outer.custom_minimum_size = Vector2(150, 280)
+	outer.add_theme_constant_override("separation", 6)
+	outer.alignment = BoxContainer.ALIGNMENT_CENTER
+	
+	var pack_card = _create_booster_pack_visual_widget(pid, false)
+	pack_card.mouse_filter = Control.MOUSE_FILTER_PASS
+	pack_card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	outer.add_child(pack_card)
+	
+	var title_lbl = Label.new()
+	title_lbl.text = p_info.get("name", "")
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_lbl.add_theme_font_size_override("font_size", 12)
+	title_lbl.add_theme_color_override("font_color", accent)
+	outer.add_child(title_lbl)
+	
+	var reg_name = p_info.get("region", "")
+	var count = _get_region_card_count(reg_name)
+	var reg_lbl = Label.new()
+	reg_lbl.text = "📍 %s • %d Cards" % [reg_name, count]
+	reg_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	reg_lbl.add_theme_font_size_override("font_size", 10)
+	reg_lbl.add_theme_color_override("font_color", Color("#90A4AE"))
+	outer.add_child(reg_lbl)
+	
+	var btn_inspect = Button.new()
+	btn_inspect.text = "Inspect Pack ➡"
+	btn_inspect.custom_minimum_size = Vector2(130, 32)
+	btn_inspect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	btn_inspect.add_theme_font_size_override("font_size", 11)
+	btn_inspect.add_theme_color_override("font_color", accent)
+	
+	var sb_n = StyleBoxFlat.new()
+	sb_n.bg_color = Color(0.08, 0.10, 0.16, 0.95)
+	sb_n.border_color = accent.lerp(Color.WHITE, 0.2)
+	sb_n.set_border_width_all(1)
+	sb_n.set_corner_radius_all(6)
+	btn_inspect.add_theme_stylebox_override("normal", sb_n)
+	
+	var sb_h = StyleBoxFlat.new()
+	sb_h.bg_color = Color(0.14, 0.18, 0.26, 0.98)
+	sb_h.border_color = accent
+	sb_h.set_border_width_all(2)
+	sb_h.set_corner_radius_all(6)
+	btn_inspect.add_theme_stylebox_override("hover", sb_h)
+	
+	btn_inspect.pressed.connect(func(): _open_booster_pack_detail(pid))
+	outer.add_child(btn_inspect)
+	
+	outer.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			_open_booster_pack_detail(pid)
+	)
+	
+	return outer
+
+func _open_booster_pack_detail(pid: String) -> void:
+	selected_booster_pack_id = pid
+	if packs_catalog_view:
+		packs_catalog_view.visible = false
+	var pack_panel = packs_container.get_node_or_null("PackPanel") if packs_container else null
+	if pack_panel:
+		pack_panel.visible = true
+	if btn_open_pack:
+		btn_open_pack.visible = false
+		
+	_update_selected_pack_detail_ui()
+	_update_shop_showcase_and_rates()
+	if is_inside_tree() and pack_panel:
+		GameLocalizationScript.translate_node_tree(pack_panel, GameData.get_current_language())
+
+func _back_to_packs_catalog() -> void:
+	var pack_panel = packs_container.get_node_or_null("PackPanel") if packs_container else null
+	if pack_panel:
+		pack_panel.visible = false
+	if btn_open_pack:
+		btn_open_pack.visible = false
+	if packs_catalog_view:
+		packs_catalog_view.visible = true
+	_stop_showcase_timer()
+	if is_inside_tree() and packs_catalog_view:
+		GameLocalizationScript.translate_node_tree(packs_catalog_view, GameData.get_current_language())
+
+func _update_selected_pack_detail_ui() -> void:
+	var p_info = GameData.BOOSTER_PACKS.get(selected_booster_pack_id, {})
+	var reg_name = str(p_info.get("region", "Kanto"))
+	var accent: Color = p_info.get("accent_color", Color("#FFD700"))
+	var count = _get_region_card_count(reg_name)
+	
+	var pack_panel = packs_container.get_node_or_null("PackPanel") if packs_container else null
+	if not pack_panel:
+		return
+		
+	var pack_title = pack_panel.find_child("PackTitle", true, false) as Label
+	if pack_title:
+		pack_title.text = p_info.get("name", "Booster Pack")
+		pack_title.add_theme_color_override("font_color", accent)
+		
+	if pack_detail_region_lbl:
+		pack_detail_region_lbl.text = "📍 Region: %s • %d Pokémon Available" % [reg_name, count]
+		pack_detail_region_lbl.add_theme_color_override("font_color", accent.lerp(Color.WHITE, 0.4))
+		
+	var pack_desc = pack_panel.find_child("PackDesc", true, false) as Label
+	if pack_desc:
+		pack_desc.text = p_info.get("desc", "")
+		
+	if btn_small_cost_pack:
+		var cost = int(p_info.get("cost", 5))
+		btn_small_cost_pack.text = "Cost: %d 💎" % cost
+		btn_small_cost_pack.disabled = (GameData.player_diamonds < cost)
+		
+	if pack_detail_art_container:
+		for c in pack_detail_art_container.get_children():
+			pack_detail_art_container.remove_child(c)
+			c.queue_free()
+		var visual = _create_booster_pack_visual_widget(selected_booster_pack_id, true)
+		pack_detail_art_container.add_child(visual)
+
+func _get_region_card_count(region_name: String) -> int:
+	var count = 0
+	var reg_lower = region_name.strip_edges().to_lower()
+	for pid in GameData.all_pokemon_ids:
+		var d = GameData.pokemon_catalog.get(pid, {})
+		if str(d.get("region", "")).strip_edges().to_lower() == reg_lower:
+			count += 1
+	return count
+
+func _on_open_selected_pack_pressed() -> void:
+	var p_info = GameData.BOOSTER_PACKS.get(selected_booster_pack_id, {})
+	var cost = int(p_info.get("cost", BOOSTER_PACK_COST))
+	if GameData.player_diamonds < cost:
+		if shop_feedback_lbl:
+			shop_feedback_lbl.text = "❌ Not enough Diamonds! Requires 💎 %d Diamonds. Complete Tournament phases to earn Diamonds." % cost
+			shop_feedback_lbl.visible = true
+		return
+		
+	var opened = GameData.open_booster_pack(selected_booster_pack_id, cost)
+	if opened.is_empty():
+		return
+	refresh_cards_data_from_catalog()
+	_update_lobby_header_badge()
+	_update_shop_currencies()
+	_show_pack_reveal_ui(opened)
+
 func _on_shop_pressed() -> void:
 	if shop_feedback_lbl:
 		shop_feedback_lbl.text = ""
@@ -5294,17 +5661,19 @@ func _on_shop_pressed() -> void:
 	_switch_shop_tab(shop_active_tab)
 
 func _update_shop_showcase_and_rates() -> void:
-	# 1. Booster Pack Foil Art
-	if pack_art_texture:
-		var pack_tex = GameData.get_booster_pack_texture()
-		if pack_tex:
-			pack_art_texture.texture = pack_tex
+	var p_info = GameData.BOOSTER_PACKS.get(selected_booster_pack_id, {})
+	var reg_name = str(p_info.get("region", "Kanto"))
+
+	# 1. Booster Pack Visual
+	if pack_detail_art_container and pack_detail_art_container.get_child_count() == 0:
+		var visual = _create_booster_pack_visual_widget(selected_booster_pack_id, true)
+		pack_detail_art_container.add_child(visual)
 
 	# 2. Rarity Drop Rates Grid
 	if rates_grid:
 		for child in rates_grid.get_children():
 			child.queue_free()
-		var rates = GameData.get_booster_rarity_rates()
+		var rates = GameData.get_booster_rarity_rates(reg_name)
 		for r in rates:
 			var item_box = HBoxContainer.new()
 			item_box.add_theme_constant_override("separation", 6)
@@ -5323,9 +5692,12 @@ func _update_shop_showcase_and_rates() -> void:
 			
 			rates_grid.add_child(item_box)
 
-	# 3. Featured Showcase Cards (Rotating Epic & Legendary Foils)
+	# 3. Featured Showcase Cards (Rotating Epic & Legendary Foils for this region)
 	if showcase_header:
-		showcase_header.text = "✨ FEATURED FOIL CARDS (EPIC & LEGENDARY):"
+		showcase_header.text = "✨ FEATURED FOIL CARDS (EPIC & LEGENDARY - %s):" % reg_name.to_upper()
+	showcase_legendary_queue.clear()
+	showcase_epic_queue.clear()
+	showcase_cycle_count = 0
 	_rotate_showcase_cards(false)
 	_start_showcase_timer()
 
@@ -5390,13 +5762,23 @@ func _populate_showcase_cards() -> void:
 		showcase_row.add_child(showcase_card)
 
 func _refill_showcase_queues_if_needed() -> void:
+	var p_info = GameData.BOOSTER_PACKS.get(selected_booster_pack_id, {})
+	var reg_name = str(p_info.get("region", "Kanto")).strip_edges().to_lower()
+	
 	if showcase_legendary_queue.size() < 3:
 		var l_ids: Array[int] = []
 		for pid in GameData.all_pokemon_ids:
 			var d = GameData.pokemon_catalog.get(pid, {})
-			var r = str(d.get("rarity", "")).strip_edges().to_lower()
-			if r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
-				l_ids.append(pid)
+			if str(d.get("region", "")).strip_edges().to_lower() == reg_name:
+				var r = str(d.get("rarity", "")).strip_edges().to_lower()
+				if r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
+					l_ids.append(pid)
+		if l_ids.is_empty():
+			for pid in GameData.all_pokemon_ids:
+				var d = GameData.pokemon_catalog.get(pid, {})
+				var r = str(d.get("rarity", "")).strip_edges().to_lower()
+				if r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
+					l_ids.append(pid)
 		l_ids.shuffle()
 		showcase_legendary_queue.append_array(l_ids)
 		
@@ -5404,9 +5786,16 @@ func _refill_showcase_queues_if_needed() -> void:
 		var e_ids: Array[int] = []
 		for pid in GameData.all_pokemon_ids:
 			var d = GameData.pokemon_catalog.get(pid, {})
-			var r = str(d.get("rarity", "")).strip_edges().to_lower()
-			if r in ["epic", "epica", "epico", "sr", "super rare"]:
-				e_ids.append(pid)
+			if str(d.get("region", "")).strip_edges().to_lower() == reg_name:
+				var r = str(d.get("rarity", "")).strip_edges().to_lower()
+				if r in ["epic", "epica", "epico", "sr", "super rare"]:
+					e_ids.append(pid)
+		if e_ids.is_empty():
+			for pid in GameData.all_pokemon_ids:
+				var d = GameData.pokemon_catalog.get(pid, {})
+				var r = str(d.get("rarity", "")).strip_edges().to_lower()
+				if r in ["epic", "epica", "epico", "sr", "super rare"]:
+					e_ids.append(pid)
 		e_ids.shuffle()
 		showcase_epic_queue.append_array(e_ids)
 
@@ -5502,18 +5891,7 @@ func _create_showcase_card_node(d: Dictionary) -> Control:
 	return panel
 
 func _on_open_pack_pressed() -> void:
-	if GameData.player_diamonds < BOOSTER_PACK_COST:
-		if shop_feedback_lbl:
-			shop_feedback_lbl.text = "❌ Not enough Diamonds! Requires 💎 %d Diamonds. Complete Tournament phases to earn Diamonds." % BOOSTER_PACK_COST
-		return
-		
-	var opened = GameData.open_booster_pack("kanto_booster", BOOSTER_PACK_COST)
-	if opened.is_empty():
-		return
-	refresh_cards_data_from_catalog()
-	_update_lobby_header_badge()
-	_update_shop_currencies()
-	_show_pack_reveal_ui(opened)
+	_on_open_selected_pack_pressed()
 
 func _show_pack_reveal_ui(cards: Array) -> void:
 	_stop_showcase_timer()
@@ -5524,8 +5902,10 @@ func _show_pack_reveal_ui(cards: Array) -> void:
 	pack_reveal_box.visible = true
 	
 	if btn_reveal_another:
-		btn_reveal_another.text = "✨ OPEN ANOTHER PACK (💎 %d Diamonds)" % BOOSTER_PACK_COST
-		btn_reveal_another.disabled = (GameData.player_diamonds < BOOSTER_PACK_COST)
+		var p_info = GameData.BOOSTER_PACKS.get(selected_booster_pack_id, {})
+		var cost = int(p_info.get("cost", BOOSTER_PACK_COST))
+		btn_reveal_another.text = "✨ OPEN ANOTHER PACK (💎 %d Diamonds)" % cost
+		btn_reveal_another.disabled = (GameData.player_diamonds < cost)
 	
 	for child in reveal_cards_row.get_children():
 		reveal_cards_row.remove_child(child)
@@ -5606,7 +5986,9 @@ func _create_pack_reveal_container() -> void:
 		shop_box.visible = true
 		_update_lobby_header_badge()
 		if shop_active_tab == "PACKS":
-			_start_showcase_timer()
+			var pack_panel = packs_container.get_node_or_null("PackPanel") if packs_container else null
+			if pack_panel and pack_panel.visible:
+				_start_showcase_timer()
 	)
 	actions_box.add_child(btn_back_shop)
 
@@ -7421,10 +7803,15 @@ func _on_diamonds_changed(_new_amount: int = 0) -> void:
 		campaign_gold_lbl.text = "💰 %d G  |  💎 %d" % [GameData.campaign_gold, GameData.player_diamonds]
 	if stat_diamonds_lbl:
 		stat_diamonds_lbl.text = "💎 Diamonds: %d" % GameData.player_diamonds
+	var current_cost = BOOSTER_PACK_COST
+	if GameData.BOOSTER_PACKS.has(selected_booster_pack_id):
+		current_cost = int(GameData.BOOSTER_PACKS[selected_booster_pack_id].get("cost", BOOSTER_PACK_COST))
+	if btn_small_cost_pack:
+		btn_small_cost_pack.disabled = (GameData.player_diamonds < current_cost)
 	if btn_open_pack:
-		btn_open_pack.disabled = (GameData.player_diamonds < BOOSTER_PACK_COST)
+		btn_open_pack.disabled = (GameData.player_diamonds < current_cost)
 	if btn_reveal_another:
-		btn_reveal_another.disabled = (GameData.player_diamonds < BOOSTER_PACK_COST)
+		btn_reveal_another.disabled = (GameData.player_diamonds < current_cost)
 
 func _on_rare_candies_changed(_new_amount: int = 0) -> void:
 	_update_lobby_header_badge()
