@@ -12,7 +12,7 @@ func _ready() -> void:
 	# 2. Check GameData constants
 	assert(GameData.GAME_VERSION != "", "GameData.GAME_VERSION should be set")
 	print("GameData.GAME_VERSION = %s" % GameData.GAME_VERSION)
-	assert(GameData.GAME_VERSION == "v0.6.0", "GameData.GAME_VERSION should be v0.6.0")
+	assert(GameData.GAME_VERSION == "v0.6.1", "GameData.GAME_VERSION should be v0.6.1")
 	
 	# 3. Test version comparison function
 	print("Testing _compare_versions...")

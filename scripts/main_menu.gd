@@ -404,7 +404,7 @@ var col_filter_stage: String = "ALL" # "ALL", "BASIC", "STAGE 1", "STAGE 2"
 var col_filter_rarity: String = "ALL" # "ALL", "COMMON", "RARE", "EPIC", "LEGENDARY"
 var col_filter_tier: String = "ALL" # "ALL", "S+", "S", "A", "B", "C", "D"
 
-var col_region_tabs_row: HBoxContainer = null
+var col_region_tabs_row: Container = null
 var col_region_buttons: Dictionary = {}
 var collection_filter_panel: PanelContainer = null
 var opt_col_owned: OptionButton = null
@@ -6183,11 +6183,14 @@ func _setup_collection_filters() -> void:
 	if not collection_grid_view:
 		return
 		
-	# 0. Barra de Pestañas por Región (Kanto, Johto, Other, All)
-	col_region_tabs_row = HBoxContainer.new()
-	col_region_tabs_row.name = "ColRegionTabsRow"
-	col_region_tabs_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	col_region_tabs_row.add_theme_constant_override("separation", 6)
+	# 0. Barra de Pestañas por Región en cuadrícula 3 columnas x 2 filas
+	var col_reg_grid = GridContainer.new()
+	col_reg_grid.name = "ColRegionTabsRow"
+	col_reg_grid.columns = 3
+	col_reg_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col_reg_grid.add_theme_constant_override("h_separation", 6)
+	col_reg_grid.add_theme_constant_override("v_separation", 6)
+	col_region_tabs_row = col_reg_grid
 	var col_regions = [
 		{"id": "KANTO", "label": "Kanto"},
 		{"id": "JOHTO", "label": "Johto"},
@@ -6201,7 +6204,7 @@ func _setup_collection_filters() -> void:
 		var btn_r = Button.new()
 		btn_r.name = "BtnColRegion_" + reg["id"]
 		btn_r.text = reg["label"]
-		btn_r.custom_minimum_size = Vector2(96, 32)
+		btn_r.custom_minimum_size = Vector2(0, 30)
 		btn_r.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn_r.add_theme_font_size_override("font_size", 11)
 		var rid = reg["id"]
@@ -6562,14 +6565,14 @@ func populate_collection_grid() -> void:
 		var p_num = str(card.get("pokedex_num", "1")).pad_zeros(3)
 		
 		var cell_vbox = VBoxContainer.new()
-		cell_vbox.custom_minimum_size = Vector2(106, 175)
+		cell_vbox.custom_minimum_size = Vector2(110, 185)
 		cell_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cell_vbox.add_theme_constant_override("separation", 4)
 		cell_vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
 		
 		# 1. Miniatura de la carta
 		var thumb_btn = Button.new()
-		thumb_btn.custom_minimum_size = Vector2(106, 140)
+		thumb_btn.custom_minimum_size = Vector2(110, 150)
 		thumb_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		thumb_btn.focus_mode = Control.FOCUS_NONE
 		thumb_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -6608,7 +6611,7 @@ func populate_collection_grid() -> void:
 			var stock = GameData.get_card_stock(cid)
 			var stock_badge = PanelContainer.new()
 			stock_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			stock_badge.position = Vector2(66, 6)
+			stock_badge.position = Vector2(72, 5)
 			stock_badge.custom_minimum_size = Vector2(32, 20)
 			
 			var sb_badge = StyleBoxFlat.new()
@@ -6634,7 +6637,7 @@ func populate_collection_grid() -> void:
 			var t_color = GameData.get_tier_color(tier_val)
 			var tier_thumb_badge = PanelContainer.new()
 			tier_thumb_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			tier_thumb_badge.position = Vector2(6, 6)
+			tier_thumb_badge.position = Vector2(5, 5)
 			tier_thumb_badge.custom_minimum_size = Vector2(26, 20)
 			
 			var sb_tb = StyleBoxFlat.new()
@@ -6657,7 +6660,7 @@ func populate_collection_grid() -> void:
 			var is_fav = GameData.is_pokemon_favorite(cid)
 			var fav_btn = Button.new()
 			fav_btn.custom_minimum_size = Vector2(24, 20)
-			fav_btn.position = Vector2(38, 6)
+			fav_btn.position = Vector2(36, 5)
 			fav_btn.focus_mode = Control.FOCUS_NONE
 			fav_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 			fav_btn.text = "⭐" if is_fav else "☆"
