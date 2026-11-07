@@ -24,6 +24,7 @@ var opponent_team_ids: Array = []
 
 var is_guest_ready: bool = false
 var is_starting_match: bool = false
+var is_guest_connected_emitted: bool = false
 
 var _session_gen: int = 0
 var last_processed_seq: int = 0
@@ -81,6 +82,25 @@ func _firestore_fields_to_dict(fields: Dictionary) -> Dictionary:
 			result[k] = bool(field_obj["booleanValue"])
 		elif field_obj.has("doubleValue"):
 			result[k] = float(field_obj["doubleValue"])
+		elif field_obj.has("arrayValue"):
+			var arr = []
+			var values = field_obj["arrayValue"].get("values", [])
+			for item in values:
+				if not item is Dictionary:
+					continue
+				if item.has("integerValue"):
+					arr.append(int(item["integerValue"]))
+				elif item.has("stringValue"):
+					var s = str(item["stringValue"])
+					if s.is_valid_int():
+						arr.append(s.to_int())
+					else:
+						arr.append(s)
+				elif item.has("doubleValue"):
+					arr.append(float(item["doubleValue"]))
+				elif item.has("booleanValue"):
+					arr.append(bool(item["booleanValue"]))
+			result[k] = arr
 	return result
 
 func _get_nocache_headers(content_type_json: bool = false) -> PackedStringArray:
@@ -429,20 +449,23 @@ func _on_poll_tick() -> void:
 			current_http_req.queue_free()
 			current_http_req = null
 		else:
+			print("[OnlineManager] ⏳ Poll in progress, skipping tick...")
 			return # Petición en curso
 		
-	var url = "%s/%s?key=%s&_ts=%d" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY, Time.get_ticks_msec()]
+	var url = "%s/%s?key=%s" % [BASE_ROOMS_URL, room_code, CloudSync.API_KEY]
 	poll_request_start_msec = Time.get_ticks_msec()
-	current_http_req = HTTPRequest.new()
-	current_http_req.timeout = 3.5
-	add_child(current_http_req)
+	var req_node = HTTPRequest.new()
+	req_node.timeout = 3.5
+	add_child(req_node)
+	current_http_req = req_node
 	
-	current_http_req.request_completed.connect(func(_res: int, code: int, _h: PackedStringArray, b: PackedByteArray):
-		var req = current_http_req
-		current_http_req = null
-		if req and is_instance_valid(req):
-			req.queue_free()
+	req_node.request_completed.connect(func(res: int, code: int, _h: PackedStringArray, b: PackedByteArray):
+		if current_http_req == req_node:
+			current_http_req = null
+		if is_instance_valid(req_node):
+			req_node.queue_free()
 			
+		print("[OnlineManager] 📡 Poll response code=%d, res=%d" % [code, res])
 		if code == 200:
 			var resp_text = b.get_string_from_utf8()
 			var parsed = JSON.parse_string(resp_text)
@@ -452,12 +475,16 @@ func _on_poll_tick() -> void:
 			print("[OnlineManager] ⚠️ La sala ya no existe.")
 			stop_polling()
 			opponent_left_or_surrendered.emit()
+		else:
+			print("[OnlineManager] ⚠️ Poll response error HTTP %d" % code)
 	)
-	var err = current_http_req.request(url, _get_nocache_headers(), HTTPClient.METHOD_GET)
+	var err = req_node.request(url, _get_nocache_headers(), HTTPClient.METHOD_GET)
 	if err != OK:
 		print("[OnlineManager] ⚠️ Error iniciando poll request: ", err)
-		if current_http_req and is_instance_valid(current_http_req):
-			current_http_req.queue_free()
+		if current_http_req == req_node:
+			current_http_req = null
+		if is_instance_valid(req_node):
+			req_node.queue_free()
 		current_http_req = null
 
 func _process_room_state(fields: Dictionary) -> void:
@@ -465,39 +492,52 @@ func _process_room_state(fields: Dictionary) -> void:
 	var status = str(dict.get("status", ""))
 	
 	# Sincronizar nombre y equipo del rival si se actualizan en el lobby
+	var raw_opp_team = dict.get("guest_team" if is_host else "host_team", null)
+	var parsed_team: Array[int] = []
+	if raw_opp_team is Array:
+		for id in raw_opp_team:
+			parsed_team.append(int(id))
+	elif raw_opp_team is String:
+		var p = JSON.parse_string(raw_opp_team)
+		if p is Array:
+			for id in p:
+				parsed_team.append(int(id))
+
 	if is_host:
 		var g_name = str(dict.get("guest_name", ""))
 		if not g_name.is_empty() and opponent_name != g_name:
 			opponent_name = g_name
-		var raw_g_team = str(dict.get("guest_team", "[]"))
-		var parsed_g_team = JSON.parse_string(raw_g_team)
-		if typeof(parsed_g_team) == TYPE_ARRAY and parsed_g_team != opponent_team_ids:
-			opponent_team_ids = parsed_g_team
+		if parsed_team != opponent_team_ids:
+			opponent_team_ids = parsed_team
+			print("[OnlineManager] 🎒 Rival guest team updated: ", opponent_team_ids)
 			opponent_team_updated.emit(opponent_team_ids)
 	else:
 		var h_name = str(dict.get("host_name", ""))
 		if not h_name.is_empty() and opponent_name != h_name:
 			opponent_name = h_name
-		var raw_h_team = str(dict.get("host_team", "[]"))
-		var parsed_h_team = JSON.parse_string(raw_h_team)
-		if typeof(parsed_h_team) == TYPE_ARRAY and parsed_h_team != opponent_team_ids:
-			opponent_team_ids = parsed_h_team
+		if parsed_team != opponent_team_ids:
+			opponent_team_ids = parsed_team
+			print("[OnlineManager] 🎒 Rival host team updated: ", opponent_team_ids)
 			opponent_team_updated.emit(opponent_team_ids)
 
 	# Gestión de estados de sala (Lobby)
 	if is_host:
 		if status == "GUEST_JOINED":
-			if not opponent_name.is_empty():
+			if not opponent_name.is_empty() and not is_guest_connected_emitted:
+				is_guest_connected_emitted = true
 				guest_connected.emit(opponent_name, opponent_team_ids)
 			if is_guest_ready:
 				is_guest_ready = false
 				guest_ready_changed.emit(false)
 		elif status == "READY":
-			if not opponent_name.is_empty():
+			if not opponent_name.is_empty() and not is_guest_connected_emitted:
+				is_guest_connected_emitted = true
 				guest_connected.emit(opponent_name, opponent_team_ids)
 			if not is_guest_ready:
 				is_guest_ready = true
 				guest_ready_changed.emit(true)
+		elif status == "WAITING":
+			is_guest_connected_emitted = false
 		elif status == "IN_BATTLE":
 			if not is_starting_match:
 				is_starting_match = true
@@ -672,5 +712,6 @@ func reset_session() -> void:
 	opponent_team_ids = []
 	is_guest_ready = false
 	is_starting_match = false
+	is_guest_connected_emitted = false
 	last_processed_seq = 0
 	current_turn_role = "HOST"

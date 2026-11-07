@@ -337,6 +337,8 @@ var _pending_verify_password: String = ""
 @onready var btn_confirm_join: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/JoinInputSection/BtnConfirmJoin
 @onready var guest_lobby_section: VBoxContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection
 @onready var guest_room_info_lbl: Label = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/GuestRoomInfoLbl
+@onready var guest_rival_info_lbl: Label = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/GuestRivalSection/GuestRivalInfoLbl
+@onready var guest_rival_team_container: HBoxContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/GuestRivalSection/GuestRivalTeamContainer
 @onready var btn_guest_change_team: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/GuestTeamHeader/BtnGuestChangeTeam
 @onready var guest_team_container: HBoxContainer = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/GuestTeamContainer
 @onready var btn_guest_ready_toggle: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/JoinPanel/GuestLobbySection/BtnGuestReadyToggle
@@ -4004,6 +4006,8 @@ func _update_lobby_teams_ui() -> void:
 		_render_pokemon_team_badges(guest_team_container, selected_player_ids)
 	if host_rival_team_container:
 		_render_pokemon_team_badges(host_rival_team_container, OnlineManager.opponent_team_ids)
+	if guest_rival_team_container:
+		_render_pokemon_team_badges(guest_rival_team_container, OnlineManager.opponent_team_ids)
 
 func _show_online_host_tab() -> void:
 	_ensure_default_online_team()
@@ -4087,7 +4091,12 @@ func _on_confirm_join_pressed() -> void:
 			if guest_lobby_section:
 				guest_lobby_section.visible = true
 			if guest_room_info_lbl:
-				guest_room_info_lbl.text = "🏠 Connected to room %s (Host: %s)" % [raw_code, OnlineManager.opponent_name]
+				guest_room_info_lbl.text = "🏠 Connected to room %s" % raw_code
+			if guest_rival_info_lbl:
+				var h_name = OnlineManager.opponent_name if not OnlineManager.opponent_name.is_empty() else "Host"
+				guest_rival_info_lbl.text = "👤 Host Rival: %s" % h_name
+			if guest_rival_team_container:
+				_render_pokemon_team_badges(guest_rival_team_container, OnlineManager.opponent_team_ids)
 			if btn_guest_ready_toggle:
 				btn_guest_ready_toggle.text = "✅ READY FOR BATTLE"
 				_apply_retro_button_style(btn_guest_ready_toggle, Color(0.2, 0.7, 0.3), Color(0.3, 0.9, 0.4))
@@ -4169,6 +4178,10 @@ func _on_online_guest_ready_changed(is_ready: bool) -> void:
 func _on_online_opponent_team_updated(new_team: Array) -> void:
 	if host_rival_team_container:
 		_render_pokemon_team_badges(host_rival_team_container, new_team)
+	if guest_rival_team_container:
+		_render_pokemon_team_badges(guest_rival_team_container, new_team)
+	if guest_rival_info_lbl and not OnlineManager.opponent_name.is_empty():
+		guest_rival_info_lbl.text = "👤 Host Rival: %s" % OnlineManager.opponent_name
 
 func _on_host_start_battle_pressed() -> void:
 	btn_host_start_battle.disabled = true
