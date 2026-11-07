@@ -479,7 +479,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"badge_name": "Boulder Badge",
 				"intro": "I'm Brock, the Pewter Gym Leader! My rock-hard willpower will test your limits!",
 				"outro": "Incredible willpower! You've truly earned the Boulder Badge!",
-				"team_pokemon_names": ["Geodude", "Onyx"]
+				"team_pokemon_names": ["Geodude", "Onix"]
 			}
 		]
 	},
@@ -1734,8 +1734,10 @@ func get_pokemon_id_by_name(pkmn_name: String) -> int:
 	var clean = pkmn_name.strip_edges().to_lower()
 	if clean == "":
 		return -1
-	if clean == "onix":
-		clean = "onyx"
+	if clean == "onyx":
+		clean = "onix"
+	if clean == "gastly":
+		clean = "ghastly"
 	if clean == "ryhorn":
 		clean = "rhyhorn"
 	if clean == "diglett":

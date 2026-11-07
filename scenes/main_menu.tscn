@@ -1512,39 +1512,6 @@ size_flags_vertical = 4
 theme_override_font_sizes/font_size = 12
 text = "Buy (2 G)"
 
-[node name="PokeFluteRow" type="HBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="PokeFluteIcon" type="TextureRect" parent="CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow"]
-custom_minimum_size = Vector2(36, 36)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="PokeFluteInfo" type="VBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="PokeFluteTitle" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow/PokeFluteInfo"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "Poké Flute (Cures Sleep, Not Consumed)"
-
-[node name="PokeFluteCountLbl" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow/PokeFluteInfo"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
-theme_override_font_sizes/font_size = 11
-text = "Not Owned"
-
-[node name="BtnBuyPokeFlute" type="Button" parent="CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow"]
-custom_minimum_size = Vector2(100, 34)
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_font_sizes/font_size = 12
-text = "Buy (20 G)"
-
 [node name="EtherRow" type="HBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox"]
 layout_mode = 2
 theme_override_constants/separation = 10

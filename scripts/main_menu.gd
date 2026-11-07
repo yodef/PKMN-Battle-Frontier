@@ -102,9 +102,9 @@ var campaign_track_diagram: CampaignTrackDiagram = null
 @onready var campaign_remedy_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox/RemedyRow/RemedyInfo/RemedyCountLbl
 @onready var btn_buy_remedy: Button = $CampaignModal/Box/ShopSection/ShopVBox/RemedyRow/BtnBuyRemedy
 
-@onready var campaign_poke_flute_icon: TextureRect = $CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow/PokeFluteIcon
-@onready var campaign_poke_flute_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow/PokeFluteInfo/PokeFluteCountLbl
-@onready var btn_buy_poke_flute: Button = $CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow/BtnBuyPokeFlute
+@onready var campaign_poke_flute_icon: TextureRect = $CampaignModal/Box/ShopSection/ShopVBox.get_node_or_null("PokeFluteRow/PokeFluteIcon") as TextureRect
+@onready var campaign_poke_flute_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox.get_node_or_null("PokeFluteRow/PokeFluteInfo/PokeFluteCountLbl") as Label
+@onready var btn_buy_poke_flute: Button = $CampaignModal/Box/ShopSection/ShopVBox.get_node_or_null("PokeFluteRow/BtnBuyPokeFlute") as Button
 
 @onready var campaign_ether_icon: TextureRect = $CampaignModal/Box/ShopSection/ShopVBox/EtherRow/EtherIcon
 @onready var campaign_ether_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox/EtherRow/EtherInfo/EtherCountLbl
@@ -577,7 +577,8 @@ func _ready() -> void:
 	btn_buy_super_potion.pressed.connect(_on_buy_super_potion_pressed)
 	btn_buy_hyper_potion.pressed.connect(_on_buy_hyper_potion_pressed)
 	btn_buy_remedy.pressed.connect(_on_buy_remedy_pressed)
-	btn_buy_poke_flute.pressed.connect(_on_buy_poke_flute_pressed)
+	if btn_buy_poke_flute:
+		btn_buy_poke_flute.pressed.connect(_on_buy_poke_flute_pressed)
 	btn_buy_ether.pressed.connect(_on_buy_ether_pressed)
 	btn_buy_revive.pressed.connect(_on_buy_revive_pressed)
 	btn_start_campaign_battle.pressed.connect(_on_start_campaign_battle_pressed)
@@ -608,7 +609,8 @@ func _ready() -> void:
 	campaign_super_potion_icon.texture = GameData.get_item_texture("super_potion")
 	campaign_hyper_potion_icon.texture = GameData.get_item_texture("hyper_potion")
 	campaign_remedy_icon.texture = GameData.get_item_texture("remedy")
-	campaign_poke_flute_icon.texture = GameData.get_item_texture("poke_flute")
+	if campaign_poke_flute_icon:
+		campaign_poke_flute_icon.texture = GameData.get_item_texture("poke_flute")
 	campaign_ether_icon.texture = GameData.get_item_texture("ether")
 	campaign_revive_icon.texture = GameData.get_item_texture("revive")
 	
@@ -3409,7 +3411,8 @@ func _setup_camp_modals() -> void:
 	camp_shop_modal.add_child(shop_center)
 	
 	var shop_panel = PanelContainer.new()
-	shop_panel.custom_minimum_size = Vector2(490, 0)
+	var shop_w: float = minf(490.0, get_viewport_rect().size.x - 24.0)
+	shop_panel.custom_minimum_size = Vector2(shop_w, 0)
 	var shop_sb = StyleBoxFlat.new()
 	shop_sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
 	shop_sb.border_color = Color(0.25, 0.60, 0.70, 0.90)
@@ -3513,7 +3516,8 @@ func _setup_camp_modals() -> void:
 	camp_bag_modal.add_child(bag_center)
 	
 	var bag_panel = PanelContainer.new()
-	bag_panel.custom_minimum_size = Vector2(510, 0)
+	var bag_w: float = minf(510.0, get_viewport_rect().size.x - 24.0)
+	bag_panel.custom_minimum_size = Vector2(bag_w, 0)
 	var bag_sb = StyleBoxFlat.new()
 	bag_sb.bg_color = Color(0.10, 0.12, 0.16, 0.98)
 	bag_sb.border_color = Color(0.75, 0.55, 0.20, 0.90)
@@ -6057,7 +6061,8 @@ func _apply_pokemon_ui_theme() -> void:
 	_apply_retro_button_style(btn_buy_super_potion, Color(0.18, 0.55, 0.85), Color(0.30, 0.80, 1.00), false)
 	_apply_retro_button_style(btn_buy_hyper_potion, Color(0.75, 0.25, 0.55), Color(0.95, 0.40, 0.75), false)
 	_apply_retro_button_style(btn_buy_remedy, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), false)
-	_apply_retro_button_style(btn_buy_poke_flute, Color(0.75, 0.60, 0.15), Color(1.00, 0.85, 0.30), false)
+	if btn_buy_poke_flute:
+		_apply_retro_button_style(btn_buy_poke_flute, Color(0.75, 0.60, 0.15), Color(1.00, 0.85, 0.30), false)
 	_apply_retro_button_style(btn_buy_ether, Color(0.50, 0.35, 0.85), Color(0.70, 0.55, 1.00), false)
 	_apply_retro_button_style(btn_buy_revive, Color(0.84, 0.62, 0.18), Color(1.00, 0.85, 0.35), false)
 
