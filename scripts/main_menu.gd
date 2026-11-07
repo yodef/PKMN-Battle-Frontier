@@ -2524,6 +2524,8 @@ func _setup_starter_selection_modal() -> void:
 		
 	# Cards Scroll / Container
 	var scroll = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, 340)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	vbox.add_child(scroll)
@@ -2550,6 +2552,7 @@ func _refresh_starter_cards_display() -> void:
 	if not starter_cards_row:
 		return
 	for c in starter_cards_row.get_children():
+		starter_cards_row.remove_child(c)
 		c.queue_free()
 		
 	var starters_by_reg = {
@@ -2566,7 +2569,7 @@ func _refresh_starter_cards_display() -> void:
 		
 		var card_panel = PanelContainer.new()
 		var card_sb = StyleBoxFlat.new()
-		var type_color = GameData.get_type_color(str(d.get("type", "NORMAL")))
+		var type_color = GameData.get_type_primary_color(str(d.get("type", "NORMAL")))
 		card_sb.bg_color = Color(0.09, 0.13, 0.20, 0.96)
 		card_sb.border_color = type_color
 		card_sb.set_border_width_all(2)

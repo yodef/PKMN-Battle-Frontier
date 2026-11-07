@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.6.4"
+const GAME_VERSION: String = "v0.6.5"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -4429,6 +4429,9 @@ func get_type_primary_color(type_name: String) -> Color:
 	if TYPE_PRIMARY_COLORS.has(key):
 		return TYPE_PRIMARY_COLORS[key]
 	return TYPE_PRIMARY_COLORS["NORMAL"]
+
+func get_type_color(type_name: String) -> Color:
+	return get_type_primary_color(type_name)
 
 var type_icons_cache: Dictionary = {}
 
