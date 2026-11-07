@@ -100,6 +100,7 @@ var btn_camp_shop: Button = null
 var btn_camp_bag: Button = null
 var camp_shop_modal: Control = null
 var camp_shop_gold_lbl: Label = null
+var camp_shop_stones_list: VBoxContainer = null
 var camp_bag_modal: Control = null
 var camp_bag_items_view: VBoxContainer = null
 var camp_bag_targets_view: VBoxContainer = null
@@ -107,6 +108,7 @@ var camp_bag_targets_container: VBoxContainer = null
 var camp_bag_prompt_lbl: Label = null
 var camp_bag_selected_item: String = ""
 var camp_pokemon_inspector_modal: Control = null
+var camp_evo_selector_modal: Control = null
 var camp_evo_modal: Control = null
 var camp_evo_title_lbl: Label = null
 var camp_evo_sub_lbl: Label = null
@@ -1409,7 +1411,11 @@ func update_campaign_ui() -> void:
 	var ethers = cur_inv.get("ether", 0)
 	if btn_camp_bag:
 		var total_items = potions + revives + remedies + ethers
+		for st_name in GameData.EVOLUTION_STONE_TYPES:
+			total_items += GameData.get_campaign_stone_count(st_name)
 		btn_camp_bag.text = "🎒 Bag (%d Item%s)" % [total_items, "s" if total_items != 1 else ""]
+	if camp_shop_stones_list and camp_shop_modal and camp_shop_modal.visible:
+		_refresh_camp_shop_stones_ui()
 	campaign_item_count_lbl.text = "Inventory: %d Potions" % potions
 	campaign_remedy_count_lbl.text = "Inventory: %d Remedies" % remedies
 	campaign_ether_count_lbl.text = "Inventory: %d Ethers" % ethers
@@ -1673,7 +1679,14 @@ func update_campaign_ui() -> void:
 		exp_fill.set_corner_radius_all(3)
 		exp_bar.add_theme_stylebox_override("fill", exp_fill)
 		
-		if req_exp <= 0:
+		var evo_opts = GameData.get_evolution_options(int(p["id"]), true)
+		var stone_req_tag = ""
+		if evo_opts.size() == 1:
+			stone_req_tag = "%dx %s" % [int(evo_opts[0].get("stone_count", 1)), str(evo_opts[0].get("stone_name", "Stone"))]
+		elif evo_opts.size() > 1:
+			stone_req_tag = "%dx Stone (%d Branches)" % [int(evo_opts[0].get("stone_count", 1)), evo_opts.size()]
+
+		if req_exp <= 0 or evo_opts.is_empty():
 			exp_bar.max_value = 1
 			exp_bar.value = 1
 			exp_lbl.text = "EXP: MAX"
@@ -1681,24 +1694,24 @@ func update_campaign_ui() -> void:
 		else:
 			exp_bar.max_value = req_exp
 			exp_bar.value = min(req_exp, cur_exp)
-			var target_id = GameData.get_evolution_target_id(int(p["id"]))
+			var any_unlocked = false
+			for opt in evo_opts:
+				if bool(opt.get("is_unlocked", false)):
+					any_unlocked = true
+					break
 			if cur_exp >= req_exp:
 				if int(p.get("current_hp", 0)) <= 0:
 					exp_lbl.text = "EXP: %d/%d (💀 KO - Revive to Evolve!)" % [cur_exp, req_exp]
 					exp_lbl.add_theme_color_override("font_color", Color("#FF8A80"))
-				elif target_id != -1 and GameData.is_pokemon_unlocked(target_id):
-					var target_name = GameData.pokemon_catalog.get(target_id, {}).get("name", "evolution")
-					exp_lbl.text = "EXP: %d/%d (Ready to Evolve!)" % [cur_exp, req_exp]
+				elif any_unlocked:
+					exp_lbl.text = "EXP: %d/%d • Ready! (%s)" % [cur_exp, req_exp, stone_req_tag]
 					exp_lbl.add_theme_color_override("font_color", Color("#FFD700"))
-				elif target_id != -1:
-					var target_name = GameData.pokemon_catalog.get(target_id, {}).get("name", "evolution")
-					exp_lbl.text = "EXP: %d/%d 🔒 (Need %s)" % [cur_exp, req_exp, target_name]
-					exp_lbl.add_theme_color_override("font_color", Color("#FF8A80"))
 				else:
-					exp_lbl.text = "EXP: %d/%d (Ready!)" % [cur_exp, req_exp]
-					exp_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+					var first_target_name = str(evo_opts[0].get("to_name", "evolution"))
+					exp_lbl.text = "EXP: %d/%d 🔒 (Need %s)" % [cur_exp, req_exp, first_target_name]
+					exp_lbl.add_theme_color_override("font_color", Color("#FF8A80"))
 			else:
-				exp_lbl.text = "EXP: %d/%d" % [cur_exp, req_exp]
+				exp_lbl.text = "EXP: %d/%d (%s)" % [cur_exp, req_exp, stone_req_tag]
 				exp_lbl.add_theme_color_override("font_color", Color("#64B5F6"))
 				
 		exp_row.add_child(exp_bar)
@@ -1726,12 +1739,31 @@ func update_campaign_ui() -> void:
 		status_row.add_child(stat_lbl)
 		vbox.add_child(status_row)
 		
-		# 3. Actions (Inspect & Order)
+		# 3. Actions (Evolve, Inspect & Order)
 		var card_btns_vbox = VBoxContainer.new()
 		card_btns_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 		card_btns_vbox.add_theme_constant_override("separation", 4)
 		card_btns_vbox.custom_minimum_size = Vector2(104, 0)
 		card_hbox.add_child(card_btns_vbox)
+		
+		# 3.0 Evolve Button (Interactive Camp Evolution with Stones)
+		if req_exp > 0 and not evo_opts.is_empty() and cur_exp >= req_exp and int(p.get("current_hp", 0)) > 0:
+			var btn_evo = Button.new()
+			btn_evo.custom_minimum_size = Vector2(104, 24)
+			btn_evo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			btn_evo.add_theme_font_size_override("font_size", 10)
+			var evo_check = GameData.can_evolve_campaign_pokemon_with_option(i)
+			var ready_now = bool(evo_check.get("can_evolve", false))
+			btn_evo.text = "✨ Evolve!" if ready_now else "✨ Evolve"
+			if ready_now:
+				_apply_compact_order_button_style(btn_evo, Color(0.20, 0.72, 0.38), Color(0.35, 0.95, 0.55), false)
+				btn_evo.add_theme_color_override("font_color", Color("#FFF59D"))
+			else:
+				_apply_compact_order_button_style(btn_evo, Color(0.65, 0.48, 0.14), Color(0.95, 0.75, 0.25), false)
+				btn_evo.add_theme_color_override("font_color", Color("#FFE082"))
+			var evo_team_idx = i
+			btn_evo.pressed.connect(func(): _open_camp_evolution_selector(evo_team_idx))
+			card_btns_vbox.add_child(btn_evo)
 		
 		# 3.1 Inspect Button
 		var btn_status = Button.new()
@@ -2017,6 +2049,26 @@ func _setup_camp_modals() -> void:
 		var empty_sb = StyleBoxEmpty.new()
 		shop_section.add_theme_stylebox_override("panel", empty_sb)
 		
+	var stones_sep = HSeparator.new()
+	shop_vbox.add_child(stones_sep)
+	
+	var stones_hdr = Label.new()
+	stones_hdr.text = "💎 EVOLUTION STONES (%d G each • 1x S1 / 2x S2)" % GameData.ITEM_COST_STONE
+	stones_hdr.add_theme_font_size_override("font_size", 12)
+	stones_hdr.add_theme_color_override("font_color", Color("#FFE082"))
+	shop_vbox.add_child(stones_hdr)
+	
+	var stones_scroll = ScrollContainer.new()
+	stones_scroll.custom_minimum_size = Vector2(0, 175)
+	stones_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	shop_vbox.add_child(stones_scroll)
+	
+	camp_shop_stones_list = VBoxContainer.new()
+	camp_shop_stones_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	camp_shop_stones_list.add_theme_constant_override("separation", 5)
+	stones_scroll.add_child(camp_shop_stones_list)
+	_refresh_camp_shop_stones_ui()
+		
 	var shop_bot_sep = HSeparator.new()
 	shop_vbox.add_child(shop_bot_sep)
 	
@@ -2141,8 +2193,100 @@ func _setup_camp_modals() -> void:
 	# 4. Configurar CampPokemonInspectorModal
 	_setup_camp_pokemon_inspector_modal()
 	
-	# 5. Configurar CampEvolutionModal
+	# 5. Configurar CampEvolutionModal & CampEvolutionSelectorModal
 	_setup_camp_evolution_modal()
+	_setup_camp_evolution_selector_modal()
+
+func _refresh_camp_shop_stones_ui() -> void:
+	if not camp_shop_stones_list:
+		return
+	for child in camp_shop_stones_list.get_children():
+		child.queue_free()
+		
+	var cur_gold = GameData.get_active_campaign_gold()
+	var needed_stones = GameData.get_team_needed_stones()
+	var ordered_stones: Array[String] = []
+	for st in needed_stones:
+		if st in GameData.EVOLUTION_STONE_TYPES and not (st in ordered_stones):
+			ordered_stones.append(st)
+	for st in GameData.EVOLUTION_STONE_TYPES:
+		if not (st in ordered_stones):
+			ordered_stones.append(st)
+			
+	for st_type in ordered_stones:
+		var is_needed = (st_type in needed_stones)
+		var owned = GameData.get_campaign_stone_count(st_type)
+		
+		var row = PanelContainer.new()
+		var r_sb = StyleBoxFlat.new()
+		r_sb.bg_color = Color(0.09, 0.14, 0.22, 0.94) if is_needed else Color(0.06, 0.09, 0.14, 0.90)
+		r_sb.border_color = Color(1.0, 0.82, 0.25, 0.88) if is_needed else Color(0.20, 0.35, 0.45, 0.75)
+		r_sb.set_border_width_all(1)
+		r_sb.set_corner_radius_all(6)
+		r_sb.content_margin_left = 8
+		r_sb.content_margin_right = 8
+		r_sb.content_margin_top = 4
+		r_sb.content_margin_bottom = 4
+		row.add_theme_stylebox_override("panel", r_sb)
+		
+		var hbox = HBoxContainer.new()
+		hbox.add_theme_constant_override("separation", 8)
+		row.add_child(hbox)
+		
+		var ico = TextureRect.new()
+		ico.custom_minimum_size = Vector2(28, 28)
+		ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		ico.texture = GameData.get_item_texture(st_type)
+		hbox.add_child(ico)
+		
+		var info_v = VBoxContainer.new()
+		info_v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		info_v.add_theme_constant_override("separation", 1)
+		hbox.add_child(info_v)
+		
+		var top_r = HBoxContainer.new()
+		top_r.add_theme_constant_override("separation", 6)
+		info_v.add_child(top_r)
+		
+		var n_lbl = Label.new()
+		n_lbl.text = GameData.get_stone_display_name(st_type)
+		n_lbl.add_theme_font_size_override("font_size", 11)
+		n_lbl.add_theme_color_override("font_color", Color("#FFF59D") if is_needed else Color.WHITE)
+		top_r.add_child(n_lbl)
+		
+		if is_needed:
+			var badge_lbl = Label.new()
+			badge_lbl.text = "★ Team"
+			badge_lbl.add_theme_font_size_override("font_size", 10)
+			badge_lbl.add_theme_color_override("font_color", Color("#69F0AE"))
+			top_r.add_child(badge_lbl)
+			
+		var own_lbl = Label.new()
+		own_lbl.text = "[Owned: %d]" % owned
+		own_lbl.add_theme_font_size_override("font_size", 10)
+		own_lbl.add_theme_color_override("font_color", Color("#FFD54F") if owned > 0 else Color("#78909C"))
+		top_r.add_child(own_lbl)
+		
+		var buy_btn = Button.new()
+		buy_btn.custom_minimum_size = Vector2(88, 28)
+		buy_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		buy_btn.add_theme_font_size_override("font_size", 10)
+		buy_btn.text = "Buy (%d G)" % GameData.ITEM_COST_STONE
+		buy_btn.disabled = (cur_gold < GameData.ITEM_COST_STONE)
+		if cur_gold >= GameData.ITEM_COST_STONE:
+			_apply_retro_button_style(buy_btn, Color(0.20, 0.58, 0.38), Color(0.35, 0.85, 0.58), false)
+		else:
+			_apply_retro_button_style(buy_btn, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
+		var target_stone = st_type
+		buy_btn.pressed.connect(func():
+			if GameData.buy_campaign_stone(target_stone):
+				GameData.add_daily_mission_progress("buy_camp_shop", 1)
+				GameData.play_combat_sfx("purchase")
+				update_campaign_ui()
+		)
+		hbox.add_child(buy_btn)
+		camp_shop_stones_list.add_child(row)
 
 func _refresh_camp_bag_items_ui() -> void:
 	if not camp_bag_items_view:
@@ -2255,6 +2399,80 @@ func _refresh_camp_bag_items_ui() -> void:
 			
 		hbox.add_child(use_btn)
 		camp_bag_items_view.add_child(row)
+		
+	# Mostrar Piedras Evolutivas en posesión dentro de la Mochila
+	for st_type in GameData.EVOLUTION_STONE_TYPES:
+		var st_owned = GameData.get_campaign_stone_count(st_type)
+		if st_owned <= 0:
+			continue
+		var s_row = PanelContainer.new()
+		var s_sb = StyleBoxFlat.new()
+		s_sb.bg_color = Color(0.08, 0.11, 0.18, 0.92)
+		s_sb.border_color = Color(0.65, 0.52, 0.18, 0.85)
+		s_sb.set_border_width_all(1)
+		s_sb.set_corner_radius_all(6)
+		s_sb.content_margin_left = 10
+		s_sb.content_margin_right = 10
+		s_sb.content_margin_top = 6
+		s_sb.content_margin_bottom = 6
+		s_row.add_theme_stylebox_override("panel", s_sb)
+		
+		var s_hbox = HBoxContainer.new()
+		s_hbox.add_theme_constant_override("separation", 10)
+		s_row.add_child(s_hbox)
+		
+		var s_ico = TextureRect.new()
+		s_ico.custom_minimum_size = Vector2(36, 36)
+		s_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		s_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		s_ico.texture = GameData.get_item_texture(st_type)
+		s_hbox.add_child(s_ico)
+		
+		var s_info = VBoxContainer.new()
+		s_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		s_info.add_theme_constant_override("separation", 2)
+		s_hbox.add_child(s_info)
+		
+		var s_title = Label.new()
+		s_title.text = "%s  [Owned: %d]" % [GameData.get_stone_display_name(st_type), st_owned]
+		s_title.add_theme_font_size_override("font_size", 12)
+		s_title.add_theme_color_override("font_color", Color("#FFF59D"))
+		s_info.add_child(s_title)
+		
+		var s_desc = Label.new()
+		s_desc.text = "Evolution Stone (1x for Stage 1 • 2x for Stage 2)."
+		s_desc.add_theme_font_size_override("font_size", 10)
+		s_desc.add_theme_color_override("font_color", Color("#B0BEC5"))
+		s_info.add_child(s_desc)
+		
+		var s_btn = Button.new()
+		s_btn.custom_minimum_size = Vector2(90, 32)
+		s_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		s_btn.add_theme_font_size_override("font_size", 11)
+		s_btn.text = "✨ Evolve"
+		var match_team_idx = -1
+		var team = GameData.get_active_campaign_team_state()
+		for tidx in range(team.size()):
+			var tp = team[tidx]
+			var topts = GameData.get_evolution_options(int(tp.get("id", -1)), true)
+			for topt in topts:
+				if str(topt.get("stone_type", "")) == st_type:
+					match_team_idx = tidx
+					break
+			if match_team_idx != -1:
+				break
+		s_btn.disabled = (match_team_idx == -1)
+		if match_team_idx != -1:
+			_apply_retro_button_style(s_btn, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), false)
+			var target_tidx = match_team_idx
+			s_btn.pressed.connect(func():
+				camp_bag_modal.visible = false
+				_open_camp_evolution_selector(target_tidx)
+			)
+		else:
+			_apply_retro_button_style(s_btn, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
+		s_hbox.add_child(s_btn)
+		camp_bag_items_view.add_child(s_row)
 
 func _show_camp_bag_targets(item_id: String) -> void:
 	camp_bag_selected_item = item_id
@@ -2783,14 +3001,263 @@ func _setup_camp_evolution_modal() -> void:
 	btn_camp_evo_continue.pressed.connect(_on_camp_evo_continue_pressed)
 	vbox.add_child(btn_camp_evo_continue)
 
+func _setup_camp_evolution_selector_modal() -> void:
+	if camp_evo_selector_modal != null:
+		return
+	camp_evo_selector_modal = Control.new()
+	camp_evo_selector_modal.name = "CampEvolutionSelectorModal"
+	camp_evo_selector_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	camp_evo_selector_modal.visible = false
+	camp_evo_selector_modal.z_index = 45
+	add_child(camp_evo_selector_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.04, 0.08, 0.84)
+	camp_evo_selector_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	camp_evo_selector_modal.add_child(center)
+	
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(510, 0)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.11, 0.17, 0.98)
+	sb.border_color = Color(1.0, 0.82, 0.25, 0.92)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	sb.content_margin_left = 16
+	sb.content_margin_right = 16
+	sb.content_margin_top = 14
+	sb.content_margin_bottom = 14
+	panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(panel)
+	
+	var scroll = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(478, 460)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
+	
+	var vbox = VBoxContainer.new()
+	vbox.name = "EvoSelectVBox"
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override("separation", 10)
+	scroll.add_child(vbox)
+
+func _open_camp_evolution_selector(team_idx: int) -> void:
+	if not camp_evo_selector_modal:
+		_setup_camp_evolution_selector_modal()
+	var team = GameData.get_active_campaign_team_state()
+	if team_idx < 0 or team_idx >= team.size():
+		return
+	var p = team[team_idx]
+	var cid = int(p.get("id", -1))
+	var opts = GameData.get_evolution_options(cid, true)
+	if opts.is_empty():
+		return
+		
+	camp_evo_selector_modal.visible = true
+	var vbox = camp_evo_selector_modal.find_child("EvoSelectVBox", true, false)
+	if not vbox:
+		return
+	for child in vbox.get_children():
+		child.queue_free()
+		
+	var head_row = HBoxContainer.new()
+	head_row.add_theme_constant_override("separation", 8)
+	var title_lbl = Label.new()
+	title_lbl.text = "✨ EVOLVE %s (%s)" % [str(p.get("name", "Pokémon")).to_upper(), str(p.get("stage", "Basic"))]
+	title_lbl.add_theme_font_size_override("font_size", 16)
+	title_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head_row.add_child(title_lbl)
+	
+	var btn_close_x = Button.new()
+	btn_close_x.text = "✕"
+	btn_close_x.custom_minimum_size = Vector2(30, 30)
+	btn_close_x.pressed.connect(func(): camp_evo_selector_modal.visible = false)
+	head_row.add_child(btn_close_x)
+	vbox.add_child(head_row)
+	
+	var cur_gold = GameData.get_active_campaign_gold()
+	var cur_exp = int(p.get("current_exp", 0))
+	var req_exp = GameData.get_pokemon_required_exp(cid)
+	var sub_lbl = Label.new()
+	sub_lbl.text = "💰 Gold: %d G  |  🌟 EXP: %d / %d  |  Choose evolution branch & use required Stone(s):" % [cur_gold, cur_exp, req_exp]
+	sub_lbl.add_theme_font_size_override("font_size", 11)
+	sub_lbl.add_theme_color_override("font_color", Color("#80DEEA"))
+	sub_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(sub_lbl)
+	
+	var sep1 = HSeparator.new()
+	vbox.add_child(sep1)
+	
+	for opt in opts:
+		var to_id = int(opt.get("to_id", -1))
+		var to_name = str(opt.get("to_name", "Evolution"))
+		var to_stage = str(opt.get("to_stage", "Stage 1"))
+		var stone_type = str(opt.get("stone_type", "Heart"))
+		var stone_name = str(opt.get("stone_name", "Heart Stone"))
+		var stone_req = int(opt.get("stone_count", 1))
+		var stone_owned = GameData.get_campaign_stone_count(stone_type)
+		var is_unlocked = bool(opt.get("is_unlocked", false))
+		var target_inst = GameData.create_pokemon_instance(to_id)
+		if not target_inst:
+			continue
+			
+		var can_evo = (int(p.get("current_hp", 0)) > 0 and cur_exp >= req_exp and is_unlocked and stone_owned >= stone_req)
+		
+		var b_panel = PanelContainer.new()
+		var b_sb = StyleBoxFlat.new()
+		b_sb.bg_color = Color(0.09, 0.14, 0.22, 0.96) if can_evo else Color(0.06, 0.09, 0.14, 0.92)
+		b_sb.border_color = Color(0.35, 0.90, 0.55, 0.92) if can_evo else Color(0.28, 0.42, 0.55, 0.80)
+		b_sb.set_border_width_all(2 if can_evo else 1)
+		b_sb.set_corner_radius_all(8)
+		b_sb.content_margin_left = 10
+		b_sb.content_margin_right = 10
+		b_sb.content_margin_top = 8
+		b_sb.content_margin_bottom = 8
+		b_panel.add_theme_stylebox_override("panel", b_sb)
+		
+		var b_vbox = VBoxContainer.new()
+		b_vbox.add_theme_constant_override("separation", 6)
+		b_panel.add_child(b_vbox)
+		
+		var main_r = HBoxContainer.new()
+		main_r.add_theme_constant_override("separation", 10)
+		b_vbox.add_child(main_r)
+		
+		var sp_rect = TextureRect.new()
+		sp_rect.custom_minimum_size = Vector2(64, 80)
+		sp_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		sp_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		sp_rect.texture = GameData.get_pokemon_texture(target_inst.texture_path)
+		if not is_unlocked:
+			sp_rect.modulate = Color(0.45, 0.45, 0.45, 0.8)
+		main_r.add_child(sp_rect)
+		
+		var mid_v = VBoxContainer.new()
+		mid_v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		mid_v.add_theme_constant_override("separation", 3)
+		main_r.add_child(mid_v)
+		
+		var name_r = HBoxContainer.new()
+		name_r.add_theme_constant_override("separation", 6)
+		mid_v.add_child(name_r)
+		
+		var t_ico = TextureRect.new()
+		t_ico.custom_minimum_size = Vector2(18, 18)
+		t_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		t_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		t_ico.texture = GameData.get_type_icon_texture(target_inst.type)
+		name_r.add_child(t_ico)
+		
+		var n_lbl = Label.new()
+		n_lbl.text = "%s • %s [Tier %s]" % [to_name, to_stage, target_inst.tier]
+		n_lbl.add_theme_font_size_override("font_size", 13)
+		n_lbl.add_theme_color_override("font_color", Color("#FFF59D") if can_evo else Color.WHITE)
+		name_r.add_child(n_lbl)
+		
+		var st_lbl = Label.new()
+		st_lbl.text = "❤️ %d HP  |  👟 %d SPD  |  ⚡ %d Max NRG" % [target_inst.max_hp, target_inst.speed, target_inst.max_energy]
+		st_lbl.add_theme_font_size_override("font_size", 11)
+		st_lbl.add_theme_color_override("font_color", Color("#81C784"))
+		mid_v.add_child(st_lbl)
+		
+		if target_inst.moves.size() >= 2:
+			var mv_lbl = Label.new()
+			mv_lbl.text = "⚔️ Moves: %s & %s" % [target_inst.moves[0].name, target_inst.moves[1].name]
+			mv_lbl.add_theme_font_size_override("font_size", 10)
+			mv_lbl.add_theme_color_override("font_color", Color("#CFD8DC"))
+			mid_v.add_child(mv_lbl)
+			
+		# Requirement & Actions Footer
+		var req_r = HBoxContainer.new()
+		req_r.add_theme_constant_override("separation", 8)
+		b_vbox.add_child(req_r)
+		
+		var st_ico = TextureRect.new()
+		st_ico.custom_minimum_size = Vector2(24, 24)
+		st_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		st_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		st_ico.texture = GameData.get_item_texture(stone_type)
+		req_r.add_child(st_ico)
+		
+		var req_lbl = Label.new()
+		req_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		req_lbl.add_theme_font_size_override("font_size", 11)
+		var unlock_txt = "✓ Card Unlocked" if is_unlocked else "🔒 Card Locked"
+		req_lbl.text = "Requires: %dx %s (Owned: %d)  •  %s" % [stone_req, stone_name, stone_owned, unlock_txt]
+		if is_unlocked and stone_owned >= stone_req:
+			req_lbl.add_theme_color_override("font_color", Color("#69F0AE"))
+		else:
+			req_lbl.add_theme_color_override("font_color", Color("#FFB74D"))
+		req_r.add_child(req_lbl)
+		
+		if stone_owned < stone_req:
+			var btn_buy_st = Button.new()
+			btn_buy_st.custom_minimum_size = Vector2(106, 30)
+			btn_buy_st.add_theme_font_size_override("font_size", 10)
+			btn_buy_st.text = "🛒 Buy (%d G)" % GameData.ITEM_COST_STONE
+			btn_buy_st.disabled = (cur_gold < GameData.ITEM_COST_STONE)
+			if cur_gold >= GameData.ITEM_COST_STONE:
+				_apply_retro_button_style(btn_buy_st, Color(0.18, 0.52, 0.65), Color(0.32, 0.78, 0.95), false)
+			else:
+				_apply_retro_button_style(btn_buy_st, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
+			var buy_st_type = stone_type
+			var reopen_idx = team_idx
+			btn_buy_st.pressed.connect(func():
+				if GameData.buy_campaign_stone(buy_st_type):
+					GameData.add_daily_mission_progress("buy_camp_shop", 1)
+					GameData.play_combat_sfx("purchase")
+					update_campaign_ui()
+					_open_camp_evolution_selector(reopen_idx)
+			)
+			req_r.add_child(btn_buy_st)
+			
+		var btn_do_evo = Button.new()
+		btn_do_evo.custom_minimum_size = Vector2(104, 30)
+		btn_do_evo.add_theme_font_size_override("font_size", 11)
+		btn_do_evo.text = "✨ Evolve!"
+		btn_do_evo.disabled = not can_evo
+		if can_evo:
+			_apply_retro_button_style(btn_do_evo, Color(0.20, 0.68, 0.36), Color(0.35, 0.92, 0.55), false)
+			var chosen_t_id = to_id
+			var chosen_idx = team_idx
+			btn_do_evo.pressed.connect(func():
+				var evo_info = GameData.prepare_campaign_pokemon_evolution_with_option(chosen_idx, chosen_t_id)
+				if bool(evo_info.get("success", false)):
+					camp_evo_selector_modal.visible = false
+					_play_camp_evolution_sequence(evo_info)
+			)
+		else:
+			_apply_retro_button_style(btn_do_evo, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
+		req_r.add_child(btn_do_evo)
+		
+		vbox.add_child(b_panel)
+		
+	var sep_bot = HSeparator.new()
+	vbox.add_child(sep_bot)
+	
+	var btn_back = Button.new()
+	btn_back.text = "⬅ Back to Camp"
+	btn_back.custom_minimum_size = Vector2(0, 34)
+	btn_back.add_theme_font_size_override("font_size", 11)
+	_apply_retro_button_style(btn_back, Color(0.30, 0.40, 0.50), Color(0.42, 0.58, 0.72), false)
+	btn_back.pressed.connect(func():
+		camp_evo_selector_modal.visible = false
+		update_campaign_ui()
+	)
+	vbox.add_child(btn_back)
+
 func _check_and_run_camp_evolutions() -> void:
 	if _is_camp_evo_active:
 		return
-	var pending = GameData.get_pending_campaign_evolutions()
-	if pending.is_empty():
-		return
-	_camp_evo_queue = pending.duplicate()
-	_run_camp_evolution_queue()
+	if not _camp_evo_queue.is_empty():
+		_run_camp_evolution_queue()
+	else:
+		update_campaign_ui()
 
 func _run_camp_evolution_queue() -> void:
 	if _camp_evo_queue.is_empty():
@@ -4670,6 +5137,8 @@ func _populate_hidden_shop_view() -> void:
 			var card_reg = str(card.get("region", "Kanto")).strip_edges().to_upper()
 			if card_reg == "":
 				card_reg = "KANTO"
+			if not (card_reg in ["KANTO", "JOHTO"]):
+				card_reg = "OTHER"
 			if card_reg != hidden_shop_region:
 				continue
 		var cid = int(card.get("id", 0))
@@ -5507,6 +5976,8 @@ func get_filtered_collection_cards() -> Array:
 			var c_region = str(card.get("region", "Kanto")).strip_edges().to_upper()
 			if c_region == "":
 				c_region = "KANTO"
+			if not (c_region in ["KANTO", "JOHTO"]):
+				c_region = "OTHER"
 			if c_region != col_filter_region:
 				continue
 		

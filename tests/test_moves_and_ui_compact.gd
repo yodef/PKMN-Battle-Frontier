@@ -147,7 +147,7 @@ func _ready() -> void:
 	assert(not "Knockout" in m1_text and not "[Uses:" in m1_text and not "[Cost:" in m1_text, "btn_move1 should be compact without Knockout/[Uses:]/[Cost:]")
 	assert("Ember 🔥" in m2_text and "4 DMG" in m2_text and "KO" in m2_text, "btn_move2 should show boosted Name 🔥, DMG, and KO")
 
-	# 3. Verify required_exp column in poke_stats.csv & evolution rules
+	# 3. Verify required_exp, evolves_from, and required_stone columns in poke_stats.csv & evolution rules
 	var bulba_id = GameData.get_pokemon_id_by_name("Bulbasaur")
 	var ivysaur_id = GameData.get_pokemon_id_by_name("Ivysaur")
 	var venusaur_id = GameData.get_pokemon_id_by_name("Venusaur")
@@ -155,6 +155,11 @@ func _ready() -> void:
 	var raticate_id = GameData.get_pokemon_id_by_name("Raticate")
 	var magikarp_id = GameData.get_pokemon_id_by_name("Magikarp")
 	var chansey_id = GameData.get_pokemon_id_by_name("Chansey")
+	var farfetchd_id = GameData.get_pokemon_id_by_name("Farfetch'd")
+	var eevee_id = GameData.get_pokemon_id_by_name("Eevee")
+	var vaporeon_id = GameData.get_pokemon_id_by_name("Vaporeon")
+	var jolteon_id = GameData.get_pokemon_id_by_name("Jolteon")
+	var flareon_id = GameData.get_pokemon_id_by_name("Flareon")
 	
 	assert(GameData.get_pokemon_required_exp(bulba_id) == 10, "Bulbasaur (Basic -> S1 -> S2) should require 10 EXP")
 	assert(GameData.get_pokemon_required_exp(ivysaur_id) == 25, "Ivysaur (S1 -> S2) should require 25 EXP")
@@ -162,43 +167,78 @@ func _ready() -> void:
 	assert(GameData.get_pokemon_required_exp(rattata_id) == 20, "Rattata (Basic -> S1 only) should require 20 EXP")
 	assert(GameData.get_pokemon_required_exp(raticate_id) == 0, "Raticate (S1 final) should require 0 EXP")
 	assert(GameData.get_pokemon_required_exp(magikarp_id) == 20, "Magikarp (Basic -> S1 only) should require 20 EXP")
-	assert(GameData.get_pokemon_required_exp(chansey_id) == 0, "Chansey (currently no evo) should require 0 EXP")
-	
+	assert(GameData.get_pokemon_required_exp(eevee_id) == 20, "Eevee (branched Basic -> S1) should require 20 EXP")
+	assert(GameData.get_pokemon_required_exp(chansey_id) == 25, "Chansey (evolves_from Happiny, evolves_to Blissey) should require 25 EXP")
+	assert(GameData.get_pokemon_required_exp(farfetchd_id) == 0, "Farfetch'd (no evolution) should require 0 EXP")
+
+	# Verify evolves_from and required_stone metadata
+	assert(GameData.pokemon_catalog[ivysaur_id].get("evolves_from", "") == "Bulbasaur", "Ivysaur evolves_from must be 'Bulbasaur'")
+	assert(GameData.pokemon_catalog[venusaur_id].get("evolves_from", "") == "Ivysaur", "Venusaur evolves_from must be 'Ivysaur'")
+	assert(GameData.pokemon_catalog[vaporeon_id].get("evolves_from", "") == "Eevee", "Vaporeon evolves_from must be 'Eevee'")
+	assert(GameData.pokemon_catalog[bulba_id].get("required_stone", "") == "Leaf", "Bulbasaur required_stone must be 'Leaf'")
+
+	# Verify Eevee branched evolution options & Stone requirements (Stage 1 = 1 stone, Stage 2 = 2 stones)
+	var eevee_opts = GameData.get_evolution_options(eevee_id)
+	assert(eevee_opts.size() >= 3, "Eevee must have at least 3 cataloged evolution options (Vaporeon, Jolteon, Flareon)")
+	assert(eevee_opts[0]["to_name"] == "Vaporeon" and eevee_opts[0]["stone_type"] == "Water" and int(eevee_opts[0]["stone_count"]) == 1, "Eevee -> Vaporeon must require 1x Water Stone")
+	assert(eevee_opts[1]["to_name"] == "Jolteon" and eevee_opts[1]["stone_type"] == "Thunder" and int(eevee_opts[1]["stone_count"]) == 1, "Eevee -> Jolteon must require 1x Thunder Stone")
+	assert(eevee_opts[2]["to_name"] == "Flareon" and eevee_opts[2]["stone_type"] == "Fire" and int(eevee_opts[2]["stone_count"]) == 1, "Eevee -> Flareon must require 1x Fire Stone")
+
+	var ivy_opts = GameData.get_evolution_options(ivysaur_id)
+	assert(ivy_opts.size() == 1 and ivy_opts[0]["to_name"] == "Venusaur" and ivy_opts[0]["stone_type"] == "Leaf" and int(ivy_opts[0]["stone_count"]) == 2, "Ivysaur (Stage 1 -> Stage 2) must require 2x Leaf Stone")
+
 	var rattata_inst = GameData.create_pokemon_instance(rattata_id)
 	assert(rattata_inst.get_required_exp() == 20 and rattata_inst.max_exp == 20, "Rattata instance get_required_exp() must be 20")
 	
-	# Test custom required_exp override (e.g. future Chansey evolution)
-	GameData.pokemon_catalog[chansey_id]["evolves_to"] = "Blissey"
+	# Test custom required_exp override
+	var orig_chansey_exp = GameData.pokemon_catalog[chansey_id]["required_exp"]
 	GameData.pokemon_catalog[chansey_id]["required_exp"] = 35
 	var chansey_inst = GameData.create_pokemon_instance(chansey_id)
 	assert(chansey_inst.get_required_exp() == 35, "Custom required_exp (35) for Chansey should be respected")
-	GameData.pokemon_catalog[chansey_id]["evolves_to"] = ""
-	GameData.pokemon_catalog[chansey_id]["required_exp"] = 0
+	GameData.pokemon_catalog[chansey_id]["required_exp"] = orig_chansey_exp
 	
-	# Test Campaign Evolution check with Rattata (10 EXP = not ready, 20 EXP = ready)
-	GameData.unlock_pokemon(rattata_id)
-	GameData.unlock_pokemon(raticate_id)
+	# Test Campaign Stone Shop (10 G) & Evolution consumption (1 stone for Stage 1, 2 stones for Stage 2)
+	assert(GameData.ITEM_COST_STONE == 10, "Stone price in Camp Shop must be 10 G")
+	GameData.unlock_pokemon(bulba_id)
+	GameData.unlock_pokemon(ivysaur_id)
+	GameData.unlock_pokemon(venusaur_id)
 	GameData.campaign_submode = "TOURNAMENT"
+	GameData.campaign_gold = 30
+	GameData.campaign_inventory["stone_leaf"] = 0
+	var bulba_inst = GameData.create_pokemon_instance(bulba_id)
 	GameData.campaign_player_team_state = [{
-		"id": rattata_id,
-		"name": "Rattata",
+		"id": bulba_id,
+		"name": "Bulbasaur",
 		"stage": "Basic",
-		"type": "NORMAL",
-		"current_hp": 10,
-		"max_hp": 10,
+		"type": "GRASS",
+		"current_hp": 12,
+		"max_hp": 12,
 		"speed": 2,
-		"texture_path": rattata_inst.texture_path,
+		"texture_path": bulba_inst.texture_path,
 		"current_exp": 10,
-		"max_exp": 20,
+		"max_exp": 10,
 		"burn_turns": 0,
 		"is_poisoned": false,
 		"is_flinched": false
 	}]
-	var pending_at_10 = GameData.get_pending_campaign_evolutions()
-	assert(pending_at_10.is_empty(), "Rattata should NOT evolve at 10 EXP")
-	GameData.campaign_player_team_state[0]["current_exp"] = 20
-	var pending_at_20 = GameData.get_pending_campaign_evolutions()
-	assert(pending_at_20.size() == 1 and pending_at_20[0]["to_name"] == "Raticate", "Rattata SHOULD evolve into Raticate at 20 EXP")
+	assert(not bool(GameData.can_evolve_campaign_pokemon_with_option(0, ivysaur_id).get("can_evolve", false)), "Bulbasaur at 10/10 EXP should NOT be able to evolve with 0 Leaf Stones")
+	assert(GameData.buy_campaign_stone("Leaf") == true, "Should be able to buy 1x Leaf Stone for 10 G")
+	assert(GameData.campaign_gold == 20 and GameData.get_campaign_stone_count("Leaf") == 1, "Buying 1x Leaf Stone must leave 20 G and 1 Leaf Stone")
+	assert(bool(GameData.can_evolve_campaign_pokemon_with_option(0, ivysaur_id).get("can_evolve", false)), "Bulbasaur at 10/10 EXP with 1 Leaf Stone MUST be able to evolve")
+	var evo_s1_info = GameData.evolve_campaign_pokemon_with_option(0, ivysaur_id)
+	assert(bool(evo_s1_info.get("success", false)) and evo_s1_info["to_name"] == "Ivysaur", "Bulbasaur must evolve into Ivysaur")
+	assert(GameData.get_campaign_stone_count("Leaf") == 0, "Evolving Basic -> Stage 1 must consume 1 Leaf Stone")
+
+	# Now Ivysaur -> Venusaur (Stage 1 -> Stage 2) requires 25 EXP and 2x Leaf Stones
+	GameData.campaign_player_team_state[0]["current_exp"] = 25
+	GameData.buy_campaign_stone("Leaf") # 1 Leaf Stone owned (10 G left)
+	assert(not bool(GameData.can_evolve_campaign_pokemon_with_option(0, venusaur_id).get("can_evolve", false)), "Ivysaur at 25/25 EXP must NOT evolve with only 1 Leaf Stone (needs 2)")
+	GameData.buy_campaign_stone("Leaf") # 2 Leaf Stones owned (0 G left)
+	assert(GameData.get_campaign_stone_count("Leaf") == 2 and GameData.campaign_gold == 0, "Should now have 2 Leaf Stones and 0 G")
+	assert(bool(GameData.can_evolve_campaign_pokemon_with_option(0, venusaur_id).get("can_evolve", false)), "Ivysaur at 25/25 EXP with 2 Leaf Stones MUST be able to evolve")
+	var evo_s2_info = GameData.evolve_campaign_pokemon_with_option(0, venusaur_id)
+	assert(bool(evo_s2_info.get("success", false)) and evo_s2_info["to_name"] == "Venusaur", "Ivysaur must evolve into Venusaur")
+	assert(GameData.get_campaign_stone_count("Leaf") == 0, "Evolving Stage 1 -> Stage 2 must consume 2 Leaf Stones")
 
 	# 4. Verify Sequential Multi-Hit Floating Numbers & "-X!" Crit Format
 	var layer = battle_scene.floating_numbers_layer

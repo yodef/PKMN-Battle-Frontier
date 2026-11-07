@@ -129,7 +129,9 @@ class PokemonData:
 	var rarity: String = "Common"
 	var tier: String = "C"
 	var region: String = "Kanto"
+	var evolves_from: String = ""
 	var evolves_to: String = ""
+	var required_stone: String = ""
 	var required_exp: int = 0
 	var current_exp: int = 0
 	var max_exp: int = 10
@@ -353,6 +355,12 @@ const ITEM_COST_POTION: int = 5
 const ITEM_COST_REVIVE: int = 9
 const ITEM_COST_REMEDY: int = 3
 const ITEM_COST_ETHER: int = 5
+const ITEM_COST_STONE: int = 10
+
+const EVOLUTION_STONE_TYPES: Array[String] = [
+	"Fire", "Water", "Leaf", "Thunder", "Ground",
+	"Heart", "Night", "Psyche", "Punch", "Scale"
+]
 
 var campaign_match_number: int = 1 # 1 to 9 (10 = Tournament Champion)
 var campaign_gold: int = 0
@@ -877,6 +885,10 @@ func load_pokemon_from_csv() -> void:
 			def_recover = 3
 			
 		var raw_hp_val = get_val.call("hp", "")
+		var raw_m1_val = get_val.call("move1", "")
+		# Omitir filas de plantilla (Gen 2-4) que aún no tienen estadísticas ni movimientos configurados
+		if raw_hp_val == "" or raw_m1_val == "":
+			continue
 		var p_hp = int(raw_hp_val) if raw_hp_val != "" and int(raw_hp_val) > 0 else def_hp
 		
 		var raw_energy_val = get_val.call("energy", "")
@@ -943,7 +955,9 @@ func load_pokemon_from_csv() -> void:
 			is_starter = (pkmn_id in [0, 1, 2, 3])
 		
 		# Parámetro de Evolución
+		var p_evolves_from = get_val.call("evolves_from", "").strip_edges()
 		var p_evolves_to = get_val.call("evolves_to", "").strip_edges()
+		var p_required_stone = get_val.call("required_stone", "").strip_edges()
 		var raw_req_exp = get_val.call("required_exp", "")
 		if raw_req_exp == "":
 			raw_req_exp = get_val.call("required exp", "")
@@ -978,10 +992,13 @@ func load_pokemon_from_csv() -> void:
 			"id": pkmn_id,
 			"pokedex_num": p_num,
 			"stage": p_stage,
+			"csv_stage": p_stage,
 			"rarity": p_rarity,
 			"tier": p_tier,
 			"region": p_region,
+			"evolves_from": p_evolves_from,
 			"evolves_to": p_evolves_to,
+			"required_stone": p_required_stone,
 			"required_exp": p_required_exp,
 			"name": p_name,
 			"hp": p_hp,
@@ -1023,6 +1040,13 @@ func load_pokemon_from_csv() -> void:
 		all_pokemon_ids.append(pkmn_id)
 		
 	file.close()
+	# Si algún Pokémon tiene evolves_from hacia una pre-evolución aún no implementada en pokemon_catalog,
+	# tratar su stage jugable como Basic hasta que su pre-evolución tenga estadísticas.
+	for id in all_pokemon_ids:
+		var entry = pokemon_catalog[id]
+		var ef = str(entry.get("evolves_from", "")).strip_edges()
+		if ef != "" and get_pokemon_id_by_name(ef) == -1 and str(entry.get("stage", "")).strip_edges().to_lower() == "stage 1":
+			entry["stage"] = "Basic"
 	# Resolver required_exp automático si algún Pokémon nuevo tiene evolves_to pero required_exp vacío/0
 	for id in all_pokemon_ids:
 		pokemon_catalog[id]["required_exp"] = get_pokemon_required_exp(id)
@@ -1065,6 +1089,89 @@ func get_pokemon_id_by_name(pkmn_name: String) -> int:
 			return int(id)
 	return -1
 
+func normalize_stone_type(stone_raw: String) -> String:
+	var c = stone_raw.strip_edges().to_lower()
+	c = c.replace("stone_", "").replace("_stone", "").replace(" stone", "").strip_edges()
+	for st in EVOLUTION_STONE_TYPES:
+		if st.to_lower() == c:
+			return st
+	if c == "electric":
+		return "Thunder"
+	elif c == "grass":
+		return "Leaf"
+	elif c == "psychic":
+		return "Psyche"
+	elif c == "dark":
+		return "Night"
+	elif c == "fighting":
+		return "Punch"
+	elif c == "normal":
+		return "Heart"
+	return stone_raw.strip_edges().capitalize() if stone_raw.strip_edges() != "" else "Heart"
+
+func get_stone_inventory_key(stone_type: String) -> String:
+	return "stone_" + normalize_stone_type(stone_type).to_lower()
+
+func get_stone_display_name(stone_type: String) -> String:
+	var norm = normalize_stone_type(stone_type)
+	return "%s Stone" % norm
+
+func get_required_stone_count_for_stage(from_stage: String, to_stage: String = "") -> int:
+	var fs = from_stage.strip_edges().to_lower()
+	var ts = to_stage.strip_edges().to_lower()
+	if fs == "stage 1" or ts == "stage 2":
+		return 2
+	return 1
+
+func get_evolution_options(pkmn_id: int, only_implemented: bool = true) -> Array[Dictionary]:
+	var options: Array[Dictionary] = []
+	if not pokemon_catalog.has(pkmn_id):
+		return options
+	var d = pokemon_catalog[pkmn_id]
+	var evo_raw = str(d.get("evolves_to", "")).strip_edges()
+	if evo_raw == "":
+		return options
+	var stone_raw = str(d.get("required_stone", "")).strip_edges()
+	var evo_parts = evo_raw.split(",")
+	var stone_parts = stone_raw.split(",") if stone_raw != "" else PackedStringArray()
+	var from_stage = str(d.get("stage", "Basic")).strip_edges()
+	var req_exp = get_pokemon_required_exp(pkmn_id)
+
+	for i in range(evo_parts.size()):
+		var t_name = evo_parts[i].strip_edges()
+		if t_name == "":
+			continue
+		var s_part = "Heart"
+		if i < stone_parts.size() and stone_parts[i].strip_edges() != "":
+			s_part = stone_parts[i].strip_edges()
+		elif stone_parts.size() > 0 and stone_parts[0].strip_edges() != "":
+			s_part = stone_parts[0].strip_edges()
+		var s_type = normalize_stone_type(s_part)
+		var t_id = get_pokemon_id_by_name(t_name)
+		if only_implemented and t_id == -1:
+			continue
+		var t_data = pokemon_catalog.get(t_id, {}) if t_id != -1 else {}
+		var to_stage = str(t_data.get("stage", "Stage 2" if from_stage.to_lower() == "stage 1" else "Stage 1"))
+		var s_count = get_required_stone_count_for_stage(from_stage, to_stage)
+		var s_key = get_stone_inventory_key(s_type)
+		var unlocked = is_pokemon_unlocked(t_id) if t_id != -1 else false
+		options.append({
+			"from_id": pkmn_id,
+			"from_name": str(d.get("name", "")),
+			"from_stage": from_stage,
+			"to_id": t_id,
+			"to_name": str(t_data.get("name", t_name)),
+			"to_stage": to_stage,
+			"stone_type": s_type,
+			"stone_key": s_key,
+			"stone_name": get_stone_display_name(s_type),
+			"stone_count": s_count,
+			"required_exp": req_exp,
+			"is_unlocked": unlocked,
+			"is_implemented": (t_id != -1)
+		})
+	return options
+
 func get_evolution_target_id(current_id: int) -> int:
 	if not pokemon_catalog.has(current_id):
 		return -1
@@ -1072,6 +1179,17 @@ func get_evolution_target_id(current_id: int) -> int:
 	var evo_name = str(d.get("evolves_to", "")).strip_edges()
 	if evo_name == "":
 		return -1
+	if "," in evo_name:
+		var parts = evo_name.split(",")
+		var first_valid = -1
+		for part in parts:
+			var tid = get_pokemon_id_by_name(part.strip_edges())
+			if tid != -1:
+				if first_valid == -1:
+					first_valid = tid
+				if is_pokemon_unlocked(tid):
+					return tid
+		return first_valid
 	return get_pokemon_id_by_name(evo_name)
 
 func get_pokemon_required_exp(pkmn_id: int) -> int:
@@ -2168,7 +2286,9 @@ func create_pokemon_instance(pkmn_id: int) -> PokemonData:
 	p.rarity = d.get("rarity", "Common")
 	p.tier = d.get("tier", "C")
 	p.region = d.get("region", "Kanto")
+	p.evolves_from = d.get("evolves_from", "")
 	p.evolves_to = d.get("evolves_to", "")
+	p.required_stone = d.get("required_stone", "")
 	p.required_exp = get_pokemon_required_exp(pkmn_id)
 	p.current_exp = 0
 	p.max_exp = p.get_required_exp()
@@ -2722,6 +2842,124 @@ func buy_campaign_ether() -> bool:
 		return true
 	return false
 
+# --- EVOLUTION STONES & INTERACTIVE CAMP EVOLUTION (VARIANT 1) ---
+func get_campaign_stone_count(stone_type: String) -> int:
+	var inv = get_active_campaign_inventory()
+	var k = get_stone_inventory_key(stone_type)
+	return int(inv.get(k, 0))
+
+func add_campaign_stone(stone_type: String, amount: int = 1) -> void:
+	var inv = get_active_campaign_inventory()
+	var k = get_stone_inventory_key(stone_type)
+	inv[k] = max(0, int(inv.get(k, 0)) + amount)
+
+func buy_campaign_stone(stone_type: String) -> bool:
+	var cur_gold = get_active_campaign_gold()
+	if cur_gold >= ITEM_COST_STONE:
+		set_active_campaign_gold(cur_gold - ITEM_COST_STONE)
+		add_campaign_stone(stone_type, 1)
+		save_profile()
+		return true
+	return false
+
+func get_team_needed_stones() -> Array[String]:
+	var needed: Array[String] = []
+	var team = get_active_campaign_team_state()
+	for p in team:
+		var cid = int(p.get("id", -1))
+		var opts = get_evolution_options(cid, true)
+		for opt in opts:
+			var st = str(opt.get("stone_type", ""))
+			if st != "" and not (st in needed):
+				needed.append(st)
+			var tid = int(opt.get("to_id", -1))
+			if tid != -1:
+				var next_opts = get_evolution_options(tid, true)
+				for nopt in next_opts:
+					var nst = str(nopt.get("stone_type", ""))
+					if nst != "" and not (nst in needed):
+						needed.append(nst)
+	return needed
+
+func can_evolve_campaign_pokemon_with_option(team_idx: int, to_id: int = -1) -> Dictionary:
+	var team = get_active_campaign_team_state()
+	if team_idx < 0 or team_idx >= team.size():
+		return {"can_evolve": false, "reason": "Invalid team slot."}
+	var p = team[team_idx]
+	var cur_hp = int(p.get("current_hp", 0))
+	if cur_hp <= 0:
+		return {"can_evolve": false, "reason": "Pokémon is KO! Use a Revive first."}
+	var cid = int(p.get("id", -1))
+	var req_exp = get_pokemon_required_exp(cid)
+	var cur_exp = int(p.get("current_exp", 0))
+	if req_exp <= 0:
+		return {"can_evolve": false, "reason": "This Pokémon is at its final stage."}
+	if cur_exp < req_exp:
+		return {"can_evolve": false, "reason": "Needs %d/%d EXP to evolve." % [cur_exp, req_exp]}
+	var opts = get_evolution_options(cid, true)
+	if opts.is_empty():
+		return {"can_evolve": false, "reason": "No evolution available."}
+	for opt in opts:
+		if to_id != -1 and int(opt.get("to_id", -1)) != to_id:
+			continue
+		if not bool(opt.get("is_unlocked", false)):
+			if to_id != -1:
+				return {"can_evolve": false, "reason": "Requires %s card unlocked in your collection." % str(opt.get("to_name", "target")), "option": opt}
+			continue
+		var s_type = str(opt.get("stone_type", "Heart"))
+		var s_req = int(opt.get("stone_count", 1))
+		var s_owned = get_campaign_stone_count(s_type)
+		if s_owned < s_req:
+			if to_id != -1:
+				return {"can_evolve": false, "reason": "Requires %dx %s (Owned: %d)." % [s_req, str(opt.get("stone_name", "Stone")), s_owned], "option": opt}
+			continue
+		return {"can_evolve": true, "reason": "Ready to evolve!", "option": opt}
+	var first_opt = opts[0]
+	if not bool(first_opt.get("is_unlocked", false)):
+		return {"can_evolve": false, "reason": "Requires %s card unlocked." % str(first_opt.get("to_name", "target")), "option": first_opt}
+	return {"can_evolve": false, "reason": "Requires %dx %s." % [int(first_opt.get("stone_count", 1)), str(first_opt.get("stone_name", "Stone"))], "option": first_opt}
+
+func prepare_campaign_pokemon_evolution_with_option(team_idx: int, to_id: int) -> Dictionary:
+	var check = can_evolve_campaign_pokemon_with_option(team_idx, to_id)
+	if not bool(check.get("can_evolve", false)):
+		return {"success": false, "reason": str(check.get("reason", "Cannot evolve."))}
+	var opt: Dictionary = check.get("option", {})
+	var team = get_active_campaign_team_state()
+	var p = team[team_idx]
+	var target_inst = create_pokemon_instance(to_id)
+	if not target_inst:
+		return {"success": false, "reason": "Target Pokémon not found."}
+	var s_type = str(opt.get("stone_type", "Heart"))
+	var s_count = int(opt.get("stone_count", 1))
+	add_campaign_stone(s_type, -s_count)
+	var cur_hp = int(p.get("current_hp", 0))
+	var evo_info = {
+		"success": true,
+		"index": team_idx,
+		"from_name": str(p.get("name", "")),
+		"to_name": target_inst.name,
+		"from_id": int(p.get("id", -1)),
+		"to_id": to_id,
+		"from_texture": str(p.get("texture_path", "")),
+		"to_texture": target_inst.texture_path,
+		"old_hp": cur_hp,
+		"new_max_hp": target_inst.max_hp,
+		"hp_healed": max(1, target_inst.max_hp - cur_hp),
+		"new_stage": target_inst.stage,
+		"stone_type": s_type,
+		"stone_name": str(opt.get("stone_name", "")),
+		"stone_count": s_count
+	}
+	save_profile()
+	return evo_info
+
+func evolve_campaign_pokemon_with_option(team_idx: int, to_id: int) -> Dictionary:
+	var evo_info = prepare_campaign_pokemon_evolution_with_option(team_idx, to_id)
+	if not bool(evo_info.get("success", false)):
+		return evo_info
+	apply_single_campaign_evolution(evo_info)
+	return evo_info
+
 # --- TOURNAMENT STRUCTURE & RIVAL GENERATION ---
 func get_tournament_match_info(match_num: int) -> Dictionary:
 	match match_num:
@@ -2977,6 +3215,10 @@ func get_item_texture(item_name: String) -> Texture2D:
 		file_name = "C Remedy.png"
 	elif clean == "ether":
 		file_name = "C Ether.png"
+	else:
+		var stone_clean = clean.replace("stone_", "").replace("_stone", "").replace(" stone", "").strip_edges()
+		if stone_clean in ["fire", "water", "leaf", "thunder", "ground", "heart", "night", "psyche", "punch", "scale"]:
+			file_name = "%s stone.png" % stone_clean
 	var res_path = "res://assets/items/" + file_name
 	if ResourceLoader.exists(res_path):
 		return load(res_path)
