@@ -1,4 +1,4 @@
-﻿id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,description,sfx
+id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,description,sfx
 70,Absorb,GRASS,4,1,1,0,0,LIFE_DRAIN,This PKMN recovers HP equal to 50% of the DMG dealt by this Move.,Absorb.mp3
 38,Acid,DARK,6,2,1,1,3,POISON,Causes POISON to foes PKMN (-1 DMG for rest of combat). Use 1 extra energy to increase +3 DMG.,Acid.mp3
 18,Aerial Ace,NORMAL,8,2,1,0,0,BOOST_IF_FASTER,"If this PKMN is faster than its foe, increase +3 DMG to this Move.",Aerial Ace.mp3
@@ -23,7 +23,7 @@
 86,Brine,WATER,16,4,4,0,0,NONE,,
 5,Bubble,WATER,3,1,1,0,0,SLOW_FOE,Reduce foes PKMN Speed by -1 next round.,Bubble.mp3
 87,Bubble Beam,WATER,4,1,1,1,2,SLOW_FOE,Use 1 extra energy to increase +2 DMG to this Move and reduce foes PKMN Speed by -1 next round.,Bubble Beam.mp3
-24,Bug Bite,DARK,3,1,1,1,0,FLINCH,"Use 1 extra energy to cause FLINCH. (foes PKMN cannot use any Move this round, if PKMN was flinched in the previous round, it cannot be flinched again)",Bite.mp3
+24,Bug Bite,DARK,6,2,1,1,0,FLINCH,"Use 1 extra energy to cause FLINCH. (foes PKMN cannot use any Move this round, if PKMN was flinched in the previous round, it cannot be flinched again)",Bite.mp3
 25,Bug Buzz,GRASS,16,4,1,0,0,NONE,,
 88,Bulk Up,NORMAL,2,1,1,0,0,BLOCK,Deals 2 DMG and strengthens defense: receives -2 DMG next time it takes a hit.,Bulk Up.mp3
 44,Bulldoze,GROUND,8,2,2,0,0,SLOW_FOE,Reduce foes PKMN -3 Speed next round.,

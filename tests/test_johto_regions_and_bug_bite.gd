@@ -4,14 +4,14 @@ func _ready():
 	print("=== TEST: Bug Bite + Johto Starters + Region Filters ===")
 	var all_p = GameData.pokemon_catalog
 	print("Total Pokemon loaded: ", all_p.size())
-	assert(all_p.size() == 392, "Expected 392 Pokemon (Kanto 151 + Johto 100 + Hoenn 135 + Other 6), got " + str(all_p.size()))
+	assert(all_p.size() == 493, "Expected 392 Pokemon (Kanto 151 + Johto 100 + Hoenn 135 + Other 6), got " + str(all_p.size()))
 	
 	# 1. Verify Bug Bite in GameData.moves_catalog and on Caterpie
 	var bug_bite = GameData.moves_catalog.get("bug bite", null)
 	assert(bug_bite != null, "Bug Bite should exist in moves_catalog")
 	print("Bug Bite -> dmg:", bug_bite.get("dmg"), " cost:", bug_bite.get("cost"), " boost_cost:", bug_bite.get("boost_cost"), " effect:", bug_bite.get("effect_type"))
-	assert(int(bug_bite.get("dmg", 0)) == 3, "Bug Bite dmg should be 3")
-	assert(int(bug_bite.get("cost", 0)) == 1, "Bug Bite cost should be 1")
+	assert(int(bug_bite.get("dmg", 0)) == 6, "Bug Bite dmg should be 6")
+	assert(int(bug_bite.get("cost", 0)) == 2, "Bug Bite cost should be 2")
 	assert(int(bug_bite.get("boost_cost", 0)) == 1, "Bug Bite boost_cost should be 1")
 	assert(str(bug_bite.get("effect_type", "")) == "FLINCH", "Bug Bite effect_type should be FLINCH")
 	
@@ -22,8 +22,8 @@ func _ready():
 		if m.name == "Bug Bite":
 			cat_bb = m
 	assert(cat_bb != null, "Caterpie should have Bug Bite")
-	assert(cat_bb.base_damage == 3, "Caterpie Bug Bite base_damage should be 3")
-	assert(cat_bb.cost == 1, "Caterpie Bug Bite cost should be 1")
+	assert(cat_bb.base_damage == 6, "Caterpie Bug Bite base_damage should be 6")
+	assert(cat_bb.cost == 2, "Caterpie Bug Bite cost should be 2")
 	assert(cat_bb.can_boost == true, "Caterpie Bug Bite should have can_boost == true")
 	assert(cat_bb.boost_cost == 1, "Caterpie Bug Bite boost_cost should be 1")
 	assert(cat_bb.effect_type == "FLINCH", "Caterpie Bug Bite effect_type should be FLINCH")
@@ -72,43 +72,46 @@ func _ready():
 	print("Collection HOENN count: ", hoenn_cards.size())
 	assert(hoenn_cards.size() == 135, "Expected 135 Hoenn cards, got " + str(hoenn_cards.size()))
 	
-	menu._on_col_region_pressed("OTHER")
-	var other_cards = menu.get_filtered_collection_cards()
-	print("Collection OTHER count: ", other_cards.size())
-	assert(other_cards.size() == 6, "Expected 6 Other cards, got " + str(other_cards.size()))
+	menu._on_col_region_pressed("SINNOH")
+	var sinnoh_cards = menu.get_filtered_collection_cards()
+	print("Collection SINNOH count: ", sinnoh_cards.size())
+	assert(sinnoh_cards.size() == 107, "Expected 107 Sinnoh cards, got " + str(sinnoh_cards.size()))
 	
 	menu._on_col_region_pressed("ALL")
 	var all_cards = menu.get_filtered_collection_cards()
 	print("Collection ALL count: ", all_cards.size())
-	assert(all_cards.size() == 392, "Expected 392 All cards, got " + str(all_cards.size()))
+	assert(all_cards.size() == 493, "Expected 493 All cards, got " + str(all_cards.size()))
 	
-	# Hidden shop region filtering
+	# Hidden shop region filtering (Max 50 cards visible per page)
 	assert(menu.hidden_shop_region == "KANTO", "Default Hidden Shop region should be KANTO")
 	menu._populate_hidden_shop_view()
 	print("Hidden Shop KANTO grid count: ", menu.hidden_shop_grid.get_child_count())
-	assert(menu.hidden_shop_grid.get_child_count() == 151, "Hidden Shop KANTO should have 151 cards")
+	assert(menu.hidden_shop_grid.get_child_count() == 50, "Hidden Shop KANTO should have 50 cards on page 1 (paginated from 151)")
 	
 	menu.hidden_region_buttons["JOHTO"].pressed.emit()
 	print("Hidden Shop JOHTO grid count: ", menu.hidden_shop_grid.get_child_count())
-	assert(menu.hidden_shop_grid.get_child_count() == 100, "Hidden Shop JOHTO should have 100 cards")
+	assert(menu.hidden_shop_grid.get_child_count() == 50, "Hidden Shop JOHTO should have 50 cards on page 1 (paginated from 100)")
 	
 	menu.hidden_region_buttons["HOENN"].pressed.emit()
 	print("Hidden Shop HOENN grid count: ", menu.hidden_shop_grid.get_child_count())
-	assert(menu.hidden_shop_grid.get_child_count() == 135, "Hidden Shop HOENN should have 135 cards")
+	assert(menu.hidden_shop_grid.get_child_count() == 50, "Hidden Shop HOENN should have 50 cards on page 1 (paginated from 135)")
 	
-	menu.hidden_region_buttons["OTHER"].pressed.emit()
-	print("Hidden Shop OTHER grid count: ", menu.hidden_shop_grid.get_child_count())
-	assert(menu.hidden_shop_grid.get_child_count() == 6, "Hidden Shop OTHER should have 6 cards")
+	menu.hidden_region_buttons["SINNOH"].pressed.emit()
+	print("Hidden Shop SINNOH grid count: ", menu.hidden_shop_grid.get_child_count())
+	assert(menu.hidden_shop_grid.get_child_count() == 50, "Hidden Shop SINNOH should have 50 cards on page 1 (paginated from 107)")
 	
-	# 4. Verify region labels have no leading icons
-	assert(menu.col_region_buttons["KANTO"].text.begins_with("Kanto ("), "Col KANTO button should start with 'Kanto (' (got '%s')" % menu.col_region_buttons["KANTO"].text)
-	assert(menu.col_region_buttons["HOENN"].text.begins_with("Hoenn ("), "Col HOENN button should start with 'Hoenn (' (got '%s')" % menu.col_region_buttons["HOENN"].text)
-	assert(menu.col_region_buttons["JOHTO"].text.begins_with("Johto ("), "Col JOHTO button should start with 'Johto (' (got '%s')" % menu.col_region_buttons["JOHTO"].text)
-	assert(menu.col_region_buttons["OTHER"].text.begins_with("Other ("), "Col OTHER button should start with 'Other (' (got '%s')" % menu.col_region_buttons["OTHER"].text)
-	assert(menu.col_region_buttons["ALL"].text.begins_with("All ("), "Col ALL button should start with 'All (' (got '%s')" % menu.col_region_buttons["ALL"].text)
+	# 4. Verify region labels have no leading icons and Other is removed
+	assert(not menu.col_region_buttons.has("OTHER"), "OTHER should not exist in col_region_buttons")
+	assert(not menu.hidden_region_buttons.has("OTHER"), "OTHER should not exist in hidden_region_buttons")
+	assert(menu.col_region_buttons["KANTO"].text.begins_with("Kanto ("), "Col KANTO button should start with 'Kanto ('")
+	assert(menu.col_region_buttons["HOENN"].text.begins_with("Hoenn ("), "Col HOENN button should start with 'Hoenn ('")
+	assert(menu.col_region_buttons["JOHTO"].text.begins_with("Johto ("), "Col JOHTO button should start with 'Johto ('")
+	assert(menu.col_region_buttons["SINNOH"].text.begins_with("Sinnoh ("), "Col SINNOH button should start with 'Sinnoh ('")
+	assert(menu.col_region_buttons["ALL"].text.begins_with("All ("), "Col ALL button should start with 'All ('")
 	assert(menu.hidden_region_buttons["KANTO"].text.begins_with("Kanto ("), "Hidden Shop KANTO button should start with 'Kanto ('")
 	assert(menu.hidden_region_buttons["JOHTO"].text.begins_with("Johto ("), "Hidden Shop JOHTO button should start with 'Johto ('")
-	assert(menu.hidden_region_buttons["OTHER"].text.begins_with("Other ("), "Hidden Shop OTHER button should start with 'Other ('")
+	assert(menu.hidden_region_buttons["HOENN"].text.begins_with("Hoenn ("), "Hidden Shop HOENN button should start with 'Hoenn ('")
+	assert(menu.hidden_region_buttons["SINNOH"].text.begins_with("Sinnoh ("), "Hidden Shop SINNOH button should start with 'Sinnoh ('")
 	assert(menu.hidden_region_buttons["ALL"].text.begins_with("All ("), "Hidden Shop ALL button should start with 'All ('")
 	
 	print("=== ALL TESTS PASSED! ===")

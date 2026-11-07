@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.6.2"
+const GAME_VERSION: String = "v0.6.3"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -355,6 +355,9 @@ var just_completed_tutorial: bool = false
 
 # Modo Torneo:
 const ITEM_COST_POTION: int = 5
+const ITEM_COST_SUPER_POTION: int = 9
+const ITEM_COST_HYPER_POTION: int = 15
+const ITEM_COST_POKE_FLUTE: int = 20
 const ITEM_COST_REVIVE: int = 9
 const ITEM_COST_REMEDY: int = 3
 const ITEM_COST_ETHER: int = 5
@@ -365,9 +368,19 @@ const EVOLUTION_STONE_TYPES: Array[String] = [
 	"Heart", "Night", "Psyche", "Punch", "Scale"
 ]
 
+const DEFAULT_INVENTORY: Dictionary = {
+	"potion": 0,
+	"super_potion": 0,
+	"hyper_potion": 0,
+	"revive": 0,
+	"remedy": 0,
+	"ether": 0,
+	"poke_flute": 0
+}
+
 var campaign_match_number: int = 1 # 1 to 9 (10 = Tournament Champion)
 var campaign_gold: int = 0
-var campaign_inventory: Dictionary = {"potion": 0, "revive": 0, "remedy": 0, "ether": 0}
+var campaign_inventory: Dictionary = DEFAULT_INVENTORY.duplicate()
 var campaign_player_team_state: Array = []
 var current_tournament_rival_team: Array[int] = []
 var current_tournament_rival_match: int = -1
@@ -376,11 +389,17 @@ var current_tournament_rival_match: int = -1
 var adventure_current_episode: int = 1
 var adventure_current_stage: int = 1 # 1 to 4
 var adventure_gold: int = 0
-var adventure_inventory: Dictionary = {"potion": 0, "revive": 0, "remedy": 0, "ether": 0}
+var adventure_inventory: Dictionary = DEFAULT_INVENTORY.duplicate()
 var adventure_player_team_state: Array = []
 var adventure_completed_episodes: Array[int] = []
 var adventure_unlocked_episodes: Array[int] = [1]
 var last_adventure_episode_conquered: bool = false
+var adventure_ep5_selected_route: String = "rocket_hideout"
+var adventure_ep5_cleared_routes: Array[String] = []
+var adventure_ep6_selected_route: String = "silph_co"
+var adventure_ep6_cleared_routes: Array[String] = []
+var adventure_ep7_selected_route: String = "pokemon_mansion"
+var adventure_ep7_cleared_routes: Array[String] = []
 
 const ADVENTURE_EPISODES: Dictionary = {
 	1: {
@@ -429,7 +448,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"id": 2,
 		"title": "Episode II: Cerulean City Gym",
 		"subtitle": "Traverse Mt. Moon and Route 4 to challenge Gym Leader Misty!",
-		"reward_diamonds_first_clear": 30,
+		"reward_diamonds_first_clear": 25,
 		"stages": [
 			{
 				"stage_num": 1,
@@ -479,7 +498,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"id": 3,
 		"title": "Episode III: Vermilion City Gym",
 		"subtitle": "Board the S.S. Anne and battle through Vermilion to challenge Gym Leader Lt. Surge!",
-		"reward_diamonds_first_clear": 60,
+		"reward_diamonds_first_clear": 30,
 		"stages": [
 			{
 				"stage_num": 1,
@@ -544,10 +563,486 @@ const ADVENTURE_EPISODES: Dictionary = {
 	4: {
 		"id": 4,
 		"title": "Episode IV: Celadon City Gym",
-		"subtitle": "Cross Route 9 and the Rock Tunnel to challenge Gym Leader Erika!",
-		"locked": true,
-		"reward_diamonds_first_clear": 80,
-		"stages": []
+		"subtitle": "Traverse Route 9, Rock Tunnel, and Route 7 to challenge Gym Leader Erika!",
+		"reward_diamonds_first_clear": 35,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Youngster",
+				"trainer_name": "Youngster Joey",
+				"intro": "My Sandshrew and Rattata are full of energy! Think you can keep up?",
+				"outro": "Whoa, you're pretty tough! Good match!",
+				"team_pokemon_names": ["Sandshrew", "Rattata"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "PokéManiac",
+				"trainer_name": "PokéManiac Miguel",
+				"intro": "Electricity, magnets, and static spheres! My electric trio will shock you!",
+				"outro": "My circuit breaker tripped! What overwhelming power!",
+				"team_pokemon_names": ["Voltorb", "Magnemite", "Pikachu"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Hiker",
+				"trainer_name": "Hiker Clark",
+				"intro": "Rock-solid determination! Rhyhorn and Graveler, crush their spirit with sheer force!",
+				"outro": "Even the toughest boulders crumble against your power!",
+				"team_pokemon_names": ["Rhyhorn", "Graveler"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Bird Keeper",
+				"trainer_name": "Bird Keeper Donald",
+				"intro": "Look up to the sky! Pidgeotto and Fearow rule the winds with razor-sharp talons!",
+				"outro": "Shot down from the sky! What remarkable speed you have!",
+				"team_pokemon_names": ["Pidgeotto", "Fearow"]
+			},
+			{
+				"stage_num": 5,
+				"trainer_title": "Rich Girl",
+				"trainer_name": "Rich Girl Chloe",
+				"intro": "Only the most elegant and pampered Pokémon belong on my team! Clefairy and Jigglypuff, show them true class!",
+				"outro": "Unbelievable! My precious darlings were defeated?!",
+				"team_pokemon_names": ["Clefairy", "Jigglypuff"]
+			},
+			{
+				"stage_num": 6,
+				"trainer_title": "Rival",
+				"trainer_name": "Rival Blue",
+				"intro": "You made it all the way to Celadon? Alakazam's intellect and Blastoise's hydro cannons will blast you back to Pallet Town!",
+				"outro": "What?! No way! You got lucky again... but don't think you're ahead of me! Smell ya later!",
+				"team_pokemon_names": ["Alakazam", "Blastoise"]
+			},
+			{
+				"stage_num": 7,
+				"trainer_title": "Tunnel Explorer",
+				"trainer_name": "Spelunker Gordon",
+				"intro": "Deep beneath the dark Rock Tunnel, the ground trembles! Digglet and Dugtrio, strike from underground!",
+				"outro": "Dug right into defeat... You conquered the darkness of Rock Tunnel!",
+				"team_pokemon_names": ["Digglet", "Dugtrio"]
+			},
+			{
+				"stage_num": 8,
+				"trainer_title": "Gym Leader Erika",
+				"trainer_name": "Gym Leader Erika",
+				"is_boss": true,
+				"badge_name": "Rainbow Badge",
+				"intro": "Hello... Welcome to Celadon Gym. I am Erika, a student of the delicate art of flower arranging. My nature Pokémon bloom with fierce grace. Shall we begin?",
+				"outro": "Such magnificent elegance in battle... You have truly proven your bond. Please accept the Rainbow Badge!",
+				"team_pokemon_names": ["Tangela", "Weepinbell", "Vileplume"]
+			}
+		]
+	},
+	5: {
+		"id": 5,
+		"title": "Episode V: Team Rocket, Pokémon Tower & Fuchsia Gym",
+		"subtitle": "Infiltrate Team Rocket's Hideout, dispel spirits in Pokémon Tower, and challenge Gym Leader Koga!",
+		"is_branching": true,
+		"routes": {
+			"rocket_hideout": {
+				"id": "rocket_hideout",
+				"name": "Team Rocket Hideout",
+				"name_es": "Base Secreta del Team Rocket",
+				"desc": "Infiltrate the underground Rocket Hideout beneath the Celadon Game Corner.",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Rocket Grunt",
+						"trainer_name": "Rocket Grunt",
+						"intro": "Hey you! You're snooping around Team Rocket's secret hideout! Zubat, Rattata, Ekans, attack!",
+						"outro": "Ugh... Don't think Boss Giovanni won't hear about this!",
+						"team_pokemon_names": ["Zubat", "Rattata", "Ekans"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Rocket Scientist",
+						"trainer_name": "Rocket Scientist",
+						"intro": "Our scientific experiments on Pokémon are top secret! Elekid, Magnemite, Electrode, overload!",
+						"outro": "My scientific calculations failed... what tremendous energy!",
+						"team_pokemon_names": ["Elekid", "Magnemite", "Electrode"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Rocket Commander",
+						"trainer_name": "Rocket Commander",
+						"intro": "I am a Team Rocket Commander! Raticate's sharp fangs and Arbok's poison will finish you!",
+						"outro": "Inconceivable! Beaten by an ordinary trainer?!",
+						"team_pokemon_names": ["Raticate", "Arbok"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Rocket Commander",
+						"trainer_name": "Rocket Commander",
+						"intro": "You won't reach the Boss! Golbat, screech from the darkness! Electabuzz, shock them to pieces!",
+						"outro": "No... Boss Giovanni, forgive my failure!",
+						"team_pokemon_names": ["Golbat", "Electabuzz"]
+					},
+					{
+						"stage_num": 5,
+						"trainer_title": "Líder Giovanni",
+						"trainer_name": "Líder Giovanni",
+						"is_boss": true,
+						"has_super_potion": true,
+						"intro": "So you've intruded into my private office. I am Giovanni, the leader of Team Rocket! Taste true overwhelming force!",
+						"outro": "Ha! Remarkable strength! But mark my words, Team Rocket will conquer this world!",
+						"team_pokemon_names": ["Rhyhorn", "Persian", "Kangaskhan"]
+					}
+				]
+			},
+			"pokemon_tower": {
+				"id": "pokemon_tower",
+				"name": "Pokémon Tower",
+				"name_es": "Torre Pokémon",
+				"desc": "Climb the haunted Pokémon Tower in Lavender Town and free the trapped souls.",
+				"reward_diamonds_first_clear": 15,
+				"reward_item": "poke_flute",
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Exorcista Novato",
+						"trainer_name": "Exorcista Novato",
+						"intro": "Be gone, intruder! The spirits of Pokémon Tower are restless! Ghastly, emerge!",
+						"outro": "The spirits have been calmed...",
+						"team_pokemon_names": ["Ghastly", "Ghastly"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Exorcista Veterano",
+						"trainer_name": "Exorcista Veterano",
+						"intro": "You cannot hide from the paranormal! Ghastly and Haunter, envelop them in spectral mist!",
+						"outro": "Such fearless conviction!",
+						"team_pokemon_names": ["Ghastly", "Haunter"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Exorcista Chamán",
+						"trainer_name": "Exorcista Chamán",
+						"intro": "Hehehe... Two shadows approach from the spirit realm! Haunter, curse them!",
+						"outro": "The spectral veil has lifted!",
+						"team_pokemon_names": ["Haunter", "Haunter"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Entrenador Poseído",
+						"trainer_name": "Entrenador Poseído",
+						"is_boss": true,
+						"intro": "G-GIVE... US... PEACE... Sandshrew, Marowak and Gengar, claim this soul!",
+						"outro": "Thank you... The fog in my mind has finally cleared! Take this sacred Poké Flute!",
+						"team_pokemon_names": ["Sandshrew", "Marowak", "Gengar"]
+					}
+				]
+			},
+			"fuchsia_gym": {
+				"id": "fuchsia_gym",
+				"name": "Fuchsia City Gym",
+				"name_es": "Gimnasio de Koga",
+				"desc": "Navigate the invisible walls of Fuchsia Gym and challenge the Poisonous Ninja Master Koga!",
+				"reward_diamonds_first_clear": 15,
+				"badge_name": "Soul Badge",
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Domador",
+						"trainer_name": "Domador",
+						"intro": "My beasts strike with blinding poison speed! Ekans, Venonat, Golbat, attack!",
+						"outro": "My poisonous beasts were outmatched!",
+						"team_pokemon_names": ["Ekans", "Venonat", "Golbat"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Malabarista",
+						"trainer_name": "Malabarista",
+						"intro": "Step right up! Toxic gas and psychic tricks! Koffing, Drowzee, Hypno, confuse them!",
+						"outro": "My juggling balls dropped! You saw right through our tricks!",
+						"team_pokemon_names": ["Koffing", "Drowzee", "Hypno"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Líder Koga",
+						"trainer_name": "Líder Koga",
+						"is_boss": true,
+						"badge_name": "Soul Badge",
+						"intro": "Fwahahaha! A mere child challenges me, Koga the poisonous ninja master? My Muk, Weezing, and Venomoth will suffocate you in toxins!",
+						"outro": "Incredible ninjutsu! You have pierced through my lethal toxins. You have earned the Soul Badge!",
+						"team_pokemon_names": ["Muk", "Weezing", "Venomoth"]
+					}
+				]
+			}
+		}
+	},
+	6: {
+		"id": 6,
+		"title": "Episode VI: Silph Co. & Saffron City Gym",
+		"subtitle": "Liberate Silph Co. headquarters from Team Rocket and challenge Gym Leader Sabrina!",
+		"is_branching": true,
+		"routes": {
+			"silph_co": {
+				"id": "silph_co",
+				"name": "Torre Silph S. A.",
+				"name_es": "Torre Silph S. A.",
+				"desc": "Infiltrate the 11-floor Silph Co. corporate skyscraper taken hostage by Team Rocket and defeat Boss Giovanni!",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Rocket Grunt",
+						"trainer_name": "Rocket Grunt",
+						"intro": "The entire Silph Co. building is under Team Rocket's command! Ekans and Golbat, take down this trespasser!",
+						"outro": "How did you push through our perimeter?!",
+						"team_pokemon_names": ["Ekans", "Golbat"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Rocket Grunt",
+						"trainer_name": "Rocket Grunt",
+						"intro": "You won't make it to the upper executive floors! Koffing, choke them with smoke! Arbok, strike!",
+						"outro": "Our defensive barricade was shattered!",
+						"team_pokemon_names": ["Koffing", "Arbok"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Rocket Grunt",
+						"trainer_name": "Rocket Grunt",
+						"intro": "Sludge and hardened shells! Grimer and Kakuna, block this staircase!",
+						"outro": "Even Kakuna's Iron Defense couldn't stop you...",
+						"team_pokemon_names": ["Grimer", "Kakuna"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Rocket Scientist",
+						"trainer_name": "Rocket Scientist",
+						"intro": "Silph Co.'s Master Ball technology belongs to us! Magmar's intense heat and Electivire's high voltage will fry you!",
+						"outro": "My electrical calculations failed completely!",
+						"team_pokemon_names": ["Magmar", "Electivire"]
+					},
+					{
+						"stage_num": 5,
+						"trainer_title": "Rocket Commander",
+						"trainer_name": "Rocket Commander",
+						"intro": "You've caused enough trouble in this corporate tower! Raticate, Arbok, and Weezing, wipe out this meddler!",
+						"outro": "Impossible! To think our elite squad was overcome!",
+						"team_pokemon_names": ["Raticate", "Arbok", "Weezing"]
+					},
+					{
+						"stage_num": 6,
+						"trainer_title": "Líder Giovanni",
+						"trainer_name": "Líder Giovanni",
+						"is_boss": true,
+						"super_potions": 2,
+						"intro": "So you have cornered me here in the president's office... Impressive. But I, Giovanni, will not abandon our ambition! Rhydon, Persian, Kangaskhan, crush them without mercy!",
+						"outro": "Blast it all! To be bested by a child twice... Team Rocket shall withdraw from Silph Co., but our shadows will never fade!",
+						"team_pokemon_names": ["Rhydon", "Persian", "Kangaskhan"]
+					}
+				]
+			},
+			"saffron_gym": {
+				"id": "saffron_gym",
+				"name": "Gimnasio de Sabrina",
+				"name_es": "Gimnasio de Sabrina",
+				"desc": "Step into the teleporter maze of Saffron Gym and challenge the Psychic Master Sabrina!",
+				"reward_diamonds_first_clear": 20,
+				"badge_name": "Marsh Badge",
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Psíquico Novato",
+						"trainer_name": "Psíquico Novato",
+						"intro": "I sensed your thoughts as soon as you stepped through the warp panel! Abra, Slowpoke, Drowzee, confound them!",
+						"outro": "My telepathic vision was blurred by your willpower!",
+						"team_pokemon_names": ["Abra", "Slowpoke", "Drowzee"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Psíquico Veterano",
+						"trainer_name": "Psíquico Veterano",
+						"intro": "Mime Jr. and Smoochum will enchant your senses, while Kadabra bends reality! Can you comprehend our psychic waves?",
+						"outro": "Such clarity and sharp focus!",
+						"team_pokemon_names": ["Mime Jr.", "Smoochum", "Kadabra"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Psíquico Veterano",
+						"trainer_name": "Psíquico Veterano",
+						"intro": "Frosty psychic illusions and pendulum hypnoses! Jynx and Hypno, induce them into an endless trance!",
+						"outro": "Your mental resolve snapped our hypnosis!",
+						"team_pokemon_names": ["Jynx", "Hypno"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Líder Sabrina",
+						"trainer_name": "Líder Sabrina",
+						"is_boss": true,
+						"badge_name": "Marsh Badge",
+						"intro": "I had a vision of your arrival. I dislike meaningless fighting, but my telekinetic powers will test your soul. Venomoth, Mr. Mime, Alakazam... show them true psychic mastery!",
+						"outro": "Your power exceeds what my telepathy foresaw... I was defeated. You have earned the Marsh Badge!",
+						"team_pokemon_names": ["Venomoth", "Mr. Mime", "Alakazam"]
+					}
+				]
+			},
+			"fighting_dojo": {
+				"id": "fighting_dojo",
+				"name": "PokéDojo",
+				"name_es": "PokéDojo",
+				"desc": "Challenge the masters of martial arts at the Saffron Fighting Dojo to claim their legendary prizes!",
+				"reward_diamonds_first_clear": 20,
+				"reward_pokemon": ["Hitmonlee", "Hitmonchan"],
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Luchador",
+						"trainer_name": "Luchador Ken",
+						"intro": "Hiyah! We blend martial discipline with sheer power! Machop, Mankey, and Abra, engage!",
+						"outro": "Your fighting spirit was truly remarkable!",
+						"team_pokemon_names": ["Machop", "Mankey", "Abra"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Luchador",
+						"trainer_name": "Luchador Ryu",
+						"intro": "Fists of iron and relentless rage! Machoke and Primeape, show them real muscle!",
+						"outro": "Down for the count! What explosive impact!",
+						"team_pokemon_names": ["Machoke", "Primeape"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Luchador",
+						"trainer_name": "Luchador Mike",
+						"intro": "Legs as sharp as blades, punches as swift as lightning! Hitmonlee and Hitmonchan, strike with perfection!",
+						"outro": "Our signature forms were countered with absolute precision!",
+						"team_pokemon_names": ["Hitmonlee", "Hitmonchan"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Campeón del Dojo",
+						"trainer_name": "Campeón Koichi",
+						"is_boss": true,
+						"intro": "I am Koichi, Karate Master of this PokéDojo! Pinsir's crushing grip and Machamp's four-fisted barrage shall test your ultimate mastery! En garde!",
+						"outro": "Magnificent! You have bested our Dojo! As tradition dictates, accept our rarest martial champions!",
+						"team_pokemon_names": ["Pinsir", "Machamp"]
+					}
+				]
+			}
+		}
+	},
+	7: {
+		"id": 7,
+		"title": "Episode VII: Pokémon Mansion & Cinnabar Gym",
+		"subtitle": "Explore the scorched Pokémon Mansion and conquer Gym Leader Blaine's volcanic Gym in Cinnabar Island!",
+		"is_branching": true,
+		"routes": {
+			"pokemon_mansion": {
+				"id": "pokemon_mansion",
+				"name": "Pokémon Mansion",
+				"name_es": "Mansión Pokémon",
+				"desc": "Explore the ruined mansion on Cinnabar Island and battle researchers, Team Rocket infiltrators, and your Rival!",
+				"reward_diamonds_first_clear": 35,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Domador",
+						"trainer_name": "Domador Cole",
+						"intro": "Watch your step in this burnt mansion! Ekans and Arbok, strike from the shadows!",
+						"outro": "My serpents couldn't constrict your team!",
+						"team_pokemon_names": ["Ekans", "Arbok"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Pokénerd",
+						"trainer_name": "Pokénerd Leo",
+						"intro": "Electricity sparks in the rubble! Pikachu and Jolteon, discharge maximum voltage!",
+						"outro": "Our circuits blew! Super high voltage!",
+						"team_pokemon_names": ["Pikachu", "Jolteon"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Grunt del Equipo Rocket",
+						"trainer_name": "Grunt del Equipo Rocket",
+						"intro": "Team Rocket searches for the secret cloning diary! Growlithe, burn them! Muk, swallow them in sludge!",
+						"outro": "Boss Giovanni won't like this...",
+						"team_pokemon_names": ["Growlithe", "Muk"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Pokéfán",
+						"trainer_name": "Pokéfán Nora",
+						"intro": "Aren't fairy Pokémon so adorable yet fiercely strong? Wigglytuff and Clefable, show your charm!",
+						"outro": "My darlings lost! You have immense fortitude!",
+						"team_pokemon_names": ["Wigglytuff", "Clefable"]
+					},
+					{
+						"stage_num": 5,
+						"trainer_title": "Montañista",
+						"trainer_name": "Montañista Bronson",
+						"intro": "Heavy rocks and tough muscle! Machop, Nidorino, and Golem, roll right over them!",
+						"outro": "My rock-hard wall was shattered!",
+						"team_pokemon_names": ["Machop", "Nidorino", "Golem"]
+					},
+					{
+						"stage_num": 6,
+						"trainer_title": "Rival",
+						"trainer_name": "Rival Blue",
+						"is_boss": true,
+						"intro": "Hey, you made it all the way out to Cinnabar? I was checking the mansion secrets! Kadabra, Charizard, and Pidgeot, let's crush them! Smell ya later!",
+						"outro": "No way! You survived Charizard's flames?! Fine... but Blaine is way tougher than me! Don't get cocky!",
+						"team_pokemon_names": ["Kadabra", "Charizard", "Pidgeot"]
+					}
+				]
+			},
+			"blaine_gym": {
+				"id": "blaine_gym",
+				"name": "Cinnabar Island Gym",
+				"name_es": "Gimnasio de Blaine",
+				"desc": "Answer the quiz questions and battle fire-type specialists to claim the Volcano Badge!",
+				"reward_diamonds_first_clear": 35,
+				"badge_name": "Volcano Badge",
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Domador",
+						"trainer_name": "Domador Vince",
+						"intro": "Rapid ash and feral fangs! Rapidash, Ekans, and Raticate, rush in!",
+						"outro": "Burned out in seconds!",
+						"team_pokemon_names": ["Rapidash", "Ekans", "Raticate"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Montañista",
+						"trainer_name": "Montañista Dusty",
+						"intro": "Volcanic magma creates the hardest minerals! Geodude, Nidorina, and Graveler, endure and strike!",
+						"outro": "Cooled down and cracked open!",
+						"team_pokemon_names": ["Geodude", "Nidorina", "Graveler"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Pokéexperto",
+						"trainer_name": "Pokéexperto Derek",
+						"intro": "A single titan with colossal endurance and crushing power! Snorlax, awaken and dominate!",
+						"outro": "Snorlax was toppled! Extraordinary tactics!",
+						"team_pokemon_names": ["Snorlax"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Luchador",
+						"trainer_name": "Luchador Bruno",
+						"intro": "Blazing fists and relentless aggression! Machoke and Primeape, unleash cross chops!",
+						"outro": "Knocked out! Your strength is undisputed!",
+						"team_pokemon_names": ["Machoke", "Primeape"]
+					},
+					{
+						"stage_num": 5,
+						"trainer_title": "Líder Blaine",
+						"trainer_name": "Líder Blaine",
+						"is_boss": true,
+						"badge_name": "Volcano Badge",
+						"intro": "Hah! I am Blaine, the hot-headed quiz master! You better have Burn Heal ready! Growlithe, Rapidash, and the scorching fire of Arcanine will reduce your chances to ashes!",
+						"outro": "I have burned down to a crisp! You have truly extinguished my blazing spirit! Take the Volcano Badge!",
+						"team_pokemon_names": ["Growlithe", "Rapidash", "Arcanine"]
+					}
+				]
+			}
+		}
 	}
 }
 
@@ -662,6 +1157,111 @@ func load_types_from_csv() -> void:
 
 var _loc_sync_accum: float = 0.0
 
+# ==============================================================================
+# GLOBAL DRAG-TO-SCROLL & TOUCH GESTURE SYSTEM
+# ==============================================================================
+var _drag_scroll_active: bool = false
+var _drag_scroll_container: ScrollContainer = null
+var _drag_inertia_container: ScrollContainer = null
+var _drag_start_pos: Vector2 = Vector2.ZERO
+var _drag_start_scroll_v: int = 0
+var _drag_start_scroll_h: int = 0
+var _drag_has_moved: bool = false
+var _drag_just_finished_ticks: int = 0
+var _drag_velocity: Vector2 = Vector2.ZERO
+var _drag_last_pos: Vector2 = Vector2.ZERO
+var _drag_last_time: int = 0
+const DRAG_SCROLL_THRESHOLD: float = 8.0 # Pixels before initiating drag scroll
+
+func is_drag_scrolling() -> bool:
+	if _drag_has_moved:
+		return true
+	if _drag_just_finished_ticks > 0 and (Time.get_ticks_msec() - _drag_just_finished_ticks < 180):
+		return true
+	return false
+
+func find_scroll_container_at_pos(pos: Vector2) -> ScrollContainer:
+	var root = get_tree().root
+	if not root:
+		return null
+	return _search_scroll_container_recursive(root, pos)
+
+func _search_scroll_container_recursive(node: Node, pos: Vector2) -> ScrollContainer:
+	if node is CanvasItem and not (node as CanvasItem).is_visible_in_tree():
+		return null
+	var child_count = node.get_child_count()
+	for i in range(child_count - 1, -1, -1):
+		var child = node.get_child(i)
+		var res = _search_scroll_container_recursive(child, pos)
+		if res != null:
+			return res
+	if node is ScrollContainer:
+		var sc = node as ScrollContainer
+		if sc.get_global_rect().has_point(pos):
+			return sc
+	return null
+
+func _input(event: InputEvent) -> void:
+	var is_down = false
+	var is_up = false
+	var pos = Vector2.ZERO
+	
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		is_down = event.pressed
+		is_up = not event.pressed
+		pos = event.position
+	elif event is InputEventScreenTouch:
+		is_down = event.pressed
+		is_up = not event.pressed
+		pos = event.position
+		
+	if is_down:
+		_drag_velocity = Vector2.ZERO
+		var sc = find_scroll_container_at_pos(pos)
+		if sc and sc.is_visible_in_tree():
+			_drag_scroll_active = true
+			_drag_scroll_container = sc
+			_drag_start_pos = pos
+			_drag_start_scroll_v = sc.scroll_vertical
+			_drag_start_scroll_h = sc.scroll_horizontal
+			_drag_has_moved = false
+			_drag_last_pos = pos
+			_drag_last_time = Time.get_ticks_msec()
+	elif is_up:
+		if _drag_scroll_active:
+			if _drag_has_moved:
+				_drag_just_finished_ticks = Time.get_ticks_msec()
+				var elapsed = Time.get_ticks_msec() - _drag_last_time
+				if elapsed < 120 and _drag_velocity.length() > 60.0:
+					_drag_inertia_container = _drag_scroll_container
+				else:
+					_drag_velocity = Vector2.ZERO
+				get_viewport().set_input_as_handled()
+			_drag_scroll_active = false
+			_drag_scroll_container = null
+			_drag_has_moved = false
+
+	elif event is InputEventMouseMotion or event is InputEventScreenDrag:
+		var m_pos = event.position
+		if _drag_scroll_active and is_instance_valid(_drag_scroll_container) and _drag_scroll_container.is_visible_in_tree():
+			var diff = m_pos - _drag_start_pos
+			if not _drag_has_moved:
+				if diff.length() >= DRAG_SCROLL_THRESHOLD:
+					_drag_has_moved = true
+			if _drag_has_moved:
+				var now = Time.get_ticks_msec()
+				var dt = float(now - _drag_last_time) / 1000.0
+				if dt > 0.005:
+					_drag_velocity = (m_pos - _drag_last_pos) / dt
+					_drag_last_pos = m_pos
+					_drag_last_time = now
+				
+				if _drag_scroll_container.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED:
+					_drag_scroll_container.scroll_vertical = _drag_start_scroll_v - int(diff.y)
+				if _drag_scroll_container.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED:
+					_drag_scroll_container.scroll_horizontal = _drag_start_scroll_h - int(diff.x)
+				get_viewport().set_input_as_handled()
+
 func _ready() -> void:
 	_setup_global_font_fallbacks()
 	if OS.has_feature("mobile") or OS.has_feature("android") or OS.has_feature("ios"):
@@ -682,6 +1282,19 @@ func _process(delta: float) -> void:
 		if _loc_sync_accum >= 0.12:
 			_loc_sync_accum = 0.0
 			apply_language_to_scene_tree()
+
+	# Inercia y deslizamiento cinetico suave al soltar el arrastre
+	if not _drag_scroll_active and _drag_velocity.length_squared() > 100.0:
+		if is_instance_valid(_drag_inertia_container) and _drag_inertia_container.is_visible_in_tree():
+			if _drag_inertia_container.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED:
+				_drag_inertia_container.scroll_vertical -= int(_drag_velocity.y * delta)
+			if _drag_inertia_container.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED:
+				_drag_inertia_container.scroll_horizontal -= int(_drag_velocity.x * delta)
+			_drag_velocity = _drag_velocity.move_toward(Vector2.ZERO, 3500.0 * delta)
+		else:
+			_drag_velocity = Vector2.ZERO
+	else:
+		_drag_velocity = Vector2.ZERO
 
 func _setup_global_font_fallbacks() -> void:
 	var emoji_path = "res://assets/fonts/emoji_font.ttf"
@@ -1086,6 +1699,14 @@ func get_pokemon_id_by_name(pkmn_name: String) -> int:
 		clean = "onyx"
 	if clean == "ryhorn":
 		clean = "rhyhorn"
+	if clean == "diglett":
+		clean = "digglet"
+	if clean == "electrivire":
+		clean = "electivire"
+	if clean == "mime jr":
+		clean = "mime jr."
+	if clean == "mr mime":
+		clean = "mr. mime"
 	for id in all_pokemon_ids:
 		var d = pokemon_catalog.get(id, {})
 		if str(d.get("name", "")).strip_edges().to_lower() == clean:
@@ -2033,7 +2654,7 @@ func apply_foil_overlay(target_node: Control, rarity_str: String, force_showcase
 	
 	# Common and Uncommon cards NEVER have holographic foil
 	var r_clean = rarity_str.strip_edges().to_lower()
-	if r_clean in ["common", "uncommon"]:
+	if r_clean in ["common", "uncommon"] and not force_showcase_foil:
 		if existing:
 			existing.visible = false
 		return null
@@ -2204,41 +2825,47 @@ func get_audio_stream_from_file(filename: String) -> AudioStream:
 	if filename == "":
 		return null
 	var clean_fn = filename.strip_edges()
-	if not clean_fn.ends_with(".mp3") and not clean_fn.ends_with(".wav") and not clean_fn.ends_with(".ogg"):
-		clean_fn += ".mp3"
+	var candidates: Array[String] = []
+	if clean_fn.ends_with(".mp3") or clean_fn.ends_with(".wav") or clean_fn.ends_with(".ogg"):
+		candidates.append(clean_fn)
+	else:
+		candidates.append(clean_fn + ".mp3")
+		candidates.append(clean_fn + ".wav")
+		candidates.append(clean_fn + ".ogg")
 		
-	if sfx_audio_cache.has(clean_fn):
-		return sfx_audio_cache[clean_fn]
+	for c_fn in candidates:
+		if sfx_audio_cache.has(c_fn):
+			return sfx_audio_cache[c_fn]
+			
+		var paths = [
+			"res://assets/sfx/" + c_fn,
+			"res://assets/sfx/moves/" + c_fn,
+			SFX_FOLDER_PATH + c_fn,
+			"D:/Games/Pokemon Battle Frontier/SFX/" + c_fn
+		]
 		
-	var paths = [
-		"res://assets/sfx/" + clean_fn,
-		"res://assets/sfx/moves/" + clean_fn,
-		SFX_FOLDER_PATH + clean_fn,
-		"D:/Games/Pokemon Battle Frontier/SFX/" + clean_fn
-	]
-	
-	for p in paths:
-		if p.begins_with("res://") and ResourceLoader.exists(p):
-			var res_stream = load(p) as AudioStream
-			if res_stream:
-				sfx_audio_cache[clean_fn] = res_stream
-				return res_stream
-		elif FileAccess.file_exists(p):
-			if clean_fn.ends_with(".mp3"):
-				var f = FileAccess.open(p, FileAccess.READ)
-				if f:
-					var buf = f.get_buffer(f.get_length())
-					f.close()
-					var stream = AudioStreamMP3.new()
-					stream.data = buf
-					sfx_audio_cache[clean_fn] = stream
-					return stream
-			elif clean_fn.ends_with(".ogg"):
-				var stream = AudioStreamOggVorbis.load_from_file(p)
-				if stream:
-					sfx_audio_cache[clean_fn] = stream
-					return stream
-				
+		for p in paths:
+			if p.begins_with("res://") and ResourceLoader.exists(p):
+				var res_stream = load(p) as AudioStream
+				if res_stream:
+					sfx_audio_cache[c_fn] = res_stream
+					return res_stream
+			elif FileAccess.file_exists(p):
+				if c_fn.ends_with(".mp3"):
+					var f = FileAccess.open(p, FileAccess.READ)
+					if f:
+						var buf = f.get_buffer(f.get_length())
+						f.close()
+						var stream = AudioStreamMP3.new()
+						stream.data = buf
+						sfx_audio_cache[c_fn] = stream
+						return stream
+				elif c_fn.ends_with(".ogg"):
+					var stream = AudioStreamOggVorbis.load_from_file(p)
+					if stream:
+						sfx_audio_cache[c_fn] = stream
+						return stream
+					
 	return null
 
 func get_move_sfx_stream(move_name_or_id: String) -> AudioStream:
@@ -2285,6 +2912,7 @@ func play_combat_sfx(sfx_type: String) -> void:
 		"switch": filename = "In-Battle Recall Switch Pokeball.mp3"
 		"purchase": filename = "purchase.wav"
 		"use": filename = "use.wav"
+		"power_up", "power up", "recharge": filename = "power up.wav"
 		_: filename = sfx_type
 		
 	var stream = get_audio_stream_from_file(filename)
@@ -2520,7 +3148,10 @@ func reset_campaign() -> void:
 	is_campaign_mode = false
 	campaign_match_number = 1
 	# Nota: campaign_gold y player_diamonds se conservan permanentemente
-	campaign_inventory = {"potion": 0, "revive": 0, "remedy": 0, "ether": 0}
+	var had_camp_flute = campaign_inventory.get("poke_flute", 0)
+	campaign_inventory = DEFAULT_INVENTORY.duplicate()
+	if had_camp_flute > 0:
+		campaign_inventory["poke_flute"] = had_camp_flute
 	campaign_player_team_state.clear()
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
@@ -2551,7 +3182,10 @@ func init_campaign_team(chosen_ids: Array) -> void:
 					"is_flinched": false
 				})
 	campaign_match_number = 1
-	campaign_inventory = {"potion": 0, "revive": 0, "remedy": 0, "ether": 0}
+	var had_camp_flute_init = campaign_inventory.get("poke_flute", 0)
+	campaign_inventory = DEFAULT_INVENTORY.duplicate()
+	if had_camp_flute_init > 0:
+		campaign_inventory["poke_flute"] = had_camp_flute_init
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
 
@@ -2604,13 +3238,19 @@ func reset_adventure_episode(episode_id: int) -> void:
 	adventure_current_episode = episode_id
 	adventure_current_stage = 1
 	# Nota: campaign_gold y player_diamonds se conservan permanentemente
-	adventure_inventory = {"potion": 0, "revive": 0, "remedy": 0, "ether": 0}
+	var had_adv_flute = adventure_inventory.get("poke_flute", 0)
+	adventure_inventory = DEFAULT_INVENTORY.duplicate()
+	if had_adv_flute > 0 or ("pokemon_tower" in adventure_ep5_cleared_routes):
+		adventure_inventory["poke_flute"] = 1
 	adventure_player_team_state.clear()
 
 func init_adventure_team(episode_id: int, chosen_ids: Array) -> void:
 	adventure_current_episode = episode_id
 	adventure_current_stage = 1
-	adventure_inventory = {"potion": 0, "revive": 0, "remedy": 0, "ether": 0}
+	var had_adv_flute_init = adventure_inventory.get("poke_flute", 0)
+	adventure_inventory = DEFAULT_INVENTORY.duplicate()
+	if had_adv_flute_init > 0 or ("pokemon_tower" in adventure_ep5_cleared_routes):
+		adventure_inventory["poke_flute"] = 1
 	adventure_player_team_state.clear()
 	for cid in chosen_ids:
 		var d = pokemon_catalog.get(cid, {})
@@ -2681,14 +3321,79 @@ func change_adventure_team(chosen_ids: Array) -> void:
 func get_adventure_episode_info(episode_id: int) -> Dictionary:
 	return ADVENTURE_EPISODES.get(episode_id, {})
 
+func get_adventure_route_info(episode_id: int, route_id: String) -> Dictionary:
+	var ep = ADVENTURE_EPISODES.get(episode_id, {})
+	if ep.get("is_branching", false):
+		var routes = ep.get("routes", {})
+		return routes.get(route_id, {})
+	return {}
+
+func is_adventure_ep5_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(5):
+		return false
+	if route_id == "rocket_hideout":
+		return true
+	if route_id in ["pokemon_tower", "fuchsia_gym"]:
+		return "rocket_hideout" in adventure_ep5_cleared_routes
+	return false
+
+func is_adventure_ep5_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep5_cleared_routes
+
+func is_adventure_ep6_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(6):
+		return false
+	if route_id == "silph_co":
+		return true
+	if route_id in ["saffron_gym", "fighting_dojo"]:
+		return "silph_co" in adventure_ep6_cleared_routes
+	return false
+
+func is_adventure_ep6_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep6_cleared_routes
+
+func is_adventure_ep7_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(7):
+		return false
+	if route_id == "pokemon_mansion":
+		return true
+	if route_id == "blaine_gym":
+		return "pokemon_mansion" in adventure_ep7_cleared_routes
+	return false
+
+func is_adventure_ep7_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep7_cleared_routes
+
+func get_adventure_selected_route(episode_id: int) -> String:
+	if episode_id == 5:
+		return adventure_ep5_selected_route
+	elif episode_id == 6:
+		return adventure_ep6_selected_route
+	elif episode_id == 7:
+		return adventure_ep7_selected_route
+	return ""
+
 func get_adventure_total_stages(episode_id: int) -> int:
 	var ep = ADVENTURE_EPISODES.get(episode_id, {})
+	if ep.get("is_branching", false):
+		var routes = ep.get("routes", {})
+		var r_id = get_adventure_selected_route(episode_id)
+		var r_data = routes.get(r_id, {})
+		var stages = r_data.get("stages", [])
+		return stages.size()
 	var stages = ep.get("stages", [])
 	return stages.size()
 
 func get_adventure_stage_info(episode_id: int, stage_num: int) -> Dictionary:
 	var ep = ADVENTURE_EPISODES.get(episode_id, {})
-	var stages = ep.get("stages", [])
+	var stages = []
+	if ep.get("is_branching", false):
+		var routes = ep.get("routes", {})
+		var r_id = get_adventure_selected_route(episode_id)
+		var r_data = routes.get(r_id, {})
+		stages = r_data.get("stages", [])
+	else:
+		stages = ep.get("stages", [])
 	for s in stages:
 		if int(s.get("stage_num", 0)) == stage_num:
 			return s
@@ -2716,8 +3421,66 @@ func is_adventure_episode_completed(episode_id: int) -> bool:
 	return episode_id in adventure_completed_episodes
 
 func complete_adventure_episode(episode_id: int) -> int:
-	# Returns diamonds awarded (20 if first clear, 0 if already completed)
+	# Returns diamonds awarded
 	var bonus = 0
+	if episode_id == 5:
+		var cur_route = adventure_ep5_selected_route
+		if not (cur_route in adventure_ep5_cleared_routes):
+			adventure_ep5_cleared_routes.append(cur_route)
+			if cur_route == "rocket_hideout":
+				bonus = 20
+				player_diamonds += bonus
+			elif cur_route == "pokemon_tower":
+				bonus = 15
+				player_diamonds += bonus
+				adventure_inventory["poke_flute"] = 1
+			elif cur_route == "fuchsia_gym":
+				bonus = 15
+				player_diamonds += bonus
+				if not (6 in adventure_unlocked_episodes):
+					adventure_unlocked_episodes.append(6)
+				if not (5 in adventure_completed_episodes):
+					adventure_completed_episodes.append(5)
+		save_profile()
+		return bonus
+
+	if episode_id == 6:
+		var cur_route = adventure_ep6_selected_route
+		if not (cur_route in adventure_ep6_cleared_routes):
+			adventure_ep6_cleared_routes.append(cur_route)
+			if cur_route == "silph_co":
+				bonus = 20
+				player_diamonds += bonus
+			elif cur_route == "fighting_dojo":
+				bonus = 20
+				player_diamonds += bonus
+				add_card_copy(111) # Hitmonlee
+				add_card_copy(112) # Hitmonchan
+			elif cur_route == "saffron_gym":
+				bonus = 20
+				player_diamonds += bonus
+				if not (7 in adventure_unlocked_episodes):
+					adventure_unlocked_episodes.append(7)
+				if not (6 in adventure_completed_episodes):
+					adventure_completed_episodes.append(6)
+		save_profile()
+		return bonus
+
+	if episode_id == 7:
+		var cur_route = adventure_ep7_selected_route
+		if not (cur_route in adventure_ep7_cleared_routes):
+			adventure_ep7_cleared_routes.append(cur_route)
+			if cur_route == "pokemon_mansion":
+				bonus = 35
+				player_diamonds += bonus
+			elif cur_route == "blaine_gym":
+				bonus = 35
+				player_diamonds += bonus
+				if not (7 in adventure_completed_episodes):
+					adventure_completed_episodes.append(7)
+		save_profile()
+		return bonus
+
 	if not (episode_id in adventure_completed_episodes):
 		adventure_completed_episodes.append(episode_id)
 		var ep_info = ADVENTURE_EPISODES.get(episode_id, {})
@@ -2941,6 +3704,89 @@ func buy_campaign_ether() -> bool:
 	if cur_gold >= ITEM_COST_ETHER:
 		set_active_campaign_gold(cur_gold - ITEM_COST_ETHER)
 		inv["ether"] = inv.get("ether", 0) + 1
+		return true
+	return false
+
+func use_super_potion_on_campaign_pkmn(index: int) -> bool:
+	var inv = get_active_campaign_inventory()
+	var team_state = get_active_campaign_team_state()
+	if inv.get("super_potion", 0) <= 0:
+		return false
+	if index < 0 or index >= team_state.size():
+		return false
+	var p_data = team_state[index]
+	if p_data["current_hp"] <= 0:
+		return false # No cura si está KO, requiere Revive
+	if p_data["current_hp"] >= p_data["max_hp"]:
+		return false # Ya está al máximo
+	p_data["current_hp"] = min(p_data["max_hp"], p_data["current_hp"] + 25)
+	inv["super_potion"] -= 1
+	save_profile()
+	return true
+
+func buy_campaign_super_potion() -> bool:
+	var cur_gold = get_active_campaign_gold()
+	var inv = get_active_campaign_inventory()
+	if cur_gold >= ITEM_COST_SUPER_POTION:
+		set_active_campaign_gold(cur_gold - ITEM_COST_SUPER_POTION)
+		inv["super_potion"] = inv.get("super_potion", 0) + 1
+		save_profile()
+		return true
+	return false
+
+func use_hyper_potion_on_campaign_pkmn(index: int) -> bool:
+	var inv = get_active_campaign_inventory()
+	var team_state = get_active_campaign_team_state()
+	if inv.get("hyper_potion", 0) <= 0:
+		return false
+	if index < 0 or index >= team_state.size():
+		return false
+	var p_data = team_state[index]
+	if p_data["current_hp"] <= 0:
+		return false # No cura si está KO, requiere Revive
+	if p_data["current_hp"] >= p_data["max_hp"]:
+		return false # Ya está al máximo
+	p_data["current_hp"] = p_data["max_hp"]
+	inv["hyper_potion"] -= 1
+	save_profile()
+	return true
+
+func buy_campaign_hyper_potion() -> bool:
+	var cur_gold = get_active_campaign_gold()
+	var inv = get_active_campaign_inventory()
+	if cur_gold >= ITEM_COST_HYPER_POTION:
+		set_active_campaign_gold(cur_gold - ITEM_COST_HYPER_POTION)
+		inv["hyper_potion"] = inv.get("hyper_potion", 0) + 1
+		save_profile()
+		return true
+	return false
+
+func use_poke_flute_on_campaign_pkmn(index: int) -> bool:
+	var inv = get_active_campaign_inventory()
+	var team_state = get_active_campaign_team_state()
+	if inv.get("poke_flute", 0) <= 0:
+		return false
+	if index < 0 or index >= team_state.size():
+		return false
+	var p_data = team_state[index]
+	if p_data["current_hp"] <= 0:
+		return false
+	if int(p_data.get("is_asleep_turns", 0)) <= 0:
+		return false # No está dormido
+	p_data["is_asleep_turns"] = 0
+	# La Poké Flauta no se consume, permanece en la mochila
+	save_profile()
+	return true
+
+func buy_campaign_poke_flute() -> bool:
+	var cur_gold = get_active_campaign_gold()
+	var inv = get_active_campaign_inventory()
+	if inv.get("poke_flute", 0) > 0:
+		return false # Ya se tiene en posesión (objeto permanente)
+	if cur_gold >= ITEM_COST_POKE_FLUTE:
+		set_active_campaign_gold(cur_gold - ITEM_COST_POKE_FLUTE)
+		inv["poke_flute"] = 1
+		save_profile()
 		return true
 	return false
 
@@ -3317,6 +4163,12 @@ func get_item_texture(item_name: String) -> Texture2D:
 		file_name = "C Remedy.png"
 	elif clean == "ether":
 		file_name = "C Ether.png"
+	elif clean in ["super_potion", "superpotion", "super potion"]:
+		file_name = "Superpotion.png"
+	elif clean in ["hyper_potion", "hyperpotion", "hyper potion"]:
+		file_name = "Hyperpotion.png"
+	elif clean in ["poke_flute", "pokeflute", "poke flute", "poke_flauta", "pokeflauta", "poke flauta"]:
+		file_name = "poke_flute.png"
 	else:
 		var stone_clean = clean.replace("stone_", "").replace("_stone", "").replace(" stone", "").strip_edges()
 		if stone_clean in ["fire", "water", "leaf", "thunder", "ground", "heart", "night", "psyche", "punch", "scale"]:
@@ -3674,10 +4526,16 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	adventure_current_episode = 1
 	adventure_current_stage = 1
 	adventure_gold = 0
-	adventure_inventory = {"potion": 0, "revive": 0, "remedy": 0, "ether": 0}
+	adventure_inventory = DEFAULT_INVENTORY.duplicate()
 	adventure_player_team_state.clear()
 	adventure_completed_episodes.clear()
 	adventure_unlocked_episodes = [1]
+	adventure_ep5_selected_route = "rocket_hideout"
+	adventure_ep5_cleared_routes.clear()
+	adventure_ep6_selected_route = "silph_co"
+	adventure_ep6_cleared_routes.clear()
+	adventure_ep7_selected_route = "pokemon_mansion"
+	adventure_ep7_cleared_routes.clear()
 	
 	# Conservar cartas si ya existían cartas desbloqueadas en este dispositivo
 	if player_unlocked_ids.is_empty():
@@ -3765,7 +4623,13 @@ func get_save_dict() -> Dictionary:
 			"inventory": adventure_inventory.duplicate(true),
 			"team_state": adventure_player_team_state.duplicate(true),
 			"completed_episodes": adventure_completed_episodes.duplicate(),
-			"unlocked_episodes": adventure_unlocked_episodes.duplicate()
+			"unlocked_episodes": adventure_unlocked_episodes.duplicate(),
+			"ep5_selected_route": adventure_ep5_selected_route,
+			"ep5_cleared_routes": adventure_ep5_cleared_routes.duplicate(),
+			"ep6_selected_route": adventure_ep6_selected_route,
+			"ep6_cleared_routes": adventure_ep6_cleared_routes.duplicate(),
+			"ep7_selected_route": adventure_ep7_selected_route,
+			"ep7_cleared_routes": adventure_ep7_cleared_routes.duplicate()
 		},
 		"settings": {
 			"language": settings_language,
@@ -3879,11 +4743,10 @@ func apply_save_dict(data: Dictionary) -> bool:
 	var camp = data.get("campaign", {})
 	campaign_match_number = int(camp.get("match_number", 1))
 	campaign_gold = int(camp.get("gold", 0))
-	campaign_inventory = camp.get("inventory", {"potion": 0, "revive": 0, "remedy": 0, "ether": 0})
-	if not campaign_inventory.has("remedy"):
-		campaign_inventory["remedy"] = 0
-	if not campaign_inventory.has("ether"):
-		campaign_inventory["ether"] = 0
+	campaign_inventory = camp.get("inventory", DEFAULT_INVENTORY.duplicate())
+	for k in DEFAULT_INVENTORY.keys():
+		if not campaign_inventory.has(k):
+			campaign_inventory[k] = 0
 	campaign_player_team_state = camp.get("team_state", [])
 	tutorial_completed = bool(camp.get("tutorial_completed", false))
 	tutorial_reward_claimed = bool(camp.get("tutorial_reward_claimed", false))
@@ -3896,11 +4759,10 @@ func apply_save_dict(data: Dictionary) -> bool:
 	if legacy_adv_gold > 0 and campaign_gold == 0:
 		campaign_gold = legacy_adv_gold
 	adventure_gold = campaign_gold
-	adventure_inventory = adv.get("inventory", {"potion": 0, "revive": 0, "remedy": 0, "ether": 0})
-	if not adventure_inventory.has("remedy"):
-		adventure_inventory["remedy"] = 0
-	if not adventure_inventory.has("ether"):
-		adventure_inventory["ether"] = 0
+	adventure_inventory = adv.get("inventory", DEFAULT_INVENTORY.duplicate())
+	for k in DEFAULT_INVENTORY.keys():
+		if not adventure_inventory.has(k):
+			adventure_inventory[k] = 0
 	adventure_player_team_state = adv.get("team_state", [])
 	var raw_comp = adv.get("completed_episodes", [])
 	adventure_completed_episodes.clear()
@@ -3912,6 +4774,21 @@ func apply_save_dict(data: Dictionary) -> bool:
 		adventure_unlocked_episodes.append(int(u))
 	if not (1 in adventure_unlocked_episodes):
 		adventure_unlocked_episodes.append(1)
+	adventure_ep5_selected_route = str(adv.get("ep5_selected_route", "rocket_hideout"))
+	var raw_ep5_cleared = adv.get("ep5_cleared_routes", [])
+	adventure_ep5_cleared_routes.clear()
+	for r in raw_ep5_cleared:
+		adventure_ep5_cleared_routes.append(str(r))
+	adventure_ep6_selected_route = str(adv.get("ep6_selected_route", "silph_co"))
+	var raw_ep6_cleared = adv.get("ep6_cleared_routes", [])
+	adventure_ep6_cleared_routes.clear()
+	for r in raw_ep6_cleared:
+		adventure_ep6_cleared_routes.append(str(r))
+	adventure_ep7_selected_route = str(adv.get("ep7_selected_route", "pokemon_mansion"))
+	var raw_ep7_cleared = adv.get("ep7_cleared_routes", [])
+	adventure_ep7_cleared_routes.clear()
+	for r in raw_ep7_cleared:
+		adventure_ep7_cleared_routes.append(str(r))
 		
 	# Sanitizar: si el episodio ya fue completado o la etapa excede el total, reiniciar progreso del run
 	var total_ep_stages = get_adventure_total_stages(adventure_current_episode)
@@ -4027,10 +4904,16 @@ func erase_profile() -> void:
 	adventure_current_episode = 1
 	adventure_current_stage = 1
 	adventure_gold = 0
-	adventure_inventory = {"potion": 0, "revive": 0, "remedy": 0, "ether": 0}
+	adventure_inventory = DEFAULT_INVENTORY.duplicate()
 	adventure_player_team_state.clear()
 	adventure_completed_episodes.clear()
 	adventure_unlocked_episodes = [1]
+	adventure_ep5_selected_route = "rocket_hideout"
+	adventure_ep5_cleared_routes.clear()
+	adventure_ep6_selected_route = "silph_co"
+	adventure_ep6_cleared_routes.clear()
+	adventure_ep7_selected_route = "pokemon_mansion"
+	adventure_ep7_cleared_routes.clear()
 	
 	player_unlocked_ids.clear()
 	player_friends.clear()

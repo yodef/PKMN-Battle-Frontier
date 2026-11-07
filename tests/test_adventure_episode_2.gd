@@ -6,7 +6,7 @@ func _ready() -> void:
 	# 1. Database & Stage Configuration Audit
 	var ep2 = GameData.get_adventure_episode_info(2)
 	assert(not ep2.is_empty(), "Episode 2 data must exist in ADVENTURE_EPISODES")
-	assert(ep2.get("reward_diamonds_first_clear") == 30, "Episode 2 first clear reward must be 30 diamonds")
+	assert(ep2.get("reward_diamonds_first_clear") == 25, "Episode 2 first clear reward must be 25 diamonds")
 	assert(GameData.get_adventure_total_stages(2) == 5, "Episode 2 must have exactly 5 stages")
 	
 	# Stage 1: Spearow & Pidgey
@@ -81,11 +81,11 @@ func _ready() -> void:
 	# Complete Episode 2 (first clear)
 	var d_before_ep2 = GameData.player_diamonds
 	var r2 = GameData.complete_adventure_episode(2)
-	assert(r2 == 30, "Completing Episode 2 must award 30 diamonds")
-	assert(GameData.player_diamonds == d_before_ep2 + 30, "Player diamonds must increase by 30")
+	assert(r2 == 25, "Completing Episode 2 must award 25 diamonds")
+	assert(GameData.player_diamonds == d_before_ep2 + 25, "Player diamonds must increase by 25")
 	assert(GameData.is_adventure_episode_completed(2), "Episode 2 must be marked completed")
 	assert(GameData.is_adventure_episode_unlocked(3), "Episode 3 must be unlocked after Episode 2 clear")
-	print("Test 3 Passed: Episode 2 clear awards 30 diamonds and unlocks Episode 3.")
+	print("Test 3 Passed: Episode 2 clear awards 25 diamonds and unlocks Episode 3.")
 	
 	# Replay Episode 2 (duplicate clear does not award 30 diamonds again)
 	var d_after_ep2 = GameData.player_diamonds

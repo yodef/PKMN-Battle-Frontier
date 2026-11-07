@@ -55,7 +55,22 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var btn_hub_adventure_ep3: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3/Margin/Ep3VBox/BtnHubAdventureEp3
 @onready var ep4_status_lbl: Label = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox/Ep4Status
 @onready var btn_hub_adventure_ep4: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox/BtnHubAdventureEp4
+@onready var ep5_status_lbl: Label = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5/Margin/Ep5VBox/Ep5Status
+@onready var btn_hub_adventure_ep5: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5/Margin/Ep5VBox/BtnHubAdventureEp5
+@onready var ep6_status_lbl: Label = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6/Margin/Ep6VBox/Ep6Status
+@onready var btn_hub_adventure_ep6: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6/Margin/Ep6VBox/BtnHubAdventureEp6
+@onready var ep7_status_lbl: Label = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin/Ep7VBox/Ep7Status
+@onready var btn_hub_adventure_ep7: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin/Ep7VBox/BtnHubAdventureEp7
 @onready var btn_close_adventure_episodes: Button = $AdventureEpisodesModal/Box/BtnCloseAdventureEpisodes
+
+var adventure_ep5_routes_modal: Control = null
+var ep5_route_cards: Dictionary = {}
+
+var adventure_ep6_routes_modal: Control = null
+var ep6_route_cards: Dictionary = {}
+
+var adventure_ep7_routes_modal: Control = null
+var ep7_route_cards: Dictionary = {}
 
 var tutorial_confirm_modal: Control = null
 var tutorial_confirm_title_lbl: Label = null
@@ -74,15 +89,30 @@ var campaign_track_diagram: CampaignTrackDiagram = null
 @onready var campaign_item_icon: TextureRect = $CampaignModal/Box/ShopSection/ShopVBox/PotionRow/ItemIcon
 @onready var campaign_item_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox/PotionRow/ShopInfo/ItemCountLbl
 @onready var btn_buy_potion: Button = $CampaignModal/Box/ShopSection/ShopVBox/PotionRow/BtnBuyPotion
-@onready var campaign_revive_icon: TextureRect = $CampaignModal/Box/ShopSection/ShopVBox/ReviveRow/ReviveIcon
-@onready var campaign_revive_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox/ReviveRow/ReviveInfo/ReviveCountLbl
-@onready var btn_buy_revive: Button = $CampaignModal/Box/ShopSection/ShopVBox/ReviveRow/BtnBuyRevive
+
+@onready var campaign_super_potion_icon: TextureRect = $CampaignModal/Box/ShopSection/ShopVBox/SuperPotionRow/SuperPotionIcon
+@onready var campaign_super_potion_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox/SuperPotionRow/SuperPotionInfo/SuperPotionCountLbl
+@onready var btn_buy_super_potion: Button = $CampaignModal/Box/ShopSection/ShopVBox/SuperPotionRow/BtnBuySuperPotion
+
+@onready var campaign_hyper_potion_icon: TextureRect = $CampaignModal/Box/ShopSection/ShopVBox/HyperPotionRow/HyperPotionIcon
+@onready var campaign_hyper_potion_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox/HyperPotionRow/HyperPotionInfo/HyperPotionCountLbl
+@onready var btn_buy_hyper_potion: Button = $CampaignModal/Box/ShopSection/ShopVBox/HyperPotionRow/BtnBuyHyperPotion
+
 @onready var campaign_remedy_icon: TextureRect = $CampaignModal/Box/ShopSection/ShopVBox/RemedyRow/RemedyIcon
 @onready var campaign_remedy_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox/RemedyRow/RemedyInfo/RemedyCountLbl
 @onready var btn_buy_remedy: Button = $CampaignModal/Box/ShopSection/ShopVBox/RemedyRow/BtnBuyRemedy
+
+@onready var campaign_poke_flute_icon: TextureRect = $CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow/PokeFluteIcon
+@onready var campaign_poke_flute_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow/PokeFluteInfo/PokeFluteCountLbl
+@onready var btn_buy_poke_flute: Button = $CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow/BtnBuyPokeFlute
+
 @onready var campaign_ether_icon: TextureRect = $CampaignModal/Box/ShopSection/ShopVBox/EtherRow/EtherIcon
 @onready var campaign_ether_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox/EtherRow/EtherInfo/EtherCountLbl
 @onready var btn_buy_ether: Button = $CampaignModal/Box/ShopSection/ShopVBox/EtherRow/BtnBuyEther
+
+@onready var campaign_revive_icon: TextureRect = $CampaignModal/Box/ShopSection/ShopVBox/ReviveRow/ReviveIcon
+@onready var campaign_revive_count_lbl: Label = $CampaignModal/Box/ShopSection/ShopVBox/ReviveRow/ReviveInfo/ReviveCountLbl
+@onready var btn_buy_revive: Button = $CampaignModal/Box/ShopSection/ShopVBox/ReviveRow/BtnBuyRevive
 @onready var btn_start_campaign_battle: Button = $CampaignModal/Box/ActionsBox/BtnStartCampaignBattle
 @onready var btn_change_campaign_team: Button = $CampaignModal/Box/ActionsBox/NavRow/BtnChangeCampaignTeam
 @onready var btn_reset_campaign: Button = $CampaignModal/Box/ActionsBox/BtnResetCampaign
@@ -130,6 +160,7 @@ var _is_camp_evo_active: bool = false
 @onready var btn_col_sort_rarity: Button = $CollectionModal/GridView/SortBar/BtnSortRarity
 @onready var btn_col_sort_owned: Button = $CollectionModal/GridView/SortBar/BtnSortOwned
 @onready var grid_cards: GridContainer = $CollectionModal/GridView/GridScroll/GridMargin/GridCards
+@onready var col_grid_scroll: ScrollContainer = $CollectionModal/GridView/GridScroll
 @onready var btn_close_collection: Button = $CollectionModal/GridView/BtnCloseCollection
 @onready var btn_back_to_grid: Button = $CollectionModal/DetailView/TopNav/BtnBackToGrid
 
@@ -201,7 +232,11 @@ var showcase_is_animating: bool = false
 const GameLocalizationScript = preload("res://scripts/localization.gd")
 var shop_active_tab: String = "PACKS" # "PACKS", "RECYCLE", "HIDDEN"
 var hidden_shop_filter: String = "ALL"
-var hidden_shop_region: String = "KANTO" # "KANTO", "JOHTO", "OTHER", "ALL"
+var hidden_shop_region: String = "KANTO" # "KANTO", "JOHTO", "HOENN", "SINNOH", "ALL"
+var hidden_shop_page: int = 0
+const HIDDEN_SHOP_PER_PAGE: int = 50
+var hidden_shop_scroll: ScrollContainer = null
+var hidden_shop_pagination_bar: PanelContainer = null
 var shop_tabs_row: HBoxContainer = null
 var btn_shop_tab_packs: Button = null
 var btn_shop_tab_recycle: Button = null
@@ -399,12 +434,15 @@ var collection_sort_mode: String = "ID" # "ID", "DEX", "NAME"
 var current_sorted_collection: Array = []
 
 # Filtros de Colección (Region, Owned, Types, Stages, Rarity, Tier)
-var col_filter_region: String = "KANTO" # "KANTO", "JOHTO", "OTHER", "ALL"
+var col_filter_region: String = "KANTO" # "KANTO", "JOHTO", "HOENN", "SINNOH", "ALL"
 var col_filter_owned: String = "ALL" # "ALL", "OWNED", "MISSING"
 var col_filter_type: String = "ALL" # "ALL", "NORMAL", "GRASS", "FIRE", "WATER", "ELECTRIC", "DARK", "PSYCHIC", "FIGHTING", "GROUND"
 var col_filter_stage: String = "ALL" # "ALL", "BASIC", "STAGE 1", "STAGE 2"
 var col_filter_rarity: String = "ALL" # "ALL", "COMMON", "RARE", "EPIC", "LEGENDARY"
 var col_filter_tier: String = "ALL" # "ALL", "S+", "S", "A", "B", "C", "D"
+var col_current_page: int = 0
+const COL_CARDS_PER_PAGE: int = 50
+var col_pagination_bar: PanelContainer = null
 
 var col_region_tabs_row: Container = null
 var col_region_buttons: Dictionary = {}
@@ -476,6 +514,10 @@ func _ready() -> void:
 	btn_hub_adventure_ep1.pressed.connect(_on_select_adventure_ep1_pressed)
 	btn_hub_adventure_ep2.pressed.connect(_on_select_adventure_ep2_pressed)
 	btn_hub_adventure_ep3.pressed.connect(_on_select_adventure_ep3_pressed)
+	btn_hub_adventure_ep4.pressed.connect(_on_select_adventure_ep4_pressed)
+	btn_hub_adventure_ep5.pressed.connect(_on_select_adventure_ep5_pressed)
+	btn_hub_adventure_ep6.pressed.connect(_on_select_adventure_ep6_pressed)
+	btn_hub_adventure_ep7.pressed.connect(_on_select_adventure_ep7_pressed)
 	btn_close_adventure_episodes.pressed.connect(func():
 		adventure_episodes_modal.visible = false
 		update_campaign_hub_ui()
@@ -525,7 +567,10 @@ func _ready() -> void:
 
 	# Modal Campaña / Torneo
 	btn_buy_potion.pressed.connect(_on_buy_potion_pressed)
+	btn_buy_super_potion.pressed.connect(_on_buy_super_potion_pressed)
+	btn_buy_hyper_potion.pressed.connect(_on_buy_hyper_potion_pressed)
 	btn_buy_remedy.pressed.connect(_on_buy_remedy_pressed)
+	btn_buy_poke_flute.pressed.connect(_on_buy_poke_flute_pressed)
 	btn_buy_ether.pressed.connect(_on_buy_ether_pressed)
 	btn_buy_revive.pressed.connect(_on_buy_revive_pressed)
 	btn_start_campaign_battle.pressed.connect(_on_start_campaign_battle_pressed)
@@ -553,7 +598,10 @@ func _ready() -> void:
 	)
 	
 	campaign_item_icon.texture = GameData.get_item_texture("potion")
+	campaign_super_potion_icon.texture = GameData.get_item_texture("super_potion")
+	campaign_hyper_potion_icon.texture = GameData.get_item_texture("hyper_potion")
 	campaign_remedy_icon.texture = GameData.get_item_texture("remedy")
+	campaign_poke_flute_icon.texture = GameData.get_item_texture("poke_flute")
 	campaign_ether_icon.texture = GameData.get_item_texture("ether")
 	campaign_revive_icon.texture = GameData.get_item_texture("revive")
 	
@@ -1081,7 +1129,7 @@ func update_campaign_hub_ui() -> void:
 		var ep1_done = GameData.is_adventure_episode_completed(1)
 		var ep2_done = GameData.is_adventure_episode_completed(2)
 		if not GameData.adventure_player_team_state.is_empty():
-			var cur_ep_roman = "II" if GameData.adventure_current_episode == 2 else "I"
+			var cur_ep_roman = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII"}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
 			adv_status_lbl.text = "Status: In Progress • Episode %s (Stage %d/%d)" % [
 				cur_ep_roman,
 				GameData.adventure_current_stage,
@@ -1211,20 +1259,196 @@ func update_adventure_episodes_ui() -> void:
 		btn_hub_adventure_ep3.text = "🗺️ Embark on Episode III"
 		btn_hub_adventure_ep3.disabled = false
 
-	# Estado del Episodio IV (bloqueado hasta completar Ep. III)
+	# Estado del Episodio IV
 	var ep4_unlocked = GameData.is_adventure_episode_unlocked(4)
+	var ep4_completed = GameData.is_adventure_episode_completed(4)
+	var card_ep4 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4")
+	if card_ep4:
+		card_ep4.modulate = Color(1, 1, 1, 1) if ep4_unlocked else Color(0.7, 0.7, 0.75, 0.8)
+	var ep4_title_lbl = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox/Ep4Title") as Label
+	if ep4_title_lbl:
+		ep4_title_lbl.text = "Episode IV: Celadon City Gym" if ep4_unlocked else "🔒 Episode IV: Celadon City Gym"
+		ep4_title_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3) if ep4_completed else (Color(1, 1, 1) if ep4_unlocked else Color(0.5, 0.6, 0.7)))
+	var ep4_rewards_lbl = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox/Ep4Rewards") as Label
+	if ep4_rewards_lbl:
+		ep4_rewards_lbl.text = "Battles: 8  |  First Clear: 💎 35 Diamonds & Rainbow Badge"
+		ep4_rewards_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65) if ep4_unlocked else Color(0.5, 0.6, 0.7))
+
 	if not ep4_unlocked:
 		ep4_status_lbl.text = "Status: 🔒 Locked (Complete Episode III first)"
 		ep4_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
 		btn_hub_adventure_ep4.text = "🔒 Locked (Clear Episode III)"
 		btn_hub_adventure_ep4.disabled = true
+		_apply_retro_button_style(btn_hub_adventure_ep4, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	elif GameData.adventure_current_episode == 4 and not GameData.adventure_player_team_state.is_empty():
+		var total_stages4 = GameData.get_adventure_total_stages(4)
+		ep4_status_lbl.text = "Status: In Progress (Stage %d/%d)" % [
+			GameData.adventure_current_stage,
+			total_stages4
+		]
+		ep4_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		btn_hub_adventure_ep4.text = "⛺ Continue Episode IV (Camp)"
+		btn_hub_adventure_ep4.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep4, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+	elif ep4_completed:
+		ep4_status_lbl.text = "Status: 🏅 COMPLETED (Rainbow Badge Won!) • Replayable"
+		ep4_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		btn_hub_adventure_ep4.text = "🗺️ Replay Episode IV"
+		btn_hub_adventure_ep4.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep4, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 	else:
-		ep4_status_lbl.text = "Status: 🚧 Coming Soon (In Development)"
-		ep4_status_lbl.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
-		btn_hub_adventure_ep4.text = "🚧 Coming Soon"
-		btn_hub_adventure_ep4.disabled = true
+		ep4_status_lbl.text = "Status: Ready to embark"
+		ep4_status_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		btn_hub_adventure_ep4.text = "🗺️ Embark on Episode IV"
+		btn_hub_adventure_ep4.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep4, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+	# Estado del Episodio V
+	var ep5_unlocked = GameData.is_adventure_episode_unlocked(5)
+	var ep5_completed = GameData.is_adventure_episode_completed(5)
+	var card_ep5 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5")
+	if card_ep5:
+		card_ep5.modulate = Color(1, 1, 1, 1) if ep5_unlocked else Color(0.7, 0.7, 0.75, 0.8)
+	var ep5_title_lbl = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5/Margin/Ep5VBox/Ep5Title") as Label
+	if ep5_title_lbl:
+		ep5_title_lbl.text = "Episode V: Team Rocket, Pokémon Tower & Fuchsia Gym" if ep5_unlocked else "🔒 Episode V: Team Rocket, Pokémon Tower & Fuchsia Gym"
+		ep5_title_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3) if ep5_completed else (Color(1, 1, 1) if ep5_unlocked else Color(0.5, 0.6, 0.7)))
+	var ep5_rewards_lbl = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5/Margin/Ep5VBox/Ep5Rewards") as Label
+	if ep5_rewards_lbl:
+		ep5_rewards_lbl.text = "3 Infiltration Routes  |  Rewards: 💎 50 Diamonds, 🎶 Poké Flute & Soul Badge"
+		ep5_rewards_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65) if ep5_unlocked else Color(0.5, 0.6, 0.7))
+
+	if not ep5_unlocked:
+		ep5_status_lbl.text = "Status: 🔒 Locked (Complete Episode IV first)"
+		ep5_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+		btn_hub_adventure_ep5.text = "🔒 Locked (Clear Episode IV)"
+		btn_hub_adventure_ep5.disabled = true
+		_apply_retro_button_style(btn_hub_adventure_ep5, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	elif GameData.adventure_current_episode == 5 and not GameData.adventure_player_team_state.is_empty():
+		var cur_r = GameData.adventure_ep5_selected_route
+		var r_info = GameData.get_adventure_route_info(5, cur_r)
+		var total_stages5 = GameData.get_adventure_total_stages(5)
+		ep5_status_lbl.text = "Status: In Progress (%s • Stage %d/%d)" % [
+			str(r_info.get("name_es", "Route")),
+			GameData.adventure_current_stage,
+			total_stages5
+		]
+		ep5_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		btn_hub_adventure_ep5.text = "⛺ Continue Episode V (Camp)"
+		btn_hub_adventure_ep5.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep5, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+	elif ep5_completed:
+		ep5_status_lbl.text = "Status: 🏅 COMPLETED (Soul Badge Won!) • 3 Routes Available"
+		ep5_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		btn_hub_adventure_ep5.text = "🗺️ Enter Episode V Routes"
+		btn_hub_adventure_ep5.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep5, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+	else:
+		var cleared_cnt = GameData.adventure_ep5_cleared_routes.size()
+		ep5_status_lbl.text = "Status: Ready to embark (%d/3 Routes Cleared)" % cleared_cnt
+		ep5_status_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		btn_hub_adventure_ep5.text = "🗺️ Embark on Episode V"
+		btn_hub_adventure_ep5.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep5, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+	# Estado del Episodio VI
+	var ep6_unlocked = GameData.is_adventure_episode_unlocked(6)
+	var ep6_completed = GameData.is_adventure_episode_completed(6)
+	var card_ep6 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6")
+	if card_ep6:
+		card_ep6.modulate = Color(1, 1, 1, 1) if ep6_unlocked else Color(0.7, 0.7, 0.75, 0.8)
+	var ep6_title_lbl = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6/Margin/Ep6VBox/Ep6Title") as Label
+	if ep6_title_lbl:
+		ep6_title_lbl.text = "Episode VI: Silph Co. & Saffron City Gym" if ep6_unlocked else "🔒 Episode VI: Silph Co. & Saffron City Gym"
+		ep6_title_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3) if ep6_completed else (Color(1, 1, 1) if ep6_unlocked else Color(0.5, 0.6, 0.7)))
+	var ep6_rewards_lbl = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6/Margin/Ep6VBox/Ep6Rewards") as Label
+	if ep6_rewards_lbl:
+		ep6_rewards_lbl.text = "3 Operations  |  Rewards: 💎 60 Diamonds, Hitmonlee, Hitmonchan & Marsh Badge"
+		ep6_rewards_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65) if ep6_unlocked else Color(0.5, 0.6, 0.7))
+
+	if not ep6_unlocked:
+		ep6_status_lbl.text = "Status: 🔒 Locked (Complete Episode V first)"
+		ep6_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+		btn_hub_adventure_ep6.text = "🔒 Locked (Clear Episode V)"
+		btn_hub_adventure_ep6.disabled = true
+		_apply_retro_button_style(btn_hub_adventure_ep6, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	elif GameData.adventure_current_episode == 6 and not GameData.adventure_player_team_state.is_empty():
+		var cur_r = GameData.adventure_ep6_selected_route
+		var r_info = GameData.get_adventure_route_info(6, cur_r)
+		var total_stages6 = GameData.get_adventure_total_stages(6)
+		ep6_status_lbl.text = "Status: In Progress (%s • Stage %d/%d)" % [
+			str(r_info.get("name_es", "Route")),
+			GameData.adventure_current_stage,
+			total_stages6
+		]
+		ep6_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		btn_hub_adventure_ep6.text = "⛺ Continue Episode VI (Camp)"
+		btn_hub_adventure_ep6.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep6, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+	elif ep6_completed:
+		ep6_status_lbl.text = "Status: 🏅 COMPLETED (Marsh Badge Won!) • 3 Routes Available"
+		ep6_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		btn_hub_adventure_ep6.text = "🗺️ Enter Episode VI Routes"
+		btn_hub_adventure_ep6.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep6, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+	else:
+		var cleared_cnt = GameData.adventure_ep6_cleared_routes.size()
+		ep6_status_lbl.text = "Status: Ready to embark (%d/3 Routes Cleared)" % cleared_cnt
+		ep6_status_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		btn_hub_adventure_ep6.text = "🗺️ Embark on Episode VI"
+		btn_hub_adventure_ep6.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep6, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+	var ep7_unlocked = GameData.is_adventure_episode_unlocked(7)
+	var ep7_completed = GameData.is_adventure_episode_completed(7)
+	var card_ep7 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7")
+	if card_ep7:
+		card_ep7.modulate = Color(1, 1, 1, 1) if ep7_unlocked else Color(0.7, 0.7, 0.75, 0.8)
+	var ep7_title_lbl = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin/Ep7VBox/Ep7Title") as Label
+	if ep7_title_lbl:
+		ep7_title_lbl.text = "Episode VII: Pokémon Mansion & Cinnabar Gym" if ep7_unlocked else "🔒 Episode VII: Pokémon Mansion & Cinnabar Gym"
+		ep7_title_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3) if ep7_completed else (Color(1, 1, 1) if ep7_unlocked else Color(0.5, 0.6, 0.7)))
+	var ep7_rewards_lbl = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin/Ep7VBox/Ep7Rewards") as Label
+	if ep7_rewards_lbl:
+		ep7_rewards_lbl.text = "2 Operations  |  Rewards: 💎 70 Diamonds & Volcano Badge"
+		ep7_rewards_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65) if ep7_unlocked else Color(0.5, 0.6, 0.7))
+
+	if not ep7_unlocked:
+		ep7_status_lbl.text = "Status: 🔒 Locked (Complete Episode VI first)"
+		ep7_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+		btn_hub_adventure_ep7.text = "🔒 Locked (Clear Episode VI)"
+		btn_hub_adventure_ep7.disabled = true
+		_apply_retro_button_style(btn_hub_adventure_ep7, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	elif GameData.adventure_current_episode == 7 and not GameData.adventure_player_team_state.is_empty():
+		var cur_r = GameData.adventure_ep7_selected_route
+		var r_info = GameData.get_adventure_route_info(7, cur_r)
+		var total_stages7 = GameData.get_adventure_total_stages(7)
+		ep7_status_lbl.text = "Status: In Progress (%s • Stage %d/%d)" % [
+			str(r_info.get("name_es", "Route")),
+			GameData.adventure_current_stage,
+			total_stages7
+		]
+		ep7_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		btn_hub_adventure_ep7.text = "⛺ Continue Episode VII (Camp)"
+		btn_hub_adventure_ep7.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep7, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+	elif ep7_completed:
+		ep7_status_lbl.text = "Status: 🏅 COMPLETED (Volcano Badge Won!) • 2 Routes Available"
+		ep7_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		btn_hub_adventure_ep7.text = "🗺️ Enter Episode VII Routes"
+		btn_hub_adventure_ep7.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep7, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+	else:
+		var cleared_cnt = GameData.adventure_ep7_cleared_routes.size()
+		ep7_status_lbl.text = "Status: Ready to embark (%d/2 Routes Cleared)" % cleared_cnt
+		ep7_status_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		btn_hub_adventure_ep7.text = "🗺️ Embark on Episode VII"
+		btn_hub_adventure_ep7.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep7, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 
 func _on_hub_adventure_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
 	if not GameData.is_tutorial_completed():
 		_show_tutorial_prompt_for_locked_episode()
 		return
@@ -1233,6 +1457,8 @@ func _on_hub_adventure_pressed() -> void:
 	adventure_episodes_modal.visible = true
 
 func _on_select_tournament_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
 	campaign_hub_modal.visible = false
 	GameData.campaign_submode = "TOURNAMENT"
 	if GameData.campaign_player_team_state.is_empty():
@@ -1243,6 +1469,8 @@ func _on_select_tournament_pressed() -> void:
 		_check_and_run_camp_evolutions()
 
 func _on_select_adventure_episode_pressed(episode_id: int) -> void:
+	if GameData.is_drag_scrolling():
+		return
 	if not GameData.is_tutorial_completed():
 		_show_tutorial_prompt_for_locked_episode()
 		return
@@ -1261,15 +1489,772 @@ func _on_select_adventure_episode_pressed(episode_id: int) -> void:
 		_check_and_run_camp_evolutions()
 
 func _on_select_adventure_ep1_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
 	_on_select_adventure_episode_pressed(1)
 
 func _on_select_adventure_ep2_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
 	_on_select_adventure_episode_pressed(2)
 
 func _on_select_adventure_ep3_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
 	_on_select_adventure_episode_pressed(3)
 
+func _on_select_adventure_ep4_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
+	_on_select_adventure_episode_pressed(4)
+
+func _on_select_adventure_ep5_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
+	if not GameData.is_tutorial_completed():
+		_show_tutorial_prompt_for_locked_episode()
+		return
+	if not GameData.is_adventure_episode_unlocked(5):
+		return
+	adventure_episodes_modal.visible = false
+	_open_adventure_ep5_routes_modal()
+
+func _open_adventure_ep5_routes_modal() -> void:
+	_setup_adventure_ep5_routes_modal()
+	_refresh_adventure_ep5_routes_ui()
+	adventure_ep5_routes_modal.visible = true
+
+func _setup_adventure_ep5_routes_modal() -> void:
+	if adventure_ep5_routes_modal != null:
+		return
+	adventure_ep5_routes_modal = Control.new()
+	adventure_ep5_routes_modal.name = "AdventureEp5RoutesModal"
+	adventure_ep5_routes_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	adventure_ep5_routes_modal.visible = false
+	adventure_ep5_routes_modal.z_index = 45
+	add_child(adventure_ep5_routes_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.04, 0.08, 0.88)
+	adventure_ep5_routes_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	adventure_ep5_routes_modal.add_child(center)
+	
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(460, 0)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color(0.3, 0.75, 0.85, 0.9)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	sb.content_margin_left = 18
+	sb.content_margin_right = 18
+	sb.content_margin_top = 16
+	sb.content_margin_bottom = 16
+	panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	panel.add_child(vbox)
+	
+	var title_lbl = Label.new()
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_lbl.text = "🗺️ EPISODE V: REGIONAL OBJECTIVES"
+	title_lbl.add_theme_font_size_override("font_size", 17)
+	title_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+	vbox.add_child(title_lbl)
+	
+	var subtitle_lbl = Label.new()
+	subtitle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle_lbl.text = "Select your target operation across Kanto:"
+	subtitle_lbl.add_theme_font_size_override("font_size", 12)
+	subtitle_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+	vbox.add_child(subtitle_lbl)
+	
+	var scroll = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, 360)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+	
+	var routes_vbox = VBoxContainer.new()
+	routes_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes_vbox.add_theme_constant_override("separation", 10)
+	scroll.add_child(routes_vbox)
+	
+	var routes_def = [
+		{
+			"id": "rocket_hideout",
+			"name": "Base Secreta del Team Rocket",
+			"desc": "Infiltrate Team Rocket's underground base in Celadon and defeat Boss Giovanni!",
+			"rewards": "5 Combates  |  Reward: 💎 20 Diamonds • Unlocks Tower & Gym"
+		},
+		{
+			"id": "pokemon_tower",
+			"name": "Torre Pokémon (Lavender Town)",
+			"desc": "Climb the haunted tower, calm the restless ghosts and free the possessed trainer!",
+			"rewards": "4 Combates  |  Reward: 💎 15 Diamonds & 🎶 Poké Flute (Permanent Item)"
+		},
+		{
+			"id": "fuchsia_gym",
+			"name": "Gimnasio de Koga (Fuchsia City)",
+			"desc": "Challenge Ninja Master Koga and his toxic masters to win the Soul Badge!",
+			"rewards": "3 Combates  |  Reward: 💎 15 Diamonds & 🏅 Soul Badge • Unlocks Ep. VI"
+		}
+	]
+	
+	for r in routes_def:
+		var r_id = r["id"]
+		var c_panel = PanelContainer.new()
+		c_panel.name = "RouteCard_" + r_id
+		var c_sb = StyleBoxFlat.new()
+		c_sb.bg_color = Color(0.12, 0.17, 0.24, 0.95)
+		c_sb.border_color = Color(0.25, 0.45, 0.60, 0.8)
+		c_sb.set_border_width_all(1)
+		c_sb.set_corner_radius_all(6)
+		c_sb.content_margin_left = 12
+		c_sb.content_margin_right = 12
+		c_sb.content_margin_top = 10
+		c_sb.content_margin_bottom = 10
+		c_panel.add_theme_stylebox_override("panel", c_sb)
+		routes_vbox.add_child(c_panel)
+		
+		var cvbox = VBoxContainer.new()
+		cvbox.add_theme_constant_override("separation", 4)
+		c_panel.add_child(cvbox)
+		
+		var r_title = Label.new()
+		r_title.name = "Title"
+		r_title.text = r["name"]
+		r_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_title.add_theme_font_size_override("font_size", 14)
+		r_title.add_theme_color_override("font_color", Color(1, 1, 1))
+		cvbox.add_child(r_title)
+		
+		var r_desc = Label.new()
+		r_desc.name = "Desc"
+		r_desc.text = r["desc"]
+		r_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_desc.add_theme_font_size_override("font_size", 11)
+		r_desc.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		cvbox.add_child(r_desc)
+		
+		var r_rew = Label.new()
+		r_rew.name = "Rewards"
+		r_rew.text = r["rewards"]
+		r_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_rew.add_theme_font_size_override("font_size", 11)
+		r_rew.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		cvbox.add_child(r_rew)
+		
+		var r_status = Label.new()
+		r_status.name = "Status"
+		r_status.text = "Status: Ready"
+		r_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_status.add_theme_font_size_override("font_size", 11)
+		r_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		cvbox.add_child(r_status)
+		
+		var r_btn = Button.new()
+		r_btn.name = "Btn"
+		r_btn.custom_minimum_size = Vector2(0, 36)
+		r_btn.add_theme_font_size_override("font_size", 12)
+		r_btn.text = "Select Route"
+		_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		r_btn.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			_on_select_adventure_ep5_route_pressed(r_id)
+		)
+		cvbox.add_child(r_btn)
+		
+		ep5_route_cards[r_id] = {
+			"panel": c_panel,
+			"title": r_title,
+			"status": r_status,
+			"rewards": r_rew,
+			"btn": r_btn
+		}
+		
+	var btn_close_routes = Button.new()
+	btn_close_routes.name = "BtnCloseEp5Routes"
+	btn_close_routes.custom_minimum_size = Vector2(0, 38)
+	btn_close_routes.add_theme_font_size_override("font_size", 13)
+	btn_close_routes.text = "⬅ Back to Episode Select"
+	_apply_retro_button_style(btn_close_routes, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+	btn_close_routes.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		adventure_ep5_routes_modal.visible = false
+		update_adventure_episodes_ui()
+		adventure_episodes_modal.visible = true
+	)
+	vbox.add_child(btn_close_routes)
+
+func _refresh_adventure_ep5_routes_ui() -> void:
+	for r_id in ep5_route_cards.keys():
+		var card = ep5_route_cards[r_id]
+		var c_panel: PanelContainer = card["panel"]
+		var lbl_title: Label = card["title"]
+		var lbl_status: Label = card["status"]
+		var btn: Button = card["btn"]
+		var is_unlocked = GameData.is_adventure_ep5_route_unlocked(r_id)
+		var is_cleared = GameData.is_adventure_ep5_route_completed(r_id)
+		var is_in_progress = (GameData.adventure_current_episode == 5 and GameData.adventure_ep5_selected_route == r_id and not GameData.adventure_player_team_state.is_empty())
+		
+		c_panel.modulate = Color(1, 1, 1, 1) if is_unlocked else Color(0.7, 0.7, 0.75, 0.8)
+		
+		if not is_unlocked:
+			lbl_title.text = "🔒 " + card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(0.5, 0.6, 0.7))
+			lbl_status.text = "Status: 🔒 Locked (Defeat Giovanni at Rocket Hideout first)"
+			lbl_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			btn.text = "🔒 Locked"
+			btn.disabled = true
+			_apply_retro_button_style(btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+		elif is_in_progress:
+			var total_st = GameData.get_adventure_total_stages(5)
+			lbl_title.text = card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			lbl_status.text = "Status: In Progress (Stage %d/%d)" % [GameData.adventure_current_stage, total_st]
+			lbl_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			btn.text = "⛺ Continue Operation (Camp)"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		elif is_cleared:
+			lbl_title.text = card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			lbl_status.text = "Status: 🏅 COMPLETED • Replayable"
+			lbl_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			btn.text = "🗺️ Replay Operation"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		else:
+			lbl_title.text = card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(1, 1, 1))
+			lbl_status.text = "Status: Ready to deploy"
+			lbl_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+			btn.text = "🗺️ Embark on Route"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+func _on_select_adventure_ep5_route_pressed(route_id: String) -> void:
+	if not GameData.is_adventure_ep5_route_unlocked(route_id):
+		return
+	if adventure_ep5_routes_modal:
+		adventure_ep5_routes_modal.visible = false
+	adventure_episodes_modal.visible = false
+	GameData.campaign_submode = "ADVENTURE"
+	
+	if GameData.adventure_current_episode == 5 and GameData.adventure_ep5_selected_route == route_id and not GameData.adventure_player_team_state.is_empty():
+		update_campaign_ui()
+		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
+	else:
+		GameData.adventure_ep5_selected_route = route_id
+		GameData.reset_adventure_episode(5)
+		GameData.adventure_current_episode = 5
+		open_team_select_for_campaign()
+
+func _on_select_adventure_ep6_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
+	if not GameData.is_tutorial_completed():
+		_show_tutorial_prompt_for_locked_episode()
+		return
+	if not GameData.is_adventure_episode_unlocked(6):
+		return
+	adventure_episodes_modal.visible = false
+	_open_adventure_ep6_routes_modal()
+
+func _open_adventure_ep6_routes_modal() -> void:
+	_setup_adventure_ep6_routes_modal()
+	_refresh_adventure_ep6_routes_ui()
+	adventure_ep6_routes_modal.visible = true
+
+func _setup_adventure_ep6_routes_modal() -> void:
+	if adventure_ep6_routes_modal != null:
+		return
+	adventure_ep6_routes_modal = Control.new()
+	adventure_ep6_routes_modal.name = "AdventureEp6RoutesModal"
+	adventure_ep6_routes_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	adventure_ep6_routes_modal.visible = false
+	adventure_ep6_routes_modal.z_index = 45
+	add_child(adventure_ep6_routes_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.04, 0.08, 0.88)
+	adventure_ep6_routes_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	adventure_ep6_routes_modal.add_child(center)
+	
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(460, 0)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color(0.3, 0.75, 0.85, 0.9)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	sb.content_margin_left = 18
+	sb.content_margin_right = 18
+	sb.content_margin_top = 16
+	sb.content_margin_bottom = 16
+	panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	panel.add_child(vbox)
+	
+	var title_lbl = Label.new()
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_lbl.text = "🗺️ EPISODE VI: REGIONAL OPERATIONS"
+	title_lbl.add_theme_font_size_override("font_size", 17)
+	title_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+	vbox.add_child(title_lbl)
+	
+	var subtitle_lbl = Label.new()
+	subtitle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle_lbl.text = "Liberate Silph Co. skyscraper and confront Gym Leader Sabrina:"
+	subtitle_lbl.add_theme_font_size_override("font_size", 12)
+	subtitle_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+	vbox.add_child(subtitle_lbl)
+	
+	var scroll = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, 360)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+	
+	var routes_vbox = VBoxContainer.new()
+	routes_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes_vbox.add_theme_constant_override("separation", 10)
+	scroll.add_child(routes_vbox)
+	
+	var routes_def = [
+		{
+			"id": "silph_co",
+			"name": "Torre Silph S. A. (6 Combates)",
+			"desc": "Infiltrate the 11-floor Silph Co. corporate skyscraper taken hostage by Team Rocket and defeat Boss Giovanni!",
+			"rewards": "6 Combates  |  Reward: 💎 20 Diamonds • Unlocks Saffron Gym & PokéDojo"
+		},
+		{
+			"id": "fighting_dojo",
+			"name": "PokéDojo de Ciudad Azafrán (4 Combates)",
+			"desc": "Challenge the black-belt masters of the Fighting Dojo and defeat Champion Koichi!",
+			"rewards": "4 Combates  |  Reward: 💎 20 Diamonds & 🥋 Cartas Hitmonlee + Hitmonchan"
+		},
+		{
+			"id": "saffron_gym",
+			"name": "Gimnasio de Sabrina (4 Combates)",
+			"desc": "Step into the teleporter maze of Saffron Gym and challenge Psychic Master Sabrina!",
+			"rewards": "4 Combates  |  Reward: 💎 20 Diamonds & 🏅 Marsh Badge • Unlocks Ep. VII"
+		}
+	]
+	
+	for r in routes_def:
+		var r_id = r["id"]
+		var c_panel = PanelContainer.new()
+		c_panel.name = "RouteCard_" + r_id
+		var c_sb = StyleBoxFlat.new()
+		c_sb.bg_color = Color(0.12, 0.17, 0.24, 0.95)
+		c_sb.border_color = Color(0.25, 0.45, 0.60, 0.8)
+		c_sb.set_border_width_all(1)
+		c_sb.set_corner_radius_all(6)
+		c_sb.content_margin_left = 12
+		c_sb.content_margin_right = 12
+		c_sb.content_margin_top = 10
+		c_sb.content_margin_bottom = 10
+		c_panel.add_theme_stylebox_override("panel", c_sb)
+		routes_vbox.add_child(c_panel)
+		
+		var cvbox = VBoxContainer.new()
+		cvbox.add_theme_constant_override("separation", 4)
+		c_panel.add_child(cvbox)
+		
+		var r_title = Label.new()
+		r_title.name = "Title"
+		r_title.text = r["name"]
+		r_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_title.add_theme_font_size_override("font_size", 14)
+		r_title.add_theme_color_override("font_color", Color(1, 1, 1))
+		cvbox.add_child(r_title)
+		
+		var r_desc = Label.new()
+		r_desc.name = "Desc"
+		r_desc.text = r["desc"]
+		r_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_desc.add_theme_font_size_override("font_size", 11)
+		r_desc.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		cvbox.add_child(r_desc)
+		
+		var r_rew = Label.new()
+		r_rew.name = "Rewards"
+		r_rew.text = r["rewards"]
+		r_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_rew.add_theme_font_size_override("font_size", 11)
+		r_rew.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		cvbox.add_child(r_rew)
+		
+		var r_status = Label.new()
+		r_status.name = "Status"
+		r_status.text = "Status: Ready"
+		r_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_status.add_theme_font_size_override("font_size", 11)
+		r_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		cvbox.add_child(r_status)
+		
+		var r_btn = Button.new()
+		r_btn.name = "Btn"
+		r_btn.custom_minimum_size = Vector2(0, 36)
+		r_btn.add_theme_font_size_override("font_size", 12)
+		r_btn.text = "Select Route"
+		_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		r_btn.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			_on_select_adventure_ep6_route_pressed(r_id)
+		)
+		cvbox.add_child(r_btn)
+		
+		ep6_route_cards[r_id] = {
+			"panel": c_panel,
+			"title": r_title,
+			"status": r_status,
+			"rewards": r_rew,
+			"btn": r_btn
+		}
+		
+	var btn_close_routes = Button.new()
+	btn_close_routes.name = "BtnCloseEp6Routes"
+	btn_close_routes.custom_minimum_size = Vector2(0, 38)
+	btn_close_routes.add_theme_font_size_override("font_size", 13)
+	btn_close_routes.text = "⬅ Back to Episode Select"
+	_apply_retro_button_style(btn_close_routes, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+	btn_close_routes.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		adventure_ep6_routes_modal.visible = false
+		update_adventure_episodes_ui()
+		adventure_episodes_modal.visible = true
+	)
+	vbox.add_child(btn_close_routes)
+
+func _refresh_adventure_ep6_routes_ui() -> void:
+	for r_id in ep6_route_cards.keys():
+		var card = ep6_route_cards[r_id]
+		var c_panel: PanelContainer = card["panel"]
+		var lbl_title: Label = card["title"]
+		var lbl_status: Label = card["status"]
+		var btn: Button = card["btn"]
+		var is_unlocked = GameData.is_adventure_ep6_route_unlocked(r_id)
+		var is_cleared = GameData.is_adventure_ep6_route_completed(r_id)
+		var is_in_progress = (GameData.adventure_current_episode == 6 and GameData.adventure_ep6_selected_route == r_id and not GameData.adventure_player_team_state.is_empty())
+		
+		c_panel.modulate = Color(1, 1, 1, 1) if is_unlocked else Color(0.7, 0.7, 0.75, 0.8)
+		
+		if not is_unlocked:
+			lbl_title.text = "🔒 " + card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(0.5, 0.6, 0.7))
+			lbl_status.text = "Status: 🔒 Locked (Defeat Giovanni at Silph Co. first)"
+			lbl_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			btn.text = "🔒 Locked"
+			btn.disabled = true
+			_apply_retro_button_style(btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+		elif is_in_progress:
+			var total_st = GameData.get_adventure_total_stages(6)
+			lbl_title.text = card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			lbl_status.text = "Status: In Progress (Stage %d/%d)" % [GameData.adventure_current_stage, total_st]
+			lbl_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			btn.text = "⛺ Continue Operation (Camp)"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		elif is_cleared:
+			lbl_title.text = card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			lbl_status.text = "Status: 🏅 COMPLETED • Replayable"
+			lbl_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			btn.text = "🗺️ Replay Operation"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		else:
+			lbl_title.text = card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(1, 1, 1))
+			lbl_status.text = "Status: Ready to deploy"
+			lbl_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+			btn.text = "🗺️ Embark on Route"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+func _on_select_adventure_ep6_route_pressed(route_id: String) -> void:
+	if not GameData.is_adventure_ep6_route_unlocked(route_id):
+		return
+	if adventure_ep6_routes_modal:
+		adventure_ep6_routes_modal.visible = false
+	adventure_episodes_modal.visible = false
+	GameData.campaign_submode = "ADVENTURE"
+	
+	if GameData.adventure_current_episode == 6 and GameData.adventure_ep6_selected_route == route_id and not GameData.adventure_player_team_state.is_empty():
+		update_campaign_ui()
+		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
+	else:
+		GameData.adventure_ep6_selected_route = route_id
+		GameData.reset_adventure_episode(6)
+		GameData.adventure_current_episode = 6
+		open_team_select_for_campaign()
+
+func _on_select_adventure_ep7_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
+	if not GameData.is_tutorial_completed():
+		_show_tutorial_prompt_for_locked_episode()
+		return
+	if not GameData.is_adventure_episode_unlocked(7):
+		return
+	adventure_episodes_modal.visible = false
+	_open_adventure_ep7_routes_modal()
+
+func _open_adventure_ep7_routes_modal() -> void:
+	_setup_adventure_ep7_routes_modal()
+	_refresh_adventure_ep7_routes_ui()
+	adventure_ep7_routes_modal.visible = true
+
+func _setup_adventure_ep7_routes_modal() -> void:
+	if adventure_ep7_routes_modal != null:
+		return
+	adventure_ep7_routes_modal = Control.new()
+	adventure_ep7_routes_modal.name = "AdventureEp7RoutesModal"
+	adventure_ep7_routes_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	adventure_ep7_routes_modal.visible = false
+	adventure_ep7_routes_modal.z_index = 45
+	add_child(adventure_ep7_routes_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.04, 0.08, 0.88)
+	adventure_ep7_routes_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	adventure_ep7_routes_modal.add_child(center)
+	
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(460, 0)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color(0.9, 0.45, 0.2, 0.9)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	sb.content_margin_left = 18
+	sb.content_margin_right = 18
+	sb.content_margin_top = 16
+	sb.content_margin_bottom = 16
+	panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	panel.add_child(vbox)
+	
+	var title_lbl = Label.new()
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_lbl.text = "🌋 EPISODE VII: CINNABAR OPERATIONS"
+	title_lbl.add_theme_font_size_override("font_size", 17)
+	title_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+	vbox.add_child(title_lbl)
+	
+	var subtitle_lbl = Label.new()
+	subtitle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle_lbl.text = "Explore Pokémon Mansion and challenge Gym Leader Blaine in Cinnabar Gym:"
+	subtitle_lbl.add_theme_font_size_override("font_size", 12)
+	subtitle_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+	vbox.add_child(subtitle_lbl)
+	
+	var scroll = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, 320)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+	
+	var routes_vbox = VBoxContainer.new()
+	routes_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes_vbox.add_theme_constant_override("separation", 10)
+	scroll.add_child(routes_vbox)
+	
+	var routes_def = [
+		{
+			"id": "pokemon_mansion",
+			"name": "Mansión Pokémon (6 Combates)",
+			"desc": "Explore the scorched ruined mansion on Cinnabar Island and battle researchers, Team Rocket and your Rival!",
+			"rewards": "6 Combates  |  Reward: 💎 35 Diamonds • Unlocks Cinnabar Gym"
+		},
+		{
+			"id": "blaine_gym",
+			"name": "Gimnasio de Blaine (5 Combates)",
+			"desc": "Answer the quiz questions and battle fiery champions to conquer the Volcano Badge!",
+			"rewards": "5 Combates  |  Reward: 💎 35 Diamonds & 🏅 Volcano Badge (Final Clear!)"
+		}
+	]
+	
+	for r in routes_def:
+		var r_id = r["id"]
+		var c_panel = PanelContainer.new()
+		c_panel.name = "RouteCard_" + r_id
+		var c_sb = StyleBoxFlat.new()
+		c_sb.bg_color = Color(0.12, 0.17, 0.24, 0.95)
+		c_sb.border_color = Color(0.35, 0.40, 0.55, 0.8)
+		c_sb.set_border_width_all(1)
+		c_sb.set_corner_radius_all(6)
+		c_sb.content_margin_left = 12
+		c_sb.content_margin_right = 12
+		c_sb.content_margin_top = 10
+		c_sb.content_margin_bottom = 10
+		c_panel.add_theme_stylebox_override("panel", c_sb)
+		routes_vbox.add_child(c_panel)
+		
+		var cvbox = VBoxContainer.new()
+		cvbox.add_theme_constant_override("separation", 4)
+		c_panel.add_child(cvbox)
+		
+		var r_title = Label.new()
+		r_title.name = "Title"
+		r_title.text = r["name"]
+		r_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_title.add_theme_font_size_override("font_size", 14)
+		r_title.add_theme_color_override("font_color", Color(1, 1, 1))
+		cvbox.add_child(r_title)
+		
+		var r_desc = Label.new()
+		r_desc.name = "Desc"
+		r_desc.text = r["desc"]
+		r_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_desc.add_theme_font_size_override("font_size", 11)
+		r_desc.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		cvbox.add_child(r_desc)
+		
+		var r_rew = Label.new()
+		r_rew.name = "Rewards"
+		r_rew.text = r["rewards"]
+		r_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_rew.add_theme_font_size_override("font_size", 11)
+		r_rew.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		cvbox.add_child(r_rew)
+		
+		var r_status = Label.new()
+		r_status.name = "Status"
+		r_status.text = "Status: Ready"
+		r_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_status.add_theme_font_size_override("font_size", 11)
+		r_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		cvbox.add_child(r_status)
+		
+		var r_btn = Button.new()
+		r_btn.name = "Btn"
+		r_btn.custom_minimum_size = Vector2(0, 36)
+		r_btn.add_theme_font_size_override("font_size", 12)
+		r_btn.text = "Select Route"
+		_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		r_btn.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			_on_select_adventure_ep7_route_pressed(r_id)
+		)
+		cvbox.add_child(r_btn)
+		
+		ep7_route_cards[r_id] = {
+			"panel": c_panel,
+			"title": r_title,
+			"status": r_status,
+			"rewards": r_rew,
+			"btn": r_btn
+		}
+		
+	var btn_close_routes = Button.new()
+	btn_close_routes.name = "BtnCloseEp7Routes"
+	btn_close_routes.custom_minimum_size = Vector2(0, 36)
+	btn_close_routes.text = "⬅ Return to Episodes"
+	btn_close_routes.add_theme_font_size_override("font_size", 12)
+	_apply_retro_button_style(btn_close_routes, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+	btn_close_routes.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		adventure_ep7_routes_modal.visible = false
+		adventure_episodes_modal.visible = true
+	)
+	vbox.add_child(btn_close_routes)
+
+func _refresh_adventure_ep7_routes_ui() -> void:
+	for r_id in ep7_route_cards.keys():
+		var card = ep7_route_cards[r_id]
+		var lbl_title = card["title"] as Label
+		var lbl_status = card["status"] as Label
+		var btn = card["btn"] as Button
+		
+		var is_unlocked = GameData.is_adventure_ep7_route_unlocked(r_id)
+		var is_cleared = GameData.is_adventure_ep7_route_completed(r_id)
+		var is_in_progress = (GameData.adventure_current_episode == 7 and GameData.adventure_ep7_selected_route == r_id and not GameData.adventure_player_team_state.is_empty())
+		
+		if not is_unlocked:
+			lbl_title.text = "🔒 " + card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(0.55, 0.60, 0.70))
+			lbl_status.text = "Status: 🔒 Locked (Explore Pokémon Mansion first)"
+			lbl_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			btn.text = "🔒 Locked"
+			btn.disabled = true
+			_apply_retro_button_style(btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+		elif is_in_progress:
+			lbl_title.text = card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			var total_st = GameData.get_adventure_total_stages(7)
+			lbl_status.text = "Status: In Progress • Stage %d/%d" % [GameData.adventure_current_stage, total_st]
+			lbl_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			btn.text = "⛺ Continue Camp"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		elif is_cleared:
+			lbl_title.text = card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			lbl_status.text = "Status: 🏅 Completed!"
+			lbl_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			btn.text = "🔄 Replay Route"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.25, 0.50, 0.75), Color(0.35, 0.75, 1.00), true)
+		else:
+			lbl_title.text = card["title"].text.replace("🔒 ", "")
+			lbl_title.add_theme_color_override("font_color", Color(1, 1, 1))
+			lbl_status.text = "Status: Ready to deploy"
+			lbl_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+			btn.text = "🗺️ Embark on Route"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+func _on_select_adventure_ep7_route_pressed(route_id: String) -> void:
+	if not GameData.is_adventure_ep7_route_unlocked(route_id):
+		return
+	if adventure_ep7_routes_modal:
+		adventure_ep7_routes_modal.visible = false
+	adventure_episodes_modal.visible = false
+	GameData.campaign_submode = "ADVENTURE"
+	
+	if GameData.adventure_current_episode == 7 and GameData.adventure_ep7_selected_route == route_id and not GameData.adventure_player_team_state.is_empty():
+		update_campaign_ui()
+		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
+	else:
+		GameData.adventure_ep7_selected_route = route_id
+		GameData.reset_adventure_episode(7)
+		GameData.adventure_current_episode = 7
+		open_team_select_for_campaign()
+
 func _on_hub_tutorial_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
 	_show_tutorial_confirmation_modal()
 
 func _setup_tutorial_confirmation_modal() -> void:
@@ -1380,7 +2365,7 @@ func open_team_select_for_campaign() -> void:
 	
 	if GameData.campaign_submode == "ADVENTURE":
 		team_select_title.text = "🗺️ ADVENTURE TEAM"
-		var ep_roman = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V"}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
+		var ep_roman = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII"}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
 		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
 	else:
 		team_select_title.text = "🏟️ POKÉMON STADIUM TEAM"
@@ -1415,25 +2400,47 @@ func update_campaign_ui() -> void:
 	if camp_shop_gold_lbl:
 		camp_shop_gold_lbl.text = "💰 %d G  |  💎 %d" % [cur_gold, GameData.player_diamonds]
 	var potions = cur_inv.get("potion", 0)
+	var super_potions = cur_inv.get("super_potion", 0)
+	var hyper_potions = cur_inv.get("hyper_potion", 0)
 	var revives = cur_inv.get("revive", 0)
 	var remedies = cur_inv.get("remedy", 0)
 	var ethers = cur_inv.get("ether", 0)
+	var poke_flutes = cur_inv.get("poke_flute", 0)
 	if btn_camp_bag:
-		var total_items = potions + revives + remedies + ethers
+		var total_items = potions + super_potions + hyper_potions + revives + remedies + ethers + poke_flutes
 		for st_name in GameData.EVOLUTION_STONE_TYPES:
 			total_items += GameData.get_campaign_stone_count(st_name)
 		btn_camp_bag.text = "🎒 Bag (%d Item%s)" % [total_items, "s" if total_items != 1 else ""]
 	if camp_shop_stones_list and camp_shop_modal and camp_shop_modal.visible:
 		_refresh_camp_shop_stones_ui()
 	campaign_item_count_lbl.text = "Inventory: %d Potions" % potions
+	if campaign_super_potion_count_lbl:
+		campaign_super_potion_count_lbl.text = "Inventory: %d Super Potions" % super_potions
+	if campaign_hyper_potion_count_lbl:
+		campaign_hyper_potion_count_lbl.text = "Inventory: %d Hyper Potions" % hyper_potions
 	campaign_remedy_count_lbl.text = "Inventory: %d Remedies" % remedies
+	if campaign_poke_flute_count_lbl:
+		campaign_poke_flute_count_lbl.text = "Owned: 1 Poké Flute" if poke_flutes > 0 else "Not Owned (Permanent item)"
 	campaign_ether_count_lbl.text = "Inventory: %d Ethers" % ethers
 	campaign_revive_count_lbl.text = "Inventory: %d Revives" % revives
 	
 	btn_buy_potion.disabled = (cur_gold < GameData.ITEM_COST_POTION)
 	btn_buy_potion.text = "Buy (%d G)" % GameData.ITEM_COST_POTION
+	if btn_buy_super_potion:
+		btn_buy_super_potion.disabled = (cur_gold < GameData.ITEM_COST_SUPER_POTION)
+		btn_buy_super_potion.text = "Buy (%d G)" % GameData.ITEM_COST_SUPER_POTION
+	if btn_buy_hyper_potion:
+		btn_buy_hyper_potion.disabled = (cur_gold < GameData.ITEM_COST_HYPER_POTION)
+		btn_buy_hyper_potion.text = "Buy (%d G)" % GameData.ITEM_COST_HYPER_POTION
 	btn_buy_remedy.disabled = (cur_gold < GameData.ITEM_COST_REMEDY)
 	btn_buy_remedy.text = "Buy (%d G)" % GameData.ITEM_COST_REMEDY
+	if btn_buy_poke_flute:
+		if poke_flutes > 0:
+			btn_buy_poke_flute.disabled = true
+			btn_buy_poke_flute.text = "Owned"
+		else:
+			btn_buy_poke_flute.disabled = (cur_gold < GameData.ITEM_COST_POKE_FLUTE)
+			btn_buy_poke_flute.text = "Buy (%d G)" % GameData.ITEM_COST_POKE_FLUTE
 	btn_buy_ether.disabled = (cur_gold < GameData.ITEM_COST_ETHER)
 	btn_buy_ether.text = "Buy (%d G)" % GameData.ITEM_COST_ETHER
 	btn_buy_revive.disabled = (cur_gold < GameData.ITEM_COST_REVIVE)
@@ -1453,18 +2460,42 @@ func update_campaign_ui() -> void:
 		btn_change_campaign_team.visible = (cur_stage == 1)
 		btn_reset_campaign.text = "🔄 Restart Episode (Resets Stage Progress)"
 		
-		if camp_title:
-			camp_title.text = "🗺️ " + ep_info.get("title", "ADVENTURE: EPISODE I").to_upper()
-		if camp_desc:
-			camp_desc.text = ep_info.get("subtitle", "Story adventure")
+		if ep_id == 5:
+			var r_info = GameData.get_adventure_route_info(5, GameData.adventure_ep5_selected_route)
+			if camp_title:
+				camp_title.text = "🗺️ EPISODE V: %s" % str(r_info.get("name_es", r_info.get("name", "ROUTE"))).to_upper()
+			if camp_desc:
+				camp_desc.text = str(r_info.get("desc", ep_info.get("subtitle", "Story adventure")))
+		elif ep_id == 6:
+			var r_info = GameData.get_adventure_route_info(6, GameData.adventure_ep6_selected_route)
+			if camp_title:
+				camp_title.text = "🗺️ EPISODE VI: %s" % str(r_info.get("name_es", r_info.get("name", "ROUTE"))).to_upper()
+			if camp_desc:
+				camp_desc.text = str(r_info.get("desc", ep_info.get("subtitle", "Story adventure")))
+		elif ep_id == 7:
+			var r_info = GameData.get_adventure_route_info(7, GameData.adventure_ep7_selected_route)
+			if camp_title:
+				camp_title.text = "🗺️ EPISODE VII: %s" % str(r_info.get("name_es", r_info.get("name", "ROUTE"))).to_upper()
+			if camp_desc:
+				camp_desc.text = str(r_info.get("desc", ep_info.get("subtitle", "Story adventure")))
+		else:
+			if camp_title:
+				camp_title.text = "🗺️ " + ep_info.get("title", "ADVENTURE: EPISODE I").to_upper()
+			if camp_desc:
+				camp_desc.text = ep_info.get("subtitle", "Story adventure")
 		if camp_team_header:
 			camp_team_header.text = "👥 YOUR ADVENTURE TEAM:"
 			
 		if cur_stage > total_stages:
 			var badge_name = "Badge"
-			var stages = ep_info.get("stages", [])
-			if stages.size() > 0:
-				badge_name = stages[stages.size() - 1].get("badge_name", "Badge")
+			if ep_id in [5, 6, 7]:
+				var cur_route = GameData.get_adventure_selected_route(ep_id)
+				var r_info = GameData.get_adventure_route_info(ep_id, cur_route)
+				badge_name = str(r_info.get("badge_name", "Operation Complete!"))
+			else:
+				var stages = ep_info.get("stages", [])
+				if stages.size() > 0:
+					badge_name = stages[stages.size() - 1].get("badge_name", "Badge")
 			campaign_match_lbl.text = "🎉 EPISODE CONQUERED! %s Won!" % badge_name
 			btn_start_campaign_battle.text = "🏆 Replay Episode"
 			btn_start_campaign_battle.disabled = false
@@ -1887,6 +2918,24 @@ func _on_buy_potion_pressed() -> void:
 		GameData.play_combat_sfx("purchase")
 		update_campaign_ui()
 
+func _on_buy_super_potion_pressed() -> void:
+	if GameData.buy_campaign_super_potion():
+		GameData.add_daily_mission_progress("buy_camp_shop", 1)
+		GameData.play_combat_sfx("purchase")
+		update_campaign_ui()
+
+func _on_buy_hyper_potion_pressed() -> void:
+	if GameData.buy_campaign_hyper_potion():
+		GameData.add_daily_mission_progress("buy_camp_shop", 1)
+		GameData.play_combat_sfx("purchase")
+		update_campaign_ui()
+
+func _on_buy_poke_flute_pressed() -> void:
+	if GameData.buy_campaign_poke_flute():
+		GameData.add_daily_mission_progress("buy_camp_shop", 1)
+		GameData.play_combat_sfx("purchase")
+		update_campaign_ui()
+
 func _on_buy_revive_pressed() -> void:
 	if GameData.buy_campaign_revive():
 		GameData.add_daily_mission_progress("buy_camp_shop", 1)
@@ -2289,6 +3338,8 @@ func _refresh_camp_shop_stones_ui() -> void:
 			_apply_retro_button_style(buy_btn, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
 		var target_stone = st_type
 		buy_btn.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
 			if GameData.buy_campaign_stone(target_stone):
 				GameData.add_daily_mission_progress("buy_camp_shop", 1)
 				GameData.play_combat_sfx("purchase")
@@ -2313,6 +3364,18 @@ func _refresh_camp_bag_items_ui() -> void:
 			"stock": inv.get("potion", 0)
 		},
 		{
+			"id": "super_potion",
+			"name": "Super Potion",
+			"desc": "Restores up to 25 HP to a damaged Pokémon.",
+			"stock": inv.get("super_potion", 0)
+		},
+		{
+			"id": "hyper_potion",
+			"name": "Hyper Potion",
+			"desc": "Restores 100% HP (Full Max HP) to a damaged Pokémon.",
+			"stock": inv.get("hyper_potion", 0)
+		},
+		{
 			"id": "revive",
 			"name": "Revive",
 			"desc": "Revives a fainted Pokémon with 50% max HP.",
@@ -2321,8 +3384,14 @@ func _refresh_camp_bag_items_ui() -> void:
 		{
 			"id": "remedy",
 			"name": "Remedy",
-			"desc": "Cures all negative status conditions (Burn, Poison, Flinch).",
+			"desc": "Cures all negative status conditions (Burn, Poison, Flinch, etc).",
 			"stock": inv.get("remedy", 0)
+		},
+		{
+			"id": "poke_flute",
+			"name": "Poké Flute",
+			"desc": "Plays a melody that awakens any sleeping Pokémon. Permanent item (not consumed).",
+			"stock": inv.get("poke_flute", 0)
 		},
 		{
 			"id": "ether",
@@ -2375,7 +3444,10 @@ func _refresh_camp_bag_items_ui() -> void:
 		title_row.add_child(name_lbl)
 		
 		var stock_lbl = Label.new()
-		stock_lbl.text = "[Owned: %d]" % stock
+		if item_id == "poke_flute":
+			stock_lbl.text = "[Owned]" if stock > 0 else "[Not Owned]"
+		else:
+			stock_lbl.text = "[Owned: %d]" % stock
 		stock_lbl.add_theme_font_size_override("font_size", 11)
 		stock_lbl.add_theme_color_override("font_color", Color("#FFD54F") if stock > 0 else Color("#78909C"))
 		title_row.add_child(stock_lbl)
@@ -2577,10 +3649,11 @@ func _show_camp_bag_targets(item_id: String) -> void:
 		if p["current_hp"] <= 0:
 			stat_lbl.text = "💀 Fainted"
 			stat_lbl.add_theme_color_override("font_color", Color("#EF5350"))
-		elif int(p.get("burn_turns", 0)) > 0 or bool(p.get("is_poisoned", false)):
+		elif int(p.get("burn_turns", 0)) > 0 or bool(p.get("is_poisoned", false)) or int(p.get("is_asleep_turns", 0)) > 0:
 			var s_arr = []
 			if int(p.get("burn_turns", 0)) > 0: s_arr.append("🔥 Burned (%d)" % int(p.get("burn_turns", 0)))
 			if bool(p.get("is_poisoned", false)): s_arr.append("🟣 Poisoned")
+			if int(p.get("is_asleep_turns", 0)) > 0: s_arr.append("💤 Asleep (%d)" % int(p.get("is_asleep_turns", 0)))
 			stat_lbl.text = ", ".join(s_arr)
 			stat_lbl.add_theme_color_override("font_color", Color("#FFA726"))
 		else:
@@ -2610,6 +3683,36 @@ func _show_camp_bag_targets(item_id: String) -> void:
 			else:
 				can_apply = true
 				btn_text = "Use (+10 HP)"
+		elif item_id == "super_potion":
+			if p["current_hp"] <= 0:
+				can_apply = false
+				btn_text = "Fainted"
+			elif p["current_hp"] >= p["max_hp"]:
+				can_apply = false
+				btn_text = "Full HP"
+			else:
+				can_apply = true
+				btn_text = "Use (+25 HP)"
+		elif item_id == "hyper_potion":
+			if p["current_hp"] <= 0:
+				can_apply = false
+				btn_text = "Fainted"
+			elif p["current_hp"] >= p["max_hp"]:
+				can_apply = false
+				btn_text = "Full HP"
+			else:
+				can_apply = true
+				btn_text = "Use (Full HP)"
+		elif item_id == "poke_flute":
+			if p["current_hp"] <= 0:
+				can_apply = false
+				btn_text = "Fainted"
+			elif int(p.get("is_asleep_turns", 0)) <= 0:
+				can_apply = false
+				btn_text = "Not Asleep"
+			else:
+				can_apply = true
+				btn_text = "Awaken 🎶"
 		elif item_id == "revive":
 			if p["current_hp"] > 0:
 				can_apply = false
@@ -2618,7 +3721,7 @@ func _show_camp_bag_targets(item_id: String) -> void:
 				can_apply = true
 				btn_text = "Revive (50%)"
 		elif item_id == "remedy":
-			var has_stat = (int(p.get("burn_turns", 0)) > 0) or bool(p.get("is_poisoned", false)) or bool(p.get("is_flinched", false))
+			var has_stat = (int(p.get("burn_turns", 0)) > 0) or bool(p.get("is_poisoned", false)) or bool(p.get("is_flinched", false)) or (int(p.get("is_asleep_turns", 0)) > 0)
 			if not has_stat:
 				can_apply = false
 				btn_text = "No Status"
@@ -2638,6 +3741,12 @@ func _show_camp_bag_targets(item_id: String) -> void:
 				var success = false
 				if cur_it == "potion":
 					success = GameData.use_potion_on_campaign_pkmn(pkmn_idx)
+				elif cur_it == "super_potion":
+					success = GameData.use_super_potion_on_campaign_pkmn(pkmn_idx)
+				elif cur_it == "hyper_potion":
+					success = GameData.use_hyper_potion_on_campaign_pkmn(pkmn_idx)
+				elif cur_it == "poke_flute":
+					success = GameData.use_poke_flute_on_campaign_pkmn(pkmn_idx)
 				elif cur_it == "revive":
 					success = GameData.use_revive_on_campaign_pkmn(pkmn_idx)
 				elif cur_it == "remedy":
@@ -2645,7 +3754,7 @@ func _show_camp_bag_targets(item_id: String) -> void:
 				if success:
 					GameData.play_combat_sfx("use")
 					GameData.add_daily_mission_progress("use_camp_items", 1)
-					if cur_it == "potion":
+					if cur_it in ["potion", "super_potion", "hyper_potion"]:
 						GameData.add_daily_mission_progress("heal_hp", 1)
 					update_campaign_ui()
 					if cur_it == "revive":
@@ -2939,7 +4048,7 @@ func _setup_camp_evolution_modal() -> void:
 	camp_evo_modal.add_child(center)
 	
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(440, 480)
+	panel.custom_minimum_size = Vector2(420, 460)
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = Color(0.08, 0.11, 0.17, 0.98)
 	sb.border_color = Color(1.0, 0.84, 0.0, 0.95)
@@ -3030,21 +4139,21 @@ func _setup_camp_evolution_selector_modal() -> void:
 	camp_evo_selector_modal.add_child(center)
 	
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(510, 0)
+	panel.custom_minimum_size = Vector2(460, 0)
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = Color(0.08, 0.11, 0.17, 0.98)
 	sb.border_color = Color(1.0, 0.82, 0.25, 0.92)
 	sb.set_border_width_all(2)
 	sb.set_corner_radius_all(10)
-	sb.content_margin_left = 16
-	sb.content_margin_right = 16
-	sb.content_margin_top = 14
-	sb.content_margin_bottom = 14
+	sb.content_margin_left = 12
+	sb.content_margin_right = 12
+	sb.content_margin_top = 12
+	sb.content_margin_bottom = 12
 	panel.add_theme_stylebox_override("panel", sb)
 	center.add_child(panel)
 	
 	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(478, 460)
+	scroll.custom_minimum_size = Vector2(436, 460)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	panel.add_child(scroll)
 	
@@ -3181,13 +4290,14 @@ func _open_camp_evolution_selector(team_idx: int) -> void:
 			mv_lbl.add_theme_color_override("font_color", Color("#CFD8DC"))
 			mid_v.add_child(mv_lbl)
 			
-		# Requirement & Actions Footer
+		# Requirement Row (Icon + Text with autowrap)
 		var req_r = HBoxContainer.new()
-		req_r.add_theme_constant_override("separation", 8)
+		req_r.add_theme_constant_override("separation", 6)
+		req_r.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b_vbox.add_child(req_r)
 		
 		var st_ico = TextureRect.new()
-		st_ico.custom_minimum_size = Vector2(24, 24)
+		st_ico.custom_minimum_size = Vector2(20, 20)
 		st_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		st_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		st_ico.texture = GameData.get_item_texture(stone_type)
@@ -3195,7 +4305,8 @@ func _open_camp_evolution_selector(team_idx: int) -> void:
 		
 		var req_lbl = Label.new()
 		req_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		req_lbl.add_theme_font_size_override("font_size", 11)
+		req_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		req_lbl.add_theme_font_size_override("font_size", 10)
 		var unlock_txt = "✓ Card Unlocked" if is_unlocked else "🔒 Card Locked"
 		req_lbl.text = "Requires: %dx %s (Owned: %d)  •  %s" % [stone_req, stone_name, stone_owned, unlock_txt]
 		if is_unlocked and stone_owned >= stone_req:
@@ -3204,9 +4315,16 @@ func _open_camp_evolution_selector(team_idx: int) -> void:
 			req_lbl.add_theme_color_override("font_color", Color("#FFB74D"))
 		req_r.add_child(req_lbl)
 		
+		# Actions Footer Row (Right-aligned, never pushes horizontal width)
+		var act_r = HBoxContainer.new()
+		act_r.alignment = BoxContainer.ALIGNMENT_END
+		act_r.add_theme_constant_override("separation", 8)
+		act_r.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b_vbox.add_child(act_r)
+		
 		if stone_owned < stone_req:
 			var btn_buy_st = Button.new()
-			btn_buy_st.custom_minimum_size = Vector2(106, 30)
+			btn_buy_st.custom_minimum_size = Vector2(104, 28)
 			btn_buy_st.add_theme_font_size_override("font_size", 10)
 			btn_buy_st.text = "🛒 Buy (%d G)" % GameData.ITEM_COST_STONE
 			btn_buy_st.disabled = (cur_gold < GameData.ITEM_COST_STONE)
@@ -3217,16 +4335,18 @@ func _open_camp_evolution_selector(team_idx: int) -> void:
 			var buy_st_type = stone_type
 			var reopen_idx = team_idx
 			btn_buy_st.pressed.connect(func():
+				if GameData.is_drag_scrolling():
+					return
 				if GameData.buy_campaign_stone(buy_st_type):
 					GameData.add_daily_mission_progress("buy_camp_shop", 1)
 					GameData.play_combat_sfx("purchase")
 					update_campaign_ui()
 					_open_camp_evolution_selector(reopen_idx)
 			)
-			req_r.add_child(btn_buy_st)
-			
+			act_r.add_child(btn_buy_st)
+		
 		var btn_do_evo = Button.new()
-		btn_do_evo.custom_minimum_size = Vector2(104, 30)
+		btn_do_evo.custom_minimum_size = Vector2(104, 28)
 		btn_do_evo.add_theme_font_size_override("font_size", 11)
 		btn_do_evo.text = "✨ Evolve!"
 		btn_do_evo.disabled = not can_evo
@@ -3235,6 +4355,8 @@ func _open_camp_evolution_selector(team_idx: int) -> void:
 			var chosen_t_id = to_id
 			var chosen_idx = team_idx
 			btn_do_evo.pressed.connect(func():
+				if GameData.is_drag_scrolling():
+					return
 				var evo_info = GameData.prepare_campaign_pokemon_evolution_with_option(chosen_idx, chosen_t_id)
 				if bool(evo_info.get("success", false)):
 					camp_evo_selector_modal.visible = false
@@ -3605,7 +4727,11 @@ func build_team_select_cards_grid() -> void:
 		badge_panel.add_child(badge_lbl)
 		thumb_btn.add_child(badge_panel)
 		
-		thumb_btn.pressed.connect(func(): toggle_pokemon_selection(cid))
+		thumb_btn.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			toggle_pokemon_selection(cid)
+		)
 		cell_vbox.add_child(thumb_btn)
 		
 		# 2. Nombre y Nº Pokédex
@@ -3733,7 +4859,7 @@ func update_team_select_ui() -> void:
 			qb_mode_row.visible = false
 		if GameData.campaign_submode == "ADVENTURE":
 			team_select_title.text = "🗺️ ADVENTURE TEAM"
-			var ep_roman = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V"}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
+			var ep_roman = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII"}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
 			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
 		else:
 			team_select_title.text = "🏟️ POKÉMON STADIUM TEAM"
@@ -4501,6 +5627,15 @@ func _apply_pokemon_ui_theme() -> void:
 	var card_ep4 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4")
 	if card_ep4 is PanelContainer:
 		card_ep4.add_theme_stylebox_override("panel", teal_sb.duplicate())
+	var card_ep5 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5")
+	if card_ep5 is PanelContainer:
+		card_ep5.add_theme_stylebox_override("panel", teal_sb.duplicate())
+	var card_ep6 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6")
+	if card_ep6 is PanelContainer:
+		card_ep6.add_theme_stylebox_override("panel", teal_sb.duplicate())
+	var card_ep7 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7")
+	if card_ep7 is PanelContainer:
+		card_ep7.add_theme_stylebox_override("panel", teal_sb.duplicate())
 	var card_loot = get_node_or_null("CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates")
 	if card_loot is PanelContainer:
 		card_loot.add_theme_stylebox_override("panel", teal_sb.duplicate())
@@ -4521,10 +5656,16 @@ func _apply_pokemon_ui_theme() -> void:
 	_apply_retro_button_style(btn_hub_adventure_ep2, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 	_apply_retro_button_style(btn_hub_adventure_ep3, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 	_apply_retro_button_style(btn_hub_adventure_ep4, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	_apply_retro_button_style(btn_hub_adventure_ep5, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	_apply_retro_button_style(btn_hub_adventure_ep6, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	_apply_retro_button_style(btn_hub_adventure_ep7, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
 	_apply_retro_button_style(btn_close_adventure_episodes, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
 
 	_apply_retro_button_style(btn_buy_potion, Color(0.20, 0.50, 0.80), Color(0.35, 0.75, 1.00), false)
+	_apply_retro_button_style(btn_buy_super_potion, Color(0.18, 0.55, 0.85), Color(0.30, 0.80, 1.00), false)
+	_apply_retro_button_style(btn_buy_hyper_potion, Color(0.75, 0.25, 0.55), Color(0.95, 0.40, 0.75), false)
 	_apply_retro_button_style(btn_buy_remedy, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), false)
+	_apply_retro_button_style(btn_buy_poke_flute, Color(0.75, 0.60, 0.15), Color(1.00, 0.85, 0.30), false)
 	_apply_retro_button_style(btn_buy_ether, Color(0.50, 0.35, 0.85), Color(0.70, 0.55, 1.00), false)
 	_apply_retro_button_style(btn_buy_revive, Color(0.84, 0.62, 0.18), Color(1.00, 0.85, 0.35), false)
 
@@ -4838,7 +5979,6 @@ func _setup_shop_sections() -> void:
 		{"id": "JOHTO", "label": "Johto"},
 		{"id": "HOENN", "label": "Hoenn"},
 		{"id": "SINNOH", "label": "Sinnoh"},
-		{"id": "OTHER", "label": "Other"},
 		{"id": "ALL", "label": "All"}
 	]
 	hidden_region_buttons.clear()
@@ -4885,11 +6025,28 @@ func _setup_shop_sections() -> void:
 		
 	hidden_shop_container.add_child(filter_scroll)
 	
+	# Pagination Bar for Hidden Shop
+	hidden_shop_pagination_bar = PanelContainer.new()
+	hidden_shop_pagination_bar.name = "HiddenShopPaginationBar"
+	var sb_hp = StyleBoxFlat.new()
+	sb_hp.bg_color = Color(0.06, 0.08, 0.12, 0.95)
+	sb_hp.border_color = Color(0.20, 0.30, 0.42, 0.8)
+	sb_hp.set_border_width_all(1)
+	sb_hp.set_corner_radius_all(6)
+	sb_hp.content_margin_left = 6
+	sb_hp.content_margin_right = 6
+	sb_hp.content_margin_top = 4
+	sb_hp.content_margin_bottom = 4
+	hidden_shop_pagination_bar.add_theme_stylebox_override("panel", sb_hp)
+	hidden_shop_pagination_bar.visible = false
+	hidden_shop_container.add_child(hidden_shop_pagination_bar)
+	
 	# Scroll Area for Hidden Shop Catalog Grid
 	var hid_scroll = ScrollContainer.new()
 	hid_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	hid_scroll.custom_minimum_size = Vector2(0, 320)
 	hid_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	hidden_shop_scroll = hid_scroll
 	
 	var grid_margin = MarginContainer.new()
 	grid_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -5062,7 +6219,10 @@ func _populate_recycle_view() -> void:
 		btn_rec_one.text = "Recycle 1"
 		btn_rec_one.tooltip_text = "Recycle 1 duplicate copy (+%d 🍬)" % candy_val
 		btn_rec_one.add_theme_font_size_override("font_size", 11)
-		btn_rec_one.pressed.connect(func(): _on_recycle_one_pressed(cid, c_name))
+		btn_rec_one.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			_on_recycle_one_pressed(cid, c_name))
 		btn_row.add_child(btn_rec_one)
 		
 		var btn_rec_all = Button.new()
@@ -5075,7 +6235,10 @@ func _populate_recycle_view() -> void:
 			btn_rec_all.tooltip_text = "Recycle 1 duplicate copy (+%d 🍬)" % candy_val
 		btn_rec_all.add_theme_font_size_override("font_size", 11)
 		btn_rec_all.add_theme_color_override("font_color", Color("#48e88b"))
-		btn_rec_all.pressed.connect(func(): _on_recycle_all_card_pressed(cid, c_name))
+		btn_rec_all.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			_on_recycle_all_card_pressed(cid, c_name))
 		btn_row.add_child(btn_rec_all)
 		
 		recycle_scroll_list.add_child(row_panel)
@@ -5128,10 +6291,12 @@ func _on_recycle_all_card_pressed(cid: int, card_name: String) -> void:
 
 func _on_hidden_region_pressed(rid: String) -> void:
 	hidden_shop_region = rid
+	hidden_shop_page = 0
 	_populate_hidden_shop_view()
 
 func _on_hidden_filter_pressed(fid: String) -> void:
 	hidden_shop_filter = fid
+	hidden_shop_page = 0
 	for k in hidden_filter_buttons:
 		var btn = hidden_filter_buttons[k]
 		if k == fid:
@@ -5148,34 +6313,31 @@ func _populate_hidden_shop_view() -> void:
 		hidden_shop_grid.remove_child(child)
 		child.queue_free()
 		
-	# Count cards per region for button labels
-	var reg_counts = {"KANTO": 0, "JOHTO": 0, "HOENN": 0, "SINNOH": 0, "OTHER": 0, "ALL": all_catalog_cards.size()}
+	# Count cards per region for button labels (Only 4 official regions + ALL)
+	var reg_counts = {"KANTO": 0, "JOHTO": 0, "HOENN": 0, "SINNOH": 0, "ALL": all_catalog_cards.size()}
 	for c in all_catalog_cards:
 		var cr = str(c.get("region", "Kanto")).strip_edges().to_upper()
 		if cr == "":
 			cr = "KANTO"
 		if reg_counts.has(cr):
 			reg_counts[cr] += 1
-		else:
-			reg_counts["OTHER"] += 1
-	var reg_labels = {"KANTO": "Kanto", "JOHTO": "Johto", "HOENN": "Hoenn", "SINNOH": "Sinnoh", "OTHER": "Other", "ALL": "All"}
+	var reg_labels = {"KANTO": "Kanto", "JOHTO": "Johto", "HOENN": "Hoenn", "SINNOH": "Sinnoh", "ALL": "All"}
 	for rk in hidden_region_buttons:
 		var rbtn: Button = hidden_region_buttons[rk]
 		rbtn.text = "%s (%d)" % [reg_labels.get(rk, rk), reg_counts.get(rk, 0)]
 		rbtn.modulate = Color(1.3, 1.2, 0.4) if rk == hidden_shop_region else Color(0.85, 0.85, 0.85)
-		
+
 	for k in hidden_filter_buttons:
 		var btn = hidden_filter_buttons[k]
 		btn.modulate = Color(1.3, 1.2, 0.4) if k == hidden_shop_filter else Color(0.85, 0.85, 0.85)
-		
+
 	var sorted_list = get_sorted_cards(all_catalog_cards, "DEX")
+	var matching_cards: Array = []
 	for card in sorted_list:
 		if hidden_shop_region != "ALL":
 			var card_reg = str(card.get("region", "Kanto")).strip_edges().to_upper()
 			if card_reg == "":
 				card_reg = "KANTO"
-			if not (card_reg in ["KANTO", "JOHTO", "HOENN", "SINNOH"]):
-				card_reg = "OTHER"
 			if card_reg != hidden_shop_region:
 				continue
 		var cid = int(card.get("id", 0))
@@ -5204,7 +6366,24 @@ func _populate_hidden_shop_view() -> void:
 					continue
 			"ALL", _:
 				pass
-				
+		matching_cards.append(card)
+
+	var total_cards = matching_cards.size()
+	var total_pages = int(ceil(float(total_cards) / float(HIDDEN_SHOP_PER_PAGE)))
+	if total_pages < 1:
+		total_pages = 1
+	hidden_shop_page = clampi(hidden_shop_page, 0, total_pages - 1)
+
+	var start_idx = hidden_shop_page * HIDDEN_SHOP_PER_PAGE
+	var end_idx = min(start_idx + HIDDEN_SHOP_PER_PAGE, total_cards)
+	var page_cards = matching_cards.slice(start_idx, end_idx)
+
+	_render_hidden_shop_pagination(total_cards, start_idx, end_idx, total_pages)
+
+	for card in page_cards:
+		var cid = int(card.get("id", 0))
+		var is_owned = GameData.is_pokemon_unlocked(cid)
+		var r_str = str(card.get("rarity", "Common"))
 		var cost = GameData.get_hidden_shop_candy_cost(r_str)
 		var stock = GameData.get_card_stock(cid)
 		var r_info = GameData.get_rarity_display_info(r_str)
@@ -5258,45 +6437,140 @@ func _populate_hidden_shop_view() -> void:
 		type_lbl.text = "%s • %s" % [type_str, r_info.get("name", "Common")]
 		type_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		type_lbl.add_theme_font_size_override("font_size", 8)
-		type_lbl.add_theme_color_override("font_color", r_info.get("color", Color("#81D4FA")))
+		type_lbl.add_theme_color_override("font_color", r_info.get("color", Color.WHITE))
 		type_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		vbox.add_child(type_lbl)
 		
-		# Ownership status
-		var status_lbl = Label.new()
-		status_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		status_lbl.add_theme_font_size_override("font_size", 9)
-		status_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		if is_owned:
-			status_lbl.text = "Owned: x%d" % stock
-			status_lbl.add_theme_color_override("font_color", Color("#4ade80") if stock == 1 else Color("#facc15"))
-		else:
-			status_lbl.text = "🔒 NOT OWNED"
-			status_lbl.add_theme_color_override("font_color", Color("#fb7185"))
-		vbox.add_child(status_lbl)
+		# Stock indicator
+		var stock_lbl = Label.new()
+		stock_lbl.text = "Stock: x%d" % stock if is_owned else "Status: Locked 🔒"
+		stock_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		stock_lbl.add_theme_font_size_override("font_size", 9)
+		stock_lbl.add_theme_color_override("font_color", Color("#81C784") if is_owned else Color("#FFB74D"))
+		stock_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		vbox.add_child(stock_lbl)
 		
-		# Cost & Buy Button
+		# Buy button
 		var btn_buy = Button.new()
-		btn_buy.custom_minimum_size = Vector2(0, 30)
+		btn_buy.custom_minimum_size = Vector2(0, 28)
 		btn_buy.add_theme_font_size_override("font_size", 10)
+		btn_buy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn_buy.mouse_filter = Control.MOUSE_FILTER_STOP
-		var can_afford = (GameData.player_rare_candies >= cost)
 		
-		if not can_afford:
-			btn_buy.text = "Need 🍬 %d" % cost
+		if GameData.player_rare_candies < cost:
 			btn_buy.disabled = true
+			btn_buy.text = "🍬 %d Candies" % cost
 			btn_buy.modulate = Color(0.7, 0.7, 0.7)
 		else:
+			btn_buy.disabled = false
 			if is_owned:
 				btn_buy.text = "📦 Copy (🍬 %d)" % cost
 				btn_buy.modulate = Color(0.4, 0.9, 1.0)
 			else:
 				btn_buy.text = "✨ Unlock (🍬 %d)" % cost
 				btn_buy.modulate = Color(0.3, 1.0, 0.5)
-			btn_buy.pressed.connect(func(): _on_buy_hidden_card_pressed(cid, c_name, cost))
+			btn_buy.pressed.connect(func():
+				if GameData.is_drag_scrolling():
+					return
+				_on_buy_hidden_card_pressed(cid, c_name, cost)
+			)
 		vbox.add_child(btn_buy)
 		
 		hidden_shop_grid.add_child(card_panel)
+
+func _render_hidden_shop_pagination(total_cards: int, start_idx: int, end_idx: int, total_pages: int) -> void:
+	if not hidden_shop_pagination_bar:
+		return
+		
+	if total_pages <= 1:
+		hidden_shop_pagination_bar.visible = false
+		return
+	hidden_shop_pagination_bar.visible = true
+		
+	for c in hidden_shop_pagination_bar.get_children():
+		c.queue_free()
+		
+	var bar_vbox = VBoxContainer.new()
+	bar_vbox.add_theme_constant_override("separation", 3)
+	bar_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hidden_shop_pagination_bar.add_child(bar_vbox)
+		
+	var nav_hbox = HBoxContainer.new()
+	nav_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	nav_hbox.add_theme_constant_override("separation", 6)
+	nav_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar_vbox.add_child(nav_hbox)
+		
+	var btn_prev = Button.new()
+	btn_prev.text = "◀ Ant"
+	btn_prev.custom_minimum_size = Vector2(56, 26)
+	btn_prev.add_theme_font_size_override("font_size", 10)
+	btn_prev.disabled = (hidden_shop_page <= 0)
+	_apply_retro_button_style(btn_prev, Color(0.18, 0.24, 0.34), Color(0.28, 0.38, 0.52), btn_prev.disabled)
+	btn_prev.pressed.connect(func():
+		if hidden_shop_page > 0:
+			hidden_shop_page -= 1
+			_populate_hidden_shop_view()
+			if hidden_shop_scroll:
+				hidden_shop_scroll.scroll_vertical = 0
+	)
+	nav_hbox.add_child(btn_prev)
+		
+	var scroll_tabs = ScrollContainer.new()
+	scroll_tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll_tabs.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll_tabs.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll_tabs.custom_minimum_size = Vector2(0, 30)
+		
+	var tabs_hbox = HBoxContainer.new()
+	tabs_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	tabs_hbox.add_theme_constant_override("separation", 4)
+	tabs_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll_tabs.add_child(tabs_hbox)
+	nav_hbox.add_child(scroll_tabs)
+		
+	for p in range(total_pages):
+		var btn_p = Button.new()
+		btn_p.text = "Pág %d" % (p + 1)
+		btn_p.custom_minimum_size = Vector2(48, 24)
+		btn_p.add_theme_font_size_override("font_size", 10)
+		var is_active = (p == hidden_shop_page)
+		if is_active:
+			_apply_retro_button_style(btn_p, Color(0.65, 0.48, 0.12), Color(0.95, 0.78, 0.22), false)
+			btn_p.modulate = Color(1.3, 1.25, 0.45)
+		else:
+			_apply_retro_button_style(btn_p, Color(0.16, 0.22, 0.30), Color(0.28, 0.38, 0.50), false)
+			btn_p.modulate = Color(0.85, 0.85, 0.85)
+		var page_num = p
+		btn_p.pressed.connect(func():
+			hidden_shop_page = page_num
+			_populate_hidden_shop_view()
+			if hidden_shop_scroll:
+				hidden_shop_scroll.scroll_vertical = 0
+		)
+		tabs_hbox.add_child(btn_p)
+		
+	var btn_next = Button.new()
+	btn_next.text = "Sig ▶"
+	btn_next.custom_minimum_size = Vector2(56, 26)
+	btn_next.add_theme_font_size_override("font_size", 10)
+	btn_next.disabled = (hidden_shop_page >= total_pages - 1)
+	_apply_retro_button_style(btn_next, Color(0.18, 0.24, 0.34), Color(0.28, 0.38, 0.52), btn_next.disabled)
+	btn_next.pressed.connect(func():
+		if hidden_shop_page < total_pages - 1:
+			hidden_shop_page += 1
+			_populate_hidden_shop_view()
+			if hidden_shop_scroll:
+				hidden_shop_scroll.scroll_vertical = 0
+	)
+	nav_hbox.add_child(btn_next)
+		
+	var info_lbl = Label.new()
+	info_lbl.text = "Página %d de %d  (Mostrando %d - %d de %d cartas)" % [hidden_shop_page + 1, total_pages, start_idx + 1, end_idx, total_cards]
+	info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	info_lbl.add_theme_font_size_override("font_size", 9)
+	info_lbl.add_theme_color_override("font_color", Color("#90A4AE"))
+	bar_vbox.add_child(info_lbl)
 
 func _on_buy_hidden_card_pressed(cid: int, card_name: String, cost: int) -> void:
 	var res = GameData.buy_card_from_hidden_shop(cid)
@@ -5642,11 +6916,17 @@ func _create_catalog_pack_card(pid: String, p_info: Dictionary) -> Control:
 	sb_h.set_corner_radius_all(6)
 	btn_inspect.add_theme_stylebox_override("hover", sb_h)
 	
-	btn_inspect.pressed.connect(func(): _open_booster_pack_detail(pid))
+	btn_inspect.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		_open_booster_pack_detail(pid)
+	)
 	act_row.add_child(btn_inspect)
 	
 	card_panel.gui_input.connect(func(event: InputEvent):
-		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if event is InputEventMouseButton and not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			if GameData.is_drag_scrolling():
+				return
 			_open_booster_pack_detail(pid)
 	)
 	
@@ -6199,17 +7479,16 @@ func _setup_collection_filters() -> void:
 	# 0. Barra de Pestañas por Región en cuadrícula 3 columnas x 2 filas
 	var col_reg_grid = GridContainer.new()
 	col_reg_grid.name = "ColRegionTabsRow"
-	col_reg_grid.columns = 3
+	col_reg_grid.columns = 5
 	col_reg_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	col_reg_grid.add_theme_constant_override("h_separation", 6)
-	col_reg_grid.add_theme_constant_override("v_separation", 6)
+	col_reg_grid.add_theme_constant_override("h_separation", 4)
+	col_reg_grid.add_theme_constant_override("v_separation", 4)
 	col_region_tabs_row = col_reg_grid
 	var col_regions = [
 		{"id": "KANTO", "label": "Kanto"},
 		{"id": "JOHTO", "label": "Johto"},
 		{"id": "HOENN", "label": "Hoenn"},
 		{"id": "SINNOH", "label": "Sinnoh"},
-		{"id": "OTHER", "label": "Other"},
 		{"id": "ALL", "label": "All"}
 	]
 	col_region_buttons.clear()
@@ -6263,6 +7542,7 @@ func _setup_collection_filters() -> void:
 			2: col_filter_owned = "MISSING"
 			3: col_filter_owned = "FAVORITES"
 			_: col_filter_owned = "ALL"
+		col_current_page = 0
 		_update_filter_button_visuals()
 		populate_collection_grid()
 	)
@@ -6291,6 +7571,7 @@ func _setup_collection_filters() -> void:
 			col_filter_type = type_map[idx]
 		else:
 			col_filter_type = "ALL"
+		col_current_page = 0
 		_update_filter_button_visuals()
 		populate_collection_grid()
 	)
@@ -6311,6 +7592,7 @@ func _setup_collection_filters() -> void:
 			col_filter_stage = stage_map[idx]
 		else:
 			col_filter_stage = "ALL"
+		col_current_page = 0
 		_update_filter_button_visuals()
 		populate_collection_grid()
 	)
@@ -6331,6 +7613,7 @@ func _setup_collection_filters() -> void:
 			col_filter_rarity = rarity_map[idx]
 		else:
 			col_filter_rarity = "ALL"
+		col_current_page = 0
 		_update_filter_button_visuals()
 		populate_collection_grid()
 	)
@@ -6353,6 +7636,7 @@ func _setup_collection_filters() -> void:
 			col_filter_tier = tier_map[idx]
 		else:
 			col_filter_tier = "ALL"
+		col_current_page = 0
 		_update_filter_button_visuals()
 		populate_collection_grid()
 	)
@@ -6404,14 +7688,15 @@ func _style_filter_option(opt: OptionButton) -> void:
 
 func _on_col_region_pressed(reg_id: String) -> void:
 	col_filter_region = reg_id
+	col_current_page = 0
 	_update_col_region_buttons_ui()
 	populate_collection_grid()
 
 func _update_col_region_buttons_ui() -> void:
 	if col_region_buttons.is_empty():
 		return
-	var totals = {"KANTO": 0, "JOHTO": 0, "HOENN": 0, "SINNOH": 0, "OTHER": 0, "ALL": all_catalog_cards.size()}
-	var owned = {"KANTO": 0, "JOHTO": 0, "HOENN": 0, "SINNOH": 0, "OTHER": 0, "ALL": 0}
+	var totals = {"KANTO": 0, "JOHTO": 0, "HOENN": 0, "SINNOH": 0, "ALL": all_catalog_cards.size()}
+	var owned = {"KANTO": 0, "JOHTO": 0, "HOENN": 0, "SINNOH": 0, "ALL": 0}
 	for c in all_catalog_cards:
 		var cid = int(c.get("id", 0))
 		var is_unl = GameData.is_pokemon_unlocked(cid)
@@ -6420,12 +7705,11 @@ func _update_col_region_buttons_ui() -> void:
 		var cr = str(c.get("region", "Kanto")).strip_edges().to_upper()
 		if cr == "":
 			cr = "KANTO"
-		if not totals.has(cr):
-			cr = "OTHER"
-		totals[cr] += 1
-		if is_unl:
-			owned[cr] += 1
-	var reg_labels = {"KANTO": "Kanto", "JOHTO": "Johto", "HOENN": "Hoenn", "SINNOH": "Sinnoh", "OTHER": "Other", "ALL": "All"}
+		if totals.has(cr):
+			totals[cr] += 1
+			if is_unl:
+				owned[cr] += 1
+	var reg_labels = {"KANTO": "Kanto", "JOHTO": "Johto", "HOENN": "Hoenn", "SINNOH": "Sinnoh", "ALL": "All"}
 	for rk in col_region_buttons:
 		var rbtn: Button = col_region_buttons[rk]
 		rbtn.text = "%s (%d/%d)" % [reg_labels.get(rk, rk), owned.get(rk, 0), totals.get(rk, 0)]
@@ -6448,6 +7732,7 @@ func _update_filter_button_visuals() -> void:
 		btn_col_reset_filters.modulate = Color(1.3, 1.0, 1.0) if any_active else Color(0.75, 0.75, 0.75)
 
 func _on_reset_collection_filters_pressed() -> void:
+	col_current_page = 0
 	col_filter_owned = "ALL"
 	col_filter_type = "ALL"
 	col_filter_stage = "ALL"
@@ -6467,16 +7752,14 @@ func get_filtered_collection_cards() -> Array:
 		var cid = int(card["id"])
 		var is_unlocked = GameData.is_pokemon_unlocked(cid)
 		
-		# 0. Filtro Region (Región Pokémon: Kanto, Johto, Hoenn, Other)
+		# 0. Filtro Region (Región Pokémon: Kanto, Johto, Hoenn, Sinnoh)
 		if col_filter_region != "ALL":
 			var c_region = str(card.get("region", "Kanto")).strip_edges().to_upper()
 			if c_region == "":
 				c_region = "KANTO"
-			if not (c_region in ["KANTO", "JOHTO", "HOENN", "SINNOH"]):
-				c_region = "OTHER"
 			if c_region != col_filter_region:
 				continue
-		
+				
 		# 1. Filtro Owned (Estado de posesión y Favoritos)
 		if col_filter_owned == "OWNED" and not is_unlocked:
 			continue
@@ -6544,7 +7827,7 @@ func populate_collection_grid() -> void:
 	var filtered_cards = get_filtered_collection_cards()
 	current_sorted_collection = get_sorted_cards(filtered_cards, collection_sort_mode)
 	_update_col_region_buttons_ui()
-	
+
 	var is_filtered = (col_filter_region != "ALL" or col_filter_owned != "ALL" or col_filter_type != "ALL" or col_filter_stage != "ALL" or col_filter_rarity != "ALL" or col_filter_tier != "ALL")
 	if collection_stats_lbl:
 		if is_filtered:
@@ -6557,7 +7840,14 @@ func populate_collection_grid() -> void:
 		else:
 			collection_stats_lbl.text = "Cards Collected: %d / %d" % [unlocked_count, all_catalog_cards.size()]
 
+	var total_cards = current_sorted_collection.size()
+	var total_pages = int(ceil(float(total_cards) / float(COL_CARDS_PER_PAGE)))
+	if total_pages < 1:
+		total_pages = 1
+	col_current_page = clampi(col_current_page, 0, total_pages - 1)
+
 	if current_sorted_collection.is_empty():
+		_render_collection_pagination(0, 0, 0, 1)
 		var empty_box = CenterContainer.new()
 		empty_box.custom_minimum_size = Vector2(480, 220)
 		empty_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -6570,48 +7860,52 @@ func populate_collection_grid() -> void:
 		empty_box.add_child(empty_lbl)
 		grid_cards.add_child(empty_box)
 		return
-	
-	for i in range(current_sorted_collection.size()):
+
+	var start_idx = col_current_page * COL_CARDS_PER_PAGE
+	var end_idx = min(start_idx + COL_CARDS_PER_PAGE, total_cards)
+	_render_collection_pagination(total_cards, start_idx, end_idx, total_pages)
+
+	for i in range(start_idx, end_idx):
 		var card = current_sorted_collection[i]
 		var cid = int(card["id"])
 		var is_unlocked = GameData.is_pokemon_unlocked(cid)
 		var p_num = str(card.get("pokedex_num", "1")).pad_zeros(3)
-		
+
 		var cell_vbox = VBoxContainer.new()
 		cell_vbox.custom_minimum_size = Vector2(110, 185)
 		cell_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cell_vbox.add_theme_constant_override("separation", 4)
 		cell_vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
-		
+
 		# 1. Miniatura de la carta
 		var thumb_btn = Button.new()
 		thumb_btn.custom_minimum_size = Vector2(110, 150)
 		thumb_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		thumb_btn.focus_mode = Control.FOCUS_NONE
 		thumb_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		
+
 		if is_unlocked:
 			# Si la tienes: fondo temático elemental con el sprite limpio del Pokémon
 			var type_key = str(card.get("type", "NORMAL")).to_upper()
 			var theme = AssembledCardScript.TYPE_THEMES.get(type_key, AssembledCardScript.TYPE_THEMES["NORMAL"])
-			
+
 			var sb_normal = StyleBoxFlat.new()
 			sb_normal.bg_color = theme["bg"]
 			sb_normal.border_color = theme["border"]
 			sb_normal.set_border_width_all(2)
 			sb_normal.set_corner_radius_all(6)
-			
+
 			var sb_hover = StyleBoxFlat.new()
 			sb_hover.bg_color = theme["bg"].lightened(0.18)
 			sb_hover.border_color = theme["border"].lightened(0.25)
 			sb_hover.set_border_width_all(3)
 			sb_hover.set_corner_radius_all(6)
-			
+
 			thumb_btn.add_theme_stylebox_override("normal", sb_normal)
 			thumb_btn.add_theme_stylebox_override("hover", sb_hover)
 			thumb_btn.add_theme_stylebox_override("pressed", sb_hover)
 			thumb_btn.text = ""
-			
+
 			# Cargar el sprite limpio del Pokémon centrado en la miniatura
 			var tex_file = str(card.get("texture_path", card.get("texture_file", "")))
 			var pkmn_tex = GameData.get_pokemon_texture(tex_file)
@@ -6619,21 +7913,21 @@ func populate_collection_grid() -> void:
 			thumb_btn.expand_icon = true
 			thumb_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			thumb_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-			
+
 			# Badge de Stock / Cantidad de copias (x1, x2, x3...)
 			var stock = GameData.get_card_stock(cid)
 			var stock_badge = PanelContainer.new()
 			stock_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			stock_badge.position = Vector2(72, 5)
 			stock_badge.custom_minimum_size = Vector2(32, 20)
-			
+
 			var sb_badge = StyleBoxFlat.new()
 			sb_badge.set_corner_radius_all(4)
 			sb_badge.bg_color = Color(0, 0, 0, 0.82)
 			sb_badge.border_color = Color("#FFD700") if stock > 1 else Color(1, 1, 1, 0.45)
 			sb_badge.set_border_width_all(1)
 			stock_badge.add_theme_stylebox_override("panel", sb_badge)
-			
+
 			var stock_lbl = Label.new()
 			stock_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			stock_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -6642,7 +7936,7 @@ func populate_collection_grid() -> void:
 			stock_lbl.text = "x%d" % stock
 			stock_badge.add_child(stock_lbl)
 			thumb_btn.add_child(stock_badge)
-			
+
 			# Badge flotante de Tier en la esquina superior izquierda
 			var tier_val = str(card.get("tier", "C")).strip_edges().to_upper()
 			if tier_val == "":
@@ -6652,14 +7946,14 @@ func populate_collection_grid() -> void:
 			tier_thumb_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			tier_thumb_badge.position = Vector2(5, 5)
 			tier_thumb_badge.custom_minimum_size = Vector2(26, 20)
-			
+
 			var sb_tb = StyleBoxFlat.new()
 			sb_tb.set_corner_radius_all(4)
 			sb_tb.bg_color = Color(0, 0, 0, 0.85)
 			sb_tb.border_color = t_color
 			sb_tb.set_border_width_all(1)
 			tier_thumb_badge.add_theme_stylebox_override("panel", sb_tb)
-			
+
 			var tb_lbl = Label.new()
 			tb_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			tb_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -6668,7 +7962,7 @@ func populate_collection_grid() -> void:
 			tb_lbl.text = tier_val
 			tier_thumb_badge.add_child(tb_lbl)
 			thumb_btn.add_child(tier_thumb_badge)
-			
+
 			# Marcador de Favoritos (⭐) interactivo en la miniatura
 			var is_fav = GameData.is_pokemon_favorite(cid)
 			var fav_btn = Button.new()
@@ -6679,7 +7973,7 @@ func populate_collection_grid() -> void:
 			fav_btn.text = "⭐" if is_fav else "☆"
 			fav_btn.tooltip_text = "Favorite"
 			fav_btn.add_theme_font_size_override("font_size", 10)
-			
+
 			var sb_fav = StyleBoxFlat.new()
 			sb_fav.set_corner_radius_all(4)
 			sb_fav.bg_color = Color(0, 0, 0, 0.85) if is_fav else Color(0, 0, 0, 0.45)
@@ -6688,8 +7982,10 @@ func populate_collection_grid() -> void:
 			fav_btn.add_theme_stylebox_override("normal", sb_fav)
 			fav_btn.add_theme_stylebox_override("hover", sb_fav)
 			fav_btn.add_theme_stylebox_override("pressed", sb_fav)
-			
+
 			fav_btn.pressed.connect(func():
+				if GameData.is_drag_scrolling():
+					return
 				var new_state = GameData.toggle_pokemon_favorite(cid)
 				GameData.save_profile()
 				fav_btn.text = "⭐" if new_state else "☆"
@@ -6699,7 +7995,7 @@ func populate_collection_grid() -> void:
 					populate_collection_grid()
 			)
 			thumb_btn.add_child(fav_btn)
-			
+
 			# Efecto Foil Holográfico en la miniatura de cartas Raras/Épicas/Legendarias
 			GameData.apply_foil_overlay(thumb_btn, str(card.get("rarity", "Common")))
 		else:
@@ -6709,32 +8005,34 @@ func populate_collection_grid() -> void:
 			sb_locked.border_color = Color("#2d3748")
 			sb_locked.set_border_width_all(2)
 			sb_locked.set_corner_radius_all(6)
-			
+
 			var sb_locked_hover = StyleBoxFlat.new()
 			sb_locked_hover.bg_color = Color("#1c222e")
 			sb_locked_hover.border_color = Color("#4a5568")
 			sb_locked_hover.set_border_width_all(2)
 			sb_locked_hover.set_corner_radius_all(6)
-			
+
 			thumb_btn.add_theme_stylebox_override("normal", sb_locked)
 			thumb_btn.add_theme_stylebox_override("hover", sb_locked_hover)
 			thumb_btn.add_theme_stylebox_override("pressed", sb_locked_hover)
 			thumb_btn.text = "?"
 			thumb_btn.add_theme_font_size_override("font_size", 22)
 			thumb_btn.add_theme_color_override("font_color", Color("#4a5568"))
-			
+
 		var card_idx = i
 		thumb_btn.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
 			open_collection_detail(card_idx)
 		)
 		cell_vbox.add_child(thumb_btn)
-		
+
 		# 2. Etiqueta inferior con número Pokédex y nombre (o ??? si está bloqueada)
 		var lbl = Label.new()
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.add_theme_font_size_override("font_size", 10)
 		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		
+
 		if is_unlocked:
 			var s_name = str(card.get("short_name", card.get("name", "PKMN")))
 			lbl.text = "#%s\n%s" % [p_num, s_name]
@@ -6742,9 +8040,118 @@ func populate_collection_grid() -> void:
 		else:
 			lbl.text = "#%s\n???" % p_num
 			lbl.add_theme_color_override("font_color", Color("#718096"))
-			
+
 		cell_vbox.add_child(lbl)
 		grid_cards.add_child(cell_vbox)
+
+func _render_collection_pagination(total_cards: int, start_idx: int, end_idx: int, total_pages: int) -> void:
+	if not col_pagination_bar:
+		col_pagination_bar = PanelContainer.new()
+		col_pagination_bar.name = "ColPaginationBar"
+		var sb_p = StyleBoxFlat.new()
+		sb_p.bg_color = Color(0.06, 0.09, 0.14, 0.95)
+		sb_p.border_color = Color(0.20, 0.32, 0.44, 0.8)
+		sb_p.set_border_width_all(1)
+		sb_p.set_corner_radius_all(6)
+		sb_p.content_margin_left = 6
+		sb_p.content_margin_right = 6
+		sb_p.content_margin_top = 4
+		sb_p.content_margin_bottom = 4
+		col_pagination_bar.add_theme_stylebox_override("panel", sb_p)
+		collection_grid_view.add_child(col_pagination_bar)
+		var scroll_node = collection_grid_view.get_node_or_null("GridScroll")
+		if scroll_node:
+			collection_grid_view.move_child(col_pagination_bar, scroll_node.get_index())
+		
+	if total_pages <= 1:
+		col_pagination_bar.visible = false
+		return
+	col_pagination_bar.visible = true
+		
+	for c in col_pagination_bar.get_children():
+		c.queue_free()
+		
+	var bar_vbox = VBoxContainer.new()
+	bar_vbox.add_theme_constant_override("separation", 3)
+	bar_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col_pagination_bar.add_child(bar_vbox)
+		
+	var nav_hbox = HBoxContainer.new()
+	nav_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	nav_hbox.add_theme_constant_override("separation", 6)
+	nav_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar_vbox.add_child(nav_hbox)
+		
+	var btn_prev = Button.new()
+	btn_prev.text = "◀ Ant"
+	btn_prev.custom_minimum_size = Vector2(56, 26)
+	btn_prev.add_theme_font_size_override("font_size", 10)
+	btn_prev.disabled = (col_current_page <= 0)
+	_apply_retro_button_style(btn_prev, Color(0.18, 0.24, 0.34), Color(0.28, 0.38, 0.52), btn_prev.disabled)
+	btn_prev.pressed.connect(func():
+		if col_current_page > 0:
+			col_current_page -= 1
+			populate_collection_grid()
+			if col_grid_scroll:
+				col_grid_scroll.scroll_vertical = 0
+	)
+	nav_hbox.add_child(btn_prev)
+		
+	var scroll_tabs = ScrollContainer.new()
+	scroll_tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll_tabs.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll_tabs.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll_tabs.custom_minimum_size = Vector2(0, 30)
+		
+	var tabs_hbox = HBoxContainer.new()
+	tabs_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	tabs_hbox.add_theme_constant_override("separation", 4)
+	tabs_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll_tabs.add_child(tabs_hbox)
+	nav_hbox.add_child(scroll_tabs)
+		
+	for p in range(total_pages):
+		var btn_p = Button.new()
+		btn_p.text = "Pág %d" % (p + 1)
+		btn_p.custom_minimum_size = Vector2(48, 24)
+		btn_p.add_theme_font_size_override("font_size", 10)
+		var is_active = (p == col_current_page)
+		if is_active:
+			_apply_retro_button_style(btn_p, Color(0.65, 0.48, 0.12), Color(0.95, 0.78, 0.22), false)
+			btn_p.modulate = Color(1.3, 1.25, 0.45)
+		else:
+			_apply_retro_button_style(btn_p, Color(0.16, 0.22, 0.30), Color(0.28, 0.38, 0.50), false)
+			btn_p.modulate = Color(0.85, 0.85, 0.85)
+		var page_num = p
+		btn_p.pressed.connect(func():
+			col_current_page = page_num
+			populate_collection_grid()
+			if col_grid_scroll:
+				col_grid_scroll.scroll_vertical = 0
+		)
+		tabs_hbox.add_child(btn_p)
+		
+	var btn_next = Button.new()
+	btn_next.text = "Sig ▶"
+	btn_next.custom_minimum_size = Vector2(56, 26)
+	btn_next.add_theme_font_size_override("font_size", 10)
+	btn_next.disabled = (col_current_page >= total_pages - 1)
+	_apply_retro_button_style(btn_next, Color(0.18, 0.24, 0.34), Color(0.28, 0.38, 0.52), btn_next.disabled)
+	btn_next.pressed.connect(func():
+		if col_current_page < total_pages - 1:
+			col_current_page += 1
+			populate_collection_grid()
+			if col_grid_scroll:
+				col_grid_scroll.scroll_vertical = 0
+	)
+	nav_hbox.add_child(btn_next)
+		
+	var info_lbl = Label.new()
+	info_lbl.text = "Página %d de %d  (Mostrando %d-%d de %d cartas)" % [col_current_page + 1, total_pages, start_idx + 1, end_idx, total_cards]
+	info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	info_lbl.add_theme_font_size_override("font_size", 9)
+	info_lbl.add_theme_color_override("font_color", Color("#90A4AE"))
+	bar_vbox.add_child(info_lbl)
 
 func open_collection_detail(index: int) -> void:
 	current_collection_index = index
@@ -6755,6 +8162,10 @@ func open_collection_detail(index: int) -> void:
 func _on_back_to_grid_pressed() -> void:
 	collection_detail_view.visible = false
 	collection_grid_view.visible = true
+	var target_page = int(current_collection_index / COL_CARDS_PER_PAGE)
+	if target_page != col_current_page:
+		col_current_page = target_page
+		populate_collection_grid()
 
 func show_collection_card(index: int) -> void:
 	if current_sorted_collection.is_empty():
@@ -8417,6 +9828,8 @@ func _build_or_update_showcase_picker_ui() -> void:
 			
 		var c_id_cap = cid
 		p_btn.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
 			if c_id_cap in temp_showcase_selection:
 				temp_showcase_selection.erase(c_id_cap)
 			elif temp_showcase_selection.size() < 3:

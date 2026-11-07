@@ -34,6 +34,7 @@ var defeated_enemy_indices: Array[int] = []
 var combat_earned_gold: int = 0
 var combat_earned_diamonds: int = 0
 var defeated_rewards_summary: Array[Dictionary] = []
+var enemy_super_potions: int = 0
 
 # --- REFERENCIAS A NODOS ---
 @onready var btn_back_menu: Button = $MainContainer/TopBar/BtnBackMenu
@@ -1156,8 +1157,22 @@ func start_new_game() -> void:
 			var total_stages = GameData.get_adventure_total_stages(GameData.adventure_current_episode)
 			var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
 			var trainer_name = stage_info.get("trainer_name", "Trainer")
-			battle_title_lbl.text = "🗺️ Ep. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name, GameData.adventure_current_stage, total_stages]
+			if stage_info.has("super_potions"):
+				enemy_super_potions = int(stage_info.get("super_potions", 0))
+			elif bool(stage_info.get("has_super_potion", false)):
+				enemy_super_potions = 1
+			else:
+				enemy_super_potions = 0
+			if GameData.adventure_current_episode in [5, 6]:
+				var cur_route = GameData.adventure_ep5_selected_route if GameData.adventure_current_episode == 5 else GameData.adventure_ep6_selected_route
+				var r_info = GameData.get_adventure_route_info(GameData.adventure_current_episode, cur_route)
+				var r_name = str(r_info.get("name_es", r_info.get("name", "Ruta")))
+				var ep_roman = "V" if GameData.adventure_current_episode == 5 else "VI"
+				battle_title_lbl.text = "🗺️ Ep. %s (%s): %s (%d/%d)" % [ep_roman, r_name, trainer_name, GameData.adventure_current_stage, total_stages]
+			else:
+				battle_title_lbl.text = "🗺️ Ep. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name, GameData.adventure_current_stage, total_stages]
 		else:
+			enemy_super_potions = 0
 			rival_ids = GameData.get_campaign_rival_team(GameData.campaign_match_number)
 			var match_info = GameData.get_tournament_match_info(GameData.campaign_match_number)
 			battle_title_lbl.text = "🏆 %s - Battle %d / %d" % [match_info["phase_name"], GameData.campaign_match_number, GameData.TOURNAMENT_TOTAL_MATCHES]
@@ -1217,7 +1232,14 @@ func start_new_game() -> void:
 			var total_stages = GameData.get_adventure_total_stages(GameData.adventure_current_episode)
 			var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
 			var trainer_name = stage_info.get("trainer_name", "Trainer")
-			mode_str = "ADVENTURE EP. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name.to_upper(), GameData.adventure_current_stage, total_stages]
+			if GameData.adventure_current_episode in [5, 6]:
+				var cur_route = GameData.adventure_ep5_selected_route if GameData.adventure_current_episode == 5 else GameData.adventure_ep6_selected_route
+				var r_info = GameData.get_adventure_route_info(GameData.adventure_current_episode, cur_route)
+				var r_name = str(r_info.get("name_es", r_info.get("name", "Ruta")))
+				var ep_roman = "V" if GameData.adventure_current_episode == 5 else "VI"
+				mode_str = "ADVENTURE EP. %s - %s: %s (%d/%d)" % [ep_roman, r_name.to_upper(), trainer_name.to_upper(), GameData.adventure_current_stage, total_stages]
+			else:
+				mode_str = "ADVENTURE EP. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name.to_upper(), GameData.adventure_current_stage, total_stages]
 		else:
 			var match_info_start = GameData.get_tournament_match_info(GameData.campaign_match_number)
 			mode_str = "%s (Battle %d/%d)" % [match_info_start.get("phase_name", "Tournament").to_upper(), GameData.campaign_match_number, GameData.TOURNAMENT_TOTAL_MATCHES]
@@ -1491,6 +1513,10 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
 		actor.current_energy += rec
 		log_action("😴 [b]%s[/b] [color=cyan]must rest this round and recharged +%d Energy (⚡ %d/%d).[/color]" % [actor.name, rec, actor.current_energy, actor.max_energy])
+		if rec > 0:
+			GameData.play_combat_sfx("power up.wav")
+			var actor_vis = player_card_img if is_player else enemy_card_img
+			spawn_floating_combat_number(actor_vis, rec, false, false, true)
 		update_ui()
 		var timer = get_tree().create_timer(2.0)
 		timer.timeout.connect(func():
@@ -1880,6 +1906,26 @@ func execute_enemy_ai() -> void:
 		)
 		return
 	
+	# Super Potion de Líder Giovanni:
+	if enemy_super_potions > 0 and e.current_hp > 0 and (e.max_hp - e.current_hp) >= 15:
+		enemy_super_potions -= 1
+		var healed = min(25, e.max_hp - e.current_hp)
+		e.current_hp += healed
+		log_action("[b]Líder Giovanni[/b] used [color=#29B6F6]Super Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [e.name, healed, e.current_hp, e.max_hp])
+		GameData.play_combat_sfx("use")
+		var tw = create_tween()
+		tw.tween_property(enemy_card_img, "modulate", Color(0.4, 1.8, 0.6), 0.15)
+		tw.tween_property(enemy_card_img, "modulate", Color.WHITE, 0.35)
+		spawn_floating_combat_number(enemy_card_img, healed, true)
+		update_ui()
+		var p_timer = get_tree().create_timer(2.0)
+		p_timer.timeout.connect(func():
+			if is_battle_over:
+				return
+			end_enemy_turn()
+		)
+		return
+	
 	if e.current_energy <= 0:
 		enemy_do_recover()
 		return
@@ -1957,6 +2003,8 @@ func enemy_do_recover() -> void:
 	var rec = min(e.recover_amount, e.max_energy - e.current_energy)
 	e.current_energy += rec
 	log_action("[b]%s[/b] used [color=cyan]Recharge[/color] and restored [b]+%d[/b] Energy (⚡ %d/%d)." % [e.name, rec, e.current_energy, e.max_energy])
+	GameData.play_combat_sfx("power up.wav")
+	spawn_floating_combat_number(enemy_card_img, rec, false, false, true)
 	update_ui()
 	
 	var timer = get_tree().create_timer(2.0)
@@ -2997,14 +3045,63 @@ func _resolve_battle_victory() -> void:
 			if cur_stage >= total_stages:
 				# Final boss cleared! (Brock in Ep I, Misty in Ep II, etc.)
 				var bonus_diamonds = GameData.complete_adventure_episode(ep_id)
-				var badge_str = stage_info.get("badge_name", "Boulder Badge")
+				var badge_str = stage_info.get("badge_name", "Badge")
 				var ep_info = GameData.get_adventure_episode_info(ep_id)
 				var next_ep_id = ep_id + 1
 				var first_clear_text = ""
-				if bonus_diamonds > 0:
-					first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Episode %d Unlocked!" % [bonus_diamonds, next_ep_id]
+				var victory_title = "🎉 EPISODE CONQUERED! %s WON!" % badge_str.to_upper()
+				var ep_title_display = ep_info.get("title", "Episode %d" % ep_id)
+				
+				if ep_id == 5:
+					var cur_route = GameData.adventure_ep5_selected_route
+					var r_info = GameData.get_adventure_route_info(5, cur_route)
+					ep_title_display = "Episode V - %s" % str(r_info.get("name_es", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "rocket_hideout":
+							victory_title = "🎉 TEAM ROCKET HIDEOUT INFILTRATED!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Pokémon Tower & Fuchsia Gym Unlocked!" % bonus_diamonds
+						elif cur_route == "pokemon_tower":
+							victory_title = "🎉 POKÉMON TOWER PURIFIED!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🎶 Poké Flute (Permanent Reusable Item)!" % bonus_diamonds
+						elif cur_route == "fuchsia_gym":
+							victory_title = "🎉 EPISODE CONQUERED! SOUL BADGE WON!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 Soul Badge!\n🔓 Episode VI Unlocked!" % bonus_diamonds
+					else:
+						first_clear_text = "\n(Route already cleared - replay completed!)"
+				elif ep_id == 6:
+					var cur_route = GameData.adventure_ep6_selected_route
+					var r_info = GameData.get_adventure_route_info(6, cur_route)
+					ep_title_display = "Episode VI - %s" % str(r_info.get("name_es", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "silph_co":
+							victory_title = "🎉 SILPH CO. LIBERATED!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Gimnasio de Sabrina & PokéDojo Unlocked!" % bonus_diamonds
+						elif cur_route == "fighting_dojo":
+							victory_title = "🎉 POKÉDOJO CONQUERED!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🥋 RECOMPENSA ÚNICA: ¡Cartas de Hitmonlee y Hitmonchan obtenidas para tu colección!" % bonus_diamonds
+						elif cur_route == "saffron_gym":
+							victory_title = "🎉 EPISODE CONQUERED! %s WON!" % badge_str.to_upper()
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n🔓 Episode VII Unlocked!" % [bonus_diamonds, badge_str]
+					else:
+						first_clear_text = "\n(Route already cleared - replay completed!)"
+				elif ep_id == 7:
+					var cur_route = GameData.adventure_ep7_selected_route
+					var r_info = GameData.get_adventure_route_info(7, cur_route)
+					ep_title_display = "Episode VII - %s" % str(r_info.get("name_es", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "pokemon_mansion":
+							victory_title = "🎉 POKÉMON MANSION EXPLORED!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Gimnasio de Blaine Unlocked!" % bonus_diamonds
+						elif cur_route == "blaine_gym":
+							victory_title = "🏆 CAMPAIGN CONQUERED! VOLCANO BADGE WON!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n👑 ¡HAS CONQUISTADO EL FINAL DE LA CAMPAÑA KANTO!" % [bonus_diamonds, badge_str]
+					else:
+						first_clear_text = "\n(Route already cleared - replay completed!)"
 				else:
-					first_clear_text = "\n(Episode already cleared - replay completed!)"
+					if bonus_diamonds > 0:
+						first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Episode %d Unlocked!" % [bonus_diamonds, next_ep_id]
+					else:
+						first_clear_text = "\n(Episode already cleared - replay completed!)"
 					
 				# Reiniciar progreso del run del episodio al terminar para evitar farmear al jefe
 				GameData.reset_adventure_episode(ep_id)
@@ -3012,10 +3109,10 @@ func _resolve_battle_victory() -> void:
 				GameData.last_adventure_episode_conquered = true
 				GameData.save_profile()
 				show_game_over(
-					"🎉 EPISODE CONQUERED! %s WON!" % badge_str.to_upper(),
+					victory_title,
 					"You defeated %s and conquered %s!%s%s%s\nFinal Gold: %d G | Total Diamonds: 💎 %d%s\nCongratulations on your grand victory!" % [
 						trainer_name,
-						ep_info.get("title", "Episode %d" % ep_id),
+						ep_title_display,
 						outro_msg,
 						first_clear_text,
 						loot_details,
@@ -3814,6 +3911,9 @@ func _on_recover_pressed() -> void:
 		GameData.add_daily_mission_progress("recharge_energy", 1)
 	var prefix = "🔵 Player 2's " if is_p2 else ""
 	log_action("%s[b]%s[/b] used [color=cyan]Recharge[/color] and restored [b]+%d[/b] Energy (⚡ %d/%d)." % [prefix, actor.name, rec, actor.current_energy, actor.max_energy])
+	GameData.play_combat_sfx("power up.wav")
+	var actor_visual = enemy_card_img if is_p2 else player_card_img
+	spawn_floating_combat_number(actor_visual, rec, false, false, true)
 	update_ui()
 	set_controls_enabled(false)
 	
@@ -4105,6 +4205,8 @@ func _execute_opponent_action(action: Dictionary) -> void:
 		var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
 		actor.current_energy += rec
 		log_action("🌐 %s charged energy (+%d ⚡)." % [GameData.online_rival_name, rec])
+		GameData.play_combat_sfx("power up.wav")
+		spawn_floating_combat_number(enemy_card_img, rec, false, false, true)
 		update_ui()
 		set_controls_enabled(false)
 		var timer = get_tree().create_timer(1.6)
@@ -5545,6 +5647,18 @@ func refresh_bag_items_ui() -> void:
 			"icon": "potion"
 		},
 		{
+			"id": "super_potion",
+			"name": "Super Potion",
+			"desc": "Restores up to 25 HP to an active or benched Pokémon.",
+			"icon": "super_potion"
+		},
+		{
+			"id": "hyper_potion",
+			"name": "Hyper Potion",
+			"desc": "Restores 100% HP (Full Max HP) to an active or benched Pokémon.",
+			"icon": "hyper_potion"
+		},
+		{
 			"id": "ether",
 			"name": "Ether",
 			"desc": "Restores 100% Energy (⚡) to an active or benched Pokémon.",
@@ -5553,8 +5667,14 @@ func refresh_bag_items_ui() -> void:
 		{
 			"id": "remedy",
 			"name": "Remedy",
-			"desc": "Cures all negative status conditions (Burn, Poison, Flinch).",
+			"desc": "Cures all negative status conditions (Burn, Poison, Flinch, etc).",
 			"icon": "remedy"
+		},
+		{
+			"id": "poke_flute",
+			"name": "Poké Flute",
+			"desc": "Plays a melody that awakens any sleeping Pokémon. Permanent item (not consumed).",
+			"icon": "poke_flute"
 		},
 		{
 			"id": "revive",
@@ -5694,6 +5814,27 @@ func show_bag_targets(item_id: String) -> void:
 				reason = " (Full HP)"
 			else:
 				can_apply = true
+		elif item_id == "super_potion":
+			if pkmn.current_hp <= 0:
+				reason = " (Fainted)"
+			elif pkmn.current_hp >= pkmn.max_hp:
+				reason = " (Full HP)"
+			else:
+				can_apply = true
+		elif item_id == "hyper_potion":
+			if pkmn.current_hp <= 0:
+				reason = " (Fainted)"
+			elif pkmn.current_hp >= pkmn.max_hp:
+				reason = " (Full HP)"
+			else:
+				can_apply = true
+		elif item_id == "poke_flute":
+			if pkmn.current_hp <= 0:
+				reason = " (Fainted)"
+			elif pkmn.is_asleep_turns <= 0:
+				reason = " (Not Asleep)"
+			else:
+				can_apply = true
 		elif item_id == "ether":
 			if pkmn.current_hp <= 0:
 				reason = " (Fainted)"
@@ -5738,7 +5879,8 @@ func apply_item_in_battle(item_id: String, target_idx: int) -> void:
 	if stock <= 0:
 		return
 		
-	inv[item_id] -= 1
+	if item_id != "poke_flute":
+		inv[item_id] -= 1
 	var target_pkmn = player_team[target_idx]
 	bag_modal.visible = false
 	
@@ -5766,6 +5908,17 @@ func apply_item_in_battle(item_id: String, target_idx: int) -> void:
 		healed = min(10, target_pkmn.max_hp - target_pkmn.current_hp)
 		target_pkmn.current_hp += healed
 		log_action("[b]Trainer[/b] used [color=cyan]Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
+	elif item_id == "super_potion":
+		healed = min(25, target_pkmn.max_hp - target_pkmn.current_hp)
+		target_pkmn.current_hp += healed
+		log_action("[b]Trainer[/b] used [color=#29B6F6]Super Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
+	elif item_id == "hyper_potion":
+		healed = target_pkmn.max_hp - target_pkmn.current_hp
+		target_pkmn.current_hp = target_pkmn.max_hp
+		log_action("[b]Trainer[/b] used [color=#EC407A]Hyper Potion[/color] on [b]%s[/b], restoring all [color=green]+%d HP (100%% Max)![/color] 🧪 (%d/%d)" % [target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
+	elif item_id == "poke_flute":
+		target_pkmn.is_asleep_turns = 0
+		log_action("[b]Trainer[/b] played the [color=gold]Poké Flute[/color]! [b]%s[/b] woke up! 🎶💤" % target_pkmn.name)
 	elif item_id == "ether":
 		energy_recovered = target_pkmn.max_energy - target_pkmn.current_energy
 		target_pkmn.current_energy = target_pkmn.max_energy
@@ -5782,6 +5935,7 @@ func apply_item_in_battle(item_id: String, target_idx: int) -> void:
 		active_team[target_idx]["burn_turns"] = target_pkmn.burn_turns
 		active_team[target_idx]["is_poisoned"] = target_pkmn.is_poisoned
 		active_team[target_idx]["is_flinched"] = target_pkmn.is_flinched
+		active_team[target_idx]["is_asleep_turns"] = target_pkmn.is_asleep_turns
 		
 	play_heal_flash(target_idx)
 	GameData.play_combat_sfx("use")

@@ -695,17 +695,15 @@ grow_vertical = 2
 color = Color(0.04, 0.07, 0.12, 0.95)
 
 [node name="Box" type="VBoxContainer" parent="AdventureEpisodesModal"]
-custom_minimum_size = Vector2(460, 0)
 layout_mode = 1
-anchors_preset = 8
+anchors_preset = 13
 anchor_left = 0.5
-anchor_top = 0.5
 anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -230.0
-offset_top = -280.0
-offset_right = 230.0
-offset_bottom = 280.0
+anchor_bottom = 1.0
+offset_left = -245.0
+offset_top = 16.0
+offset_right = 245.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
@@ -733,9 +731,9 @@ horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="EpisodesScroll" type="ScrollContainer" parent="AdventureEpisodesModal/Box"]
-custom_minimum_size = Vector2(0, 420)
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
 [node name="EpisodesVBox" type="VBoxContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll"]
 layout_mode = 2
@@ -761,6 +759,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 16
 text = "🗺️ Episode I: Pewter City Gym"
+autowrap_mode = 2
 
 [node name="Ep1Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin/Ep1VBox"]
 layout_mode = 2
@@ -774,12 +773,14 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "Battles: 4  |  First Clear: 💎 20 Diamonds & Ep. II Unlock"
+autowrap_mode = 2
 
 [node name="Ep1Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin/Ep1VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
 theme_override_font_sizes/font_size = 12
 text = "Status: Ready to embark"
+autowrap_mode = 2
 
 [node name="BtnHubAdventureEp1" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp1/Margin/Ep1VBox"]
 custom_minimum_size = Vector2(0, 38)
@@ -807,6 +808,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 16
 text = "🗺️ Episode II: Cerulean City Gym"
+autowrap_mode = 2
 
 [node name="Ep2Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin/Ep2VBox"]
 layout_mode = 2
@@ -819,13 +821,15 @@ autowrap_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 12
-text = "Battles: 5  |  First Clear: 💎 30 Diamonds & Ep. III Unlock"
+text = "Battles: 5  |  First Clear: 💎 25 Diamonds & Ep. III Unlock"
+autowrap_mode = 2
 
 [node name="Ep2Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin/Ep2VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
 theme_override_font_sizes/font_size = 12
 text = "Status: 🔒 Locked (Clear Episode I to unlock)"
+autowrap_mode = 2
 
 [node name="BtnHubAdventureEp2" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2/Margin/Ep2VBox"]
 custom_minimum_size = Vector2(0, 38)
@@ -853,6 +857,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 16
 text = "🗺️ Episode III: Vermilion City Gym"
+autowrap_mode = 2
 
 [node name="Ep3Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3/Margin/Ep3VBox"]
 layout_mode = 2
@@ -865,13 +870,15 @@ autowrap_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 12
-text = "Battles: 7  |  First Clear: 💎 60 Diamonds & Ep. IV Unlock"
+text = "Battles: 7  |  First Clear: 💎 30 Diamonds & Ep. IV Unlock"
+autowrap_mode = 2
 
 [node name="Ep3Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3/Margin/Ep3VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
 theme_override_font_sizes/font_size = 12
 text = "Status: Ready to embark"
+autowrap_mode = 2
 
 [node name="BtnHubAdventureEp3" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3/Margin/Ep3VBox"]
 custom_minimum_size = Vector2(0, 38)
@@ -900,6 +907,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 16
 text = "🔒 Episode IV: Celadon City Gym"
+autowrap_mode = 2
 
 [node name="Ep4Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox"]
 layout_mode = 2
@@ -912,13 +920,15 @@ autowrap_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 12
-text = "Battles: 6  |  First Clear: 💎 80 Diamonds & Ep. V Unlock"
+text = "Battles: 8  |  First Clear: 💎 35 Diamonds & Rainbow Badge"
+autowrap_mode = 2
 
 [node name="Ep4Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
 theme_override_font_sizes/font_size = 12
 text = "Status: 🔒 Locked (Clear Episode III first)"
+autowrap_mode = 2
 
 [node name="BtnHubAdventureEp4" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4/Margin/Ep4VBox"]
 custom_minimum_size = Vector2(0, 38)
@@ -926,7 +936,160 @@ layout_mode = 2
 disabled = true
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 13
-text = "🔒 Locked (In Development)"
+text = "🔒 Locked (Clear Episode III)"
+
+[node name="CardAdventureEp5" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
+modulate = Color(0.7, 0.7, 0.75, 0.8)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Ep5VBox" type="VBoxContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Ep5Title" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5/Margin/Ep5VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+text = "🔒 Episode V: Team Rocket, Pokémon Tower & Fuchsia Gym"
+autowrap_mode = 2
+
+[node name="Ep5Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5/Margin/Ep5VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Branching Episode: Infiltrate Rocket Hideout, cleanse Pokémon Tower, and confront Koga in Fuchsia Gym!"
+autowrap_mode = 2
+
+[node name="Ep5Rewards" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5/Margin/Ep5VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "3 Infiltration Routes  |  Rewards: 💎 50 Diamonds, 🎶 Poké Flute & Soul Badge"
+autowrap_mode = 2
+
+[node name="Ep5Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5/Margin/Ep5VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: 🔒 Locked (Complete Episode IV first)"
+autowrap_mode = 2
+
+[node name="BtnHubAdventureEp5" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5/Margin/Ep5VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔒 Locked (Clear Episode IV)"
+
+[node name="CardAdventureEp6" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
+modulate = Color(0.7, 0.7, 0.75, 0.8)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Ep6VBox" type="VBoxContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Ep6Title" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6/Margin/Ep6VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+text = "🔒 Episode VI: Silph Co. & Saffron City Gym"
+autowrap_mode = 2
+
+[node name="Ep6Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6/Margin/Ep6VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Branching Episode: Liberate Silph Co. skyscraper, master the Fighting Dojo, and challenge Sabrina in Saffron Gym!"
+autowrap_mode = 2
+
+[node name="Ep6Rewards" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6/Margin/Ep6VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "3 Operations  |  Rewards: 💎 60 Diamonds, Hitmonlee, Hitmonchan & Marsh Badge"
+autowrap_mode = 2
+
+[node name="Ep6Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6/Margin/Ep6VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: 🔒 Locked (Complete Episode V first)"
+autowrap_mode = 2
+
+[node name="BtnHubAdventureEp6" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6/Margin/Ep6VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔒 Locked (Clear Episode V)"
+
+[node name="CardAdventureEp7" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
+modulate = Color(0.7, 0.7, 0.75, 0.8)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Ep7VBox" type="VBoxContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Ep7Title" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin/Ep7VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+text = "🔒 Episode VII: Pokémon Mansion & Cinnabar Gym"
+autowrap_mode = 2
+
+[node name="Ep7Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin/Ep7VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Final Campaign Episode: Explore the ruined Pokémon Mansion on Cinnabar Island and challenge Gym Leader Blaine!"
+autowrap_mode = 2
+
+[node name="Ep7Rewards" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin/Ep7VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "2 Operations  |  Rewards: 💎 70 Diamonds & Volcano Badge"
+autowrap_mode = 2
+
+[node name="Ep7Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin/Ep7VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: 🔒 Locked (Complete Episode VI first)"
+autowrap_mode = 2
+
+[node name="BtnHubAdventureEp7" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin/Ep7VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔒 Locked (Clear Episode VI)"
 
 [node name="BtnCloseAdventureEpisodes" type="Button" parent="AdventureEpisodesModal/Box"]
 custom_minimum_size = Vector2(0, 42)
@@ -1245,6 +1408,72 @@ size_flags_vertical = 4
 theme_override_font_sizes/font_size = 12
 text = "Buy (3 G)"
 
+[node name="SuperPotionRow" type="HBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SuperPotionIcon" type="TextureRect" parent="CampaignModal/Box/ShopSection/ShopVBox/SuperPotionRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SuperPotionInfo" type="VBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox/SuperPotionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="SuperPotionTitle" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/SuperPotionRow/SuperPotionInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Super Potion (+25 HP to a PKMN)"
+
+[node name="SuperPotionCountLbl" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/SuperPotionRow/SuperPotionInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.75, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "Inventory: 0 Super Potions"
+
+[node name="BtnBuySuperPotion" type="Button" parent="CampaignModal/Box/ShopSection/ShopVBox/SuperPotionRow"]
+custom_minimum_size = Vector2(100, 34)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 12
+text = "Buy (9 G)"
+
+[node name="HyperPotionRow" type="HBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HyperPotionIcon" type="TextureRect" parent="CampaignModal/Box/ShopSection/ShopVBox/HyperPotionRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HyperPotionInfo" type="VBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox/HyperPotionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="HyperPotionTitle" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/HyperPotionRow/HyperPotionInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Hyper Potion (Full 100% HP Recovery)"
+
+[node name="HyperPotionCountLbl" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/HyperPotionRow/HyperPotionInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.45, 0.65, 1)
+theme_override_font_sizes/font_size = 11
+text = "Inventory: 0 Hyper Potions"
+
+[node name="BtnBuyHyperPotion" type="Button" parent="CampaignModal/Box/ShopSection/ShopVBox/HyperPotionRow"]
+custom_minimum_size = Vector2(100, 34)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 12
+text = "Buy (15 G)"
+
 [node name="RemedyRow" type="HBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox"]
 layout_mode = 2
 theme_override_constants/separation = 10
@@ -1277,6 +1506,39 @@ layout_mode = 2
 size_flags_vertical = 4
 theme_override_font_sizes/font_size = 12
 text = "Buy (2 G)"
+
+[node name="PokeFluteRow" type="HBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PokeFluteIcon" type="TextureRect" parent="CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PokeFluteInfo" type="VBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="PokeFluteTitle" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow/PokeFluteInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Poké Flute (Cures Sleep, Not Consumed)"
+
+[node name="PokeFluteCountLbl" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow/PokeFluteInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 11
+text = "Not Owned"
+
+[node name="BtnBuyPokeFlute" type="Button" parent="CampaignModal/Box/ShopSection/ShopVBox/PokeFluteRow"]
+custom_minimum_size = Vector2(100, 34)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 12
+text = "Buy (20 G)"
 
 [node name="EtherRow" type="HBoxContainer" parent="CampaignModal/Box/ShopSection/ShopVBox"]
 layout_mode = 2

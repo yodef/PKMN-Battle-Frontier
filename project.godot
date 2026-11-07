@@ -32,6 +32,7 @@ window/handheld/orientation=1
 
 [gui]
 
+common/default_scroll_deadzone=12
 theme/custom="res://assets/ui/default_theme.tres"
 
 [physics]

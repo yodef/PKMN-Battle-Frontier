@@ -6,7 +6,7 @@ func _ready() -> void:
 	# 1. Database & Stage Configuration Audit
 	var ep3 = GameData.get_adventure_episode_info(3)
 	assert(not ep3.is_empty(), "Episode 3 data must exist in ADVENTURE_EPISODES")
-	assert(ep3.get("reward_diamonds_first_clear") == 60, "Episode 3 first clear reward must be 60 diamonds")
+	assert(ep3.get("reward_diamonds_first_clear") == 30, "Episode 3 first clear reward must be 30 diamonds")
 	assert(GameData.get_adventure_total_stages(3) == 7, "Episode 3 must have exactly 7 stages")
 	
 	# Stage 1: Sandshrew
@@ -96,11 +96,11 @@ func _ready() -> void:
 	# Complete Episode 3 (first clear)
 	var d_before_ep3 = GameData.player_diamonds
 	var r3 = GameData.complete_adventure_episode(3)
-	assert(r3 == 60, "Completing Episode 3 must award 60 diamonds")
-	assert(GameData.player_diamonds == d_before_ep3 + 60, "Player diamonds must increase by exactly 60")
+	assert(r3 == 30, "Completing Episode 3 must award 30 diamonds")
+	assert(GameData.player_diamonds == d_before_ep3 + 30, "Player diamonds must increase by exactly 30")
 	assert(GameData.is_adventure_episode_completed(3), "Episode 3 must be marked completed")
 	assert(GameData.is_adventure_episode_unlocked(4), "Episode 4 must be unlocked after Episode 3 clear")
-	print("Test 3 Passed: Episode 3 clear awards 60 diamonds and unlocks Episode 4.")
+	print("Test 3 Passed: Episode 3 clear awards 30 diamonds and unlocks Episode 4.")
 	
 	# Replay Episode 3 (duplicate clear does not award 60 diamonds again)
 	var d_after_ep3 = GameData.player_diamonds
@@ -143,8 +143,8 @@ func _ready() -> void:
 	assert(menu.btn_hub_adventure_ep3.disabled == false, "Ep3 button should be enabled")
 	
 	# Check Episode 4 UI
-	assert(menu.ep4_status_lbl.text.contains("Coming Soon") or menu.ep4_status_lbl.text.contains("In Development"), "Ep4 status should show Coming Soon once unlocked")
-	assert(menu.btn_hub_adventure_ep4.disabled == true, "Ep4 button should be disabled")
+	assert(menu.ep4_status_lbl.text.contains("Ready") or menu.ep4_status_lbl.text.contains("Coming Soon"), "Ep4 status should show Ready or Coming Soon once unlocked")
+	assert(menu.btn_hub_adventure_ep4.disabled == false, "Ep4 button should be enabled when unlocked")
 	
 	# Test clicking Replay Episode 3 opens team select or campaign modal
 	GameData.adventure_player_team_state.clear()
