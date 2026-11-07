@@ -5547,7 +5547,7 @@ func refresh_bag_items_ui() -> void:
 		{
 			"id": "ether",
 			"name": "Ether",
-			"desc": "Restores up to 5 Energy (⚡) to an active or benched Pokémon.",
+			"desc": "Restores 100% Energy (⚡) to an active or benched Pokémon.",
 			"icon": "ether"
 		},
 		{
@@ -5767,9 +5767,9 @@ func apply_item_in_battle(item_id: String, target_idx: int) -> void:
 		target_pkmn.current_hp += healed
 		log_action("[b]Trainer[/b] used [color=cyan]Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
 	elif item_id == "ether":
-		energy_recovered = min(5, target_pkmn.max_energy - target_pkmn.current_energy)
-		target_pkmn.current_energy += energy_recovered
-		log_action("[b]Trainer[/b] used [color=#B388FF]Ether[/color] on [b]%s[/b], restoring [color=yellow]+%d Energy[/color]! ⚡ (%d/%d)" % [target_pkmn.name, energy_recovered, target_pkmn.current_energy, target_pkmn.max_energy])
+		energy_recovered = target_pkmn.max_energy - target_pkmn.current_energy
+		target_pkmn.current_energy = target_pkmn.max_energy
+		log_action("[b]Trainer[/b] used [color=#B388FF]Ether[/color] on [b]%s[/b], restoring [color=yellow]+%d Energy (100%% Max)![/color] ⚡ (%d/%d)" % [target_pkmn.name, energy_recovered, target_pkmn.current_energy, target_pkmn.max_energy])
 	elif item_id == "revive":
 		target_pkmn.current_hp = max(1, int(target_pkmn.max_hp * 0.5))
 		healed = target_pkmn.current_hp

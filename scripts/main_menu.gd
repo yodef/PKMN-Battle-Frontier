@@ -2318,7 +2318,7 @@ func _refresh_camp_bag_items_ui() -> void:
 		{
 			"id": "ether",
 			"name": "Ether",
-			"desc": "Restores up to 5 Energy (⚡). Used during combat.",
+			"desc": "Restores 100% Energy (⚡). Used during combat.",
 			"stock": inv.get("ether", 0)
 		}
 	]
