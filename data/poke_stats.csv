@@ -136,8 +136,8 @@ id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,textu
 134,238,Basic,Smoochum,14,4,2,PSYCHIC,,,2,238.png,,,Powder Snow,Psywave,FALSE,Uncommon,,Jynx,Psyche,20,B,Johto
 135,124,Stage 1,Jynx,25,6,3,PSYCHIC,,,4,124.png,,,Psycho Cut,Blizzard,FALSE,Epic,Smoochum,,,0,A,Kanto
 136,239,Basic,Elekid,10,3,1,ELECTRIC,,,1,239.png,,,Thunder Shock,Quick Attack,FALSE,Common,,Electabuzz,Thunder,10,D,Johto
-137,125,Stage 1,Electabuzz,25,5,2,ELECTRIC,,,3,125.png,,,Thunder Wave,Thunderbolt,FALSE,Rare,Elekid,Electrivire,Thunder,25,B,Kanto
-138,466,Stage 2,Electrivire,32,8,4,ELECTRIC,,,5,466.png,,,Shock Wave,Grand Thunder,FALSE,Epic,Electabuzz,,,0,S,Sinnoh
+137,125,Stage 1,Electabuzz,25,5,2,ELECTRIC,,,3,125.png,,,Thunder Wave,Thunderbolt,FALSE,Rare,Elekid,Electivire,Thunder,25,B,Kanto
+138,466,Stage 2,Electivire,32,8,4,ELECTRIC,,,5,466.png,,,Shock Wave,Grand Thunder,FALSE,Epic,Electabuzz,,,0,S,Sinnoh
 139,240,Basic,Magby,10,3,1,FIRE,,,1,240.png,,,Poison Gas,Ember,FALSE,Common,,Magmar,Fire,10,D,Johto
 140,126,Stage 1,Magmar,25,5,2,FIRE,,,3,126.png,,,Fire Punch,Lava Plume,FALSE,Rare,Magby,Magmortar,Fire,25,B,Kanto
 141,467,Stage 2,Magmortar,34,8,3,FIRE,,,5,467.png,,,Heat Wave,Fire Blast,FALSE,Epic,Magmar,,,0,S,Sinnoh
