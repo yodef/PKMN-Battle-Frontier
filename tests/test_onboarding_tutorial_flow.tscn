@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dp64m8u2vyf01"]
+
+[ext_resource type="Script" path="res://tests/test_onboarding_tutorial_flow.gd" id="1_test"]
+
+[node name="TestOnboardingTutorialFlow" type="Node"]
+script = ExtResource("1_test")

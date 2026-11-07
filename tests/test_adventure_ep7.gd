@@ -70,6 +70,7 @@ func _ready() -> void:
 	GameData.adventure_unlocked_episodes = [1, 2, 3, 4, 5, 6, 7]
 	GameData.adventure_completed_episodes = [1, 2, 3, 4, 5, 6]
 	GameData.adventure_ep7_cleared_routes = []
+	GameData.tutorial_completed = true
 	GameData.player_diamonds = 0
 
 	# Initial state: only Pokémon Mansion unlocked

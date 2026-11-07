@@ -1125,9 +1125,25 @@ func start_new_game() -> void:
 	
 	if GameData.is_tutorial_mode:
 		tutorial_steps_shown.clear()
-		player_team = [GameData.create_pokemon_instance(1)]
-		enemy_team = [GameData.create_pokemon_instance(0)]
-		battle_title_lbl.text = "🎓 Battle Tutorial (Charmander vs Bulbasaur)"
+		if GameData.tutorial_combat_phase == 2:
+			var p_s1_id = GameData.tutorial_stage1_id if GameData.tutorial_stage1_id >= 0 else 6
+			var p_stage1 = GameData.create_pokemon_instance(p_s1_id)
+			var p_bench = GameData.create_pokemon_instance(19) # Rattata
+			player_team = [p_stage1, p_bench]
+			
+			var e_s1_id = GameData.tutorial_rival_stage1_id if GameData.tutorial_rival_stage1_id >= 0 else 4
+			var e_stage1 = GameData.create_pokemon_instance(e_s1_id)
+			var e_bench = GameData.create_pokemon_instance(16) # Pidgey (Tier D)
+			enemy_team = [e_stage1, e_bench]
+			battle_title_lbl.text = "🎓 Advanced Tutorial: %s vs %s" % [p_stage1.name, e_stage1.name]
+		else:
+			var p_id = GameData.tutorial_starter_id if GameData.tutorial_starter_id >= 0 else 1
+			var e_id = GameData.tutorial_rival_id if GameData.tutorial_rival_id >= 0 else 0
+			var p_inst = GameData.create_pokemon_instance(p_id)
+			var e_inst = GameData.create_pokemon_instance(e_id)
+			player_team = [p_inst]
+			enemy_team = [e_inst]
+			battle_title_lbl.text = "🎓 Battle Tutorial: %s vs %s" % [p_inst.name, e_inst.name]
 	elif GameData.is_campaign_mode:
 		var team_state = GameData.get_active_campaign_team_state()
 		if team_state.is_empty():
@@ -1363,25 +1379,46 @@ func start_new_round() -> void:
 	turn_badge.modulate = Color(1.0, 0.85, 0.2)
 	
 	if GameData.is_tutorial_mode and round_number == 1 and not tutorial_steps_shown.get("step1", false):
-		_show_tutorial_callout(
-			"step1",
-			"TUTORIAL • STEP 1 OF 5",
-			"🎓 Welcome to Pokémon Combat!",
-			"This is a tactical card battle arena.\n\n• [b]Active Pokémon[/b]: Your [color=coral]Charmander[/color] is at the bottom; rival [color=lightgreen]Bulbasaur[/color] is at the top.\n• [b]HP Bar (Hit Points)[/b]: Displays remaining life. When a Pokémon's HP reaches 0, it is knocked out (KO)!\n• [b]⚡ Energy Bar[/b]: Required to power attacks and special moves.",
-			"Next ➡️",
-			func():
-				_show_tutorial_callout(
-					"step2",
-					"TUTORIAL • STEP 2 OF 5",
-					"⏩ Speed & Initiative Priority",
-					"Every round starts with an initiative check based on each Pokémon's [b]Speed (SPD)[/b].\n\n• The faster Pokémon acts first!\n• In a tie (SPD 1 vs SPD 1), a 🪙 [b]Coin Toss[/b] decides who gets the first turn.\n\nCharmander won the coin toss and will attack first this round!",
-					"Got It! ➡️",
-					func():
-						var t_next = get_tree().create_timer(0.6)
-						t_next.timeout.connect(execute_round_turn)
-				)
-		)
-		return
+		if GameData.tutorial_combat_phase == 2:
+			_show_tutorial_callout(
+				"step1",
+				"TUTORIAL • PHASE 2",
+				"🎒 Using Items & Potions in Battle",
+				"You can use battle items from your Bag during your turn!\n\n• Tap [b]Bag 🎒[/b] below to view your inventory.\n• Select a [b]Potion[/b] to heal your active or benched Pokémon (+10 HP) without losing your attack action!\n• You can also use other battle items like Remedies or Ethers when needed.",
+				"Next ➡️",
+				func():
+					_show_tutorial_callout(
+						"step2",
+						"TUTORIAL • PHASE 2",
+						"🔄 Bench Pokémon & Switching",
+						"You now have a teammate waiting on your [b]Bench[/b]!\n\n• Check the [b]Bench Row[/b] at the bottom.\n• If your active Pokémon takes heavy damage or you need a tactical switch, tap the benched Pokémon to swap them into the battle.\n• Benched Pokémon slowly recharge Energy while waiting!",
+						"Let's Fight! ⚔️",
+						func():
+							var t_next = get_tree().create_timer(0.6)
+							t_next.timeout.connect(execute_round_turn)
+					)
+			)
+			return
+		else:
+			_show_tutorial_callout(
+				"step1",
+				"TUTORIAL • STEP 1 OF 5",
+				"🎓 Welcome to Pokémon Combat!",
+				"This is a tactical card battle arena.\n\n• [b]Active Pokémon[/b]: Your [color=coral]%s[/color] is at the bottom; rival [color=lightgreen]%s[/color] is at the top.\n• [b]HP Bar (Hit Points)[/b]: Displays remaining life. When a Pokémon's HP reaches 0, it is knocked out (KO)!\n• [b]⚡ Energy Bar[/b]: Required to power attacks and special moves." % [p.name, e.name],
+				"Next ➡️",
+				func():
+					_show_tutorial_callout(
+						"step2",
+						"TUTORIAL • STEP 2 OF 5",
+						"⏩ Speed & Initiative Priority",
+						"Every round starts with an initiative check based on each Pokémon's [b]Speed (SPD)[/b].\n\n• The faster Pokémon acts first!\n• In a tie, a 🪙 [b]Coin Toss[/b] decides who gets the first turn.\n\nYour %s won the initiative and will attack first this round!" % p.name,
+						"Got It! ➡️",
+						func():
+							var t_next = get_tree().create_timer(0.6)
+							t_next.timeout.connect(execute_round_turn)
+					)
+			)
+			return
 	
 	var timer = get_tree().create_timer(1.2)
 	timer.timeout.connect(execute_round_turn)
@@ -1592,25 +1629,47 @@ func start_player_turn() -> void:
 		return
 			
 	if GameData.is_tutorial_mode and round_number == 1 and not tutorial_steps_shown.get("step3", false):
-		_show_tutorial_callout(
-			"step3",
-			"TUTORIAL • STEP 3 OF 5",
-			"🔥 Attacking & Type Advantage",
-			"It is your turn! Inspect your available moves below:\n\n• [b]Scratch[/b]: Normal-type move. Deals 3 DMG. (Cost: 0 ⚡)\n• [b]Ember[/b]: Fire-type move. Deals 4 DMG. (Cost: 1 ⚡)\n\n⭐ [color=yellow][b]Type Weakness (+2 DMG):[/b][/color] Bulbasaur is GRASS type, which is weak to FIRE! Using [b]Ember[/b] triggers the Weakness bonus to deal [b]6 DAMAGE[/b] (4 + 2)!\n\n💡 [i]Recharge:[/i] If low on energy, tap [b]⚡ Recharge (+2 ⚡)[/b] instead of attacking.\n\nTap [b]Ember[/b] below to strike Bulbasaur!",
-			"Let's Battle! ⚔️",
-			func():
-				can_player_act = true
-				update_ui()
-				set_controls_enabled(true)
-		)
-		return
-	elif GameData.is_tutorial_mode and not tutorial_steps_shown.get("step5", false):
+		if GameData.tutorial_combat_phase == 2:
+			_show_tutorial_callout(
+				"step3",
+				"TUTORIAL • PHASE 2",
+				"⚡ Stage 1 Attack & Energy",
+				"Your Stage 1 Pokémon boasts higher HP, improved Speed, and devastating new moves!\n\n• Check your available Energy (⚡) on the Energy Bar.\n• If you need more Energy, tap [b]⚡ Recharge (+2 ⚡)[/b] instead of attacking.\n• Tap a move below to strike the rival!",
+				"Attack! ⚔️",
+				func():
+					can_player_act = true
+					update_ui()
+					set_controls_enabled(true)
+			)
+			return
+		else:
+			var move_lines: Array[String] = []
+			for m in p.moves:
+				var m_name = str(m.get("name", "Move"))
+				var m_dmg = int(m.get("damage", 0))
+				var m_cost = int(m.get("energy_cost", 0))
+				move_lines.append("• [b]%s[/b]: Deals %d DMG. (Cost: %d ⚡)" % [m_name, m_dmg, m_cost])
+			var moves_desc = "\n".join(move_lines)
+			var type_hint = "⭐ [color=yellow][b]Type Weakness (+2 DMG):[/b][/color] %s is weak to %s attacks! Using your effective move triggers the Weakness bonus for [b]+2 EXTRA DAMAGE[/b]!" % [e.name, p.type]
+			_show_tutorial_callout(
+				"step3",
+				"TUTORIAL • STEP 3 OF 5",
+				"🔥 Moves, Energy & Type Advantage",
+				"It is your turn! Inspect your available moves below:\n\n%s\n\n%s\n\n💡 [i]Recharge:[/i] If low on energy, tap [b]⚡ Recharge (+2 ⚡)[/b] instead of attacking.\n\nTap an attack below to strike %s!" % [moves_desc, type_hint, e.name],
+				"Let's Battle! ⚔️",
+				func():
+					can_player_act = true
+					update_ui()
+					set_controls_enabled(true)
+			)
+			return
+	elif GameData.is_tutorial_mode and GameData.tutorial_combat_phase == 1 and not tutorial_steps_shown.get("step5", false):
 		if e and e.current_hp <= 6:
 			_show_tutorial_callout(
 				"step5",
 				"TUTORIAL • STEP 5 OF 5",
 				"💥 Delivering the Knockout!",
-				"Bulbasaur is critically weakened from your previous Fire attack!\n\nDepleting its remaining HP to 0 will knock it out and secure victory.\n\nWin this battle to claim your [color=gold]💎 5 Diamonds[/color] and unlock [b]Episode I of Adventure Mode[/b]!",
+				"%s is critically weakened!\n\nDepleting its remaining HP to 0 will knock it out and secure victory.\n\nWin this battle to unlock your Stage 1 evolution!" % e.name,
 				"Finish It! 🏆",
 				func():
 					can_player_act = true
@@ -1699,7 +1758,7 @@ func start_enemy_turn() -> void:
 				"step4",
 				"TUTORIAL • STEP 4 OF 5",
 				"🛡️ Rival Turn & Combat Log",
-				"Now it's Bulbasaur's turn to counterattack!\n\nKeep an eye on the [b]Combat Log[/b] in the center of the arena. It tracks every move, damage calculations, type effectiveness, and coin tosses in real time.",
+				"Now it's %s's turn to counterattack!\n\nKeep an eye on the [b]Combat Log[/b] in the center of the arena. It tracks every move, damage calculations, type effectiveness, and coin tosses in real time." % e.name,
 				"Watch Rival Turn ➡️",
 				func():
 					var t_ai = get_tree().create_timer(1.0)
@@ -2978,21 +3037,58 @@ func _resolve_battle_victory() -> void:
 	GameData.stats_battles_total += 1
 	GameData.stats_battles_won += 1
 	if GameData.is_tutorial_mode:
-		GameData.tutorial_completed = true
-		GameData.just_completed_tutorial = true
-		var reward_text = ""
-		if not GameData.tutorial_reward_claimed:
-			GameData.player_diamonds += 5
-			GameData.tutorial_reward_claimed = true
-			reward_text = "\n\n🎁 First Clear Reward: 💎 5 Diamonds!\n🔓 Adventure Mode Episode I is now UNLOCKED!"
+		if GameData.tutorial_combat_phase == 1:
+			var s1_name = "Stage 1"
+			if GameData.pokemon_catalog.has(GameData.tutorial_stage1_id):
+				s1_name = str(GameData.pokemon_catalog[GameData.tutorial_stage1_id].get("name", "Stage 1"))
+			GameData.unlock_pokemon(GameData.tutorial_stage1_id)
+			
+			GameData.campaign_submode = "ADVENTURE"
+			GameData.adventure_current_episode = 1
+			GameData.adventure_gold = max(10, GameData.adventure_gold)
+			var st_id = GameData.tutorial_starter_id if GameData.tutorial_starter_id >= 0 else 1
+			var st_inst = GameData.create_pokemon_instance(st_id)
+			var req = st_inst.get_required_exp()
+			GameData.adventure_player_team_state = [{
+				"id": st_id,
+				"name": st_inst.name,
+				"stage": st_inst.stage,
+				"type": st_inst.type,
+				"speed": st_inst.speed,
+				"texture_path": st_inst.texture_path,
+				"max_hp": st_inst.max_hp,
+				"current_hp": st_inst.max_hp,
+				"current_exp": req,
+				"max_exp": req,
+				"burn_turns": 0,
+				"is_poisoned": false,
+				"is_flinched": false
+			}]
+			GameData.adventure_inventory["potion"] = max(2, int(GameData.adventure_inventory.get("potion", 0)))
+			GameData.tutorial_step = 4
+			GameData.is_tutorial_mode = false
+			GameData.just_completed_tutorial_combat1 = true
+			GameData.save_profile()
+			
+			show_game_over(
+				"🎓 COMBAT 1 COMPLETE!",
+				"Outstanding battle! Defeating rivals in Adventure Mode earns you Diamonds 💎 and Gold to buy booster packs and items.\n\n🎁 Milestone Reward: You unlocked your Stage 1 evolution: %s!\n\nNext: Learn how evolutions work in Camp!" % s1_name
+			)
+			return
 		else:
-			reward_text = "\n\n(Tutorial completed - practice cleared!)"
-		GameData.save_profile()
-		show_game_over(
-			"🎓 TUTORIAL COMPLETE!",
-			"Congratulations! You defeated Bulbasaur and mastered the fundamentals of battle!%s\n\nHead to the Campaign Hub to begin Episode I of your Adventure!" % reward_text
-		)
-		return
+			# Combat 2 complete (Victory)
+			GameData.player_diamonds += 5
+			GameData.tutorial_completed = true
+			GameData.tutorial_reward_claimed = true
+			GameData.tutorial_step = 6
+			GameData.is_tutorial_mode = false
+			GameData.just_completed_tutorial = true
+			GameData.save_profile()
+			show_game_over(
+				"🎓 TUTORIAL COMPLETE!",
+				"Congratulations! You completed the full Battle Training!\n\n🎁 Final Reward: 💎 5 Diamonds!\n🔓 Adventure Mode, Pokémon Stadium, and the Full Lobby are now completely unlocked!"
+			)
+			return
 	if GameData.is_campaign_mode:
 		GameData.add_daily_mission_progress("win_battles", 1)
 		GameData.add_daily_mission_progress("defeat_gym", 1)
@@ -3206,11 +3302,26 @@ func _resolve_battle_victory() -> void:
 func _resolve_battle_defeat() -> void:
 	GameData.stats_battles_total += 1
 	if GameData.is_tutorial_mode:
-		show_game_over(
-			"💀 TUTORIAL DEFEATED",
-			"Charmander fainted! Don't worry, you can try the tutorial again anytime to claim your 💎 5 Diamonds reward."
-		)
-		return
+		if GameData.tutorial_combat_phase == 1:
+			show_game_over(
+				"💀 COMBAT 1 DEFEATED",
+				"Your Pokémon fainted! Tap Restart to try again and claim your Stage 1 evolution."
+			)
+			return
+		else:
+			# Combat 2 complete (Defeat) -> Still completes tutorial and grants 5 diamonds per user spec!
+			GameData.player_diamonds += 5
+			GameData.tutorial_completed = true
+			GameData.tutorial_reward_claimed = true
+			GameData.tutorial_step = 6
+			GameData.is_tutorial_mode = false
+			GameData.just_completed_tutorial = true
+			GameData.save_profile()
+			show_game_over(
+				"🎓 TUTORIAL COMPLETE!",
+				"Great effort in advanced combat! You have finished your training.\n\n🎁 Final Reward: 💎 5 Diamonds!\n🔓 Adventure Mode, Pokémon Stadium, and the Full Lobby are now completely unlocked!"
+			)
+			return
 	if GameData.is_campaign_mode:
 		# Conservar Oro y Diamantes obtenidos de los rivales derrotados en este combate
 		if combat_earned_diamonds > 0:
@@ -5139,7 +5250,7 @@ func update_move_button_labels() -> void:
 	btn_recover.disabled = not _is_turn_action_allowed() or (actor.current_energy >= actor.max_energy)
 	
 	if btn_bag:
-		btn_bag.visible = GameData.is_campaign_mode
+		btn_bag.visible = GameData.is_campaign_mode or (GameData.is_tutorial_mode and GameData.tutorial_combat_phase == 2)
 		btn_bag.disabled = not _is_turn_action_allowed()
 		if team_has_negative_status():
 			btn_bag.text = "🎒 Bag ⚠️"
@@ -5229,9 +5340,14 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 	
 	_apply_game_over_banner_styling(title)
 	
-	if GameData.is_tutorial_mode:
-		btn_restart.visible = false
-		btn_game_over_menu.text = "🏛️ Return to Campaign Hub"
+	if GameData.is_tutorial_mode or GameData.just_completed_tutorial_combat1 or GameData.just_completed_tutorial:
+		btn_restart.visible = (is_battle_over and not is_victory and GameData.tutorial_combat_phase == 1)
+		if GameData.just_completed_tutorial_combat1 or GameData.tutorial_step == 4:
+			btn_game_over_menu.text = "⛺ Go to Camp / Evolution"
+		elif GameData.just_completed_tutorial or GameData.tutorial_step >= 6:
+			btn_game_over_menu.text = "🏛️ Enter Main Lobby"
+		else:
+			btn_game_over_menu.text = "🏛️ Return to Main Menu"
 	elif GameData.is_online_pvp:
 		btn_restart.visible = false
 		btn_game_over_menu.text = "⬅ Main Menu"

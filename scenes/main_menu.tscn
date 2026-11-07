@@ -398,13 +398,12 @@ color = Color(0.06, 0.08, 0.12, 1)
 
 [node name="Box" type="VBoxContainer" parent="CampaignHubModal"]
 layout_mode = 1
-anchors_preset = 13
-anchor_left = 0.5
-anchor_right = 0.5
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -245.0
+offset_left = 14.0
 offset_top = 16.0
-offset_right = 245.0
+offset_right = -14.0
 offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -696,13 +695,12 @@ color = Color(0.04, 0.07, 0.12, 0.95)
 
 [node name="Box" type="VBoxContainer" parent="AdventureEpisodesModal"]
 layout_mode = 1
-anchors_preset = 13
-anchor_left = 0.5
-anchor_right = 0.5
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -245.0
+offset_left = 14.0
 offset_top = 16.0
-offset_right = 245.0
+offset_right = -14.0
 offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -732,6 +730,7 @@ autowrap_mode = 2
 
 [node name="EpisodesScroll" type="ScrollContainer" parent="AdventureEpisodesModal/Box"]
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
@@ -788,6 +787,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 13
 text = "🗺️ Embark on Episode I"
+autowrap_mode = 2
 
 [node name="CardAdventureEp2" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
 layout_mode = 2
@@ -837,6 +837,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 13
 text = "🗺️ Embark on Episode II"
+autowrap_mode = 2
 
 [node name="CardAdventureEp3" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
 layout_mode = 2
@@ -886,6 +887,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 13
 text = "🗺️ Embark on Episode III"
+autowrap_mode = 2
 
 [node name="CardAdventureEp4" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
 modulate = Color(0.7, 0.7, 0.75, 0.8)
@@ -937,6 +939,7 @@ disabled = true
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 13
 text = "🔒 Locked (Clear Episode III)"
+autowrap_mode = 2
 
 [node name="CardAdventureEp5" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
 modulate = Color(0.7, 0.7, 0.75, 0.8)
@@ -988,6 +991,7 @@ disabled = true
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 13
 text = "🔒 Locked (Clear Episode IV)"
+autowrap_mode = 2
 
 [node name="CardAdventureEp6" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
 modulate = Color(0.7, 0.7, 0.75, 0.8)
@@ -1039,6 +1043,7 @@ disabled = true
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 13
 text = "🔒 Locked (Clear Episode V)"
+autowrap_mode = 2
 
 [node name="CardAdventureEp7" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
 modulate = Color(0.7, 0.7, 0.75, 0.8)
@@ -1090,6 +1095,7 @@ disabled = true
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 13
 text = "🔒 Locked (Clear Episode VI)"
+autowrap_mode = 2
 
 [node name="BtnCloseAdventureEpisodes" type="Button" parent="AdventureEpisodesModal/Box"]
 custom_minimum_size = Vector2(0, 42)
@@ -1290,13 +1296,12 @@ color = Color(0.06, 0.08, 0.12, 1)
 
 [node name="Box" type="VBoxContainer" parent="CampaignModal"]
 layout_mode = 1
-anchors_preset = 13
-anchor_left = 0.5
-anchor_right = 0.5
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -245.0
+offset_left = 14.0
 offset_top = 16.0
-offset_right = 245.0
+offset_right = -14.0
 offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2

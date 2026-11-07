@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.6.3"
+const GAME_VERSION: String = "v0.6.4"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -352,6 +352,45 @@ var is_tutorial_mode: bool = false
 var tutorial_completed: bool = false
 var tutorial_reward_claimed: bool = false
 var just_completed_tutorial: bool = false
+var just_completed_tutorial_combat1: bool = false
+var tutorial_step: int = 0
+var tutorial_starter_id: int = -1
+var tutorial_stage1_id: int = -1
+var tutorial_rival_id: int = -1
+var tutorial_rival_stage1_id: int = -1
+var tutorial_combat_phase: int = 1
+
+const TUTORIAL_STARTERS: Dictionary = {
+	# Kanto
+	0: { "name": "Bulbasaur", "region": "Kanto", "type": "GRASS", "stage1_id": 4, "weak_rival_id": 2, "weak_rival_stage1_id": 8, "stone_type": "Leaf" },
+	1: { "name": "Charmander", "region": "Kanto", "type": "FIRE", "stage1_id": 6, "weak_rival_id": 0, "weak_rival_stage1_id": 4, "stone_type": "Fire" },
+	2: { "name": "Squirtle", "region": "Kanto", "type": "WATER", "stage1_id": 8, "weak_rival_id": 1, "weak_rival_stage1_id": 6, "stone_type": "Water" },
+	# Johto
+	167: { "name": "Chikorita", "region": "Johto", "type": "GRASS", "stage1_id": 168, "weak_rival_id": 173, "weak_rival_stage1_id": 174, "stone_type": "Leaf" },
+	170: { "name": "Cyndaquil", "region": "Johto", "type": "FIRE", "stage1_id": 171, "weak_rival_id": 167, "weak_rival_stage1_id": 168, "stone_type": "Fire" },
+	173: { "name": "Totodile", "region": "Johto", "type": "WATER", "stage1_id": 174, "weak_rival_id": 170, "weak_rival_stage1_id": 171, "stone_type": "Water" },
+	# Hoenn
+	257: { "name": "Treecko", "region": "Hoenn", "type": "GRASS", "stage1_id": 258, "weak_rival_id": 263, "weak_rival_stage1_id": 264, "stone_type": "Leaf" },
+	260: { "name": "Torchic", "region": "Hoenn", "type": "FIRE", "stage1_id": 261, "weak_rival_id": 257, "weak_rival_stage1_id": 258, "stone_type": "Fire" },
+	263: { "name": "Mudkip", "region": "Hoenn", "type": "WATER", "stage1_id": 264, "weak_rival_id": 260, "weak_rival_stage1_id": 261, "stone_type": "Water" },
+	# Sinnoh
+	392: { "name": "Turtwig", "region": "Sinnoh", "type": "GRASS", "stage1_id": 393, "weak_rival_id": 398, "weak_rival_stage1_id": 399, "stone_type": "Leaf" },
+	395: { "name": "Chimchar", "region": "Sinnoh", "type": "FIRE", "stage1_id": 396, "weak_rival_id": 392, "weak_rival_stage1_id": 393, "stone_type": "Fire" },
+	398: { "name": "Piplup", "region": "Sinnoh", "type": "WATER", "stage1_id": 399, "weak_rival_id": 395, "weak_rival_stage1_id": 396, "stone_type": "Water" }
+}
+
+func set_tutorial_starter(starter_id: int) -> void:
+	if not TUTORIAL_STARTERS.has(starter_id):
+		starter_id = 1
+	tutorial_starter_id = starter_id
+	var info: Dictionary = TUTORIAL_STARTERS[starter_id]
+	tutorial_stage1_id = int(info["stage1_id"])
+	tutorial_rival_id = int(info["weak_rival_id"])
+	tutorial_rival_stage1_id = int(info["weak_rival_stage1_id"])
+	unlock_pokemon(starter_id)
+
+func get_tutorial_starter_info(starter_id: int) -> Dictionary:
+	return TUTORIAL_STARTERS.get(starter_id, {})
 
 # Modo Torneo:
 const ITEM_COST_POTION: int = 5
@@ -4515,14 +4554,28 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	stats_battles_won = 0
 	stats_battles_total = 0
 	stats_packs_opened = 0
-	player_diamonds = 0
+	player_diamonds = 25
 	player_rare_candies = 0
-	profile_welcome_claimed = false
+	profile_welcome_claimed = true
 	reset_campaign()
 	is_tutorial_mode = false
 	tutorial_completed = false
 	tutorial_reward_claimed = false
 	just_completed_tutorial = false
+	just_completed_tutorial_combat1 = false
+	tutorial_step = 0
+	tutorial_starter_id = -1
+	tutorial_stage1_id = -1
+	tutorial_rival_id = -1
+	tutorial_rival_stage1_id = -1
+	tutorial_combat_phase = 1
+	just_completed_tutorial_combat1 = false
+	tutorial_step = 1
+	tutorial_starter_id = -1
+	tutorial_stage1_id = -1
+	tutorial_rival_id = -1
+	tutorial_rival_stage1_id = -1
+	tutorial_combat_phase = 1
 	adventure_current_episode = 1
 	adventure_current_stage = 1
 	adventure_gold = 0
@@ -4614,7 +4667,13 @@ func get_save_dict() -> Dictionary:
 			"inventory": campaign_inventory,
 			"team_state": campaign_player_team_state,
 			"tutorial_completed": tutorial_completed,
-			"tutorial_reward_claimed": tutorial_reward_claimed
+			"tutorial_reward_claimed": tutorial_reward_claimed,
+			"tutorial_step": tutorial_step,
+			"tutorial_starter_id": tutorial_starter_id,
+			"tutorial_stage1_id": tutorial_stage1_id,
+			"tutorial_rival_id": tutorial_rival_id,
+			"tutorial_rival_stage1_id": tutorial_rival_stage1_id,
+			"tutorial_combat_phase": tutorial_combat_phase
 		},
 		"adventure": {
 			"current_episode": adventure_current_episode,
@@ -4750,6 +4809,12 @@ func apply_save_dict(data: Dictionary) -> bool:
 	campaign_player_team_state = camp.get("team_state", [])
 	tutorial_completed = bool(camp.get("tutorial_completed", false))
 	tutorial_reward_claimed = bool(camp.get("tutorial_reward_claimed", false))
+	tutorial_step = int(camp.get("tutorial_step", 0 if tutorial_completed else 1))
+	tutorial_starter_id = int(camp.get("tutorial_starter_id", -1))
+	tutorial_stage1_id = int(camp.get("tutorial_stage1_id", -1))
+	tutorial_rival_id = int(camp.get("tutorial_rival_id", -1))
+	tutorial_rival_stage1_id = int(camp.get("tutorial_rival_stage1_id", -1))
+	tutorial_combat_phase = int(camp.get("tutorial_combat_phase", 1))
 	
 	# Cargar aventura
 	var adv = data.get("adventure", {})
@@ -4901,6 +4966,13 @@ func erase_profile() -> void:
 	tutorial_completed = false
 	tutorial_reward_claimed = false
 	just_completed_tutorial = false
+	just_completed_tutorial_combat1 = false
+	tutorial_step = 0
+	tutorial_starter_id = -1
+	tutorial_stage1_id = -1
+	tutorial_rival_id = -1
+	tutorial_rival_stage1_id = -1
+	tutorial_combat_phase = 1
 	adventure_current_episode = 1
 	adventure_current_stage = 1
 	adventure_gold = 0
