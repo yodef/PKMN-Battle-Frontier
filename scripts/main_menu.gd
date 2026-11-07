@@ -5330,22 +5330,22 @@ func _setup_packs_catalog_view() -> void:
 	packs_catalog_view.add_child(cat_header)
 	
 	var scroll = ScrollContainer.new()
+	scroll.name = "ScrollContainer"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.custom_minimum_size = Vector2(0, 310)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.custom_minimum_size = Vector2(0, 360)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	
-	var row = HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_theme_constant_override("separation", 14)
+	var list_vbox = VBoxContainer.new()
+	list_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list_vbox.add_theme_constant_override("separation", 10)
 	
 	for pid in ["kanto", "johto", "hoenn", "sinnoh"]:
 		var p_info = GameData.BOOSTER_PACKS[pid]
 		var pack_entry = _create_catalog_pack_card(pid, p_info)
-		row.add_child(pack_entry)
+		list_vbox.add_child(pack_entry)
 		
-	scroll.add_child(row)
+	scroll.add_child(list_vbox)
 	packs_catalog_view.add_child(scroll)
 	packs_container.add_child(packs_catalog_view)
 
@@ -5392,7 +5392,7 @@ func _setup_pack_detail_panel(pack_panel: Control) -> void:
 			pack_art_texture.visible = false
 			
 		pack_detail_art_container = MarginContainer.new()
-		pack_detail_art_container.custom_minimum_size = Vector2(120, 168)
+		pack_detail_art_container.custom_minimum_size = Vector2(124, 174)
 		header_row.add_child(pack_detail_art_container)
 		header_row.move_child(pack_detail_art_container, 0)
 		
@@ -5434,15 +5434,56 @@ func _setup_pack_detail_panel(pack_panel: Control) -> void:
 			btn_small_cost_pack.pressed.connect(_on_open_selected_pack_pressed)
 			header_info.add_child(btn_small_cost_pack)
 
+func _create_crimp_band(region_name: String, accent: Color, _is_top: bool, width: float, height: float, is_large: bool) -> Control:
+	var band = PanelContainer.new()
+	band.custom_minimum_size = Vector2(width, height)
+	band.clip_contents = true
+	
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = accent.lerp(Color.WHITE, 0.35)
+	sb.border_color = Color("#111827")
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(2)
+	sb.content_margin_left = 2
+	sb.content_margin_right = 2
+	sb.content_margin_top = 0
+	sb.content_margin_bottom = 0
+	band.add_theme_stylebox_override("panel", sb)
+	
+	# Background crimp texture (subtle serrated ribs)
+	var border_tex = GameData.get_booster_pack_border_texture()
+	if border_tex:
+		var bg_tex = TextureRect.new()
+		bg_tex.texture = border_tex
+		bg_tex.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		bg_tex.stretch_mode = TextureRect.STRETCH_TILE
+		bg_tex.modulate = Color(1.0, 1.0, 1.0, 0.25)
+		band.add_child(bg_tex)
+		
+	# Region text replacing "Ruby/Sapphire/Emerald"
+	var lbl = Label.new()
+	lbl.text = region_name.to_upper()
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lbl.add_theme_font_size_override("font_size", 8 if not is_large else 10)
+	lbl.add_theme_color_override("font_color", Color("#111827"))
+	lbl.add_theme_constant_override("outline_size", 1)
+	lbl.add_theme_color_override("font_outline_color", accent.lerp(Color.WHITE, 0.7))
+	band.add_child(lbl)
+	
+	return band
+
 func _create_booster_pack_visual_widget(pack_id: String, is_large: bool = false) -> Control:
 	var pack_info = GameData.BOOSTER_PACKS.get(pack_id, {})
 	var accent: Color = pack_info.get("accent_color", Color("#FFD700"))
-	var border_tex = GameData.get_booster_pack_border_texture()
+	var reg_name = str(pack_info.get("region", "Kanto"))
 	var pack_tex = GameData.get_booster_pack_texture(pack_id)
 	
-	var w = 150 if not is_large else 120
-	var h = 210 if not is_large else 168
-	var crimp_h = 13 if not is_large else 12
+	var w = 96 if not is_large else 124
+	var h = 138 if not is_large else 174
+	var crimp_h = 14 if not is_large else 16
 	
 	var pack_card = PanelContainer.new()
 	pack_card.custom_minimum_size = Vector2(w, h)
@@ -5453,26 +5494,23 @@ func _create_booster_pack_visual_widget(pack_id: String, is_large: bool = false)
 	sb.border_color = accent
 	sb.set_border_width_all(2)
 	sb.set_corner_radius_all(6)
-	sb.content_margin_left = 3
-	sb.content_margin_right = 3
-	sb.content_margin_top = 3
-	sb.content_margin_bottom = 3
+	sb.content_margin_left = 2
+	sb.content_margin_right = 2
+	sb.content_margin_top = 2
+	sb.content_margin_bottom = 2
 	pack_card.add_theme_stylebox_override("panel", sb)
 	
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 2)
+	vbox.add_theme_constant_override("separation", 1)
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	pack_card.add_child(vbox)
 	
-	var top_crimp = TextureRect.new()
-	top_crimp.custom_minimum_size = Vector2(w - 6, crimp_h)
-	top_crimp.texture = border_tex
-	top_crimp.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	top_crimp.stretch_mode = TextureRect.STRETCH_TILE
-	top_crimp.modulate = accent.lerp(Color.WHITE, 0.4)
+	# Top crimped seal with region name (replaces "Ruby/Sapphire/Emerald")
+	var top_crimp = _create_crimp_band(reg_name, accent, true, w - 4, crimp_h, is_large)
 	vbox.add_child(top_crimp)
 	
+	# Artwork with dedicated booster pack packaging foil sheen
 	var art_container = PanelContainer.new()
 	art_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	art_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -5486,77 +5524,118 @@ func _create_booster_pack_visual_widget(pack_id: String, is_large: bool = false)
 	art_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	art_container.add_child(art_rect)
 	
-	GameData.apply_foil_overlay(art_container, "Legendary")
+	# Dedicated booster pack foil shader (distinct from card foil)
+	GameData.apply_booster_pack_foil_overlay(art_container, accent)
 	vbox.add_child(art_container)
 	
-	var bot_crimp = TextureRect.new()
-	bot_crimp.custom_minimum_size = Vector2(w - 6, crimp_h)
-	bot_crimp.texture = border_tex
-	bot_crimp.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	bot_crimp.stretch_mode = TextureRect.STRETCH_TILE
-	bot_crimp.modulate = accent.lerp(Color.WHITE, 0.4)
+	# Bottom crimped seal with region name (replaces "Ruby/Sapphire/Emerald")
+	var bot_crimp = _create_crimp_band(reg_name, accent, false, w - 4, crimp_h, is_large)
 	vbox.add_child(bot_crimp)
 	
 	return pack_card
 
 func _create_catalog_pack_card(pid: String, p_info: Dictionary) -> Control:
 	var accent: Color = p_info.get("accent_color", Color("#FFD700"))
-	var outer = VBoxContainer.new()
-	outer.custom_minimum_size = Vector2(150, 280)
-	outer.add_theme_constant_override("separation", 6)
-	outer.alignment = BoxContainer.ALIGNMENT_CENTER
+	var reg_name = p_info.get("region", "")
+	var count = _get_region_card_count(reg_name)
 	
-	var pack_card = _create_booster_pack_visual_widget(pid, false)
-	pack_card.mouse_filter = Control.MOUSE_FILTER_PASS
-	pack_card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	outer.add_child(pack_card)
+	var card_panel = PanelContainer.new()
+	card_panel.custom_minimum_size = Vector2(0, 146)
+	card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card_panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.06, 0.08, 0.13, 0.95)
+	sb.border_color = accent.lerp(Color.WHITE, 0.25)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(8)
+	sb.content_margin_left = 10
+	sb.content_margin_right = 10
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	card_panel.add_theme_stylebox_override("panel", sb)
+	
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 14)
+	hbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+	card_panel.add_child(hbox)
+	
+	# LEFT: Booster pack visual
+	var pack_visual = _create_booster_pack_visual_widget(pid, false)
+	pack_visual.custom_minimum_size = Vector2(96, 138)
+	hbox.add_child(pack_visual)
+	
+	# RIGHT: Pack Data & Actions
+	var info_vbox = VBoxContainer.new()
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	info_vbox.add_theme_constant_override("separation", 4)
+	hbox.add_child(info_vbox)
 	
 	var title_lbl = Label.new()
 	title_lbl.text = p_info.get("name", "")
-	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.add_theme_font_size_override("font_size", 12)
+	title_lbl.add_theme_font_size_override("font_size", 15)
 	title_lbl.add_theme_color_override("font_color", accent)
-	outer.add_child(title_lbl)
+	info_vbox.add_child(title_lbl)
 	
-	var reg_name = p_info.get("region", "")
-	var count = _get_region_card_count(reg_name)
 	var reg_lbl = Label.new()
 	reg_lbl.text = "📍 %s • %d Cards" % [reg_name, count]
-	reg_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	reg_lbl.add_theme_font_size_override("font_size", 10)
+	reg_lbl.add_theme_font_size_override("font_size", 11)
 	reg_lbl.add_theme_color_override("font_color", Color("#90A4AE"))
-	outer.add_child(reg_lbl)
+	info_vbox.add_child(reg_lbl)
+	
+	var desc_lbl = Label.new()
+	desc_lbl.text = p_info.get("desc", "")
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_lbl.max_lines_visible = 3
+	desc_lbl.add_theme_font_size_override("font_size", 10)
+	desc_lbl.add_theme_color_override("font_color", Color("#CFD8DC"))
+	info_vbox.add_child(desc_lbl)
+	
+	var act_row = HBoxContainer.new()
+	act_row.add_theme_constant_override("separation", 10)
+	act_row.alignment = BoxContainer.ALIGNMENT_BEGIN
+	info_vbox.add_child(act_row)
+	
+	var cost_lbl = Label.new()
+	cost_lbl.text = "Cost: %d 💎" % p_info.get("cost", 5)
+	cost_lbl.add_theme_font_size_override("font_size", 11)
+	cost_lbl.add_theme_color_override("font_color", Color("#33FF77"))
+	act_row.add_child(cost_lbl)
+	
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	act_row.add_child(spacer)
 	
 	var btn_inspect = Button.new()
 	btn_inspect.text = "Inspect Pack ➡"
-	btn_inspect.custom_minimum_size = Vector2(130, 32)
-	btn_inspect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	btn_inspect.custom_minimum_size = Vector2(115, 30)
 	btn_inspect.add_theme_font_size_override("font_size", 11)
 	btn_inspect.add_theme_color_override("font_color", accent)
 	
 	var sb_n = StyleBoxFlat.new()
-	sb_n.bg_color = Color(0.08, 0.10, 0.16, 0.95)
-	sb_n.border_color = accent.lerp(Color.WHITE, 0.2)
+	sb_n.bg_color = Color(0.08, 0.12, 0.18, 0.95)
+	sb_n.border_color = accent
 	sb_n.set_border_width_all(1)
 	sb_n.set_corner_radius_all(6)
 	btn_inspect.add_theme_stylebox_override("normal", sb_n)
 	
 	var sb_h = StyleBoxFlat.new()
-	sb_h.bg_color = Color(0.14, 0.18, 0.26, 0.98)
-	sb_h.border_color = accent
+	sb_h.bg_color = Color(0.12, 0.18, 0.28, 0.98)
+	sb_h.border_color = accent.lerp(Color.WHITE, 0.3)
 	sb_h.set_border_width_all(2)
 	sb_h.set_corner_radius_all(6)
 	btn_inspect.add_theme_stylebox_override("hover", sb_h)
 	
 	btn_inspect.pressed.connect(func(): _open_booster_pack_detail(pid))
-	outer.add_child(btn_inspect)
+	act_row.add_child(btn_inspect)
 	
-	outer.gui_input.connect(func(event: InputEvent):
+	card_panel.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			_open_booster_pack_detail(pid)
 	)
 	
-	return outer
+	return card_panel
 
 func _open_booster_pack_detail(pid: String) -> void:
 	selected_booster_pack_id = pid
@@ -5901,6 +5980,10 @@ func _show_pack_reveal_ui(cards: Array) -> void:
 	shop_box.visible = false
 	pack_reveal_box.visible = true
 	
+	var rem_lbl = pack_reveal_box.find_child("RemainingDiamondsLbl", true, false) as Label
+	if rem_lbl:
+		rem_lbl.text = "💎 Remaining Diamonds: %d" % GameData.player_diamonds
+	
 	if btn_reveal_another:
 		var p_info = GameData.BOOSTER_PACKS.get(selected_booster_pack_id, {})
 		var cost = int(p_info.get("cost", BOOSTER_PACK_COST))
@@ -5914,6 +5997,9 @@ func _show_pack_reveal_ui(cards: Array) -> void:
 	for c in cards:
 		var card_panel = _create_reveal_card_item(c)
 		reveal_cards_row.add_child(card_panel)
+		
+	if is_inside_tree():
+		GameLocalizationScript.translate_node_tree(pack_reveal_box, GameData.get_current_language())
 
 func _create_pack_reveal_container() -> void:
 	pack_reveal_box = VBoxContainer.new()
@@ -5934,6 +6020,14 @@ func _create_pack_reveal_container() -> void:
 	title_lbl.add_theme_font_size_override("font_size", 22)
 	title_lbl.add_theme_color_override("font_color", Color("#FFD700"))
 	pack_reveal_box.add_child(title_lbl)
+	
+	var remaining_dia_lbl = Label.new()
+	remaining_dia_lbl.name = "RemainingDiamondsLbl"
+	remaining_dia_lbl.text = "💎 Remaining Diamonds: %d" % GameData.player_diamonds
+	remaining_dia_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	remaining_dia_lbl.add_theme_font_size_override("font_size", 14)
+	remaining_dia_lbl.add_theme_color_override("font_color", Color("#40C4FF"))
+	pack_reveal_box.add_child(remaining_dia_lbl)
 	
 	var sub_lbl = Label.new()
 	sub_lbl.text = "You obtained 3 cards based on Rarity probability:"
@@ -8241,6 +8335,7 @@ func _build_or_update_showcase_picker_ui() -> void:
 	vbox.add_child(sub_lbl)
 	
 	var scroll = ScrollContainer.new()
+	scroll.name = "ScrollContainer"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	vbox.add_child(scroll)

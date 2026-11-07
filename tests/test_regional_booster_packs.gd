@@ -21,6 +21,12 @@ func _ready():
 	assert(not pack_panel.visible, "PackPanel detail view should initially be hidden")
 	print("✅ Catalog view verified visible and detail view hidden.")
 	
+	# Check vertical layout in catalog
+	var scroll = main_scene.packs_catalog_view.find_child("ScrollContainer", true, false) as ScrollContainer
+	assert(scroll != null, "ScrollContainer must exist")
+	assert(scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "Must use vertical scroll mode")
+	print("✅ Vertical scroll layout verified.")
+	
 	# 2. Select Johto Pack
 	print("2. Selecting Johto Booster Pack...")
 	main_scene._open_booster_pack_detail("johto")
@@ -44,7 +50,13 @@ func _ready():
 	await get_tree().process_frame
 	assert(main_scene.pack_reveal_box != null and main_scene.pack_reveal_box.visible, "Reveal UI must be shown")
 	assert(main_scene.reveal_cards_row.get_child_count() == 3, "Reveal row must show 3 cards")
-	print("✅ Johto pack opened successfully with 3 cards!")
+	
+	# Check remaining diamonds in reveal scene
+	var rem_lbl = main_scene.pack_reveal_box.find_child("RemainingDiamondsLbl", true, false) as Label
+	assert(rem_lbl != null, "Remaining diamonds label must exist in reveal box")
+	print("Remaining diamonds text: ", rem_lbl.text)
+	assert(rem_lbl.text.contains("45"), "Remaining diamonds should reflect 50 - 5 = 45: " + rem_lbl.text)
+	print("✅ Johto pack opened successfully with 3 cards and remaining diamonds displayed!")
 	
 	# Close reveal UI back to shop
 	print("4. Returning from reveal UI to Shop...")
@@ -76,6 +88,13 @@ func _ready():
 	print("Small button text in ES: ", main_scene.btn_small_cost_pack.text)
 	print("Back button text in ES: ", main_scene.btn_back_from_detail.text)
 	assert(main_scene.btn_small_cost_pack.text.contains("💎"), "Button text must contain diamond icon")
+	
+	# Test reveal scene in Spanish
+	main_scene._on_open_selected_pack_pressed()
+	await get_tree().process_frame
+	var rem_lbl_es = main_scene.pack_reveal_box.find_child("RemainingDiamondsLbl", true, false) as Label
+	print("Remaining diamonds text in ES: ", rem_lbl_es.text)
+	assert(rem_lbl_es.text.contains("Diamantes restantes"), "Must say 'Diamantes restantes': " + rem_lbl_es.text)
 	
 	print("🎉 ALL REGIONAL BOOSTER PACK TESTS PASSED SUCCESSFULLY!")
 	get_tree().quit()

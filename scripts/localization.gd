@@ -175,6 +175,8 @@ const EXACT_EN_TO_ES: Dictionary = {
 	"Cost: 5 💎": "Costo: 5 💎",
 	"Cost: %d 💎": "Costo: %d 💎",
 	"Inspect Pack ➡": "Inspeccionar ➡",
+	"💎 Remaining Diamonds: %d": "💎 Diamantes restantes: %d",
+	"Remaining Diamonds: %d": "Diamantes restantes: %d",
 	"Price: 💎 5 Diamonds": "Precio: 💎 5 Diamantes",
 	"Contains 3 random cards based on Rarity. Expand your collection and unlock powerful Pokémon!": "Contiene 3 cartas aleatorias según su Rareza. ¡Expande tu colección y desbloquea Pokémon poderosos!",
 	"💡 Earn Diamonds in Tournament Mode!": "💡 ¡Gana Diamantes en el Modo Torneo!",
@@ -326,6 +328,8 @@ const EXACT_EN_TO_ES: Dictionary = {
 const PHRASE_REPLACEMENTS: Array = [
 	# --- Lobby & Perfil & Tienda ---
 	["👤 Trainer: ", "👤 Entrenador: "],
+	["Remaining Diamonds:", "Diamantes restantes:"],
+	["Remaining Diamonds", "Diamantes restantes"],
 	["Diamonds:", "Diamantes:"],
 	["Diamonds", "Diamantes"],
 	["Diamond", "Diamante"],

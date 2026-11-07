@@ -2061,6 +2061,41 @@ func apply_foil_overlay(target_node: Control, rarity_str: String, force_showcase
 	overlay.visible = true
 	return overlay
 
+var booster_pack_foil_shader: Shader = null
+
+func get_booster_pack_foil_shader() -> Shader:
+	if not booster_pack_foil_shader:
+		if ResourceLoader.exists("res://assets/shaders/booster_pack_foil.gdshader"):
+			booster_pack_foil_shader = load("res://assets/shaders/booster_pack_foil.gdshader")
+	return booster_pack_foil_shader
+
+func apply_booster_pack_foil_overlay(target_node: Control, region_color: Color) -> ColorRect:
+	if not target_node:
+		return null
+	var s = get_booster_pack_foil_shader()
+	if not s:
+		return null
+		
+	var existing: ColorRect = target_node.get_node_or_null("PackFoilOverlay") as ColorRect
+	var overlay: ColorRect = existing
+	if not overlay:
+		overlay = ColorRect.new()
+		overlay.name = "PackFoilOverlay"
+		overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+		overlay.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		overlay.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		target_node.add_child(overlay)
+		
+	var mat = ShaderMaterial.new()
+	mat.shader = s
+	mat.set_shader_parameter("foil_tint", Color(region_color.r, region_color.g, region_color.b, 0.55))
+	mat.set_shader_parameter("shimmer_speed", 0.85)
+	mat.set_shader_parameter("holographic_intensity", 1.0)
+	overlay.material = mat
+	overlay.visible = true
+	return overlay
+
 # --- GESTIÓN DE AUDIO SFX (ORIGINALES GBA EN PKMN/MOVES_SFX) ---
 const SFX_FOLDER_PATH: String = "D:/Games/Pokemon Battle Frontier/PKMN/MOVES_SFX/"
 var sfx_audio_cache: Dictionary = {} # filename -> AudioStreamMP3
