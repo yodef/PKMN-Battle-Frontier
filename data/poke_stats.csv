@@ -175,87 +175,87 @@ id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,textu
 173,158,Basic,Totodile,10,3,1,WATER,,,2,158.png,,,Scratch,Water Gun,FALSE,Uncommon,,Croconaw,Water,10,D,Johto
 174,159,Stage 1,Croconaw,24,5,2,WATER,,,3,159.png,,,Slash,Aqua Tail,FALSE,Rare,Totodile,Feraligatr,Water,25,D,Johto
 175,160,Stage 2,Feraligatr,34,8,4,WATER,,,4,160.png,,,Crunch,Hydro Pump,FALSE,Epic,Croconaw,,,0,D,Johto
-176,161,Basic,Sentret,,,,NORMAL,,,,161.png,,,,,FALSE,Common,,Furret,Heart,20,,Johto
-177,162,Stage 1,Furret,,,,NORMAL,,,,162.png,,,,,FALSE,Rare,Sentret,,,0,,Johto
-178,163,Basic,Hoothoot,,,,NORMAL,,,,163.png,,,,,FALSE,Common,,Noctowl,Night,20,,Johto
-179,164,Stage 1,Noctowl,,,,NORMAL,,,,164.png,,,,,FALSE,Rare,Hoothoot,,,0,,Johto
-180,165,Basic,Ledyba,,,,DARK,,,,165.png,,,,,FALSE,Common,,Ledian,Leaf,20,,Johto
-181,166,Stage 1,Ledian,,,,DARK,,,,166.png,,,,,FALSE,Rare,Ledyba,,,0,,Johto
-182,167,Basic,Spinarak,,,,DARK,,,,167.png,,,,,FALSE,Common,,Ariados,Leaf,20,,Johto
-183,168,Stage 1,Ariados,,,,DARK,,,,168.png,,,,,FALSE,Rare,Spinarak,,,0,,Johto
-184,170,Basic,Chinchou,,,,WATER,,,,170.png,,,,,FALSE,Common,,Lanturn,Water,20,,Johto
-185,171,Stage 1,Lanturn,,,,WATER,,,,171.png,,,,,FALSE,Rare,Chinchou,,,0,,Johto
-186,175,Basic,Togepi,,,,NORMAL,,,,175.png,,,,,FALSE,Uncommon,,Togetic,Heart,10,,Johto
-187,176,Stage 1,Togetic,,,,NORMAL,,,,176.png,,,,,FALSE,Epic,Togepi,Togekiss,Heart,25,,Johto
-188,177,Basic,Natu,,,,PSYCHIC,,,,177.png,,,,,FALSE,Common,,Xatu,Psyche,20,,Johto
-189,178,Stage 1,Xatu,,,,PSYCHIC,,,,178.png,,,,,FALSE,Rare,Natu,,,0,,Johto
-190,179,Basic,Mareep,,,,ELECTRIC,,,,179.png,,,,,FALSE,Common,,Flaaffy,Thunder,10,,Johto
-191,180,Stage 1,Flaaffy,,,,ELECTRIC,,,,180.png,,,,,FALSE,Rare,Mareep,Ampharos,Thunder,25,,Johto
-192,181,Stage 2,Ampharos,,,,ELECTRIC,,,,181.png,,,,,FALSE,Epic,Flaaffy,,,0,,Johto
-193,182,Stage 2,Bellossom,,,,GRASS,,,,182.png,,,,,FALSE,Epic,Gloom,,,0,,Johto
-194,183,Stage 1,Marill,,,,WATER,,,,183.png,,,,,FALSE,Rare,Azurill,Azumarill,Water,25,,Johto
-195,184,Stage 2,Azumarill,,,,WATER,,,,184.png,,,,,FALSE,Epic,Marill,,,0,,Johto
-196,185,Stage 1,Sudowoodo,,,,GROUND,,,,185.png,,,,,FALSE,Epic,Bonsly,,,0,,Johto
-197,186,Stage 2,Politoed,,,,WATER,,,,186.png,,,,,FALSE,Rare,Poliwhirl,,,0,,Johto
-198,187,Basic,Hoppip,,,,GRASS,,,,187.png,,,,,FALSE,Common,,Skiploom,Leaf,10,,Johto
-199,188,Stage 1,Skiploom,,,,GRASS,,,,188.png,,,,,FALSE,Rare,Hoppip,Jumpluff,Leaf,25,,Johto
-200,189,Stage 2,Jumpluff,,,,GRASS,,,,189.png,,,,,FALSE,Epic,Skiploom,,,0,,Johto
-201,190,Basic,Aipom,,,,NORMAL,,,,190.png,,,,,FALSE,Rare,,Ambipom,Heart,20,,Johto
-202,191,Basic,Sunkern,,,,GRASS,,,,191.png,,,,,FALSE,Common,,Sunflora,Leaf,20,,Johto
-203,192,Stage 1,Sunflora,,,,GRASS,,,,192.png,,,,,FALSE,Rare,Sunkern,,,0,,Johto
-204,193,Basic,Yanma,,,,DARK,,,,193.png,,,,,FALSE,Common,,Yanmega,Night,20,,Johto
-205,194,Basic,Wooper,,,,WATER,,,,194.png,,,,,FALSE,Common,,Quagsire,Water,20,,Johto
-206,195,Stage 1,Quagsire,,,,WATER,,,,195.png,,,,,FALSE,Rare,Wooper,,,0,,Johto
-207,196,Stage 1,Espeon,,,,PSYCHIC,,,,196.png,,,,,FALSE,Epic,Eevee,,,0,,Johto
-208,197,Stage 1,Umbreon,,,,DARK,,,,197.png,,,,,FALSE,Epic,Eevee,,,0,,Johto
-209,198,Basic,Murkrow,,,,DARK,,,,198.png,,,,,FALSE,Uncommon,,Honchkrow,Night,20,,Johto
-210,199,Stage 1,Slowking,,,,WATER,,,,199.png,,,,,FALSE,Epic,Slowpoke,,,0,,Johto
-211,200,Basic,Misdreavus,,,,DARK,,,,200.png,,,,,FALSE,Uncommon,,Mismagius,Night,20,,Johto
-212,201,Basic,Unown,,,,PSYCHIC,,,,201.png,,,,,FALSE,Rare,,,,0,,Johto
-213,202,Stage 1,Wobbuffet,,,,PSYCHIC,,,,202.png,,,,,FALSE,Rare,Wynaut,,,0,,Johto
-214,203,Basic,Girafarig,,,,NORMAL,,,,203.png,,,,,FALSE,Uncommon,,,,0,,Johto
-215,204,Basic,Pineco,,,,GRASS,,,,204.png,,,,,FALSE,Uncommon,,Forretress,Leaf,20,,Johto
-216,205,Stage 1,Forretress,,,,GRASS,,,,205.png,,,,,FALSE,Uncommon,Pineco,,,0,,Johto
-217,206,Basic,Dunsparce,,,,NORMAL,,,,206.png,,,,,FALSE,Rare,,,,0,,Johto
-218,207,Basic,Gligar,,,,GROUND,,,,207.png,,,,,FALSE,Rare,,Gliscor,Ground,20,,Johto
-219,209,Basic,Snubbull,,,,NORMAL,,,,209.png,,,,,FALSE,Uncommon,,Granbull,Heart,20,,Johto
-220,210,Stage 1,Granbull,,,,NORMAL,,,,210.png,,,,,FALSE,Rare,Snubbull,,,0,,Johto
-221,211,Basic,Qwilfish,,,,WATER,,,,211.png,,,,,FALSE,Uncommon,,,,0,,Johto
-222,213,Basic,Shuckle,,,,GRASS,,,,213.png,,,,,FALSE,Rare,,,,0,,Johto
-223,214,Basic,Heracross,,,,GRASS,,,,214.png,,,,,FALSE,Rare,,,,0,,Johto
-224,215,Basic,Sneasel,,,,DARK,,,,215.png,,,,,FALSE,Uncommon,,Weavile,Night,20,,Johto
-225,216,Basic,Teddiursa,,,,NORMAL,,,,216.png,,,,,FALSE,Common,,Ursaring,Heart,20,,Johto
-226,217,Stage 1,Ursaring,,,,NORMAL,,,,217.png,,,,,FALSE,Rare,Teddiursa,,,0,,Johto
-227,218,Basic,Slugma,,,,FIRE,,,,218.png,,,,,FALSE,Common,,Magcargo,Fire,20,,Johto
-228,219,Stage 1,Magcargo,,,,FIRE,,,,219.png,,,,,FALSE,Rare,Slugma,,,0,,Johto
-229,220,Basic,Swinub,,,,WATER,,,,220.png,,,,,FALSE,Common,,Piloswine,Water,10,,Johto
-230,221,Stage 1,Piloswine,,,,WATER,,,,221.png,,,,,FALSE,Rare,Swinub,Mamoswine,Ground,25,,Johto
-231,222,Basic,Corsola,,,,WATER,,,,222.png,,,,,FALSE,Uncommon,,,,0,,Johto
-232,223,Basic,Remoraid,,,,WATER,,,,223.png,,,,,FALSE,Uncommon,,Octillery,Water,20,,Johto
-233,224,Stage 1,Octillery,,,,WATER,,,,224.png,,,,,FALSE,Uncommon,Remoraid,,,0,,Johto
-234,225,Basic,Delibird,,,,WATER,,,,225.png,,,,,FALSE,Uncommon,,,,0,,Johto
-235,226,Stage 1,Mantine,,,,WATER,,,,226.png,,,,,FALSE,Rare,Mantyke,,,0,,Johto
-236,227,Basic,Skarmory,,,,GROUND,,,,227.png,,,,,FALSE,Rare,,,,0,,Johto
-237,228,Basic,Houndour,,,,DARK,,,,228.png,,,,,FALSE,Uncommon,,Houndoom,Fire,20,,Johto
-238,229,Stage 1,Houndoom,,,,DARK,,,,229.png,,,,,FALSE,Epic,Houndour,,,0,,Johto
-239,231,Basic,Phanpy,,,,GROUND,,,,231.png,,,,,FALSE,Uncommon,,Donphan,Ground,20,,Johto
-240,232,Stage 1,Donphan,,,,GROUND,,,,232.png,,,,,FALSE,Epic,Phanpy,,,0,,Johto
-241,233,Stage 1,Porygon2,,,,NORMAL,,,,233.png,,,,,FALSE,Epic,Porygon,Porygon-Z,Psyche,25,,Johto
-242,234,Basic,Stantler,,,,NORMAL,,,,234.png,,,,,FALSE,Rare,,,,0,,Johto
-243,235,Basic,Smeargle,,,,NORMAL,,,,235.png,,,,,FALSE,Rare,,,,0,,Johto
-244,236,Basic,Tyrogue,,,,FIGHTING,,,,236.png,,,,,FALSE,Uncommon,,"Hitmonlee, Hitmonchan, Hitmontop","Punch, Punch, Punch",20,,Johto
-245,237,Stage 1,Hitmontop,,,,FIGHTING,,,,237.png,,,,,FALSE,Rare,Tyrogue,,,0,,Johto
-246,241,Basic,Miltank,,,,NORMAL,,,,241.png,,,,,FALSE,Rare,,,,0,,Johto
-247,242,Stage 2,Blissey,,,,NORMAL,,,,242.png,,,,,FALSE,Epic,Chansey,,,0,,Johto
-248,243,Legendary,Raikou,,,,ELECTRIC,,,,243.png,,,,,FALSE,Legendary,,,,0,,Johto
-249,244,Legendary,Entei,,,,FIRE,,,,244.png,,,,,FALSE,Legendary,,,,0,,Johto
-250,245,Legendary,Suicune,,,,WATER,,,,245.png,,,,,FALSE,Legendary,,,,0,,Johto
-251,246,Basic,Larvitar,,,,GROUND,,,,246.png,,,,,FALSE,Uncommon,,Pupitar,Scale,10,,Johto
-252,247,Stage 1,Pupitar,,,,GROUND,,,,247.png,,,,,FALSE,Rare,Larvitar,Tyranitar,Scale,25,,Johto
-253,248,Stage 2,Tyranitar,,,,GROUND,,,,248.png,,,,,FALSE,Legendary,Pupitar,,,0,,Johto
-254,249,Legendary,Lugia,32,10,5,PSYCHIC,NONE,,6,249.png,,,,,FALSE,Legendary,,,,0,,Johto
-255,250,Legendary,Ho-oh,32,10,5,FIRE,NONE,,6,250.png,,,,,FALSE,Legendary,,,,0,,Johto
-256,251,Legendary,Celebi,24,10,5,PSYCHIC,NONE,,5,251.png,,,,,FALSE,Legendary,,,,0,,Johto
+176,161,Basic,Sentret,12,3,2,NORMAL,,NONE,2,161.png,,,Scratch,Quick Attack,FALSE,Common,,Furret,Heart,20,D,Johto
+177,162,Stage 1,Furret,24,6,4,NORMAL,,NONE,3,162.png,,,Quick Attack,Slam,FALSE,Rare,Sentret,,,0,C,Johto
+178,163,Basic,Hoothoot,14,4,2,NORMAL,ELECTRIC,GROUND,2,163.png,Keen Eye,Ignores evasion and negative accuracy.,Peck,Hypnosis,FALSE,Common,,Noctowl,Night,20,C,Johto
+179,164,Stage 1,Noctowl,26,6,3,NORMAL,ELECTRIC,GROUND,4,164.png,Insomnia,Cannot be put to sleep.,Air Slash,Extrasensory,FALSE,Rare,Hoothoot,,,0,B,Johto
+180,165,Basic,Ledyba,10,3,2,DARK,FIRE,,2,165.png,,,Tackle,Supersonic,FALSE,Common,,Ledian,Leaf,20,D,Johto
+181,166,Stage 1,Ledian,22,5,4,DARK,FIRE,,3,166.png,,,Comet Punch,Bug Buzz,FALSE,Rare,Ledyba,,,0,C,Johto
+182,167,Basic,Spinarak,10,3,1,DARK,FIRE,,2,167.png,Swarm,Boosts Bug moves when at low HP.,Poison Sting,Night Shade,FALSE,Common,,Ariados,Leaf,20,D,Johto
+183,168,Stage 1,Ariados,24,6,2,DARK,FIRE,,3,168.png,,,Poison Jab,Cross Poison,FALSE,Rare,Spinarak,,,0,B,Johto
+184,170,Basic,Chinchou,16,4,2,WATER,GRASS,,2,170.png,,,Bubble,Spark,FALSE,Common,,Lanturn,Water,20,C,Johto
+185,171,Stage 1,Lanturn,28,6,3,WATER,GRASS,,4,171.png,Volt Absorb,Heals when struck by electric attacks.,Water Pulse,Discharge,FALSE,Rare,Chinchou,,,0,A,Johto
+186,175,Basic,Togepi,12,3,1,NORMAL,,DARK,2,175.png,Serene Grace,Doubles the chance of secondary move effects.,Pound,Metronome,FALSE,Uncommon,,Togetic,Heart,10,C,Johto
+187,176,Stage 1,Togetic,22,5,2,NORMAL,ELECTRIC,GROUND,3,176.png,,,Disarming Voice,Ancient Power,FALSE,Rare,Togepi,Togekiss,Heart,25,B,Johto
+188,177,Basic,Natu,10,3,3,PSYCHIC,DARK,GROUND,2,177.png,,,Peck,Psywave,FALSE,Common,,Xatu,Psyche,20,D,Johto
+189,178,Stage 1,Xatu,24,6,4,PSYCHIC,DARK,GROUND,4,178.png,Synchronize,Passes status conditions to attacker.,Air Slash,Psychic,FALSE,Rare,Natu,,,0,A,Johto
+190,179,Basic,Mareep,12,3,1,ELECTRIC,GROUND,,2,179.png,Static,May paralyze on contact.,Tackle,Thunder Shock,FALSE,Common,,Flaaffy,Thunder,10,D,Johto
+191,180,Stage 1,Flaaffy,20,5,2,ELECTRIC,GROUND,,3,180.png,,,Thunder Shock,Electro Ball,FALSE,Rare,Mareep,Ampharos,Thunder,25,C,Johto
+192,181,Stage 2,Ampharos,32,8,3,ELECTRIC,GROUND,,5,181.png,,,Discharge,Thunder,FALSE,Epic,Flaaffy,,,0,S,Johto
+193,182,Stage 2,Bellossom,30,8,3,GRASS,FIRE,WATER,5,182.png,Chlorophyll,Doubles speed under sun.,Magical Leaf,Petal Blizzard,FALSE,Epic,Gloom,,,0,A,Johto
+194,183,Stage 1,Marill,20,5,2,WATER,ELECTRIC,,3,183.png,Huge Power,Doubles base attack strength.,Rollout,Bubble Beam,FALSE,Rare,Azurill,Azumarill,Water,25,C,Johto
+195,184,Stage 2,Azumarill,34,8,3,WATER,ELECTRIC,,5,184.png,Huge Power,Doubles base attack strength.,Aqua Tail,Play Rough,FALSE,Epic,Marill,,,0,A,Johto
+196,185,Stage 1,Sudowoodo,26,6,2,GROUND,WATER,NORMAL,3,185.png,Rock Head,Protects the Pokemon from recoil damage.,Rock Throw,Wood Hammer,FALSE,Rare,Bonsly,,,0,B,Johto
+197,186,Stage 2,Politoed,32,8,3,WATER,ELECTRIC,FIRE,5,186.png,Drizzle,Summons rain when entering battle.,Muddy Water,Hyper Voice,FALSE,Epic,Poliwhirl,,,0,A,Johto
+198,187,Basic,Hoppip,10,3,3,GRASS,FIRE,GROUND,2,187.png,,,Tackle,Absorb,FALSE,Common,,Skiploom,Leaf,10,D,Johto
+199,188,Stage 1,Skiploom,18,5,4,GRASS,FIRE,GROUND,3,188.png,,,Bullet Seed,Mega Drain,FALSE,Uncommon,Hoppip,Jumpluff,Leaf,25,C,Johto
+200,189,Stage 2,Jumpluff,28,8,5,GRASS,FIRE,GROUND,4,189.png,Chlorophyll,Doubles speed under sunlight.,Giga Drain,Acrobatics,FALSE,Epic,Skiploom,,,0,B,Johto
+201,190,Basic,Aipom,16,4,4,NORMAL,,NONE,2,190.png,Run Away,Guarantees escape from wild battles.,Scratch,Swift,FALSE,Common,,Ambipom,Heart,20,C,Johto
+202,191,Basic,Sunkern,10,3,1,GRASS,FIRE,WATER,2,191.png,Solar Power,Boosts Sp. Atk in sunshine.,Absorb,Mega Drain,FALSE,Common,,Sunflora,Leaf,20,D,Johto
+203,192,Stage 1,Sunflora,24,6,2,GRASS,FIRE,WATER,4,192.png,Chlorophyll,Doubles speed in sunny weather.,Giga Drain,Solar Beam,FALSE,Rare,Sunkern,,,0,C,Johto
+204,193,Basic,Yanma,18,4,4,DARK,FIRE,GROUND,2,193.png,Speed Boost,Its Speed stat is boosted every turn.,Quick Attack,Air Cutter,FALSE,Uncommon,,Yanmega,Night,20,C,Johto
+205,194,Basic,Wooper,16,3,1,WATER,GRASS,ELECTRIC,2,194.png,Water Absorb,Restores HP if hit by water moves.,Mud-Slap,Water Gun,FALSE,Common,,Quagsire,Water,20,D,Johto
+206,195,Stage 1,Quagsire,28,6,2,WATER,GRASS,ELECTRIC,4,195.png,Unaware,Ignores foe stat changes.,Bulldoze,Earthquake,FALSE,Rare,Wooper,,,0,A,Johto
+207,196,Stage 1,Espeon,26,8,5,PSYCHIC,DARK,,5,196.png,Magic Bounce,Reflects status-changing moves.,Psybeam,Psychic,FALSE,Epic,Eevee,,,0,A,Johto
+208,197,Stage 1,Umbreon,32,8,3,DARK,FIGHTING,PSYCHIC,5,197.png,Synchronize,Passes poison or burn to attacker.,Payback,Dark Pulse,FALSE,Epic,Eevee,,,0,A,Johto
+209,198,Basic,Murkrow,16,4,4,DARK,ELECTRIC,GROUND,2,198.png,Super Luck,Heightens critical-hit ratios.,Peck,Night Shade,FALSE,Uncommon,,Honchkrow,Night,20,C,Johto
+210,199,Stage 1,Slowking,30,7,2,WATER,GRASS,FIRE,5,199.png,Oblivious,Immune to infatuation and taunt.,Confusion,Surf,FALSE,Epic,Slowpoke,,,0,A,Johto
+211,200,Basic,Misdreavus,16,4,4,DARK,DARK,NORMAL,2,200.png,Levitate,Immunity to Ground-type attacks.,Spite,Shadow Ball,FALSE,Uncommon,,Mismagius,Night,20,C,Johto
+212,201,Basic,Unown,14,4,2,PSYCHIC,DARK,,2,201.png,Levitate,Floating immunity to Ground.,Hidden Power,Cosmic Power,FALSE,Common,,,,0,D,Johto
+213,202,Stage 1,Wobbuffet,42,6,1,PSYCHIC,DARK,,3,202.png,Shadow Tag,Prevents foe from escaping or switching.,Counter-Cut,Destiny Bond,FALSE,Rare,Wynaut,,,0,B,Johto
+214,203,Basic,Girafarig,22,5,4,NORMAL,DARK,PSYCHIC,3,203.png,Early Bird,Awakens quickly from sleep.,Stomp,Psybeam,FALSE,Uncommon,,,,0,B,Johto
+215,204,Basic,Pineco,14,3,1,GRASS,FIRE,,2,204.png,Sturdy,Cannot be knocked out in one hit.,Tackle,Self-Destruct,FALSE,Common,,Forretress,Leaf,20,D,Johto
+216,205,Stage 1,Forretress,28,6,2,GRASS,FIRE,NORMAL,4,205.png,Overcoat,Protects from sandstorm damage.,Spikes,Explosion,FALSE,Rare,Pineco,,,0,B,Johto
+217,206,Basic,Dunsparce,24,4,2,NORMAL,,NONE,3,206.png,Serene Grace,Boosts the likelihood of added effects.,Defense Curl,Rollout,FALSE,Uncommon,,,,0,C,Johto
+218,207,Basic,Gligar,20,4,4,GROUND,WATER,ELECTRIC,3,207.png,Hyper Cutter,Prevents Attack reduction.,Sand Attack,Slash,FALSE,Uncommon,,Gliscor,Ground,20,C,Johto
+219,209,Basic,Snubbull,16,4,2,NORMAL,,DARK,2,209.png,Intimidate,Lowers the opposing Pokemon's attack.,Bite,Headbutt,FALSE,Common,,Granbull,Heart,20,D,Johto
+220,210,Stage 1,Granbull,28,6,2,NORMAL,,DARK,4,210.png,Intimidate,Lowers the opposing Pokemon's attack.,Crunch,Play Rough,FALSE,Rare,Snubbull,,,0,B,Johto
+221,211,Basic,Qwilfish,20,4,4,WATER,ELECTRIC,,3,211.png,Poison Point,Contact with Pokemon may poison attacker.,Poison Sting,Aqua Tail,FALSE,Uncommon,,,,0,C,Johto
+222,213,Basic,Shuckle,16,4,1,GRASS,FIRE,NORMAL,4,213.png,Sturdy,Cannot be knocked out in one hit.,Withdraw,Rock Slide,FALSE,Rare,,,,0,B,Johto
+223,214,Basic,Heracross,28,6,4,GRASS,FIRE,GROUND,4,214.png,Guts,Boosts attack if afflicted with status.,Megahorn,Close Combat,FALSE,Epic,,,,0,S,Johto
+224,215,Basic,Sneasel,18,4,5,DARK,FIGHTING,PSYCHIC,3,215.png,Inner Focus,Prevents flinching.,Quick Attack,Ice Shard,FALSE,Uncommon,,Weavile,Night,20,B,Johto
+225,216,Basic,Teddiursa,16,4,2,NORMAL,,NONE,2,216.png,Pickup,May find items after battle.,Scratch,Fury Swipes,FALSE,Common,,Ursaring,Heart,20,D,Johto
+226,217,Stage 1,Ursaring,30,7,3,NORMAL,,NONE,4,217.png,Guts,Boosts attack if afflicted with status.,Slash,Hammer Arm,FALSE,Epic,Teddiursa,,,0,A,Johto
+227,218,Basic,Slugma,12,3,1,FIRE,WATER,GRASS,2,218.png,Flame Body,Contact may cause a burn.,Smog,Ember,FALSE,Common,,Magcargo,Fire,20,D,Johto
+228,219,Stage 1,Magcargo,24,6,2,FIRE,WATER,GRASS,3,219.png,Flame Body,Contact may cause a burn.,Lava Plume,Ancient Power,FALSE,Rare,Slugma,,,0,C,Johto
+229,220,Basic,Swinub,14,3,2,WATER,GRASS,ELECTRIC,2,220.png,Oblivious,Immune to infatuation and taunt.,Tackle,Powder Snow,FALSE,Common,,Piloswine,Water,10,D,Johto
+230,221,Stage 1,Piloswine,26,6,3,WATER,GRASS,ELECTRIC,4,221.png,Thick Fat,Boosts resistance to Fire and Ice.,Ice Fang,Bulldoze,FALSE,Rare,Swinub,Mamoswine,Ground,25,B,Johto
+231,222,Basic,Corsola,20,4,2,WATER,GRASS,FIRE,3,222.png,Natural Cure,Cures status on switching out.,Bubble Beam,Rock Slide,FALSE,Uncommon,,,,0,C,Johto
+232,223,Basic,Remoraid,12,3,3,WATER,ELECTRIC,FIRE,2,223.png,Hustle,Boosts attack at cost of accuracy.,Water Gun,Aurora Beam,FALSE,Common,,Octillery,Water,20,D,Johto
+233,224,Stage 1,Octillery,26,6,2,WATER,ELECTRIC,FIRE,4,224.png,Sniper,Powers up critical hits.,Octazooka,Signal Beam,FALSE,Rare,Remoraid,,,0,B,Johto
+234,225,Basic,Delibird,18,4,4,WATER,ELECTRIC,GROUND,3,225.png,Vital Spirit,Prevents the Pokemon from falling asleep.,Present,Ice Punch,FALSE,Rare,,,,0,C,Johto
+235,226,Stage 1,Mantine,28,6,3,WATER,ELECTRIC,GROUND,4,226.png,Water Absorb,Restores HP if hit by Water moves.,Air Slash,Surf,FALSE,Rare,Mantyke,,,0,A,Johto
+236,227,Basic,Skarmory,26,5,3,GROUND,FIRE,GRASS,3,227.png,Sturdy,Cannot be knocked out in one hit.,Metal Claw,Steel Wing,FALSE,Rare,,,,0,A,Johto
+237,228,Basic,Houndour,14,4,3,DARK,WATER,PSYCHIC,2,228.png,Early Bird,Awakens quickly from sleep.,Ember,Bite,FALSE,Uncommon,,Houndoom,Fire,20,C,Johto
+238,229,Stage 1,Houndoom,28,6,5,DARK,WATER,PSYCHIC,4,229.png,Flash Fire,Powers up Fire moves if hit by Fire.,Flamethrower,Crunch,FALSE,Epic,Houndour,,,0,A,Johto
+239,231,Basic,Phanpy,16,4,2,GROUND,WATER,ELECTRIC,2,231.png,Pickup,May find items after battle.,Tackle,Rollout,FALSE,Common,,Donphan,Ground,20,D,Johto
+240,232,Stage 1,Donphan,30,7,3,GROUND,WATER,ELECTRIC,4,232.png,Sturdy,Cannot be knocked out in one hit.,Bulldoze,Earthquake,FALSE,Epic,Phanpy,,,0,A,Johto
+241,233,Stage 1,Porygon2,26,6,3,NORMAL,,NONE,4,233.png,Download,Adjusts power based on foe defense.,Tri Attack,Recover,FALSE,Epic,Porygon,Porygon-Z,Psyche,25,A,Johto
+242,234,Basic,Stantler,22,5,4,NORMAL,,NONE,3,234.png,Intimidate,Lowers the opposing Pokemon's attack.,Stomp,Zen Headbutt,FALSE,Uncommon,,,,0,B,Johto
+243,235,Basic,Smeargle,16,4,4,NORMAL,,NONE,3,235.png,Own Tempo,Prevents the Pokemon from becoming confused.,Sketch,Baton Pass,FALSE,Rare,,,,0,C,Johto
+244,236,Basic,Tyrogue,12,3,2,FIGHTING,PSYCHIC,DARK,2,236.png,Guts,Boosts attack if afflicted with status.,Tackle,Low Kick,FALSE,Uncommon,,"Hitmonlee, Hitmonchan, Hitmontop","Punch, Punch, Punch",20,D,Johto
+245,237,Stage 1,Hitmontop,26,6,4,FIGHTING,PSYCHIC,DARK,4,237.png,Technician,Powers up weaker moves.,Triple Kick,Rapid Spin,FALSE,Rare,Tyrogue,,,0,A,Johto
+246,241,Basic,Miltank,30,6,4,NORMAL,,NONE,4,241.png,Thick Fat,Boosts resistance to Fire and Ice.,Milk Drink,Body Slam,FALSE,Rare,,,,0,A,Johto
+247,242,Stage 2,Blissey,46,8,3,NORMAL,,NONE,6,242.png,Natural Cure,Cures all status ailments upon switching.,Soft-Boiled,Hyper Voice,FALSE,Epic,Chansey,,,0,S,Johto
+248,243,Legendary,Raikou,32,10,5,ELECTRIC,GROUND,,6,243.png,Pressure,Exerts pressure to increase energy demand.,Spark,Grand Thunder,FALSE,Legendary,,,,0,S+,Johto
+249,244,Legendary,Entei,34,10,5,FIRE,WATER,GRASS,6,244.png,Pressure,Exerts pressure to increase energy demand.,Flame Wheel,Sacred Fire,FALSE,Legendary,,,,0,S+,Johto
+250,245,Legendary,Suicune,34,10,4,WATER,ELECTRIC,FIRE,6,245.png,Pressure,Exerts pressure to increase energy demand.,Aurora Beam,Hydro Pump,FALSE,Legendary,,,,0,S+,Johto
+251,246,Basic,Larvitar,14,3,2,GROUND,WATER,ELECTRIC,2,246.png,Guts,Boosts attack if afflicted with status.,Rock Throw,Bite,FALSE,Uncommon,,Pupitar,Scale,10,C,Johto
+252,247,Stage 1,Pupitar,24,5,3,GROUND,WATER,ELECTRIC,3,247.png,Shed Skin,Has a chance to cure status conditions.,Rock Slide,Crunch,FALSE,Rare,Larvitar,Tyranitar,Scale,25,B,Johto
+253,248,Stage 2,Tyranitar,36,8,4,GROUND,WATER,ELECTRIC,5,248.png,Sand Stream,Summons a sandstorm upon entering battle.,Stone Edge,Dark Pulse,FALSE,Legendary,Pupitar,,,0,S+,Johto
+254,249,Legendary,Lugia,36,10,5,PSYCHIC,DARK,GROUND,6,249.png,Multiscale,Reduces damage taken when HP is full.,Aeroblast,Hydro Pump,FALSE,Legendary,,,,0,S+,Johto
+255,250,Legendary,Ho-oh,36,10,5,FIRE,WATER,GROUND,6,250.png,Regenerator,Restores HP when withdrawn from battle.,Sacred Fire,Brave Bird,FALSE,Legendary,,,,0,S+,Johto
+256,251,Legendary,Celebi,30,10,5,PSYCHIC,DARK,GRASS,5,251.png,Natural Cure,Cures all status conditions upon switching.,Leaf Blade,Future Sight,FALSE,Legendary,,,,0,S,Johto
 257,252,Basic,Treecko,,,,GRASS,,,,252.png,,,,,FALSE,,,Grovyle,Leaf,10,,Hoenn
 258,253,Stage 1,Grovyle,,,,GRASS,,,,253.png,,,,,FALSE,,Treecko,Sceptile,Leaf,25,,Hoenn
 259,254,Stage 2,Sceptile,,,,GRASS,,,,254.png,,,,,FALSE,,Grovyle,,,0,,Hoenn
