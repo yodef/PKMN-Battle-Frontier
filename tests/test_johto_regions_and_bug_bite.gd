@@ -4,7 +4,7 @@ func _ready():
 	print("=== TEST: Bug Bite + Johto Starters + Region Filters ===")
 	var all_p = GameData.pokemon_catalog
 	print("Total Pokemon loaded: ", all_p.size())
-	assert(all_p.size() == 257, "Expected 257 Pokemon (Kanto 151 + Johto 100 + Other 6), got " + str(all_p.size()))
+	assert(all_p.size() == 392, "Expected 392 Pokemon (Kanto 151 + Johto 100 + Hoenn 135 + Other 6), got " + str(all_p.size()))
 	
 	# 1. Verify Bug Bite in GameData.moves_catalog and on Caterpie
 	var bug_bite = GameData.moves_catalog.get("bug bite", null)
@@ -67,6 +67,11 @@ func _ready():
 	print("Collection JOHTO count: ", johto_cards.size())
 	assert(johto_cards.size() == 100, "Expected 100 Johto cards, got " + str(johto_cards.size()))
 	
+	menu._on_col_region_pressed("HOENN")
+	var hoenn_cards = menu.get_filtered_collection_cards()
+	print("Collection HOENN count: ", hoenn_cards.size())
+	assert(hoenn_cards.size() == 135, "Expected 135 Hoenn cards, got " + str(hoenn_cards.size()))
+	
 	menu._on_col_region_pressed("OTHER")
 	var other_cards = menu.get_filtered_collection_cards()
 	print("Collection OTHER count: ", other_cards.size())
@@ -75,7 +80,7 @@ func _ready():
 	menu._on_col_region_pressed("ALL")
 	var all_cards = menu.get_filtered_collection_cards()
 	print("Collection ALL count: ", all_cards.size())
-	assert(all_cards.size() == 257, "Expected 257 All cards, got " + str(all_cards.size()))
+	assert(all_cards.size() == 392, "Expected 392 All cards, got " + str(all_cards.size()))
 	
 	# Hidden shop region filtering
 	assert(menu.hidden_shop_region == "KANTO", "Default Hidden Shop region should be KANTO")
@@ -87,12 +92,17 @@ func _ready():
 	print("Hidden Shop JOHTO grid count: ", menu.hidden_shop_grid.get_child_count())
 	assert(menu.hidden_shop_grid.get_child_count() == 100, "Hidden Shop JOHTO should have 100 cards")
 	
+	menu.hidden_region_buttons["HOENN"].pressed.emit()
+	print("Hidden Shop HOENN grid count: ", menu.hidden_shop_grid.get_child_count())
+	assert(menu.hidden_shop_grid.get_child_count() == 135, "Hidden Shop HOENN should have 135 cards")
+	
 	menu.hidden_region_buttons["OTHER"].pressed.emit()
 	print("Hidden Shop OTHER grid count: ", menu.hidden_shop_grid.get_child_count())
 	assert(menu.hidden_shop_grid.get_child_count() == 6, "Hidden Shop OTHER should have 6 cards")
 	
 	# 4. Verify region labels have no leading icons
 	assert(menu.col_region_buttons["KANTO"].text.begins_with("Kanto ("), "Col KANTO button should start with 'Kanto (' (got '%s')" % menu.col_region_buttons["KANTO"].text)
+	assert(menu.col_region_buttons["HOENN"].text.begins_with("Hoenn ("), "Col HOENN button should start with 'Hoenn (' (got '%s')" % menu.col_region_buttons["HOENN"].text)
 	assert(menu.col_region_buttons["JOHTO"].text.begins_with("Johto ("), "Col JOHTO button should start with 'Johto (' (got '%s')" % menu.col_region_buttons["JOHTO"].text)
 	assert(menu.col_region_buttons["OTHER"].text.begins_with("Other ("), "Col OTHER button should start with 'Other (' (got '%s')" % menu.col_region_buttons["OTHER"].text)
 	assert(menu.col_region_buttons["ALL"].text.begins_with("All ("), "Col ALL button should start with 'All (' (got '%s')" % menu.col_region_buttons["ALL"].text)

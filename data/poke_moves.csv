@@ -233,34 +233,62 @@
 227,Yawn,NORMAL,0,2,2,0,0,SLEEP,Cause SLEEP on foes PKMN during 2 rounds (it wont be able to Move).,Yawn.mp3
 228,Zap Cannon,ELECTRIC,16,4,1,0,0,PARALYZE,"Causes PARALYZE to foes PKMN for 2 rounds (25% chance of being unable to Move, only Recover. Retains status each round).",Zap Cannon.mp3
 236,Acrobatics,NORMAL,8,2,1,0,0,BOOST_IF_FASTER,"If this PKMN is faster than its foe, increase +4 DMG to this Move.",Aerial Ace.mp3
-237,Aeroblast,PSYCHIC,18,4,1,1,4,CRITICAL,"Has a 25% chance of dealing a critical hit (+4 DMG). Use 1 extra energy for +4 DMG.",Air Slash.mp3
-238,Baton Pass,NORMAL,0,1,1,0,0,SUPPORT_BOOST,"Passes any active buffs or energy advantages to the next ally on switch.",Agility.mp3
-239,Body Slam,NORMAL,10,2,1,1,0,PARALYZE,"Use 1 extra energy to inflict PARALYZE for 2 rounds.",Body Slam.mp3
-240,Brave Bird,FIRE,18,4,1,1,0,RECOIL,"Deals massive damage. User takes 25% recoil damage unless boosted with 1 extra energy.",Aerial Ace.mp3
-241,Comet Punch,NORMAL,3,2,2,0,0,MULTI_ATTACK,"The energy used will be the amount of hits it will do. Every hit does 2-3 DMG with 25% crit (+2 DMG).",Comet Punch 2hits.mp3
-242,Dark Pulse,DARK,12,3,1,0,0,FLINCH,"Has a 30% chance to cause FLINCH on the foe.",Dark Pulse.mp3
+237,Aeroblast,PSYCHIC,18,4,1,1,4,CRITICAL,Has a 25% chance of dealing a critical hit (+4 DMG). Use 1 extra energy for +4 DMG.,Air Slash.mp3
+238,Baton Pass,NORMAL,0,1,1,0,0,SUPPORT_BOOST,Passes any active buffs or energy advantages to the next ally on switch.,Agility.mp3
+239,Body Slam,NORMAL,10,2,1,1,0,PARALYZE,Use 1 extra energy to inflict PARALYZE for 2 rounds.,Body Slam.mp3
+240,Brave Bird,FIRE,18,4,1,1,0,RECOIL,Deals massive damage. User takes 25% recoil damage unless boosted with 1 extra energy.,Aerial Ace.mp3
+241,Comet Punch,NORMAL,3,2,2,0,0,MULTI_ATTACK,The energy used will be the amount of hits it will do. Every hit does 2-3 DMG with 25% crit (+2 DMG).,Comet Punch 2hits.mp3
+242,Dark Pulse,DARK,12,3,1,0,0,FLINCH,Has a 30% chance to cause FLINCH on the foe.,Dark Pulse.mp3
 243,Destiny Bond,PSYCHIC,0,2,2,0,0,REVENGE,"If this PKMN faints this round, the attacker takes 10 DMG.",Spite.mp3
 244,Explosion,NORMAL,24,4,1,0,0,RECOIL,"Deals enormous damage to the foe, but self-inflicts 10 recoil DMG.",Self-Destruct.mp3
-245,Flamethrower,FIRE,14,3,1,1,3,BURN,"Has a chance to BURN foe. Use 1 extra energy to increase +3 DMG and guarantee BURN.",Flamethrower.mp3
-246,Future Sight,PSYCHIC,16,4,1,0,0,SNOWBALL,"Deals 16 DMG and powers up +4 DMG if used again consecutively.",Psychic.mp3
-247,Hidden Power,NORMAL,6,2,1,0,0,WEAK_SPOT,"Strikes using the elemental weakness of the defending PKMN.",Ancient Power.mp3
-248,Ice Fang,WATER,6,2,1,1,3,FREEZE,"Use 1 extra energy to cause +3 DMG and freeze the foe for 2 rounds.",Bite.mp3
+245,Flamethrower,FIRE,14,3,1,1,3,BURN,Has a chance to BURN foe. Use 1 extra energy to increase +3 DMG and guarantee BURN.,Flamethrower.mp3
+246,Future Sight,PSYCHIC,16,4,1,0,0,SNOWBALL,Deals 16 DMG and powers up +4 DMG if used again consecutively.,Psychic.mp3
+247,Hidden Power,NORMAL,6,2,1,0,0,WEAK_SPOT,Strikes using the elemental weakness of the defending PKMN.,Ancient Power.mp3
+248,Ice Fang,WATER,6,2,1,1,3,FREEZE,Use 1 extra energy to cause +3 DMG and freeze the foe for 2 rounds.,Bite.mp3
 249,Magical Leaf,GRASS,8,2,1,0,0,BOOST_IF_FASTER,"Never misses. If faster than foe, deals +3 DMG.",Razor Leaf.mp3
-250,Metal Claw,GROUND,6,2,1,0,0,SPEED_UP,"Deals 6 DMG and increases this PKMN's Speed by +1 next round.",Slash.mp3
-251,Milk Drink,NORMAL,0,2,2,0,0,REST,"Recovers 10 HP to this PKMN.",Softboiled.mp3
-252,Night Shade,DARK,6,2,1,0,0,NONE,"Deals 6 damage ignoring defense.",Spite.mp3
-253,Octazooka,WATER,10,3,1,0,0,BLIND,"Blasts ink reducing foe's Speed by 2 next round.",Bubble Beam.mp3
-254,Petal Blizzard,GRASS,14,3,1,1,4,BOOST_DMG,"Use 1 extra energy to increase +4 DMG to this Move.",Petal Dance.mp3
-255,Present,NORMAL,6,2,1,0,0,EXTRA_HIT,"A surprise attack that has a 35% chance to hit twice.",Metronome.mp3
-256,Psywave,PSYCHIC,4,1,1,1,3,BOOST_DMG,"Use 1 extra energy to increase +3 DMG.",Psybeam.mp3
-257,Recover,NORMAL,0,2,2,0,0,REST,"Restores up to 8 HP to this PKMN.",Softboiled.mp3
-258,Sacred Fire,FIRE,18,4,1,1,0,BURN,"Deals 18 DMG and guarantees BURN (2 DMG/round) for 2 rounds. Boost for +4 DMG.",Fire Blast.mp3
-259,Self-Destruct,NORMAL,16,3,1,0,0,RECOIL,"Inflicts 16 DMG but user receives 6 recoil DMG.",Self-Destruct.mp3
-260,Shadow Ball,DARK,12,3,1,1,3,BOOST_DMG,"Hurls a dark shadowy blob. Use 1 extra energy for +3 DMG.",Shadow Punch.mp3
-261,Signal Beam,GRASS,10,2,1,0,0,CONFUSION,"Has a 30% chance to inflict CONFUSION on the foe.",Psybeam.mp3
-262,Sketch,NORMAL,4,1,1,0,0,METAMORPHOSIS,"Copies foe's techniques and deals 4 basic damage.",Mimic.mp3
-263,Soft-Boiled,NORMAL,0,2,2,0,0,REST,"Recovers 12 HP to this PKMN.",Softboiled.mp3
-264,Spikes,GROUND,0,1,1,0,0,BLOCK,"Scatters spikes that deal 3 damage whenever foe switches or attacks next round.",Spikes.mp3
-265,Steel Wing,GROUND,10,2,1,0,0,SHIELD,"Deals 10 DMG and grants user -1 damage received for 2 rounds.",Wing Attack.mp3
-266,Triple Kick,FIGHTING,3,2,2,0,0,MULTI_ATTACK,"Hits 3 times sequentially with rising power.",Triple Kick 2hits.mp3
-267,Wood Hammer,GROUND,14,3,1,1,0,RECOIL,"Slams with great force. Takes 25% recoil DMG unless 1 extra energy is used.",Take Down.mp3
+250,Metal Claw,GROUND,6,2,1,0,0,SPEED_UP,Deals 6 DMG and increases this PKMN's Speed by +1 next round.,Slash.mp3
+251,Milk Drink,NORMAL,0,2,2,0,0,REST,Recovers 10 HP to this PKMN.,Softboiled.mp3
+252,Night Shade,DARK,6,2,1,0,0,NONE,Deals 6 damage ignoring defense.,Spite.mp3
+253,Octazooka,WATER,10,3,1,0,0,BLIND,Blasts ink reducing foe's Speed by 2 next round.,Bubble Beam.mp3
+254,Petal Blizzard,GRASS,14,3,1,1,4,BOOST_DMG,Use 1 extra energy to increase +4 DMG to this Move.,Petal Dance.mp3
+255,Present,NORMAL,6,2,1,0,0,EXTRA_HIT,A surprise attack that has a 35% chance to hit twice.,Metronome.mp3
+256,Psywave,PSYCHIC,4,1,1,1,3,BOOST_DMG,Use 1 extra energy to increase +3 DMG.,Psybeam.mp3
+257,Recover,NORMAL,0,2,2,0,0,REST,Restores up to 8 HP to this PKMN.,Softboiled.mp3
+258,Sacred Fire,FIRE,18,4,1,1,0,BURN,Deals 18 DMG and guarantees BURN (2 DMG/round) for 2 rounds. Boost for +4 DMG.,Fire Blast.mp3
+259,Self-Destruct,NORMAL,16,3,1,0,0,RECOIL,Inflicts 16 DMG but user receives 6 recoil DMG.,Self-Destruct.mp3
+260,Shadow Ball,DARK,12,3,1,1,3,BOOST_DMG,Hurls a dark shadowy blob. Use 1 extra energy for +3 DMG.,Shadow Punch.mp3
+261,Signal Beam,GRASS,10,2,1,0,0,CONFUSION,Has a 30% chance to inflict CONFUSION on the foe.,Psybeam.mp3
+262,Sketch,NORMAL,4,1,1,0,0,METAMORPHOSIS,Copies foe's techniques and deals 4 basic damage.,Mimic.mp3
+263,Soft-Boiled,NORMAL,0,2,2,0,0,REST,Recovers 12 HP to this PKMN.,Softboiled.mp3
+264,Spikes,GROUND,0,1,1,0,0,BLOCK,Scatters spikes that deal 3 damage whenever foe switches or attacks next round.,Spikes.mp3
+265,Steel Wing,GROUND,10,2,1,0,0,SHIELD,Deals 10 DMG and grants user -1 damage received for 2 rounds.,Wing Attack.mp3
+266,Triple Kick,FIGHTING,3,2,2,0,0,MULTI_ATTACK,Hits 3 times sequentially with rising power.,Triple Kick 2hits.mp3
+267,Wood Hammer,GROUND,14,3,1,1,0,RECOIL,Slams with great force. Takes 25% recoil DMG unless 1 extra energy is used.,Take Down.mp3
+268,Blaze Kick,FIRE,10,2,1,1,3,CRITICAL,Launches a fiery kick with high critical hit ratio. Use 1 extra energy for +3 DMG.,Blaze Kick.mp3
+269,Sky Uppercut,FIGHTING,8,2,1,1,3,BOOST_IF_FASTER,"If this PKMN is faster than its foe, deals +3 DMG to this Move.",Sky Uppercut.mp3
+270,Dragon Claw,NORMAL,8,2,1,1,3,CRITICAL,Slashes the foe with sharp dragon claws. 25% Critical Hit.,Dragon Claw.mp3
+271,Meteor Mash,GROUND,12,3,2,1,4,BOOST_DMG,Punches with the hard impact of a meteor. Boost increases damage by +4.,Meteor Mash.mp3
+272,Doom Desire,GROUND,14,3,2,1,4,SHIELD_BREAKER,Concentrates celestial energy into a devastating strike that ignores shields.,Doom Desire.mp3
+273,Psycho Boost,PSYCHIC,14,3,2,1,4,RECOIL,Unleashes a maximum power psychic beam. Deals massive damage with recoil.,Psycho Boost.mp3
+274,Luster Purge,PSYCHIC,10,2,1,1,3,BOOST_DMG,Unleashes a brilliant burst of light. Boost increases damage by +3.,Luster Purge.mp3
+275,Mist Ball,PSYCHIC,10,2,1,1,3,BOOST_DMG,Strikes with a misty orb of telekinetic feathers. Boost increases damage by +3.,Mist Ball.mp3
+276,Water Spout,WATER,12,3,2,1,4,BOOST_DMG,Spouts a giant pillar of water at high pressure. Boost deals +4 DMG.,Water Spout part 1.mp3
+277,Eruption,FIRE,12,3,2,1,4,BOOST_DMG,Explodes with catastrophic volcanic fire. Boost deals +4 DMG.,Eruption.mp3
+278,Overheat,FIRE,12,3,2,1,4,RECOIL,Attacks the foe with scorching all-out fire. High recoil strain.,Overheat.mp3
+279,Needle Arm,GRASS,6,2,1,1,2,FLINCH,Strikes with thorny cactus arms. Causes FLINCH on foe.,Needle Arm.mp3
+280,Crush Claw,NORMAL,8,2,1,1,3,CRITICAL,Tears at the target with giant crushing claws. 25% Critical Hit.,Crush Claw.mp3
+281,Poison Tail,DARK,6,2,1,1,3,POISON,"Strikes with a venomous tail, inflicting POISON on foe.",Poison Tail.mp3
+282,Shadow Sneak,DARK,4,1,1,1,2,BOOST_IF_FASTER,Extends the user shadow to strike first. Deals +2 DMG if faster.,Shadow Punch.mp3
+283,Shadow Claw,DARK,8,2,1,1,3,CRITICAL,Slashes with a sharp shadow claw. 25% Critical Hit.,Slash.mp3
+284,Draco Meteor,NORMAL,14,3,2,1,4,RECOIL,Summons celestial dragon comets onto the target with immense power.,Meteor Mash.mp3
+285,Arm Thrust,FIGHTING,3,1,1,1,0,MULTI_ATTACK,Attacks with consecutive thrusting arms (2-5 hits).,Arm Thrust 1hit.mp3
+286,Fake Out,NORMAL,4,1,1,1,2,FLINCH,"An unexpected slap that catches the foe off guard, causing FLINCH.",Fake Out.mp3
+287,Knock Off,DARK,6,2,1,1,3,BOOST_DMG,Knocks down the opponent with a swift hit. Boost deals +3 DMG.,Knock Off.mp3
+288,Night Slash,DARK,8,2,1,1,3,CRITICAL,Slashes the foe as fast as shadows fall. 25% Critical Hit.,Night Shade.mp3
+289,Silver Wind,GRASS,6,2,1,1,3,BOOST_IF_FASTER,Attacks with a wind of shimmering powdery scales. Deals +3 DMG if faster.,Silver Wind.mp3
+290,Weather Ball,NORMAL,6,2,1,1,4,BOOST_DMG,Gathers natural energy from the weather. Boost increases damage by +4.,Weather Ball.mp3
+291,Astonish,DARK,4,1,1,1,2,FLINCH,"Shocks the foe with an unexpected ghostly fright, causing FLINCH.",Astonish.mp3
+292,Bounce,WATER,8,2,1,1,3,PARALYZE,"Bounces high into the air and crashes down, inflicting PARALYZE.",Bounce.mp3
+293,Spore,GRASS,0,2,1,0,0,SLEEP,Releases a cloud of hypnotic fungal spores that induce SLEEP.,Spore.mp3
+294,Volt Tackle,ELECTRIC,12,3,2,1,4,RECOIL,Electrifies the user body and tackles at lightning speed with recoil.,Volt Tackle part 1.mp3
+295,Teeter Dance,NORMAL,0,1,1,0,0,CONFUSION,Performs an uncoordinated wobbly dance that inflicts CONFUSION.,Teeter Dance.mp3

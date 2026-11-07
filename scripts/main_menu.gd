@@ -4823,6 +4823,7 @@ func _setup_shop_sections() -> void:
 	var hid_regions = [
 		{"id": "KANTO", "label": "Kanto"},
 		{"id": "JOHTO", "label": "Johto"},
+		{"id": "HOENN", "label": "Hoenn"},
 		{"id": "OTHER", "label": "Other"},
 		{"id": "ALL", "label": "All"}
 	]
@@ -5134,7 +5135,7 @@ func _populate_hidden_shop_view() -> void:
 		child.queue_free()
 		
 	# Count cards per region for button labels
-	var reg_counts = {"KANTO": 0, "JOHTO": 0, "OTHER": 0, "ALL": all_catalog_cards.size()}
+	var reg_counts = {"KANTO": 0, "JOHTO": 0, "HOENN": 0, "OTHER": 0, "ALL": all_catalog_cards.size()}
 	for c in all_catalog_cards:
 		var cr = str(c.get("region", "Kanto")).strip_edges().to_upper()
 		if cr == "":
@@ -5143,7 +5144,7 @@ func _populate_hidden_shop_view() -> void:
 			reg_counts[cr] += 1
 		else:
 			reg_counts["OTHER"] += 1
-	var reg_labels = {"KANTO": "Kanto", "JOHTO": "Johto", "OTHER": "Other", "ALL": "All"}
+	var reg_labels = {"KANTO": "Kanto", "JOHTO": "Johto", "HOENN": "Hoenn", "OTHER": "Other", "ALL": "All"}
 	for rk in hidden_region_buttons:
 		var rbtn: Button = hidden_region_buttons[rk]
 		rbtn.text = "%s (%d)" % [reg_labels.get(rk, rk), reg_counts.get(rk, 0)]
@@ -5159,7 +5160,7 @@ func _populate_hidden_shop_view() -> void:
 			var card_reg = str(card.get("region", "Kanto")).strip_edges().to_upper()
 			if card_reg == "":
 				card_reg = "KANTO"
-			if not (card_reg in ["KANTO", "JOHTO"]):
+			if not (card_reg in ["KANTO", "JOHTO", "HOENN"]):
 				card_reg = "OTHER"
 			if card_reg != hidden_shop_region:
 				continue
@@ -6189,6 +6190,7 @@ func _setup_collection_filters() -> void:
 	var col_regions = [
 		{"id": "KANTO", "label": "Kanto"},
 		{"id": "JOHTO", "label": "Johto"},
+		{"id": "HOENN", "label": "Hoenn"},
 		{"id": "OTHER", "label": "Other"},
 		{"id": "ALL", "label": "All"}
 	]
@@ -6390,8 +6392,8 @@ func _on_col_region_pressed(reg_id: String) -> void:
 func _update_col_region_buttons_ui() -> void:
 	if col_region_buttons.is_empty():
 		return
-	var totals = {"KANTO": 0, "JOHTO": 0, "OTHER": 0, "ALL": all_catalog_cards.size()}
-	var owned = {"KANTO": 0, "JOHTO": 0, "OTHER": 0, "ALL": 0}
+	var totals = {"KANTO": 0, "JOHTO": 0, "HOENN": 0, "OTHER": 0, "ALL": all_catalog_cards.size()}
+	var owned = {"KANTO": 0, "JOHTO": 0, "HOENN": 0, "OTHER": 0, "ALL": 0}
 	for c in all_catalog_cards:
 		var cid = int(c.get("id", 0))
 		var is_unl = GameData.is_pokemon_unlocked(cid)
@@ -6405,7 +6407,7 @@ func _update_col_region_buttons_ui() -> void:
 		totals[cr] += 1
 		if is_unl:
 			owned[cr] += 1
-	var reg_labels = {"KANTO": "Kanto", "JOHTO": "Johto", "OTHER": "Other", "ALL": "All"}
+	var reg_labels = {"KANTO": "Kanto", "JOHTO": "Johto", "HOENN": "Hoenn", "OTHER": "Other", "ALL": "All"}
 	for rk in col_region_buttons:
 		var rbtn: Button = col_region_buttons[rk]
 		rbtn.text = "%s (%d/%d)" % [reg_labels.get(rk, rk), owned.get(rk, 0), totals.get(rk, 0)]
@@ -6447,12 +6449,12 @@ func get_filtered_collection_cards() -> Array:
 		var cid = int(card["id"])
 		var is_unlocked = GameData.is_pokemon_unlocked(cid)
 		
-		# 0. Filtro Region (Región Pokémon: Kanto, Johto, Other)
+		# 0. Filtro Region (Región Pokémon: Kanto, Johto, Hoenn, Other)
 		if col_filter_region != "ALL":
 			var c_region = str(card.get("region", "Kanto")).strip_edges().to_upper()
 			if c_region == "":
 				c_region = "KANTO"
-			if not (c_region in ["KANTO", "JOHTO"]):
+			if not (c_region in ["KANTO", "JOHTO", "HOENN"]):
 				c_region = "OTHER"
 			if c_region != col_filter_region:
 				continue
