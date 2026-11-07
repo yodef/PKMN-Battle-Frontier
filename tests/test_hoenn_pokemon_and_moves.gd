@@ -6,7 +6,7 @@ func _ready():
 	# 1. Total Pokémon loaded in catalog
 	var all_p = GameData.pokemon_catalog
 	print("Total Pokémon loaded: ", all_p.size())
-	assert(all_p.size() == 392, "Expected 392 Pokemon, got " + str(all_p.size()))
+	assert(all_p.size() >= 392, "Expected at least 392 Pokemon, got " + str(all_p.size()))
 	
 	# 2. Check Hoenn moves
 	var new_moves_to_test = [

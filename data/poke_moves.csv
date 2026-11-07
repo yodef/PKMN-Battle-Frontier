@@ -292,3 +292,20 @@
 293,Spore,GRASS,0,2,1,0,0,SLEEP,Releases a cloud of hypnotic fungal spores that induce SLEEP.,Spore.mp3
 294,Volt Tackle,ELECTRIC,12,3,2,1,4,RECOIL,Electrifies the user body and tackles at lightning speed with recoil.,Volt Tackle part 1.mp3
 295,Teeter Dance,NORMAL,0,1,1,0,0,CONFUSION,Performs an uncoordinated wobbly dance that inflicts CONFUSION.,Teeter Dance.mp3
+296,Roar of Time,GROUND,14,3,2,1,4,RECOIL,Tears space and time with immense celestial power. Causes recoil strain.,Hyper Beam.mp3
+297,Spacial Rend,WATER,12,3,2,1,4,CRITICAL,Tears the surrounding space apart. High critical hit ratio.,Aeroblast.mp3
+298,Shadow Force,DARK,14,3,2,1,4,SHIELD_BREAKER,"Vanishes into the distortion world and strikes, piercing through enemy shields.",Shadow Ball.mp3
+299,Magma Storm,FIRE,12,3,2,1,4,BURN,Traps the foe in a maelstrom of boiling molten fire. Inflicts BURN.,Fire Blast.mp3
+300,Crush Grip,NORMAL,12,3,2,1,4,ANTI_TANK,Crushes the foe with colossal titan strength. Deals extra damage to high HP foes.,Crush Claw.mp3
+301,Dark Void,DARK,0,2,1,0,0,SLEEP,"Drags the foe into a realm of pitch-black darkness, causing deep SLEEP.",Nightmare.mp3
+302,Seed Flare,GRASS,12,3,2,1,4,BOOST_DMG,Generates a purification shockwave from its blooming flower. Boost deals +4 DMG.,Solar Beam part 1.mp3
+303,Judgment,NORMAL,16,3,2,1,5,DOUBLE_DMG,The ultimate judgment of the Original One. Drops meteors of divine cosmic light.,Doom Desire.mp3
+304,Head Smash,GROUND,14,3,2,1,4,RECOIL,Slams its rock-hard skull into the foe at full throttle. High recoil.,Take Down.mp3
+305,Chatter,NORMAL,6,2,1,1,2,CONFUSION,"Mimics human chatter at deafening decibels, causing CONFUSION on foe.",Sonic Boom.mp3
+306,Attack Order,DARK,8,2,1,1,3,CRITICAL,Commands a swarm of loyal grubs to sting the foe. 25% Critical Hit.,Pin Missile 2hits.mp3
+307,Defend Order,DARK,0,2,1,0,0,SHIELD,Summons a defensive wall of worker bees to block incoming damage.,Protect.mp3
+308,Leaf Storm,GRASS,14,3,2,1,4,RECOIL,Whips up a fierce tempest of sharp leaves. Deals immense damage with strain.,Razor Leaf part 1.mp3
+309,Energy Ball,GRASS,8,2,1,1,3,BOOST_DMG,Draws pure energy from nature and launches it at the foe. Boost deals +3 DMG.,Giga Drain part 1.mp3
+310,Ominous Wind,DARK,6,2,1,1,3,BOOST_IF_FASTER,Blasts the target with a gust of spectral wind. Deals +3 DMG if faster.,Silver Wind.mp3
+311,Vacuum Wave,FIGHTING,4,1,1,1,2,BOOST_IF_FASTER,Whirrs its fists to send a wave of pure vacuum. Deals +2 DMG if faster.,Sonic Boom.mp3
+312,Magnet Bomb,GROUND,6,2,1,1,3,BOOST_DMG,Launches magnetized metal orbs that home in on the target.,Swift.mp3

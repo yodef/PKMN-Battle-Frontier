@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c6sinnohpkmn01"]
+
+[ext_resource type="Script" path="res://tests/test_sinnoh_pokemon_and_moves.gd" id="1_test"]
+
+[node name="TestSinnoh" type="Node"]
+script = ExtResource("1_test")

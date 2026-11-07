@@ -391,104 +391,104 @@ id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,textu
 389,384,Legendary,Rayquaza,36,10,5,NORMAL,WATER,GROUND,6,384.png,Air Lock,Cancels all weather and field effects.,Dragon Claw,Outrage,FALSE,Legendary,,,,0,S+,Hoenn
 390,385,Legendary,Jirachi,32,10,5,GROUND,FIRE,PSYCHIC,5,385.png,Serene Grace,Secondary effects occur more frequently.,Swift,Doom Desire,FALSE,Legendary,,,,0,S,Hoenn
 391,386,Legendary,Deoxys,30,10,5,PSYCHIC,DARK,FIGHTING,5,386.png,Pressure,Forces opponent to expend energy quicker.,Psychic,Psycho Boost,FALSE,Legendary,,,,0,S+,Hoenn
-392,387,Basic,Turtwig,,,,GRASS,,,,387.png,,,,,FALSE,,,Grotle,Leaf,10,,Sinnoh
-393,388,Stage 1,Grotle,,,,GRASS,,,,388.png,,,,,FALSE,,Turtwig,Torterra,Leaf,25,,Sinnoh
-394,389,Stage 2,Torterra,,,,GRASS,,,,389.png,,,,,FALSE,,Grotle,,,0,,Sinnoh
-395,390,Basic,Chimchar,,,,FIRE,,,,390.png,,,,,FALSE,,,Monferno,Fire,10,,Sinnoh
-396,391,Stage 1,Monferno,,,,FIRE,,,,391.png,,,,,FALSE,,Chimchar,Infernape,Fire,25,,Sinnoh
-397,392,Stage 2,Infernape,,,,FIRE,,,,392.png,,,,,FALSE,,Monferno,,,0,,Sinnoh
-398,393,Basic,Piplup,,,,WATER,,,,393.png,,,,,FALSE,,,Prinplup,Water,10,,Sinnoh
-399,394,Stage 1,Prinplup,,,,WATER,,,,394.png,,,,,FALSE,,Piplup,Empoleon,Water,25,,Sinnoh
-400,395,Stage 2,Empoleon,,,,WATER,,,,395.png,,,,,FALSE,,Prinplup,,,0,,Sinnoh
-401,396,Basic,Starly,,,,NORMAL,,,,396.png,,,,,FALSE,,,Staravia,Heart,10,,Sinnoh
-402,397,Stage 1,Staravia,,,,NORMAL,,,,397.png,,,,,FALSE,,Starly,Staraptor,Heart,25,,Sinnoh
-403,398,Stage 2,Staraptor,,,,NORMAL,,,,398.png,,,,,FALSE,,Staravia,,,0,,Sinnoh
-404,399,Basic,Bidoof,,,,NORMAL,,,,399.png,,,,,FALSE,,,Bibarel,Heart,20,,Sinnoh
-405,400,Stage 1,Bibarel,,,,NORMAL,,,,400.png,,,,,FALSE,,Bidoof,,,0,,Sinnoh
-406,401,Basic,Kricketot,,,,DARK,,,,401.png,,,,,FALSE,,,Kricketune,Leaf,20,,Sinnoh
-407,402,Stage 1,Kricketune,,,,DARK,,,,402.png,,,,,FALSE,,Kricketot,,,0,,Sinnoh
-408,403,Basic,Shinx,,,,ELECTRIC,,,,403.png,,,,,FALSE,,,Luxio,Thunder,10,,Sinnoh
-409,404,Stage 1,Luxio,,,,ELECTRIC,,,,404.png,,,,,FALSE,,Shinx,Luxray,Thunder,25,,Sinnoh
-410,405,Stage 2,Luxray,,,,ELECTRIC,,,,405.png,,,,,FALSE,,Luxio,,,0,,Sinnoh
-411,406,Basic,Budew,,,,GRASS,,,,406.png,,,,,FALSE,,,Roselia,Leaf,10,,Sinnoh
-412,407,Stage 2,Roserade,,,,GRASS,,,,407.png,,,,,FALSE,,Roselia,,,0,,Sinnoh
-413,408,Basic,Cranidos,,,,GROUND,,,,408.png,,,,,FALSE,,,Rampardos,Ground,20,,Sinnoh
-414,409,Stage 1,Rampardos,,,,GROUND,,,,409.png,,,,,FALSE,,Cranidos,,,0,,Sinnoh
-415,410,Basic,Shieldon,,,,GROUND,,,,410.png,,,,,FALSE,,,Bastiodon,Ground,20,,Sinnoh
-416,411,Stage 1,Bastiodon,,,,GROUND,,,,411.png,,,,,FALSE,,Shieldon,,,0,,Sinnoh
-417,412,Basic,Burmy,,,,DARK,,,,412.png,,,,,FALSE,,,"Wormadam, Mothim","Leaf, Leaf",20,,Sinnoh
-418,413,Stage 1,Wormadam,,,,DARK,,,,413.png,,,,,FALSE,,Burmy,,,0,,Sinnoh
-419,414,Stage 1,Mothim,,,,DARK,,,,414.png,,,,,FALSE,,Burmy,,,0,,Sinnoh
-420,415,Basic,Combee,,,,DARK,,,,415.png,,,,,FALSE,,,Vespiquen,Leaf,20,,Sinnoh
-421,416,Stage 1,Vespiquen,,,,DARK,,,,416.png,,,,,FALSE,,Combee,,,0,,Sinnoh
-422,417,Basic,Pachirisu,,,,ELECTRIC,,,,417.png,,,,,FALSE,,,,,0,,Sinnoh
-423,418,Basic,Buizel,,,,WATER,,,,418.png,,,,,FALSE,,,Floatzel,Water,20,,Sinnoh
-424,419,Stage 1,Floatzel,,,,WATER,,,,419.png,,,,,FALSE,,Buizel,,,0,,Sinnoh
-425,420,Basic,Cherubi,,,,GRASS,,,,420.png,,,,,FALSE,,,Cherrim,Leaf,20,,Sinnoh
-426,421,Stage 1,Cherrim,,,,GRASS,,,,421.png,,,,,FALSE,,Cherubi,,,0,,Sinnoh
-427,422,Basic,Shellos,,,,WATER,,,,422.png,,,,,FALSE,,,Gastrodon,Water,20,,Sinnoh
-428,423,Stage 1,Gastrodon,,,,WATER,,,,423.png,,,,,FALSE,,Shellos,,,0,,Sinnoh
-429,424,Stage 1,Ambipom,,,,NORMAL,,,,424.png,,,,,FALSE,,Aipom,,,0,,Sinnoh
-430,425,Basic,Drifloon,,,,DARK,,,,425.png,,,,,FALSE,,,Drifblim,Night,20,,Sinnoh
-431,426,Stage 1,Drifblim,,,,DARK,,,,426.png,,,,,FALSE,,Drifloon,,,0,,Sinnoh
-432,427,Basic,Buneary,,,,NORMAL,,,,427.png,,,,,FALSE,,,Lopunny,Heart,20,,Sinnoh
-433,428,Stage 1,Lopunny,,,,NORMAL,,,,428.png,,,,,FALSE,,Buneary,,,0,,Sinnoh
-434,429,Stage 1,Mismagius,,,,DARK,,,,429.png,,,,,FALSE,,Misdreavus,,,0,,Sinnoh
-435,430,Stage 1,Honchkrow,,,,DARK,,,,430.png,,,,,FALSE,,Murkrow,,,0,,Sinnoh
-436,431,Basic,Glameow,,,,NORMAL,,,,431.png,,,,,FALSE,,,Purugly,Heart,20,,Sinnoh
-437,432,Stage 1,Purugly,,,,NORMAL,,,,432.png,,,,,FALSE,,Glameow,,,0,,Sinnoh
-438,433,Basic,Chingling,,,,PSYCHIC,,,,433.png,,,,,FALSE,,,Chimecho,Psyche,20,,Sinnoh
-439,434,Basic,Stunky,,,,DARK,,,,434.png,,,,,FALSE,,,Skuntank,Night,20,,Sinnoh
-440,435,Stage 1,Skuntank,,,,DARK,,,,435.png,,,,,FALSE,,Stunky,,,0,,Sinnoh
-441,436,Basic,Bronzor,,,,GROUND,,,,436.png,,,,,FALSE,,,Bronzong,Psyche,20,,Sinnoh
-442,437,Stage 1,Bronzong,,,,GROUND,,,,437.png,,,,,FALSE,,Bronzor,,,0,,Sinnoh
-443,438,Basic,Bonsly,,,,GROUND,,,,438.png,,,,,FALSE,,,Sudowoodo,Ground,20,,Sinnoh
-444,440,Basic,Happiny,,,,NORMAL,,,,440.png,,,,,FALSE,,,Chansey,Heart,10,,Sinnoh
-445,441,Basic,Chatot,,,,NORMAL,,,,441.png,,,,,FALSE,,,,,0,,Sinnoh
-446,442,Basic,Spiritomb,,,,DARK,,,,442.png,,,,,FALSE,,,,,0,,Sinnoh
-447,443,Basic,Gible,,,,NORMAL,,,,443.png,,,,,FALSE,,,Gabite,Scale,10,,Sinnoh
-448,444,Stage 1,Gabite,,,,NORMAL,,,,444.png,,,,,FALSE,,Gible,Garchomp,Scale,25,,Sinnoh
-449,445,Stage 2,Garchomp,,,,NORMAL,,,,445.png,,,,,FALSE,,Gabite,,,0,,Sinnoh
-450,446,Basic,Munchlax,,,,NORMAL,,,,446.png,,,,,FALSE,,,Snorlax,Heart,20,,Sinnoh
-451,447,Basic,Riolu,,,,FIGHTING,,,,447.png,,,,,FALSE,,,Lucario,Punch,20,,Sinnoh
-452,448,Stage 1,Lucario,,,,FIGHTING,,,,448.png,,,,,FALSE,,Riolu,,,0,,Sinnoh
-453,449,Basic,Hippopotas,,,,GROUND,,,,449.png,,,,,FALSE,,,Hippowdon,Ground,20,,Sinnoh
-454,450,Stage 1,Hippowdon,,,,GROUND,,,,450.png,,,,,FALSE,,Hippopotas,,,0,,Sinnoh
-455,451,Basic,Skorupi,,,,DARK,,,,451.png,,,,,FALSE,,,Drapion,Night,20,,Sinnoh
-456,452,Stage 1,Drapion,,,,DARK,,,,452.png,,,,,FALSE,,Skorupi,,,0,,Sinnoh
-457,453,Basic,Croagunk,,,,DARK,,,,453.png,,,,,FALSE,,,Toxicroak,Punch,20,,Sinnoh
-458,454,Stage 1,Toxicroak,,,,DARK,,,,454.png,,,,,FALSE,,Croagunk,,,0,,Sinnoh
-459,455,Basic,Carnivine,,,,GRASS,,,,455.png,,,,,FALSE,,,,,0,,Sinnoh
-460,456,Basic,Finneon,,,,WATER,,,,456.png,,,,,FALSE,,,Lumineon,Water,20,,Sinnoh
-461,457,Stage 1,Lumineon,,,,WATER,,,,457.png,,,,,FALSE,,Finneon,,,0,,Sinnoh
-462,458,Basic,Mantyke,,,,WATER,,,,458.png,,,,,FALSE,,,Mantine,Water,20,,Sinnoh
-463,459,Basic,Snover,,,,GRASS,,,,459.png,,,,,FALSE,,,Abomasnow,Leaf,20,,Sinnoh
-464,460,Stage 1,Abomasnow,,,,GRASS,,,,460.png,,,,,FALSE,,Snover,,,0,,Sinnoh
-465,461,Stage 1,Weavile,,,,DARK,,,,461.png,,,,,FALSE,,Sneasel,,,0,,Sinnoh
-466,463,Stage 1,Lickilicky,,,,NORMAL,,,,463.png,,,,,FALSE,,Lickitung,,,0,,Sinnoh
-467,468,Stage 2,Togekiss,,,,NORMAL,,,,468.png,,,,,FALSE,,Togetic,,,0,,Sinnoh
-468,469,Stage 1,Yanmega,,,,DARK,,,,469.png,,,,,FALSE,,Yanma,,,0,,Sinnoh
-469,470,Stage 1,Leafeon,,,,GRASS,,,,470.png,,,,,FALSE,,Eevee,,,0,,Sinnoh
-470,471,Stage 1,Glaceon,,,,WATER,,,,471.png,,,,,FALSE,,Eevee,,,0,,Sinnoh
-471,472,Stage 1,Gliscor,,,,GROUND,,,,472.png,,,,,FALSE,,Gligar,,,0,,Sinnoh
-472,473,Stage 2,Mamoswine,,,,WATER,,,,473.png,,,,,FALSE,,Piloswine,,,0,,Sinnoh
-473,474,Stage 2,Porygon-Z,,,,NORMAL,,,,474.png,,,,,FALSE,,Porygon2,,,0,,Sinnoh
-474,475,Stage 2,Gallade,,,,PSYCHIC,,,,475.png,,,,,FALSE,,Kirlia,,,0,,Sinnoh
-475,476,Stage 1,Probopass,,,,GROUND,,,,476.png,,,,,FALSE,,Nosepass,,,0,,Sinnoh
-476,477,Stage 2,Dusknoir,,,,DARK,,,,477.png,,,,,FALSE,,Dusclops,,,0,,Sinnoh
-477,478,Stage 1,Froslass,,,,WATER,,,,478.png,,,,,FALSE,,Snorunt,,,0,,Sinnoh
-478,479,Basic,Rotom,,,,ELECTRIC,,,,479.png,,,,,FALSE,,,,,0,,Sinnoh
-479,480,Legendary,Uxie,,,,PSYCHIC,,,,480.png,,,,,FALSE,,,,,0,,Sinnoh
-480,481,Legendary,Mesprit,,,,PSYCHIC,,,,481.png,,,,,FALSE,,,,,0,,Sinnoh
-481,482,Legendary,Azelf,,,,PSYCHIC,,,,482.png,,,,,FALSE,,,,,0,,Sinnoh
-482,483,Legendary,Dialga,,,,GROUND,,,,483.png,,,,,FALSE,,,,,0,,Sinnoh
-483,484,Legendary,Palkia,,,,WATER,,,,484.png,,,,,FALSE,,,,,0,,Sinnoh
-484,485,Legendary,Heatran,,,,FIRE,,,,485.png,,,,,FALSE,,,,,0,,Sinnoh
-485,486,Legendary,Regigigas,,,,NORMAL,,,,486.png,,,,,FALSE,,,,,0,,Sinnoh
-486,487,Legendary,Giratina,,,,DARK,,,,487.png,,,,,FALSE,,,,,0,,Sinnoh
-487,488,Legendary,Cresselia,,,,PSYCHIC,,,,488.png,,,,,FALSE,,,,,0,,Sinnoh
-488,489,Legendary,Phione,,,,WATER,,,,489.png,,,,,FALSE,,,,,0,,Sinnoh
-489,490,Legendary,Manaphy,,,,WATER,,,,490.png,,,,,FALSE,,,,,0,,Sinnoh
-490,491,Legendary,Darkrai,,,,DARK,,,,491.png,,,,,FALSE,,,,,0,,Sinnoh
-491,492,Legendary,Shaymin,,,,GRASS,,,,492.png,,,,,FALSE,,,,,0,,Sinnoh
-492,493,Legendary,Arceus,,,,NORMAL,,,,493.png,,,,,FALSE,,,,,0,,Sinnoh
+392,387,Basic,Turtwig,12,3,1,GRASS,FIRE,GROUND,2,387.png,,,Tackle,Razor Leaf,FALSE,Uncommon,,Grotle,Leaf,10,D,Sinnoh
+393,388,Stage 1,Grotle,24,5,1,GRASS,FIRE,GROUND,3,388.png,,,Bite,Mega Drain,FALSE,Rare,Turtwig,Torterra,Leaf,25,C,Sinnoh
+394,389,Stage 2,Torterra,36,8,2,GRASS,FIRE,ELECTRIC,5,389.png,,,Earthquake,Wood Hammer,FALSE,Epic,Grotle,,,0,S,Sinnoh
+395,390,Basic,Chimchar,10,3,2,FIRE,WATER,GRASS,2,390.png,,,Scratch,Ember,FALSE,Uncommon,,Monferno,Fire,10,D,Sinnoh
+396,391,Stage 1,Monferno,22,5,4,FIRE,WATER,DARK,3,391.png,,,Double Kick,Flame Wheel,FALSE,Rare,Chimchar,Infernape,Fire,25,C,Sinnoh
+397,392,Stage 2,Infernape,32,8,5,FIRE,WATER,DARK,4,392.png,,,Close Combat,Flare Blitz,FALSE,Epic,Monferno,,,0,S+,Sinnoh
+398,393,Basic,Piplup,10,3,1,WATER,ELECTRIC,FIRE,2,393.png,,,Pound,Water Gun,FALSE,Uncommon,,Prinplup,Water,10,D,Sinnoh
+399,394,Stage 1,Prinplup,22,5,2,WATER,ELECTRIC,FIRE,3,394.png,,,Metal Claw,Bubble Beam,FALSE,Rare,Piplup,Empoleon,Water,25,C,Sinnoh
+400,395,Stage 2,Empoleon,34,8,3,WATER,ELECTRIC,PSYCHIC,5,395.png,,,Flash Cannon,Hydro Pump,FALSE,Epic,Prinplup,,,0,S,Sinnoh
+401,396,Basic,Starly,10,3,3,NORMAL,ELECTRIC,GROUND,2,396.png,,,Tackle,Quick Attack,FALSE,Common,,Staravia,Heart,10,D,Sinnoh
+402,397,Stage 1,Staravia,20,5,4,NORMAL,ELECTRIC,GROUND,3,397.png,,,Wing Attack,Aerial Ace,FALSE,Rare,Starly,Staraptor,Heart,25,C,Sinnoh
+403,398,Stage 2,Staraptor,30,8,5,NORMAL,ELECTRIC,GROUND,4,398.png,,,Close Combat,Brave Bird,FALSE,Epic,Staravia,,,0,A,Sinnoh
+404,399,Basic,Bidoof,14,3,1,NORMAL,FIGHTING,NONE,2,399.png,,,Tackle,Headbutt,FALSE,Common,,Bibarel,Heart,20,D,Sinnoh
+405,400,Stage 1,Bibarel,26,6,2,NORMAL,FIGHTING,FIRE,3,400.png,,,Water Pulse,Hyper Fang,FALSE,Rare,Bidoof,,,0,C,Sinnoh
+406,401,Basic,Kricketot,10,3,1,DARK,FIRE,PSYCHIC,2,401.png,,,Growl,Bug Bite,FALSE,Common,,Kricketune,Leaf,20,D,Sinnoh
+407,402,Stage 1,Kricketune,22,6,3,DARK,FIRE,PSYCHIC,3,402.png,,,Fury Cutter,Bug Buzz,FALSE,Rare,Kricketot,,,0,C,Sinnoh
+408,403,Basic,Shinx,12,3,2,ELECTRIC,GROUND,WATER,2,403.png,,,Tackle,Thunder Shock,FALSE,Common,,Luxio,Thunder,10,D,Sinnoh
+409,404,Stage 1,Luxio,22,5,3,ELECTRIC,GROUND,WATER,3,404.png,,,Spark,Bite,FALSE,Rare,Shinx,Luxray,Thunder,25,C,Sinnoh
+410,405,Stage 2,Luxray,32,8,4,ELECTRIC,GROUND,WATER,4,405.png,,,Thunder Fang,Discharge,FALSE,Epic,Luxio,,,0,A,Sinnoh
+411,406,Basic,Budew,10,3,2,GRASS,FIRE,GROUND,2,406.png,,,Absorb,Stun Spore,FALSE,Common,,Roselia,Leaf,10,D,Sinnoh
+412,407,Stage 2,Roserade,30,8,4,GRASS,FIRE,GROUND,5,407.png,,,Giga Drain,Petal Blizzard,FALSE,Epic,Roselia,,,0,A,Sinnoh
+413,408,Basic,Cranidos,14,3,2,GROUND,GRASS,ELECTRIC,2,408.png,,,Headbutt,Rock Slide,FALSE,Uncommon,,Rampardos,Ground,20,D,Sinnoh
+414,409,Stage 1,Rampardos,28,6,2,GROUND,GRASS,ELECTRIC,4,409.png,,,Zen Headbutt,Head Smash,FALSE,Epic,Cranidos,,,0,A,Sinnoh
+415,410,Basic,Shieldon,14,3,1,GROUND,GRASS,ELECTRIC,2,410.png,,,Tackle,Iron Head,FALSE,Uncommon,,Bastiodon,Ground,20,D,Sinnoh
+416,411,Stage 1,Bastiodon,32,6,1,GROUND,GRASS,ELECTRIC,5,411.png,,,Iron Head,Stone Edge,FALSE,Epic,Shieldon,,,0,A,Sinnoh
+417,412,Basic,Burmy,10,3,1,DARK,FIRE,PSYCHIC,2,412.png,,,Protect,Bug Bite,FALSE,Common,,"Wormadam, Mothim","Leaf, Leaf",20,D,Sinnoh
+418,413,Stage 1,Wormadam,24,6,2,DARK,FIRE,PSYCHIC,3,413.png,,,Confusion,Bug Buzz,FALSE,Rare,Burmy,,,0,C,Sinnoh
+419,414,Stage 1,Mothim,24,6,4,DARK,FIRE,PSYCHIC,3,414.png,,,Air Slash,Silver Wind,FALSE,Rare,Burmy,,,0,C,Sinnoh
+420,415,Basic,Combee,10,3,3,DARK,FIRE,PSYCHIC,2,415.png,,,Gust,Bug Bite,FALSE,Common,,Vespiquen,Leaf,20,D,Sinnoh
+421,416,Stage 1,Vespiquen,28,6,2,DARK,FIRE,PSYCHIC,4,416.png,,,Attack Order,Defend Order,FALSE,Epic,Combee,,,0,A,Sinnoh
+422,417,Basic,Pachirisu,18,4,4,ELECTRIC,GROUND,WATER,2,417.png,,,Spark,Discharge,FALSE,Uncommon,,,,0,C,Sinnoh
+423,418,Basic,Buizel,12,3,4,WATER,ELECTRIC,FIRE,2,418.png,,,Quick Attack,Aqua Jet,FALSE,Common,,Floatzel,Water,20,D,Sinnoh
+424,419,Stage 1,Floatzel,24,6,5,WATER,ELECTRIC,FIRE,3,419.png,,,Aqua Jet,Crunch,FALSE,Rare,Buizel,,,0,A,Sinnoh
+425,420,Basic,Cherubi,10,3,2,GRASS,FIRE,GROUND,2,420.png,,,Tackle,Magical Leaf,FALSE,Common,,Cherrim,Leaf,20,D,Sinnoh
+426,421,Stage 1,Cherrim,22,6,3,GRASS,FIRE,GROUND,3,421.png,,,Solar Beam,Petal Dance,FALSE,Rare,Cherubi,,,0,C,Sinnoh
+427,422,Basic,Shellos,14,3,1,WATER,GRASS,ELECTRIC,2,422.png,,,Mud-Slap,Water Pulse,FALSE,Common,,Gastrodon,Water,20,D,Sinnoh
+428,423,Stage 1,Gastrodon,30,6,2,WATER,GRASS,ELECTRIC,4,423.png,,,Muddy Water,Earth Power,FALSE,Rare,Shellos,,,0,B,Sinnoh
+429,424,Stage 1,Ambipom,26,6,5,NORMAL,FIGHTING,NONE,3,424.png,,,Double Hit,Swift,FALSE,Rare,Aipom,,,0,B,Sinnoh
+430,425,Basic,Drifloon,16,3,3,DARK,ELECTRIC,GROUND,2,425.png,,,Gust,Ominous Wind,FALSE,Common,,Drifblim,Night,20,D,Sinnoh
+431,426,Stage 1,Drifblim,34,6,3,DARK,ELECTRIC,GROUND,4,426.png,,,Ominous Wind,Shadow Ball,FALSE,Rare,Drifloon,,,0,B,Sinnoh
+432,427,Basic,Buneary,12,3,3,NORMAL,FIGHTING,NONE,2,427.png,,,Pound,Quick Attack,FALSE,Common,,Lopunny,Heart,20,D,Sinnoh
+433,428,Stage 1,Lopunny,26,6,5,NORMAL,FIGHTING,NONE,3,428.png,,,High Jump Kick,Bounce,FALSE,Rare,Buneary,,,0,A,Sinnoh
+434,429,Stage 1,Mismagius,24,6,5,DARK,DARK,PSYCHIC,4,429.png,,,Psywave,Shadow Ball,FALSE,Rare,Misdreavus,,,0,A,Sinnoh
+435,430,Stage 1,Honchkrow,30,6,3,DARK,ELECTRIC,GROUND,4,430.png,,,Night Slash,Dark Pulse,FALSE,Rare,Murkrow,,,0,A,Sinnoh
+436,431,Basic,Glameow,12,3,4,NORMAL,FIGHTING,NONE,2,431.png,,,Scratch,Fake Out,FALSE,Common,,Purugly,Heart,20,D,Sinnoh
+437,432,Stage 1,Purugly,26,6,5,NORMAL,FIGHTING,NONE,3,432.png,,,Slash,Body Slam,FALSE,Rare,Glameow,,,0,B,Sinnoh
+438,433,Basic,Chingling,10,3,2,PSYCHIC,DARK,FIGHTING,2,433.png,,,Astonish,Confusion,FALSE,Common,,Chimecho,Psyche,20,D,Sinnoh
+439,434,Basic,Stunky,14,3,3,DARK,GROUND,PSYCHIC,2,434.png,,,Scratch,Acid,FALSE,Common,,Skuntank,Night,20,D,Sinnoh
+440,435,Stage 1,Skuntank,28,6,3,DARK,GROUND,PSYCHIC,4,435.png,,,Poison Jab,Flamethrower,FALSE,Rare,Stunky,,,0,B,Sinnoh
+441,436,Basic,Bronzor,14,3,1,GROUND,FIRE,PSYCHIC,2,436.png,,,Tackle,Confusion,FALSE,Common,,Bronzong,Psyche,20,D,Sinnoh
+442,437,Stage 1,Bronzong,28,6,1,GROUND,FIRE,PSYCHIC,4,437.png,,,Extrasensory,Flash Cannon,FALSE,Rare,Bronzor,,,0,B,Sinnoh
+443,438,Basic,Bonsly,12,3,1,GROUND,GRASS,ELECTRIC,2,438.png,,,Rock Throw,Rock Slide,FALSE,Common,,Sudowoodo,Ground,20,D,Sinnoh
+444,440,Basic,Happiny,20,3,1,NORMAL,FIGHTING,NONE,3,440.png,,,Pound,Sweet Kiss,FALSE,Common,,Chansey,Heart,10,D,Sinnoh
+445,441,Basic,Chatot,18,4,4,NORMAL,ELECTRIC,GROUND,2,441.png,,,Peck,Chatter,FALSE,Uncommon,,,,0,C,Sinnoh
+446,442,Basic,Spiritomb,24,5,1,DARK,NONE,PSYCHIC,4,442.png,Pressure,Forces opponent to expend energy quicker.,Shadow Sneak,Dark Pulse,FALSE,Rare,,,,0,A,Sinnoh
+447,443,Basic,Gible,14,3,2,NORMAL,WATER,FIRE,2,443.png,,,Tackle,Dragon Breath,FALSE,Uncommon,,Gabite,Scale,10,D,Sinnoh
+448,444,Stage 1,Gabite,26,5,3,NORMAL,WATER,FIRE,3,444.png,,,Slash,Dragon Claw,FALSE,Rare,Gible,Garchomp,Scale,25,C,Sinnoh
+449,445,Stage 2,Garchomp,36,8,5,NORMAL,WATER,FIRE,5,445.png,,,Earthquake,Draco Meteor,FALSE,Legendary,Gabite,,,0,S+,Sinnoh
+450,446,Basic,Munchlax,24,3,1,NORMAL,FIGHTING,NONE,3,446.png,,,Tackle,Body Slam,FALSE,Uncommon,,Snorlax,Heart,20,D,Sinnoh
+451,447,Basic,Riolu,12,3,3,FIGHTING,PSYCHIC,DARK,2,447.png,,,Quick Attack,Drain Punch,FALSE,Uncommon,,Lucario,Punch,20,D,Sinnoh
+452,448,Stage 1,Lucario,28,6,4,FIGHTING,FIRE,DARK,4,448.png,,,Bullet Punch,Aura Sphere,FALSE,Epic,Riolu,,,0,S,Sinnoh
+453,449,Basic,Hippopotas,16,3,1,GROUND,GRASS,ELECTRIC,2,449.png,,,Tackle,Sand Tomb,FALSE,Common,,Hippowdon,Ground,20,D,Sinnoh
+454,450,Stage 1,Hippowdon,32,6,2,GROUND,GRASS,ELECTRIC,4,450.png,Sand Stream,Summons a persistent sandstorm in battle.,Crunch,Earthquake,FALSE,Rare,Hippopotas,,,0,B,Sinnoh
+455,451,Basic,Skorupi,12,3,3,DARK,FIRE,PSYCHIC,2,451.png,,,Poison Sting,Bite,FALSE,Common,,Drapion,Night,20,D,Sinnoh
+456,452,Stage 1,Drapion,28,6,4,DARK,GROUND,PSYCHIC,4,452.png,,,Cross Poison,Night Slash,FALSE,Epic,Skorupi,,,0,A,Sinnoh
+457,453,Basic,Croagunk,12,3,2,DARK,PSYCHIC,DARK,2,453.png,,,Poison Sting,Mud-Slap,FALSE,Common,,Toxicroak,Punch,20,D,Sinnoh
+458,454,Stage 1,Toxicroak,26,6,4,DARK,PSYCHIC,DARK,3,454.png,,,Poison Jab,Drain Punch,FALSE,Rare,Croagunk,,,0,A,Sinnoh
+459,455,Basic,Carnivine,22,4,2,GRASS,FIRE,GROUND,3,455.png,,,Bite,Energy Ball,FALSE,Uncommon,,,,0,C,Sinnoh
+460,456,Basic,Finneon,12,3,3,WATER,ELECTRIC,FIRE,2,456.png,,,Water Gun,Pound,FALSE,Common,,Lumineon,Water,20,D,Sinnoh
+461,457,Stage 1,Lumineon,24,6,4,WATER,ELECTRIC,FIRE,3,457.png,,,Water Pulse,Silver Wind,FALSE,Rare,Finneon,,,0,C,Sinnoh
+462,458,Basic,Mantyke,12,3,2,WATER,ELECTRIC,GROUND,2,458.png,,,Tackle,Bubble Beam,FALSE,Common,,Mantine,Water,20,D,Sinnoh
+463,459,Basic,Snover,14,3,1,GRASS,FIRE,WATER,2,459.png,,,Powder Snow,Razor Leaf,FALSE,Common,,Abomasnow,Leaf,20,D,Sinnoh
+464,460,Stage 1,Abomasnow,30,6,2,GRASS,FIRE,WATER,4,460.png,Snow Warning,Summons a persistent hailstorm in battle.,Ice Punch,Wood Hammer,FALSE,Rare,Snover,,,0,B,Sinnoh
+465,461,Stage 1,Weavile,24,6,5,DARK,FIGHTING,PSYCHIC,3,461.png,,,Ice Shard,Night Slash,FALSE,Epic,Sneasel,,,0,S,Sinnoh
+466,463,Stage 1,Lickilicky,34,6,2,NORMAL,FIGHTING,NONE,4,463.png,,,Lick,Slam,FALSE,Rare,Lickitung,,,0,B,Sinnoh
+467,468,Stage 2,Togekiss,32,8,4,NORMAL,ELECTRIC,GROUND,5,468.png,Serene Grace,Secondary effects occur more frequently.,Air Slash,Aura Sphere,FALSE,Epic,Togetic,,,0,S,Sinnoh
+468,469,Stage 1,Yanmega,28,6,4,DARK,ELECTRIC,GROUND,3,469.png,Speed Boost,Gains +1 Speed at the start of each round.,Air Slash,Bug Buzz,FALSE,Epic,Yanma,,,0,A,Sinnoh
+469,470,Stage 1,Leafeon,28,8,4,GRASS,FIRE,GROUND,5,470.png,,,Quick Attack,Leaf Blade,FALSE,Epic,Eevee,,,0,A,Sinnoh
+470,471,Stage 1,Glaceon,28,8,3,WATER,FIRE,WATER,5,471.png,,,Ice Shard,Blizzard,FALSE,Epic,Eevee,,,0,A,Sinnoh
+471,472,Stage 1,Gliscor,28,6,4,GROUND,WATER,ELECTRIC,4,472.png,Poison Heal,Restores HP instead of taking damage from poison.,Earthquake,X-Scissor,FALSE,Epic,Gligar,,,0,A,Sinnoh
+472,473,Stage 2,Mamoswine,36,8,3,WATER,GRASS,FIRE,5,473.png,,,Ice Fang,Earthquake,FALSE,Epic,Piloswine,,,0,S,Sinnoh
+473,474,Stage 2,Porygon-Z,30,8,4,NORMAL,FIGHTING,NONE,4,474.png,,,Tri Attack,Hyper Beam,FALSE,Epic,Porygon2,,,0,A,Sinnoh
+474,475,Stage 2,Gallade,30,8,4,PSYCHIC,DARK,FIGHTING,4,475.png,,,Psycho Cut,Close Combat,FALSE,Epic,Kirlia,,,0,S,Sinnoh
+475,476,Stage 1,Probopass,30,6,1,GROUND,GRASS,ELECTRIC,5,476.png,,,Magnet Bomb,Rock Slide,FALSE,Rare,Nosepass,,,0,B,Sinnoh
+476,477,Stage 2,Dusknoir,32,8,2,DARK,DARK,PSYCHIC,5,477.png,Pressure,Forces opponent to expend energy quicker.,Shadow Punch,Shadow Ball,FALSE,Epic,Dusclops,,,0,A,Sinnoh
+477,478,Stage 1,Froslass,24,6,5,WATER,FIRE,WATER,3,478.png,,,Ice Shard,Ominous Wind,FALSE,Rare,Snorunt,,,0,B,Sinnoh
+478,479,Basic,Rotom,20,5,4,ELECTRIC,GROUND,WATER,3,479.png,Levitate,Immune to GROUND type attacks.,Thunder Shock,Ominous Wind,FALSE,Rare,,,,0,A,Sinnoh
+479,480,Legendary,Uxie,32,10,4,PSYCHIC,DARK,FIGHTING,6,480.png,,,Swift,Extrasensory,FALSE,Legendary,,,,0,S,Sinnoh
+480,481,Legendary,Mesprit,32,10,4,PSYCHIC,DARK,FIGHTING,5,481.png,,,Swift,Extrasensory,FALSE,Legendary,,,,0,S,Sinnoh
+481,482,Legendary,Azelf,30,10,5,PSYCHIC,DARK,FIGHTING,5,482.png,,,Swift,Extrasensory,FALSE,Legendary,,,,0,S+,Sinnoh
+482,483,Legendary,Dialga,36,10,4,GROUND,NONE,PSYCHIC,6,483.png,Pressure,Forces opponent to expend energy quicker.,Dragon Pulse,Roar of Time,FALSE,Legendary,,,,0,S+,Sinnoh
+483,484,Legendary,Palkia,36,10,4,WATER,ELECTRIC,FIRE,6,484.png,Pressure,Forces opponent to expend energy quicker.,Dragon Pulse,Spacial Rend,FALSE,Legendary,,,,0,S+,Sinnoh
+484,485,Legendary,Heatran,34,10,3,FIRE,WATER,GRASS,6,485.png,Flash Fire,Grants immunity to FIRE and boosts user fire damage.,Earth Power,Magma Storm,FALSE,Legendary,,,,0,S+,Sinnoh
+485,486,Legendary,Regigigas,40,10,4,NORMAL,FIGHTING,NONE,6,486.png,Slow Start,Starts combat with reduced stats for initial rounds.,Hammer Arm,Crush Grip,FALSE,Legendary,,,,0,S,Sinnoh
+486,487,Legendary,Giratina,38,10,4,DARK,DARK,PSYCHIC,6,487.png,Pressure,Forces opponent to expend energy quicker.,Dragon Claw,Shadow Force,FALSE,Legendary,,,,0,S+,Sinnoh
+487,488,Legendary,Cresselia,36,10,4,PSYCHIC,DARK,FIGHTING,6,488.png,Levitate,Immune to GROUND type attacks.,Psychic,Calm Mind,FALSE,Legendary,,,,0,S,Sinnoh
+488,489,Legendary,Phione,28,8,3,WATER,ELECTRIC,FIRE,4,489.png,,,Bubble Beam,Water Pulse,FALSE,Epic,,,,0,B,Sinnoh
+489,490,Legendary,Manaphy,32,10,4,WATER,ELECTRIC,FIRE,5,490.png,Hydration,Heals negative status effects naturally.,Water Pulse,Hydro Pump,FALSE,Legendary,,,,0,S,Sinnoh
+490,491,Legendary,Darkrai,32,10,5,DARK,FIGHTING,PSYCHIC,5,491.png,Bad Dreams,Reduces HP of sleeping opposing Pokémon.,Dark Pulse,Dark Void,FALSE,Legendary,,,,0,S+,Sinnoh
+491,492,Legendary,Shaymin,32,10,4,GRASS,FIRE,GROUND,5,492.png,Natural Cure,Cures status ailments when switching to the bench.,Energy Ball,Seed Flare,FALSE,Legendary,,,,0,S,Sinnoh
+492,493,Legendary,Arceus,42,10,5,NORMAL,NONE,NONE,6,493.png,Multitype,Adapts its typing dynamically to master all elements.,Hyper Beam,Judgment,FALSE,Legendary,,,,0,S+,Sinnoh
