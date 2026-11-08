@@ -1,4 +1,4 @@
-﻿id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,texture_file,passive_name,passive_desc,move1,move2,unlocked_start,rarity,evolves_from,evolves_to,required_stone,required_exp,tier,region
+id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,texture_file,passive_name,passive_desc,move1,move2,unlocked_start,rarity,evolves_from,evolves_to,required_stone,required_exp,tier,region
 0,1,Basic,Bulbasaur,10,3,1,GRASS,,,2,001.png,,,Tackle,Razor Leaf,FALSE,Initial,,Ivysaur,Leaf,10,D,Kanto
 1,4,Basic,Charmander,10,3,1,FIRE,,,2,004.png,,,Scratch,Ember,FALSE,Initial,,Charmeleon,Fire,10,D,Kanto
 2,7,Basic,Squirtle,10,3,1,WATER,,,2,007.png,,,Tackle,Bubble,FALSE,Initial,,Wartortle,Water,10,D,Kanto
@@ -98,8 +98,8 @@
 96,92,Basic,Ghastly,10,3,2,DARK,,,1,092.png,,,Spite,Lick,FALSE,Common,,Haunter,Night,10,D,Kanto
 97,93,Stage 1,Haunter,22,5,3,DARK,,,3,093.png,,,Confuse Ray,Shadow Punch,FALSE,Rare,Ghastly,Gengar,Night,25,A,Kanto
 98,94,Stage 2,Gengar,30,8,4,DARK,,,5,094.png,,,Hypnosis,Dream Eater,FALSE,Epic,Haunter,,,0,S,Kanto
-99,95,Basic,Onix,20,4,2,GROUND,,,3,095.png,,,Bind,Smack Down,FALSE,Rare,,,,,0,C,Kanto
-100,208,Basic,Steelix,32,6,3,GROUND,,,4,208.png,,,Iron Head,Rock Slide,FALSE,Epic,,,,0,S,Johto
+99,95,Basic,Onix,20,4,2,GROUND,,,3,095.png,,,Bind,Smack Down,FALSE,Rare,,Steelix,Ground,20,C,Kanto
+100,208,Stage 1,Steelix,32,6,3,GROUND,,,4,208.png,,,Iron Head,Rock Slide,FALSE,Epic,Onix,,,0,S,Johto
 101,96,Basic,Drowzee,16,4,1,PSYCHIC,,,2,096.png,,,Yawn,Headbutt,FALSE,Uncommon,,Hypno,Psyche,20,C,Kanto
 102,97,Stage 1,Hypno,24,6,3,PSYCHIC,,,4,097.png,,,Hypnosis,Confusion,FALSE,Rare,Drowzee,,,0,B,Kanto
 103,98,Basic,Krabby,12,4,2,WATER,,,2,098.png,,,Mud Shot,Razor Shell,FALSE,Common,,Kingler,Water,20,D,Kanto
