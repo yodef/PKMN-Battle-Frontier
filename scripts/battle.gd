@@ -1645,9 +1645,9 @@ func start_player_turn() -> void:
 		else:
 			var move_lines: Array[String] = []
 			for m in p.moves:
-				var m_name = str(m.get("name", "Move"))
-				var m_dmg = int(m.get("damage", 0))
-				var m_cost = int(m.get("energy_cost", 0))
+				var m_name = str(m.name)
+				var m_dmg = int(m.base_damage)
+				var m_cost = int(m.cost)
 				move_lines.append("• [b]%s[/b]: Deals %d DMG. (Cost: %d ⚡)" % [m_name, m_dmg, m_cost])
 			var moves_desc = "\n".join(move_lines)
 			var type_hint = "⭐ [color=yellow][b]Type Weakness (+2 DMG):[/b][/color] %s is weak to %s attacks! Using your effective move triggers the Weakness bonus for [b]+2 EXTRA DAMAGE[/b]!" % [e.name, p.type]
