@@ -1201,19 +1201,37 @@ func start_new_game() -> void:
 			if inst:
 				enemy_team.append(inst)
 	else:
-		var p_ids = GameData.player_team_ids
+		var p_ids = GameData.player_team_ids.duplicate()
 		if p_ids.is_empty():
-			p_ids = [0]
-		var e_ids = GameData.enemy_team_ids
+			if not GameData.player_unlocked_ids.is_empty():
+				p_ids = [GameData.player_unlocked_ids[0]]
+			elif GameData.tutorial_starter_id >= 0:
+				p_ids = [GameData.tutorial_starter_id]
+			else:
+				p_ids = [0]
+		var e_ids = GameData.enemy_team_ids.duplicate()
 		if e_ids.is_empty():
 			e_ids = [4]
 			
 		player_team = []
 		for pid in p_ids:
-			player_team.append(GameData.create_pokemon_instance(pid))
+			var inst = GameData.create_pokemon_instance(pid)
+			if inst:
+				player_team.append(inst)
+		if player_team.is_empty():
+			var fallback_inst = GameData.create_pokemon_instance(0)
+			if fallback_inst:
+				player_team.append(fallback_inst)
+				
 		enemy_team = []
 		for eid in e_ids:
-			enemy_team.append(GameData.create_pokemon_instance(eid))
+			var inst = GameData.create_pokemon_instance(eid)
+			if inst:
+				enemy_team.append(inst)
+		if enemy_team.is_empty():
+			var fallback_e_inst = GameData.create_pokemon_instance(4)
+			if fallback_e_inst:
+				enemy_team.append(fallback_e_inst)
 			
 		if GameData.is_online_pvp:
 			battle_title_lbl.text = "🌐 Online vs %s (%d vs %d)" % [GameData.online_rival_name, player_team.size(), enemy_team.size()]
@@ -1223,7 +1241,7 @@ func start_new_game() -> void:
 	# Seleccionar el primer Pokémon vivo del jugador
 	active_player_idx = 0
 	for i in range(player_team.size()):
-		if player_team[i].current_hp > 0:
+		if player_team[i] and player_team[i].current_hp > 0:
 			active_player_idx = i
 			break
 	active_enemy_idx = 0
@@ -3086,6 +3104,8 @@ func _resolve_battle_victory() -> void:
 			return
 		else:
 			# Combat 2 complete (Victory)
+			if GameData.tutorial_stage1_id >= 0:
+				GameData.unlock_pokemon(GameData.tutorial_stage1_id)
 			GameData.player_diamonds += 5
 			GameData.tutorial_completed = true
 			GameData.tutorial_reward_claimed = true
@@ -3093,9 +3113,10 @@ func _resolve_battle_victory() -> void:
 			GameData.is_tutorial_mode = false
 			GameData.just_completed_tutorial = true
 			GameData.save_profile()
+			var tut_win_msg = "¡Felicitaciones! Has completado el Entrenamiento de Combate.\n\n🎁 Recompensa Final: 💎 5 Diamantes y tu evolución Fase 1 asegurada en tu Colección.\n🔓 ¡El Modo Aventura, Torneo y el Lobby completo ya están desbloqueados!" if GameData.is_spanish() else "Congratulations! You completed the full Battle Training!\n\n🎁 Final Reward: 💎 5 Diamonds & your Stage 1 evolution in your Collection!\n🔓 Adventure Mode, Pokémon Stadium, and the Full Lobby are now completely unlocked!"
 			show_game_over(
 				"🎓 TUTORIAL COMPLETE!",
-				"Congratulations! You completed the full Battle Training!\n\n🎁 Final Reward: 💎 5 Diamonds!\n🔓 Adventure Mode, Pokémon Stadium, and the Full Lobby are now completely unlocked!"
+				tut_win_msg
 			)
 			return
 	if GameData.is_campaign_mode:

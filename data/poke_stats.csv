@@ -1,8 +1,8 @@
-id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,texture_file,passive_name,passive_desc,move1,move2,unlocked_start,rarity,evolves_from,evolves_to,required_stone,required_exp,tier,region
-0,1,Basic,Bulbasaur,10,3,1,GRASS,,,2,001.png,,,Tackle,Razor Leaf,TRUE,Initial,,Ivysaur,Leaf,10,D,Kanto
-1,4,Basic,Charmander,10,3,1,FIRE,,,2,004.png,,,Scratch,Ember,TRUE,Initial,,Charmeleon,Fire,10,D,Kanto
-2,7,Basic,Squirtle,10,3,1,WATER,,,2,007.png,,,Tackle,Bubble,TRUE,Initial,,Wartortle,Water,10,D,Kanto
-3,172,Basic,Pichu,10,3,2,ELECTRIC,,,2,172.png,Charm,Reduces -1 DMG taken from NORMAL type attacks.,Scratch,Thunder Shock,TRUE,Initial,,Pikachu,Thunder,10,D,Johto
+﻿id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,texture_file,passive_name,passive_desc,move1,move2,unlocked_start,rarity,evolves_from,evolves_to,required_stone,required_exp,tier,region
+0,1,Basic,Bulbasaur,10,3,1,GRASS,,,2,001.png,,,Tackle,Razor Leaf,FALSE,Initial,,Ivysaur,Leaf,10,D,Kanto
+1,4,Basic,Charmander,10,3,1,FIRE,,,2,004.png,,,Scratch,Ember,FALSE,Initial,,Charmeleon,Fire,10,D,Kanto
+2,7,Basic,Squirtle,10,3,1,WATER,,,2,007.png,,,Tackle,Bubble,FALSE,Initial,,Wartortle,Water,10,D,Kanto
+3,172,Basic,Pichu,10,3,1,ELECTRIC,,,2,172.png,Charm,Reduces -1 DMG taken from NORMAL type attacks.,Scratch,Thunder Shock,FALSE,Initial,,Pikachu,Thunder,10,D,Johto
 4,2,Stage 1,Ivysaur,20,5,2,GRASS,,,3,002.png,,,Poison Powder,Vine Whip,FALSE,Rare,Bulbasaur,Venusaur,Leaf,25,C,Kanto
 5,3,Stage 2,Venusaur,32,8,4,GRASS,,,4,003.png,,,Giga Drain,Solar Beam,FALSE,Epic,Ivysaur,,,0,S,Kanto
 6,5,Stage 1,Charmeleon,20,5,2,FIRE,,,3,005.png,,,Slash,Fire Fang,FALSE,Rare,Charmander,Charizard,Fire,25,C,Kanto
@@ -98,8 +98,8 @@ id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,textu
 96,92,Basic,Ghastly,10,3,2,DARK,,,1,092.png,,,Spite,Lick,FALSE,Common,,Haunter,Night,10,D,Kanto
 97,93,Stage 1,Haunter,22,5,3,DARK,,,3,093.png,,,Confuse Ray,Shadow Punch,FALSE,Rare,Ghastly,Gengar,Night,25,A,Kanto
 98,94,Stage 2,Gengar,30,8,4,DARK,,,5,094.png,,,Hypnosis,Dream Eater,FALSE,Epic,Haunter,,,0,S,Kanto
-99,95,Basic,Onix,20,4,2,GROUND,,,3,095.png,,,Bind,Smack Down,FALSE,Rare,,Steelix,Ground,20,C,Kanto
-100,208,Stage 1,Steelix,32,6,3,GROUND,,,4,208.png,,,Iron Head,Rock Slide,FALSE,Epic,Onix,,,0,S,Johto
+99,95,Basic,Onix,20,4,2,GROUND,,,3,095.png,,,Bind,Smack Down,FALSE,Rare,,,,,0,C,Kanto
+100,208,Basic,Steelix,32,6,3,GROUND,,,4,208.png,,,Iron Head,Rock Slide,FALSE,Epic,,,,0,S,Johto
 101,96,Basic,Drowzee,16,4,1,PSYCHIC,,,2,096.png,,,Yawn,Headbutt,FALSE,Uncommon,,Hypno,Psyche,20,C,Kanto
 102,97,Stage 1,Hypno,24,6,3,PSYCHIC,,,4,097.png,,,Hypnosis,Confusion,FALSE,Rare,Drowzee,,,0,B,Kanto
 103,98,Basic,Krabby,12,4,2,WATER,,,2,098.png,,,Mud Shot,Razor Shell,FALSE,Common,,Kingler,Water,20,D,Kanto
@@ -166,10 +166,10 @@ id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,textu
 164,149,Stage 2,Dragonite,34,8,5,NORMAL,,,6,149.png,,,Outrage,Hurricane,FALSE,Legendary,Dragonair,,,0,S+,Kanto
 165,150,Legendary,Mewtwo,38,10,4,PSYCHIC,NONE,,5,150.png,,,Aura Sphere,Mind Bending,FALSE,Legendary,,,,0,S+,Kanto
 166,151,Legendary,Mew,30,10,5,PSYCHIC,GRASS,NONE,5,151.png,,,Primal Coat,Might Sphere,FALSE,Legendary,,,,0,S,Kanto
-167,152,Basic,Chikorita,10,3,2,GRASS,,,2,152.png,,,Tackle,Razor Leaf,FALSE,Uncommon,,Bayleef,Leaf,10,D,Johto
+167,152,Basic,Chikorita,10,3,1,GRASS,,,2,152.png,,,Tackle,Razor Leaf,FALSE,Uncommon,,Bayleef,Leaf,10,D,Johto
 168,153,Stage 1,Bayleef,22,5,3,GRASS,,,3,153.png,,,Poison Powder,Magical Leaf,FALSE,Rare,Chikorita,Meganium,Leaf,25,C,Johto
 169,154,Stage 2,Meganium,34,8,4,GRASS,,,4,154.png,,,Body Slam,Petal Blizzard,FALSE,Epic,Bayleef,,,0,S,Johto
-170,155,Basic,Cyndaquil,10,3,2,FIRE,,,2,155.png,,,Scratch,Ember,FALSE,Uncommon,,Quilava,Fire,10,D,Johto
+170,155,Basic,Cyndaquil,10,3,1,FIRE,,,2,155.png,,,Scratch,Ember,FALSE,Uncommon,,Quilava,Fire,10,D,Johto
 171,156,Stage 1,Quilava,24,5,3,FIRE,,,3,156.png,,,Flame Wheel,Flame Charge,FALSE,Rare,Cyndaquil,Typhlosion,Fire,25,C,Johto
 172,157,Stage 2,Typhlosion,32,8,4,FIRE,,,4,157.png,,,Smokescreen,Flamethrower,FALSE,Epic,Quilava,,,0,S,Johto
 173,158,Basic,Totodile,10,3,1,WATER,,,2,158.png,,,Scratch,Water Gun,FALSE,Uncommon,,Croconaw,Water,10,D,Johto
@@ -256,7 +256,7 @@ id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,textu
 254,249,Legendary,Lugia,36,10,5,PSYCHIC,DARK,GROUND,6,249.png,Multiscale,Reduces damage taken when HP is full.,Aeroblast,Hydro Pump,FALSE,Legendary,,,,0,S+,Johto
 255,250,Legendary,Ho-oh,36,10,5,FIRE,WATER,GROUND,6,250.png,Regenerator,Restores HP when withdrawn from battle.,Sacred Fire,Brave Bird,FALSE,Legendary,,,,0,S+,Johto
 256,251,Legendary,Celebi,30,10,5,PSYCHIC,DARK,GRASS,5,251.png,Natural Cure,Cures all status conditions upon switching.,Leaf Blade,Future Sight,FALSE,Legendary,,,,0,S,Johto
-257,252,Basic,Treecko,10,3,2,GRASS,FIRE,GROUND,2,252.png,,,Pound,Mega Drain,FALSE,Uncommon,,Grovyle,Leaf,10,D,Hoenn
+257,252,Basic,Treecko,10,3,1,GRASS,FIRE,GROUND,2,252.png,,,Pound,Mega Drain,FALSE,Uncommon,,Grovyle,Leaf,10,D,Hoenn
 258,253,Stage 1,Grovyle,22,5,3,GRASS,FIRE,GROUND,3,253.png,,,Quick Attack,Leaf Blade,FALSE,Rare,Treecko,Sceptile,Leaf,25,C,Hoenn
 259,254,Stage 2,Sceptile,32,8,4,GRASS,FIRE,GROUND,4,254.png,,,Slam,Leaf Blade,FALSE,Epic,Grovyle,,,0,A,Hoenn
 260,255,Basic,Torchic,10,3,1,FIRE,WATER,GRASS,2,255.png,,,Scratch,Ember,FALSE,Uncommon,,Combusken,Fire,10,D,Hoenn
@@ -394,7 +394,7 @@ id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,textu
 392,387,Basic,Turtwig,12,3,1,GRASS,FIRE,GROUND,2,387.png,,,Tackle,Razor Leaf,FALSE,Uncommon,,Grotle,Leaf,10,D,Sinnoh
 393,388,Stage 1,Grotle,24,5,1,GRASS,FIRE,GROUND,3,388.png,,,Bite,Mega Drain,FALSE,Rare,Turtwig,Torterra,Leaf,25,C,Sinnoh
 394,389,Stage 2,Torterra,36,8,2,GRASS,FIRE,ELECTRIC,5,389.png,,,Earthquake,Wood Hammer,FALSE,Epic,Grotle,,,0,S,Sinnoh
-395,390,Basic,Chimchar,10,3,2,FIRE,WATER,GRASS,2,390.png,,,Scratch,Ember,FALSE,Uncommon,,Monferno,Fire,10,D,Sinnoh
+395,390,Basic,Chimchar,10,3,1,FIRE,WATER,GRASS,2,390.png,,,Scratch,Ember,FALSE,Uncommon,,Monferno,Fire,10,D,Sinnoh
 396,391,Stage 1,Monferno,22,5,4,FIRE,WATER,DARK,3,391.png,,,Double Kick,Flame Wheel,FALSE,Rare,Chimchar,Infernape,Fire,25,C,Sinnoh
 397,392,Stage 2,Infernape,32,8,5,FIRE,WATER,DARK,4,392.png,,,Close Combat,Flare Blitz,FALSE,Epic,Monferno,,,0,S+,Sinnoh
 398,393,Basic,Piplup,10,3,1,WATER,ELECTRIC,FIRE,2,393.png,,,Pound,Water Gun,FALSE,Uncommon,,Prinplup,Water,10,D,Sinnoh

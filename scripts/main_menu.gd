@@ -2479,7 +2479,14 @@ func _show_card_anatomy_and_starter_modal() -> void:
 	)
 
 func _open_starter_selection_modal() -> void:
+	if tutorial_confirm_modal:
+		tutorial_confirm_modal.visible = false
+	if shop_modal:
+		shop_modal.visible = false
+	if pack_reveal_box:
+		pack_reveal_box.visible = false
 	_setup_starter_selection_modal()
+	starter_select_modal.z_index = 100
 	starter_region_active = "Kanto"
 	_update_starter_region_tabs()
 	_refresh_starter_cards_display()
@@ -2492,12 +2499,12 @@ func _setup_starter_selection_modal() -> void:
 	starter_select_modal.name = "StarterSelectModal"
 	starter_select_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
 	starter_select_modal.visible = false
-	starter_select_modal.z_index = 80
+	starter_select_modal.z_index = 100
 	add_child(starter_select_modal)
 	
 	var bg = ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.02, 0.04, 0.08, 0.92)
+	bg.color = Color(0.02, 0.04, 0.08, 0.94)
 	starter_select_modal.add_child(bg)
 	
 	var center = CenterContainer.new()
@@ -2562,7 +2569,7 @@ func _setup_starter_selection_modal() -> void:
 		
 	# Cards Scroll / Container
 	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(0, 340)
+	scroll.custom_minimum_size = Vector2(450, 360)
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -2593,6 +2600,9 @@ func _refresh_starter_cards_display() -> void:
 		starter_cards_row.remove_child(c)
 		c.queue_free()
 		
+	if starter_cards_row.get_parent() is ScrollContainer:
+		(starter_cards_row.get_parent() as ScrollContainer).scroll_vertical = 0
+		
 	var starters_by_reg = {
 		"Kanto": [0, 1, 2],
 		"Johto": [167, 170, 173],
@@ -2606,6 +2616,8 @@ func _refresh_starter_cards_display() -> void:
 		if d.is_empty(): continue
 		
 		var card_panel = PanelContainer.new()
+		card_panel.custom_minimum_size = Vector2(430, 80)
+		card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var card_sb = StyleBoxFlat.new()
 		var type_color = GameData.get_type_primary_color(str(d.get("type", "NORMAL")))
 		card_sb.bg_color = Color(0.09, 0.13, 0.20, 0.96)
