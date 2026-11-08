@@ -292,6 +292,7 @@ var settings_music_volume: float = 0.8 # 0.0 to 1.0
 var settings_music_muted: bool = false
 var settings_sfx_volume: float = 0.9 # 0.0 to 1.0
 var settings_sfx_muted: bool = false
+var initial_settings_shown: bool = false
 
 func normalize_language_code(lang: String) -> String:
 	var c = lang.strip_edges().to_lower()
@@ -4700,7 +4701,8 @@ func get_save_dict() -> Dictionary:
 			"music_volume": settings_music_volume,
 			"music_muted": settings_music_muted,
 			"sfx_volume": settings_sfx_volume,
-			"sfx_muted": settings_sfx_muted
+			"sfx_muted": settings_sfx_muted,
+			"initial_settings_shown": initial_settings_shown
 		},
 		"daily": {
 			"login_last_date": daily_login_last_date,
@@ -4877,6 +4879,7 @@ func apply_save_dict(data: Dictionary) -> bool:
 	settings_music_muted = bool(sett.get("music_muted", false))
 	settings_sfx_volume = float(sett.get("sfx_volume", 0.9))
 	settings_sfx_muted = bool(sett.get("sfx_muted", false))
+	initial_settings_shown = bool(sett.get("initial_settings_shown", false))
 	apply_language_to_scene_tree()
 	
 	# Cargar misiones diarias
@@ -5011,5 +5014,6 @@ func erase_profile() -> void:
 	settings_music_muted = false
 	settings_sfx_volume = 0.9
 	settings_sfx_muted = false
+	initial_settings_shown = false
 	apply_language_to_scene_tree()
 	print("Profile erased. Starting fresh!")

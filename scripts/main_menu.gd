@@ -264,6 +264,7 @@ var starter_region_active: String = "Kanto"
 var starter_cards_row: VBoxContainer = null
 var starter_tab_buttons: Dictionary = {}
 var tutorial_prompt_callback: Callable = Callable()
+var _pending_tutorial_after_settings: bool = false
 
 # --- MODAL LOGIN (PANTALLA DE ACCESO PREVIA AL LOBBY) ---
 @onready var login_modal: Control = $LoginModal
@@ -289,6 +290,7 @@ var tutorial_prompt_callback: Callable = Callable()
 @onready var profile_feedback_lbl: Label = $ProfileModal/ProfileBox/ProfileFeedbackLbl
 @onready var btn_save_progress: Button = $ProfileModal/ProfileBox/BtnSaveProgress
 @onready var btn_logout: Button = $ProfileModal/ProfileBox/BtnLogout
+@onready var btn_erase_profile: Button = $ProfileModal/ProfileBox/BtnEraseProfile
 @onready var btn_close_profile: Button = $ProfileModal/ProfileBox/BtnCloseProfile
 
 # --- MODAL AJUSTES / CONFIGURACIÓN ---
@@ -659,6 +661,9 @@ func _ready() -> void:
 	# Modal Perfil
 	btn_save_progress.pressed.connect(_on_save_progress_pressed)
 	btn_logout.pressed.connect(_on_logout_pressed)
+	if btn_erase_profile:
+		btn_erase_profile.pressed.connect(_on_erase_profile_prompt_pressed)
+		_apply_retro_button_style(btn_erase_profile, Color(0.40, 0.12, 0.12), Color(0.85, 0.25, 0.25), false)
 	btn_close_profile.pressed.connect(func(): profile_modal.visible = false)
 	trainer_name_input.text_submitted.connect(func(_t): _on_save_progress_pressed())
 	if btn_link_google:
@@ -668,7 +673,7 @@ func _ready() -> void:
 		)
 	
 	# Modal Ajustes
-	btn_close_settings.pressed.connect(func(): settings_modal.visible = false)
+	btn_close_settings.pressed.connect(_on_close_settings_pressed)
 	if language_option:
 		language_option.item_selected.connect(_on_language_option_selected)
 	if not GameData.language_changed.is_connected(_on_language_changed):
@@ -917,7 +922,7 @@ func _ready() -> void:
 			login_modal.visible = false
 			_update_lobby_header_badge()
 			if not GameData.tutorial_completed and GameData.tutorial_step == 1:
-				_show_tutorial_step1_intro_guidance()
+				_start_tutorial_flow_or_settings()
 		else:
 			_show_login_screen()
 	else:
@@ -938,7 +943,7 @@ func _ready() -> void:
 		update_campaign_hub_ui()
 		campaign_hub_modal.visible = true
 	elif not GameData.tutorial_completed and GameData.tutorial_step == 1 and GameData.session_entered_lobby:
-		_show_tutorial_step1_intro_guidance()
+		_start_tutorial_flow_or_settings()
 	elif GameData.last_adventure_episode_conquered:
 		GameData.last_adventure_episode_conquered = false
 		update_adventure_episodes_ui()
@@ -1123,7 +1128,7 @@ func _on_team_sort_pressed(mode: String) -> void:
 # --- NAVEGACIÓN ---
 func _on_campaign_pressed() -> void:
 	if not GameData.tutorial_completed and GameData.tutorial_step == 1:
-		_show_tutorial_step1_intro_guidance()
+		_start_tutorial_flow_or_settings()
 		return
 	refresh_cards_data_from_catalog()
 	update_campaign_hub_ui()
@@ -2421,6 +2426,28 @@ func _on_confirm_start_tutorial_pressed() -> void:
 	if bgm_player:
 		bgm_player.stop()
 	get_tree().call_deferred("change_scene_to_file", "res://scenes/battle.tscn")
+
+func _start_tutorial_flow_or_settings() -> void:
+	if not GameData.initial_settings_shown and not GameData.tutorial_completed and GameData.tutorial_step == 1:
+		_show_initial_settings_popup()
+	else:
+		_show_tutorial_step1_intro_guidance()
+
+func _show_initial_settings_popup() -> void:
+	_pending_tutorial_after_settings = true
+	_on_settings_pressed()
+	if btn_close_settings:
+		btn_close_settings.text = "🌟 Continuar al Tutorial ➡️" if GameData.is_spanish() else "🌟 Continue to Tutorial ➡️"
+
+func _on_close_settings_pressed() -> void:
+	settings_modal.visible = false
+	if btn_close_settings:
+		btn_close_settings.text = "⬅ Back to Lobby"
+	if _pending_tutorial_after_settings:
+		_pending_tutorial_after_settings = false
+		GameData.initial_settings_shown = true
+		GameData.save_profile()
+		_show_tutorial_step1_intro_guidance()
 
 func _show_tutorial_step1_intro_guidance() -> void:
 	if GameData.player_diamonds < 25:
@@ -4973,7 +5000,7 @@ func _style_toggle_btn(btn: Button, is_active: bool, accent_color: Color) -> voi
 
 func _on_quick_battle_pressed() -> void:
 	if not GameData.tutorial_completed and GameData.tutorial_step == 1:
-		_show_tutorial_step1_intro_guidance()
+		_start_tutorial_flow_or_settings()
 		return
 	refresh_cards_data_from_catalog()
 	team_select_mode = "QUICK_BATTLE"
@@ -5459,7 +5486,7 @@ var _is_online_match_launching: bool = false
 
 func _open_online_lobby() -> void:
 	if not GameData.tutorial_completed and GameData.tutorial_step == 1:
-		_show_tutorial_step1_intro_guidance()
+		_start_tutorial_flow_or_settings()
 		return
 	_is_online_match_launching = false
 	_ensure_default_online_team()
@@ -5768,7 +5795,7 @@ func _on_online_match_ready() -> void:
 
 func _on_collection_pressed() -> void:
 	if not GameData.tutorial_completed and GameData.tutorial_step == 1:
-		_show_tutorial_step1_intro_guidance()
+		_start_tutorial_flow_or_settings()
 		return
 	refresh_cards_data_from_catalog()
 	update_collection_sort_buttons_ui()
@@ -8876,6 +8903,8 @@ func _on_language_changed(_new_lang: String) -> void:
 		var target_idx = 1 if GameData.settings_language == "es" else 0
 		if language_option.selected != target_idx:
 			language_option.select(target_idx)
+	if _pending_tutorial_after_settings and btn_close_settings:
+		btn_close_settings.text = "🌟 Continuar al Tutorial ➡️" if GameData.is_spanish() else "🌟 Continue to Tutorial ➡️"
 	_update_lobby_header_badge()
 	if info_version_lbl:
 		info_version_lbl.text = "Version: %s • Pokémon Battle Frontier" % GameData.GAME_VERSION
@@ -9179,7 +9208,7 @@ func _on_login_play_pressed() -> void:
 	_update_lobby_header_badge()
 	GameData.save_profile()
 	if not GameData.tutorial_completed and GameData.tutorial_step == 1:
-		_show_tutorial_step1_intro_guidance()
+		_start_tutorial_flow_or_settings()
 	elif GameData.can_claim_welcome_gift():
 		_show_welcome_notification()
 
@@ -10694,7 +10723,7 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 # --- MODAL MISIONES Y RECOMPENSAS DIARIAS ---
 func _on_daily_missions_pressed() -> void:
 	if not GameData.tutorial_completed and GameData.tutorial_step == 1:
-		_show_tutorial_step1_intro_guidance()
+		_start_tutorial_flow_or_settings()
 		return
 	GameData.check_and_update_daily_system()
 	_update_daily_ui()

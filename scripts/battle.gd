@@ -1,5 +1,7 @@
 extends Control
 
+const Localization = preload("res://scripts/localization.gd")
+
 # --- CONFIGURACIÓN DE REGLAS ---
 const WEAKNESS_BONUS: int = 2        # Daño extra si atacas a la debilidad del rival
 const RESISTANCE_REDUCTION: int = 2  # Daño reducido si el rival resiste tu tipo
@@ -4897,6 +4899,7 @@ func reset_selected_energy() -> void:
 
 func _on_battle_language_changed(_new_lang: String) -> void:
 	update_ui()
+	_render_combat_log()
 	GameData.apply_language_to_scene_tree()
 
 func get_move_effect_summary(move, boosted: bool) -> String:
@@ -5316,12 +5319,25 @@ func log_action(text: String) -> void:
 	combat_history.append(text)
 	if combat_history.size() > 2:
 		combat_history.pop_front()
-	if combat_history.size() == 1:
-		log_label.text = "[center]" + combat_history[0] + "[/center]"
-	else:
-		log_label.text = "[center][color=#788a9c][font_size=11]%s[/font_size][/color]\n[font_size=13]%s[/font_size][/center]" % [combat_history[0], combat_history[1]]
+	_render_combat_log()
+
+func _render_combat_log() -> void:
+	if not log_label:
+		return
+	if combat_history.is_empty():
+		var ready_msg = Localization.translate_en_to_es("Battle Ready!") if GameData.is_spanish() else "Battle Ready!"
+		log_label.text = "[center]" + ready_msg + "[/center]"
+		return
+	var l0 = combat_history[0]
+	var l1 = combat_history[1] if combat_history.size() > 1 else ""
 	if GameData.is_spanish():
-		GameData.apply_language_to_scene_tree()
+		l0 = Localization.translate_en_to_es(l0)
+		if l1 != "":
+			l1 = Localization.translate_en_to_es(l1)
+	if combat_history.size() == 1:
+		log_label.text = "[center]" + l0 + "[/center]"
+	else:
+		log_label.text = "[center][color=#788a9c][font_size=11]%s[/font_size][/color]\n[font_size=13]%s[/font_size][/center]" % [l0, l1]
 
 func show_game_over(title: String, subtitle: String) -> void:
 	if is_enemy_fainting or is_player_fainting:
