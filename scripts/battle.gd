@@ -5340,6 +5340,16 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 	
 	_apply_game_over_banner_styling(title)
 	
+	var title_upper = title.to_upper()
+	var is_victory = (
+		"VICTOR" in title_upper or 
+		"WIN" in title_upper or 
+		"CHAMPION" in title_upper or 
+		"CONQUERED" in title_upper or 
+		"COMPLETE" in title_upper or
+		"🏆" in title or "🎉" in title or "🌟" in title
+	)
+	
 	if GameData.is_tutorial_mode or GameData.just_completed_tutorial_combat1 or GameData.just_completed_tutorial:
 		btn_restart.visible = (is_battle_over and not is_victory and GameData.tutorial_combat_phase == 1)
 		if GameData.just_completed_tutorial_combat1 or GameData.tutorial_step == 4:
