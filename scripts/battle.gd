@@ -1039,7 +1039,7 @@ func _on_return_to_menu() -> void:
 		GameData.save_profile()
 	if bgm_player and bgm_player.playing:
 		bgm_player.stop()
-	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	get_tree().call_deferred("change_scene_to_file", "res://scenes/main_menu.tscn")
 
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
@@ -3037,6 +3037,13 @@ func _resolve_battle_victory() -> void:
 	GameData.stats_battles_total += 1
 	GameData.stats_battles_won += 1
 	if GameData.is_tutorial_mode:
+		if GameData.tutorial_completed:
+			GameData.is_tutorial_mode = false
+			show_game_over(
+				"🎉 PRACTICE VICTORY!",
+				"Excellent practice battle! You defeated the tutorial opponent."
+			)
+			return
 		if GameData.tutorial_combat_phase == 1:
 			var s1_name = "Stage 1"
 			if GameData.pokemon_catalog.has(GameData.tutorial_stage1_id):
@@ -3302,6 +3309,13 @@ func _resolve_battle_victory() -> void:
 func _resolve_battle_defeat() -> void:
 	GameData.stats_battles_total += 1
 	if GameData.is_tutorial_mode:
+		if GameData.tutorial_completed:
+			GameData.is_tutorial_mode = false
+			show_game_over(
+				"💀 PRACTICE BATTLE OVER",
+				"Your Pokémon fainted during practice. You can try again anytime!"
+			)
+			return
 		if GameData.tutorial_combat_phase == 1:
 			show_game_over(
 				"💀 COMBAT 1 DEFEATED",
@@ -5351,10 +5365,10 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 	)
 	
 	if GameData.is_tutorial_mode or GameData.just_completed_tutorial_combat1 or GameData.just_completed_tutorial:
-		btn_restart.visible = (is_battle_over and not is_victory and GameData.tutorial_combat_phase == 1)
-		if GameData.just_completed_tutorial_combat1 or GameData.tutorial_step == 4:
+		btn_restart.visible = (is_battle_over and not is_victory and (not GameData.tutorial_completed or GameData.tutorial_combat_phase == 1))
+		if not GameData.tutorial_completed and (GameData.just_completed_tutorial_combat1 or GameData.tutorial_step == 4):
 			btn_game_over_menu.text = "⛺ Go to Camp / Evolution"
-		elif GameData.just_completed_tutorial or GameData.tutorial_step >= 6:
+		elif GameData.just_completed_tutorial or GameData.tutorial_step >= 6 or GameData.tutorial_completed:
 			btn_game_over_menu.text = "🏛️ Enter Main Lobby"
 		else:
 			btn_game_over_menu.text = "🏛️ Return to Main Menu"

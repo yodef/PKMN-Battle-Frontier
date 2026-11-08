@@ -2379,9 +2379,14 @@ func _show_tutorial_prompt_modal(title: String, msg_bbcode: String, btn_text: St
 
 func _show_tutorial_confirmation_modal() -> void:
 	_setup_tutorial_confirmation_modal()
-	tutorial_confirm_title_lbl.text = "🎓 Start Combat Tutorial?"
-	tutorial_confirm_msg_lbl.text = "You will enter a guided battle to learn the fundamentals of Pokémon combat.\n\nFirst completion reward: 💎 5 Diamonds & unlocks Episode I!\n\nDo you want to start now?"
-	btn_confirm_tutorial.text = "⚔️ Start Tutorial"
+	if GameData.tutorial_completed:
+		tutorial_confirm_title_lbl.text = "🎓 Replay Combat Tutorial?"
+		tutorial_confirm_msg_lbl.text = "You will enter a practice battle to review the fundamentals of Pokémon combat.\n\nDo you want to start now?"
+		btn_confirm_tutorial.text = "⚔️ Start Practice"
+	else:
+		tutorial_confirm_title_lbl.text = "🎓 Start Combat Tutorial?"
+		tutorial_confirm_msg_lbl.text = "You will enter a guided battle to learn the fundamentals of Pokémon combat.\n\nFirst completion reward: 💎 5 Diamonds & unlocks Episode I!\n\nDo you want to start now?"
+		btn_confirm_tutorial.text = "⚔️ Start Tutorial"
 	btn_cancel_tutorial.visible = true
 	tutorial_prompt_callback = Callable()
 	tutorial_confirm_modal.visible = true
@@ -2409,7 +2414,13 @@ func _on_confirm_start_tutorial_pressed() -> void:
 	GameData.is_campaign_mode = false
 	GameData.is_pvp_mode = false
 	GameData.is_online_pvp = false
-	get_tree().change_scene_to_file("res://scenes/battle.tscn")
+	if GameData.tutorial_completed:
+		GameData.tutorial_combat_phase = 1
+	if GameData.tutorial_starter_id < 0:
+		GameData.set_tutorial_starter(1)
+	if bgm_player:
+		bgm_player.stop()
+	get_tree().call_deferred("change_scene_to_file", "res://scenes/battle.tscn")
 
 func _show_tutorial_step1_intro_guidance() -> void:
 	if GameData.player_diamonds < 25:
