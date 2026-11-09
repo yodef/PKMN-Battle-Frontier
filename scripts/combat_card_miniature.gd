@@ -249,7 +249,10 @@ func setup(pkmn, is_enemy: bool = false) -> void:
 	rarity_badge.text = stars
 	rarity_badge.add_theme_color_override("font_color", r_info.get("color", Color("#ffd700")))
 	
-	# 7. Efecto Foil Holográfico según rareza (Rare, Epic, Legendary)
+	# 7. Efecto Foil Holográfico según rareza (Rare, Epic, Legendary, Boss)
+	var is_boss = ("id" in pkmn and pkmn.id == GameData.CRYSTAL_ONIX_ID) or ("name" in pkmn and pkmn.name == "Crystal Onix") or (p_rarity.to_lower() == "boss")
+	if is_boss:
+		p_rarity = "Boss"
 	var foil_node = GameData.apply_foil_overlay(self, p_rarity)
 	if foil_node:
 		move_child(foil_node, get_child_count() - 1)

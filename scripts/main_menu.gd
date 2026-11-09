@@ -8643,8 +8643,11 @@ func populate_collection_grid() -> void:
 			)
 			thumb_btn.add_child(fav_btn)
 
-			# Efecto Foil Holográfico en la miniatura de cartas Raras/Épicas/Legendarias
-			GameData.apply_foil_overlay(thumb_btn, str(card.get("rarity", "Common")))
+			# Efecto Foil Holográfico en la miniatura de cartas Raras/Épicas/Legendarias/Boss
+			var thumb_rarity = str(card.get("rarity", "Common"))
+			if int(card.get("id", -1)) == GameData.CRYSTAL_ONIX_ID or str(card.get("name", "")) == "Crystal Onix" or str(card.get("stage", "")).to_lower() == "boss":
+				thumb_rarity = "Boss"
+			GameData.apply_foil_overlay(thumb_btn, thumb_rarity)
 		else:
 			# Si no la tienes: miniatura oscura de misterio con '?'
 			var sb_locked = StyleBoxFlat.new()
@@ -10392,6 +10395,8 @@ func _build_showcase_card_node(pokemon_id: int, slot_idx: int, is_editable: bool
 	
 	# Efecto Foil Holográfico continuo
 	var rarity_str = str(card.get("rarity", "Common"))
+	if int(card.get("id", -1)) == GameData.CRYSTAL_ONIX_ID or str(card.get("name", "")) == "Crystal Onix" or str(card.get("stage", "")).to_lower() == "boss":
+		rarity_str = "Boss"
 	var foil_rect = GameData.apply_foil_overlay(container, rarity_str, true)
 	if foil_rect:
 		container.move_child(foil_rect, container.get_child_count() - 1)

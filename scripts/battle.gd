@@ -2485,6 +2485,17 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		raw_damage += 3
 		note_text += " [color=cyan]Speed Advantage (+3 DMG)![/color]"
 
+	# Flail / Desperation (Si este PKMN tiene menos del 50% de su HP, aumenta +2 DMG)
+	if move.effect_type == "DESPERATION" or move.name == "Flail":
+		if float(attacker.current_hp) < (float(attacker.max_hp) * 0.50):
+			var bonus_dmg = 2
+			if "+4" in move.description:
+				bonus_dmg = 4
+			elif "+3" in move.description:
+				bonus_dmg = 3
+			raw_damage += bonus_dmg
+			note_text += " [color=orange]Flail (+%d DMG for HP < 50%%)![/color]" % bonus_dmg
+
 	# Sinergias con estados negativos del rival
 	if move.effect_type == "BLAZE" and defender.burn_turns > 0:
 		var blaze_bonus = 6 if "+6" in move.description else 3
@@ -4063,6 +4074,11 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 	# Velocidad superior
 	if move.effect_type == "BOOST_IF_FASTER" and move.name != "Quick Attack" and is_full_energy and att_spd > def_spd:
 		dmg += 3
+
+	# Flail / Desperation (HP < 50%)
+	if move.effect_type == "DESPERATION" or move.name == "Flail":
+		if float(attacker.current_hp) < (float(attacker.max_hp) * 0.50):
+			dmg += (4 if "+4" in move.description else (3 if "+3" in move.description else 2))
 
 	# Sinergias de estado
 	if move.effect_type == "BLAZE" and defender.burn_turns > 0:

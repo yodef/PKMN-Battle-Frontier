@@ -392,5 +392,8 @@ func setup(d: Dictionary, is_unlocked: bool = true) -> void:
 
 	speed_label.text = "👟 %d SPD" % int(d.get("speed", 1))
 	
-	# 9. Efecto Foil Holográfico según Rareza (Rare, Epic, Legendary)
-	GameData.apply_foil_overlay(self, str(d.get("rarity", "Common")))
+	# 9. Efecto Foil Holográfico según Rareza (Rare, Epic, Legendary, Boss)
+	var card_rarity = str(d.get("rarity", "Common"))
+	if int(d.get("id", -1)) == GameData.CRYSTAL_ONIX_ID or str(d.get("name", "")) == "Crystal Onix" or str(d.get("stage", "")).to_lower() == "boss":
+		card_rarity = "Boss"
+	GameData.apply_foil_overlay(self, card_rarity)

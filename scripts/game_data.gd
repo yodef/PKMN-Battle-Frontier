@@ -2303,7 +2303,9 @@ func get_card_rarity_weight(rarity_str: String) -> int:
 
 func get_rarity_display_info(rarity_str: String) -> Dictionary:
 	var r = rarity_str.strip_edges().to_lower()
-	if r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
+	if r in ["boss", "jefe"]:
+		return { "name": "Boss", "stars": "👑⭐⭐⭐⭐", "color": Color("#00E5FF"), "border": Color("#80D8FF") }
+	elif r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
 		return { "name": "Legendary", "stars": "⭐⭐⭐⭐", "color": Color("#FFD700"), "border": Color("#FFE066") }
 	elif r in ["epic", "epica", "epico", "sr", "super rare"]:
 		return { "name": "Epic", "stars": "⭐⭐⭐", "color": Color("#BA68C8"), "border": Color("#CE93D8") }
@@ -2318,7 +2320,9 @@ func get_rarity_display_info(rarity_str: String) -> Dictionary:
 
 func get_rarity_sort_rank(rarity_str: String) -> int:
 	var r = rarity_str.strip_edges().to_lower()
-	if r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
+	if r in ["boss", "jefe"]:
+		return 0
+	elif r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
 		return 1
 	elif r in ["epic", "epica", "epico", "sr", "super rare"]:
 		return 2
@@ -2696,6 +2700,7 @@ var battle_speed_index: int = 0 # 0=1x, 1=1.5x, 2=2x, 3=3x
 
 # --- MATERIALES Y EFECTOS FOIL HOLOGRÁFICOS ---
 var card_foil_shader: Shader = null
+var boss_card_foil_shader: Shader = null
 
 func get_card_foil_shader() -> Shader:
 	if not card_foil_shader:
@@ -2703,8 +2708,32 @@ func get_card_foil_shader() -> Shader:
 			card_foil_shader = load("res://assets/shaders/card_foil.gdshader")
 	return card_foil_shader
 
+func get_boss_card_foil_shader() -> Shader:
+	if not boss_card_foil_shader:
+		if ResourceLoader.exists("res://assets/shaders/boss_card_foil.gdshader"):
+			boss_card_foil_shader = load("res://assets/shaders/boss_card_foil.gdshader")
+	return boss_card_foil_shader
+
 func create_card_foil_material(rarity_str: String) -> ShaderMaterial:
 	var r = rarity_str.strip_edges().to_lower()
+	if r in ["boss", "jefe", "special_boss", "crystal onix"]:
+		var bs = get_boss_card_foil_shader()
+		if bs:
+			var mat = ShaderMaterial.new()
+			mat.shader = bs
+			mat.set_shader_parameter("star_scale", 16.0)
+			mat.set_shader_parameter("star_intensity", 1.45)
+			mat.set_shader_parameter("star_density", 0.75)
+			mat.set_shader_parameter("shimmer_speed", 0.95)
+			mat.set_shader_parameter("sheen_width", 0.24)
+			mat.set_shader_parameter("sheen_angle", 0.65)
+			mat.set_shader_parameter("boss_primary_color", Color(0.45, 0.85, 1.0, 0.85))
+			mat.set_shader_parameter("boss_accent_color", Color(0.78, 0.55, 1.0, 0.75))
+			mat.set_shader_parameter("star_glow_color", Color(0.95, 1.0, 1.0, 1.0))
+			mat.set_shader_parameter("ambient_glow", 0.12)
+			mat.set_shader_parameter("rainbow_prismatic", 0.55)
+			return mat
+
 	var s = get_card_foil_shader()
 	if not s:
 		return null

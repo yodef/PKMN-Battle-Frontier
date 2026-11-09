@@ -72,7 +72,7 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 119,Fire Punch,FIRE,6,2,1,1,3,BLAZE,"If foes PKMN has BURN, increase +3 DMG to this Move. Use 1 extra energy to increase +3 DMG.",Fire Punch.mp3
 64,Fire Spin,FIRE,9,3,1,0,0,SNOWBALL,"This Move's effect applies even if not used at full energy. If you used this Move in the previous turn, it deals +6 DMG.",Fire Spin.mp3
 120,Fissure,GROUND,16,4,4,0,0,WEAKEN,"Next 2 rounds, foes PKMN deals reduced -2 DMG. (Excluding negative status effects)",Fissure.mp3
-121,Flail,NORMAL,8,2,1,0,0,NONE,,Flail.mp3
+121,Flail,NORMAL,6,2,1,0,0,DESPERATION,"Si este PKMN tiene menos del 50% de su HP, aumenta +2 DMG.",Flail.mp3
 122,Flame Charge,FIRE,6,2,1,0,0,SNOWBALL,"This Move's effect applies even if not used at full energy. If you used this Move in the previous turn, it deals +3 DMG.",
 123,Flame Wheel,FIRE,8,2,1,1,3,BURN,Cause BURN for 2 rounds (1 DMG per round). Use 1 extra energy to increase +3 DMG.,Flame Wheel.mp3
 124,Flare Blitz,FIRE,20,4,1,0,0,RECOIL,"This effect applies whenever this PKMN uses this Move: This PKMN receives as recoil 30% of DMG dealt, minimum 1. If foes PKMN has BURN avoid recoil.",
