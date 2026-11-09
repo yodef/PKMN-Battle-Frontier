@@ -3533,7 +3533,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.04, 0.06, 0.1, 0.95)
+color = Color(0.06, 0.08, 0.12, 1)
 
 [node name="FriendsBox" type="VBoxContainer" parent="FriendsModal"]
 layout_mode = 1
@@ -3555,7 +3555,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.35, 1, 0.55, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 18
 text = "👥 TRAINER FRIENDS & MATCHES"
 
 [node name="FriendsCountBadge" type="Label" parent="FriendsModal/FriendsBox/FriendsHeaderRow"]
@@ -3628,7 +3628,7 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
-placeholder_text = "Search trainers by Google Email, Alias (e.g. Ash) or ID (PKMN-...)..."
+placeholder_text = "Search by Alias, Google Email or ID..."
 
 [node name="BtnSearchFriend" type="Button" parent="FriendsModal/FriendsBox/SearchCard/SearchMargin/SearchHBox"]
 custom_minimum_size = Vector2(85, 36)
@@ -3671,6 +3671,8 @@ text = "🔄 Refresh"
 [node name="FriendsContentScroll" type="ScrollContainer" parent="FriendsModal/FriendsBox"]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
 
 [node name="FriendsListVBox" type="VBoxContainer" parent="FriendsModal/FriendsBox/FriendsContentScroll"]
 layout_mode = 2
@@ -3681,6 +3683,8 @@ theme_override_constants/separation = 8
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
 
 [node name="SearchResultsVBox" type="VBoxContainer" parent="FriendsModal/FriendsBox/SearchResultsScroll"]
 layout_mode = 2
