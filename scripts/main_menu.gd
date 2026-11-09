@@ -10211,16 +10211,16 @@ func _create_activity_status_button(is_active: bool, tooltip_info: String = "") 
 	var btn = Button.new()
 	btn.mouse_filter = Control.MOUSE_FILTER_PASS
 	btn.focus_mode = Control.FOCUS_NONE
-	btn.custom_minimum_size = Vector2(85, 26)
-	btn.add_theme_font_size_override("font_size", 10)
+	btn.custom_minimum_size = Vector2(68, 24)
+	btn.add_theme_font_size_override("font_size", 9)
 	
 	var sb = StyleBoxFlat.new()
 	sb.set_border_width_all(1)
-	sb.set_corner_radius_all(13)
-	sb.content_margin_left = 8
-	sb.content_margin_right = 8
-	sb.content_margin_top = 3
-	sb.content_margin_bottom = 3
+	sb.set_corner_radius_all(12)
+	sb.content_margin_left = 4
+	sb.content_margin_right = 4
+	sb.content_margin_top = 2
+	sb.content_margin_bottom = 2
 	
 	if is_active:
 		btn.text = "🟢 Activo" if GameData.is_spanish() else "🟢 Active"
@@ -11526,31 +11526,26 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 	card.add_theme_stylebox_override("panel", sb)
 	
 	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_top", 8)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_bottom", 8)
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_top", 6)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_bottom", 6)
 	card.add_child(margin)
 	
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 6)
-	margin.add_child(vbox)
-	
-	# --- Fila 1: Avatar, Datos del Entrenador y Estado Activo/Inactivo ---
-	var header_hbox = HBoxContainer.new()
-	header_hbox.add_theme_constant_override("separation", 10)
-	vbox.add_child(header_hbox)
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 6)
+	margin.add_child(hbox)
 	
 	var avatar_lbl = Label.new()
 	avatar_lbl.text = "👤"
-	avatar_lbl.add_theme_font_size_override("font_size", 22)
+	avatar_lbl.add_theme_font_size_override("font_size", 18)
 	avatar_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	header_hbox.add_child(avatar_lbl)
+	hbox.add_child(avatar_lbl)
 	
 	var info_vbox = VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_vbox.add_theme_constant_override("separation", 2)
-	header_hbox.add_child(info_vbox)
+	info_vbox.add_theme_constant_override("separation", 1)
+	hbox.add_child(info_vbox)
 	
 	var alias = str(f_data.get("alias", "Trainer"))
 	var email = str(f_data.get("email", ""))
@@ -11559,18 +11554,20 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 	
 	var name_lbl = Label.new()
 	name_lbl.text = alias
-	name_lbl.add_theme_font_size_override("font_size", 14)
+	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.add_theme_color_override("font_color", Color(1, 0.88, 0.35))
+	name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	info_vbox.add_child(name_lbl)
 	
 	var rel_act = GameData.format_relative_activity_time(act_val)
 	var sub_lbl = Label.new()
 	var sub_text = ("ID: " + p_id) if not p_id.is_empty() else "ID: ---"
 	if not rel_act.is_empty() and rel_act != "Desconocido" and rel_act != "Unknown":
-		sub_text += "  •  🕒 " + rel_act
+		sub_text += " • 🕒 " + rel_act
 	sub_lbl.text = sub_text
-	sub_lbl.add_theme_font_size_override("font_size", 11)
+	sub_lbl.add_theme_font_size_override("font_size", 10)
 	sub_lbl.add_theme_color_override("font_color", Color(0.45, 0.75, 0.95))
+	sub_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	info_vbox.add_child(sub_lbl)
 	
 	# ¿Tiene este amigo una sala esperando?
@@ -11579,69 +11576,67 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 	var active_room = active_friend_rooms_map.get(f_email_clean, {}) if has_room else {}
 	
 	if has_room:
+		var room_code_str = str(active_room.get("room_code", ""))
 		var status_lbl = Label.new()
-		status_lbl.text = "🟢 Waiting in Room: %s" % active_room.get("room_code", "")
-		status_lbl.add_theme_font_size_override("font_size", 11)
+		status_lbl.text = "🟢 Room: %s" % room_code_str
+		status_lbl.add_theme_font_size_override("font_size", 10)
 		status_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.45))
+		status_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		info_vbox.add_child(status_lbl)
 		
 	var is_active = (has_room or GameData.is_trainer_active(act_val))
 	var status_btn = _create_activity_status_button(is_active)
 	status_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	header_hbox.add_child(status_btn)
+	hbox.add_child(status_btn)
 	
-	# --- Fila 2: Acciones alineadas a la derecha ---
-	var actions_hbox = HBoxContainer.new()
-	actions_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions_hbox.alignment = BoxContainer.ALIGNMENT_END
-	actions_hbox.add_theme_constant_override("separation", 8)
-	vbox.add_child(actions_hbox)
-	
-	var spacer = Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions_hbox.add_child(spacer)
-	
-	# Botón Ver Perfil
+	# Botón Ver Perfil (icono compacto con tooltip)
 	var profile_btn = Button.new()
-	profile_btn.text = "👁️ Profile"
-	profile_btn.custom_minimum_size = Vector2(80, 30)
-	profile_btn.add_theme_font_size_override("font_size", 11)
+	profile_btn.text = "👁️"
+	profile_btn.tooltip_text = "View Trainer Profile"
+	profile_btn.custom_minimum_size = Vector2(34, 30)
+	profile_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	profile_btn.add_theme_font_size_override("font_size", 13)
 	_apply_retro_button_style(profile_btn, Color(0.2, 0.6, 0.8), Color(0.3, 0.8, 1.0))
 	profile_btn.pressed.connect(func():
 		_open_friend_profile_modal(f_data)
 	)
-	actions_hbox.add_child(profile_btn)
+	hbox.add_child(profile_btn)
 	
 	if has_room:
-		# Botón para unirse a la sala activa de este amigo
+		# Botón para unirse a la sala activa de este amigo (icono rayo con tooltip)
 		var join_btn = Button.new()
-		join_btn.text = "⚡ Join (%s)" % active_room.get("room_code", "")
-		join_btn.custom_minimum_size = Vector2(105, 30)
-		join_btn.add_theme_font_size_override("font_size", 11)
+		join_btn.text = "⚡"
+		join_btn.tooltip_text = "Join Room %s" % active_room.get("room_code", "")
+		join_btn.custom_minimum_size = Vector2(34, 30)
+		join_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		join_btn.add_theme_font_size_override("font_size", 13)
 		_apply_retro_button_style(join_btn, Color(0.15, 0.55, 0.3), Color(0.3, 1.0, 0.45))
 		join_btn.add_theme_color_override("font_color", Color(0.3, 1.0, 0.45))
 		join_btn.pressed.connect(func():
 			_join_friend_room(str(active_room.get("room_code", "")))
 		)
-		actions_hbox.add_child(join_btn)
+		hbox.add_child(join_btn)
 	else:
-		# Botón Desafiar / Crear sala invitando a este amigo
+		# Botón Desafiar / Crear sala invitando a este amigo (icono espadas con tooltip)
 		var challenge_btn = Button.new()
-		challenge_btn.text = "⚔️ Challenge"
-		challenge_btn.custom_minimum_size = Vector2(95, 30)
-		challenge_btn.add_theme_font_size_override("font_size", 11)
+		challenge_btn.text = "⚔️"
+		challenge_btn.tooltip_text = "Challenge to Battle"
+		challenge_btn.custom_minimum_size = Vector2(34, 30)
+		challenge_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		challenge_btn.add_theme_font_size_override("font_size", 13)
 		_apply_retro_button_style(challenge_btn, Color(0.65, 0.45, 0.1), Color(1.0, 0.8, 0.25))
 		challenge_btn.add_theme_color_override("font_color", Color(1.0, 0.8, 0.25))
 		challenge_btn.pressed.connect(func():
 			_challenge_friend(f_data)
 		)
-		actions_hbox.add_child(challenge_btn)
+		hbox.add_child(challenge_btn)
 		
-	# Botón Eliminar amigo
+	# Botón Eliminar amigo (icono papelera con tooltip)
 	var remove_btn = Button.new()
 	remove_btn.text = "🗑️"
 	remove_btn.tooltip_text = "Remove from Friends"
-	remove_btn.custom_minimum_size = Vector2(36, 30)
+	remove_btn.custom_minimum_size = Vector2(32, 30)
+	remove_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	remove_btn.add_theme_font_size_override("font_size", 12)
 	_apply_retro_button_style(remove_btn, Color(0.5, 0.2, 0.2), Color(0.9, 0.3, 0.3))
 	remove_btn.pressed.connect(func():
@@ -11649,7 +11644,7 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 		GameData.remove_friend(rem_id)
 		_update_friends_ui()
 	)
-	actions_hbox.add_child(remove_btn)
+	hbox.add_child(remove_btn)
 	
 	return card
 
@@ -11713,31 +11708,26 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	card.add_theme_stylebox_override("panel", sb)
 	
 	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_top", 8)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_bottom", 8)
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_top", 6)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_bottom", 6)
 	card.add_child(margin)
 	
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 6)
-	margin.add_child(vbox)
-	
-	# --- Fila 1: Avatar, Datos del Entrenador y Estado Activo/Inactivo ---
-	var header_hbox = HBoxContainer.new()
-	header_hbox.add_theme_constant_override("separation", 10)
-	vbox.add_child(header_hbox)
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 6)
+	margin.add_child(hbox)
 	
 	var avatar_lbl = Label.new()
 	avatar_lbl.text = "🎮"
-	avatar_lbl.add_theme_font_size_override("font_size", 20)
+	avatar_lbl.add_theme_font_size_override("font_size", 18)
 	avatar_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	header_hbox.add_child(avatar_lbl)
+	hbox.add_child(avatar_lbl)
 	
 	var info_vbox = VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_vbox.add_theme_constant_override("separation", 2)
-	header_hbox.add_child(info_vbox)
+	info_vbox.add_theme_constant_override("separation", 1)
+	hbox.add_child(info_vbox)
 	
 	var alias = str(res_data.get("alias", "Trainer"))
 	var email = str(res_data.get("email", ""))
@@ -11749,77 +11739,76 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	
 	var name_lbl = Label.new()
 	if is_self:
-		name_lbl.text = "%s  👤 (You)" % alias
+		name_lbl.text = "%s 👤(You)" % alias
 		name_lbl.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 	else:
 		name_lbl.text = alias
 		name_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 1))
-	name_lbl.add_theme_font_size_override("font_size", 14)
+	name_lbl.add_theme_font_size_override("font_size", 13)
+	name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	info_vbox.add_child(name_lbl)
 	
 	var rel_act = GameData.format_relative_activity_time(act_val)
 	var sub_lbl = Label.new()
 	var sub_text = ("ID: " + p_id) if not p_id.is_empty() else "ID: ---"
 	if not rel_act.is_empty() and rel_act != "Desconocido" and rel_act != "Unknown":
-		sub_text += "  •  🕒 " + rel_act
+		sub_text += " • 🕒 " + rel_act
 	sub_lbl.text = sub_text
-	sub_lbl.add_theme_font_size_override("font_size", 11)
+	sub_lbl.add_theme_font_size_override("font_size", 10)
 	sub_lbl.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
+	sub_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	info_vbox.add_child(sub_lbl)
 	
 	var status_btn = _create_activity_status_button(is_active)
 	status_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	header_hbox.add_child(status_btn)
-	
-	# --- Fila 2: Acciones alineadas a la derecha ---
-	var actions_hbox = HBoxContainer.new()
-	actions_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions_hbox.alignment = BoxContainer.ALIGNMENT_END
-	actions_hbox.add_theme_constant_override("separation", 8)
-	vbox.add_child(actions_hbox)
-	
-	var spacer = Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions_hbox.add_child(spacer)
+	hbox.add_child(status_btn)
 	
 	if not is_self:
 		var profile_btn = Button.new()
-		profile_btn.text = "👁️ Profile"
-		profile_btn.custom_minimum_size = Vector2(80, 30)
-		profile_btn.add_theme_font_size_override("font_size", 11)
+		profile_btn.text = "👁️"
+		profile_btn.tooltip_text = "View Trainer Profile"
+		profile_btn.custom_minimum_size = Vector2(34, 30)
+		profile_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		profile_btn.add_theme_font_size_override("font_size", 13)
 		_apply_retro_button_style(profile_btn, Color(0.2, 0.6, 0.8), Color(0.3, 0.8, 1.0))
 		profile_btn.pressed.connect(func():
 			_open_friend_profile_modal(res_data)
 		)
-		actions_hbox.add_child(profile_btn)
+		hbox.add_child(profile_btn)
 		
 	var add_btn = Button.new()
-	add_btn.custom_minimum_size = Vector2(105, 30)
-	add_btn.add_theme_font_size_override("font_size", 11)
+	add_btn.custom_minimum_size = Vector2(34, 30)
+	add_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	add_btn.add_theme_font_size_override("font_size", 14)
 	
 	if is_self:
-		add_btn.text = "👤 Your Profile"
+		add_btn.text = "👤"
+		add_btn.tooltip_text = "Your Profile"
 		add_btn.disabled = true
 		add_btn.add_theme_color_override("font_color", Color(0.65, 0.75, 0.85))
 		_apply_retro_button_style(add_btn, Color(0.25, 0.3, 0.38), Color(0.4, 0.45, 0.55))
 	elif is_already:
-		add_btn.text = "✓ Friends"
+		add_btn.text = "✓"
+		add_btn.tooltip_text = "Already Friends"
 		add_btn.disabled = true
 		add_btn.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 		_apply_retro_button_style(add_btn, Color(0.15, 0.45, 0.25), Color(0.3, 0.8, 0.4))
 	else:
-		add_btn.text = "➕ Add Friend"
+		add_btn.text = "➕"
+		add_btn.tooltip_text = "Add Friend"
 		add_btn.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 		_apply_retro_button_style(add_btn, Color(0.2, 0.5, 0.7), Color(0.4, 0.8, 1.0))
 		add_btn.pressed.connect(func():
 			GameData.add_friend(alias, email, p_id)
-			add_btn.text = "✓ Added!"
+			add_btn.text = "✓"
+			add_btn.tooltip_text = "Friends"
 			add_btn.disabled = true
 			add_btn.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
+			_apply_retro_button_style(add_btn, Color(0.15, 0.45, 0.25), Color(0.3, 0.8, 0.4))
 			friends_feedback_lbl.text = "✨ '%s' added to your friends list!" % alias
 			_update_friends_ui()
 		)
-	actions_hbox.add_child(add_btn)
+	hbox.add_child(add_btn)
 	
 	return card
 
