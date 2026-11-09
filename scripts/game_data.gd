@@ -4190,17 +4190,17 @@ func pick_random_unique(pool: Array[int], count: int, exclude_ids: Array = []) -
 func generate_tournament_rival_team(match_num: int) -> Array[int]:
 	match match_num:
 		1:
-			# Match 1 (Phase 1 Warmup): 1 Basic Pokémon (Tier D/C) - fast opening duel
-			var pool = get_tournament_candidates("basic", "any", ["D", "C"])
+			# Match 1 (Phase 1 Warmup): 1 Basic Pokémon (Strictly Tier D) - gentle opening duel
+			var pool = get_tournament_candidates("basic", "any", ["D"])
 			return pick_random_unique(pool, 1)
 		2:
-			# Match 2 (Phase 1 Skirmish): 2 Basic Pokémon (Tier C/B)
-			var pool = get_tournament_candidates("basic", "any", ["C", "B"])
+			# Match 2 (Phase 1 Skirmish): 2 Basic Pokémon (Strictly Tier D)
+			var pool = get_tournament_candidates("basic", "any", ["D"])
 			return pick_random_unique(pool, 2)
 		3:
-			# Match 3 (Phase 1 Finale): 1 Basic (Tier B/C) + 1 Stage 1 (Tier B/A)
-			var b = pick_random_unique(get_tournament_candidates("basic", "any", ["C", "B"]), 1)
-			var s1 = pick_random_unique(get_tournament_candidates("stage 1", "any", ["C", "B", "A"]), 1, b)
+			# Match 3 (Phase 1 Finale): 1 Basic (Strictly Tier D) + 1 Stage 1 (Tier D/C)
+			var b = pick_random_unique(get_tournament_candidates("basic", "any", ["D"]), 1)
+			var s1 = pick_random_unique(get_tournament_candidates("stage 1", "any", ["D", "C"]), 1, b)
 			return b + s1
 		4:
 			# Match 4 (Phase 2 Duel): 1 Stage 1 Pokémon (Tier B/A) - snappy evolved clash
@@ -4249,7 +4249,7 @@ func generate_tournament_rival_team(match_num: int) -> Array[int]:
 				team.append_array(fill)
 			return team
 		_:
-			return pick_random_unique(get_tournament_candidates("basic", "any", ["D", "C"]), 1)
+			return pick_random_unique(get_tournament_candidates("basic", "any", ["D"]), 1)
 
 func get_campaign_rival_team(match_num: int) -> Array[int]:
 	if match_num == current_tournament_rival_match and not current_tournament_rival_team.is_empty():

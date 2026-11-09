@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cih816vx44m2n"]
+
+[ext_resource type="Script" path="res://tests/test_tournament_stadium_tiers.gd" id="1_test"]
+
+[node name="TestTournamentStadiumTiers" type="Node"]
+script = ExtResource("1_test")
