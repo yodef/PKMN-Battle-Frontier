@@ -215,6 +215,69 @@ var profile_is_logged_in: bool = false
 var profile_created_at: String = ""
 var profile_cloud_key: String = ""
 var profile_welcome_claimed: bool = false
+var profile_last_activity_at: String = ""
+var profile_last_active_unix: int = 0
+
+func touch_profile_activity() -> void:
+	profile_last_activity_at = Time.get_datetime_string_from_system(true)
+	profile_last_active_unix = int(Time.get_unix_time_from_system())
+
+func get_seconds_since_activity(activity_val) -> int:
+	if activity_val == null:
+		return -1
+	var now_unix = int(Time.get_unix_time_from_system())
+	if typeof(activity_val) == TYPE_INT or typeof(activity_val) == TYPE_FLOAT:
+		var act_int = int(activity_val)
+		if act_int <= 0:
+			return -1
+		return maxi(0, now_unix - act_int)
+	
+	var s = str(activity_val).strip_edges()
+	if s.is_empty():
+		return -1
+	
+	if s.ends_with("Z"):
+		s = s.substr(0, s.length() - 1)
+	if "." in s:
+		s = s.split(".")[0]
+		
+	var act_unix = Time.get_unix_time_from_datetime_string(s)
+	if act_unix <= 0:
+		return -1
+	
+	var diff = now_unix - act_unix
+	if diff < 0 and abs(diff) < 86400:
+		return 0
+	return maxi(0, diff)
+
+func format_relative_activity_time(activity_val) -> String:
+	var secs = get_seconds_since_activity(activity_val)
+	var es = is_spanish()
+	if secs < 0:
+		return "Desconocido" if es else "Unknown"
+	if secs < 60:
+		return "Hace un momento" if es else "Just now"
+	var mins = int(secs / 60)
+	if mins < 60:
+		return ("Hace %d min" % mins) if es else ("%d min ago" % mins)
+	var hours = int(mins / 60)
+	if hours < 24:
+		return ("Hace %d h" % hours) if es else ("%d h ago" % hours)
+	var days = int(hours / 24)
+	if days == 1:
+		return "Hace 1 día" if es else "1 day ago"
+	if days < 30:
+		return ("Hace %d días" % days) if es else ("%d days ago" % days)
+	var months = int(days / 30)
+	if months == 1:
+		return "Hace 1 mes" if es else "1 month ago"
+	return ("Hace %d meses" % months) if es else ("%d months ago" % months)
+
+func is_trainer_active(activity_val, threshold_secs: int = 600) -> bool:
+	var secs = get_seconds_since_activity(activity_val)
+	if secs < 0:
+		return false
+	return secs <= threshold_secs
 
 # --- SISTEMA DE AMIGOS (FRIENDS) ---
 signal friends_updated()
@@ -2453,7 +2516,7 @@ func check_and_update_daily_system() -> void:
 		dirty = true
 		
 	if dirty:
-		save_profile()
+		save_profile(true, false)
 		daily_rewards_changed.emit()
 
 func _generate_daily_missions() -> void:
@@ -4649,6 +4712,8 @@ func get_save_dict() -> Dictionary:
 			"created_at": profile_created_at,
 			"cloud_key": profile_cloud_key,
 			"welcome_gift_claimed": profile_welcome_claimed,
+			"last_activity_at": profile_last_activity_at,
+			"last_active_unix": profile_last_active_unix,
 			"favorite_showcase": profile_showcase_ids.duplicate()
 		},
 		"favorites": player_favorites.duplicate(),
@@ -4737,6 +4802,10 @@ func apply_save_dict(data: Dictionary) -> bool:
 	profile_created_at = prof.get("created_at", "")
 	profile_cloud_key = prof.get("cloud_key", "")
 	profile_welcome_claimed = bool(prof.get("welcome_gift_claimed", false))
+	var loaded_act_at = str(prof.get("last_activity_at", ""))
+	var loaded_act_u = int(prof.get("last_active_unix", 0))
+	profile_last_activity_at = loaded_act_at
+	profile_last_active_unix = loaded_act_u
 	if profile_cloud_key.is_empty() and not profile_email.is_empty():
 		profile_cloud_key = profile_email
 		
@@ -4900,9 +4969,17 @@ func apply_save_dict(data: Dictionary) -> bool:
 	
 	check_and_update_daily_system()
 	
+	# Restaurar timestamps de actividad originales del guardado (evitar que sanitizaciones o rollover de login los pisen)
+	if loaded_act_at != "":
+		profile_last_activity_at = loaded_act_at
+	if loaded_act_u > 0:
+		profile_last_active_unix = loaded_act_u
+	
 	return true
 
-func save_profile(trigger_cloud_sync: bool = true) -> bool:
+func save_profile(trigger_cloud_sync: bool = true, touch_activity: bool = true) -> bool:
+	if touch_activity:
+		touch_profile_activity()
 	var save_dict = get_save_dict()
 	var file = FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
 	if not file:

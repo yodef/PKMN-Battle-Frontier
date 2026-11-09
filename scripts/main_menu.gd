@@ -278,6 +278,7 @@ var _pending_tutorial_after_settings: bool = false
 @onready var profile_modal: Control = $ProfileModal
 @onready var trainer_name_input: LineEdit = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerNameRow/TrainerNameInput
 @onready var trainer_email_row: HBoxContainer = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow
+@onready var trainer_email_prompt: Label = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow/TrainerEmailPrompt
 @onready var trainer_email_value: Label = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow/TrainerEmailValue
 @onready var account_status_lbl: Label = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/AccountStatusLbl
 @onready var btn_link_google: Button = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/BtnLinkGoogle
@@ -9883,16 +9884,57 @@ func _update_lobby_header_badge() -> void:
 		else:
 			btn_daily_missions.text = "🎁  DAILY MISSIONS & REWARDS"
 
+func _create_activity_status_button(is_active: bool, tooltip_info: String = "") -> Button:
+	var btn = Button.new()
+	btn.mouse_filter = Control.MOUSE_FILTER_PASS
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.custom_minimum_size = Vector2(85, 26)
+	btn.add_theme_font_size_override("font_size", 10)
+	
+	var sb = StyleBoxFlat.new()
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(13)
+	sb.content_margin_left = 8
+	sb.content_margin_right = 8
+	sb.content_margin_top = 3
+	sb.content_margin_bottom = 3
+	
+	if is_active:
+		btn.text = "🟢 Activo" if GameData.is_spanish() else "🟢 Active"
+		sb.bg_color = Color(0.12, 0.35, 0.18, 0.95)
+		sb.border_color = Color(0.3, 0.9, 0.45, 0.9)
+		btn.add_theme_color_override("font_color", Color(0.6, 1.0, 0.7))
+	else:
+		btn.text = "⚪ Inactivo" if GameData.is_spanish() else "⚪ Inactive"
+		sb.bg_color = Color(0.18, 0.22, 0.26, 0.95)
+		sb.border_color = Color(0.45, 0.52, 0.60, 0.8)
+		btn.add_theme_color_override("font_color", Color(0.75, 0.82, 0.88))
+		
+	btn.add_theme_stylebox_override("normal", sb)
+	btn.add_theme_stylebox_override("hover", sb)
+	btn.add_theme_stylebox_override("pressed", sb)
+	btn.add_theme_stylebox_override("disabled", sb)
+	if not tooltip_info.is_empty():
+		btn.tooltip_text = tooltip_info
+	return btn
+
 # --- PERFIL Y REGISTROS DEL ENTRENADOR ---
 func _on_profile_pressed() -> void:
 	refresh_cards_data_from_catalog()
 	if trainer_name_input:
 		trainer_name_input.text = GameData.profile_name
+	if trainer_email_prompt:
+		trainer_email_prompt.text = "🕒 Última Actividad:" if GameData.is_spanish() else "🕒 Last Activity:"
 	if trainer_email_value:
-		if not GameData.profile_email.is_empty():
-			trainer_email_value.text = GameData.profile_email
-		else:
-			trainer_email_value.text = "(Not linked - Local Guest)"
+		trainer_email_value.text = "Hace un momento" if GameData.is_spanish() else "Just now"
+	if trainer_email_row and not trainer_email_row.has_node("BtnTrainerStatus"):
+		var status_btn = _create_activity_status_button(true)
+		status_btn.name = "BtnTrainerStatus"
+		trainer_email_row.add_child(status_btn)
+	elif trainer_email_row and trainer_email_row.has_node("BtnTrainerStatus"):
+		var status_btn = trainer_email_row.get_node("BtnTrainerStatus") as Button
+		status_btn.text = "🟢 Activo" if GameData.is_spanish() else "🟢 Active"
+		
 	if btn_link_google:
 		if GameData.profile_auth_provider.begins_with("Google"):
 			btn_link_google.text = "🔄 Switch / Re-sync Google Account"
@@ -9903,7 +9945,7 @@ func _on_profile_pressed() -> void:
 			account_status_lbl.text = "Status: 🌐 Local Web Play (Browser IndexedDB Storage)"
 			account_status_lbl.modulate = Color(0.4, 0.85, 1.0)
 		elif GameData.profile_auth_provider.begins_with("Google"):
-			account_status_lbl.text = "Status: 🟢 Google Cloud Connected (Firebase)\n☁️ Email: %s" % GameData.profile_email
+			account_status_lbl.text = "Status: 🟢 Google Cloud Connected (Firebase)"
 			account_status_lbl.modulate = Color(0.35, 1.0, 0.5)
 		else:
 			account_status_lbl.text = "Status: ⚪ Local Storage Active (%s)" % GameData.profile_auth_provider
@@ -10578,6 +10620,7 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	var alias = str(prof.get("trainer_alias", prof.get("name", f_data.get("alias", "Trainer")))).strip_edges()
 	var email = str(prof.get("email", f_data.get("email", ""))).strip_edges()
 	var p_id = str(prof.get("id", f_data.get("id", ""))).strip_edges()
+	var act_val = prof.get("last_activity_at", f_data.get("last_activity_at", prof.get("updated_at", "")))
 	
 	var title = Label.new()
 	title.text = "👤 TRAINER PROFILE"
@@ -10613,20 +10656,30 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	name_lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.35))
 	info_vbox.add_child(name_lbl)
 	
+	var rel_act = GameData.format_relative_activity_time(act_val)
 	var sub_lbl = Label.new()
-	var sub_text = email if not email.is_empty() else ("ID: " + p_id)
-	if not email.is_empty() and not p_id.is_empty():
-		sub_text += "  •  " + p_id
+	var sub_text = ("ID: " + p_id) if not p_id.is_empty() else "ID: ---"
+	sub_text += "  •  🕒 " + rel_act
 	sub_lbl.text = sub_text
 	sub_lbl.add_theme_font_size_override("font_size", 11)
 	sub_lbl.add_theme_color_override("font_color", Color(0.45, 0.75, 0.95))
 	info_vbox.add_child(sub_lbl)
 	
+	var f_email_clean = email.strip_edges().to_lower()
+	var has_room = active_friend_rooms_map.has(f_email_clean)
+	var is_active = (has_room or GameData.is_trainer_active(act_val))
+	
+	var act_row = HBoxContainer.new()
+	act_row.add_theme_constant_override("separation", 8)
+	var status_btn = _create_activity_status_button(is_active)
+	act_row.add_child(status_btn)
+	
 	var cloud_status = Label.new()
-	cloud_status.text = "🟢 Google Cloud Verified Trainer"
+	cloud_status.text = "Google Cloud Verified Trainer"
 	cloud_status.add_theme_font_size_override("font_size", 11)
-	cloud_status.add_theme_color_override("font_color", Color(0.3, 1.0, 0.45))
-	info_vbox.add_child(cloud_status)
+	cloud_status.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
+	act_row.add_child(cloud_status)
+	info_vbox.add_child(act_row)
 	
 	# Stats card
 	var stats = save_data.get("stats", {})
@@ -11173,6 +11226,7 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 	var alias = str(f_data.get("alias", "Trainer"))
 	var email = str(f_data.get("email", ""))
 	var p_id = str(f_data.get("id", ""))
+	var act_val = f_data.get("last_activity_at", f_data.get("updated_at", ""))
 	
 	var name_lbl = Label.new()
 	name_lbl.text = alias
@@ -11180,10 +11234,10 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 	name_lbl.add_theme_color_override("font_color", Color(1, 0.88, 0.35))
 	info_vbox.add_child(name_lbl)
 	
+	var rel_act = GameData.format_relative_activity_time(act_val)
 	var sub_lbl = Label.new()
-	var sub_text = email if not email.is_empty() else ("ID: " + p_id)
-	if not email.is_empty() and not p_id.is_empty():
-		sub_text += "  •  " + p_id
+	var sub_text = ("ID: " + p_id) if not p_id.is_empty() else "ID: ---"
+	sub_text += "  •  🕒 " + rel_act
 	sub_lbl.text = sub_text
 	sub_lbl.add_theme_font_size_override("font_size", 11)
 	sub_lbl.add_theme_color_override("font_color", Color(0.45, 0.75, 0.95))
@@ -11205,6 +11259,11 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 	var actions_hbox = HBoxContainer.new()
 	actions_hbox.add_theme_constant_override("separation", 6)
 	hbox.add_child(actions_hbox)
+	
+	# Botón de Estado Activo/Inactivo
+	var is_active = (has_room or GameData.is_trainer_active(act_val))
+	var status_btn = _create_activity_status_button(is_active)
+	actions_hbox.add_child(status_btn)
 	
 	# Botón Ver Perfil
 	var profile_btn = Button.new()
@@ -11338,6 +11397,7 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	var alias = str(res_data.get("alias", "Trainer"))
 	var email = str(res_data.get("email", ""))
 	var p_id = str(res_data.get("id", ""))
+	var act_val = res_data.get("last_activity_at", "")
 	
 	var name_lbl = Label.new()
 	name_lbl.text = alias
@@ -11345,10 +11405,11 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	name_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 1))
 	info_vbox.add_child(name_lbl)
 	
+	var rel_act = GameData.format_relative_activity_time(act_val)
 	var sub_lbl = Label.new()
-	var sub_text = email if not email.is_empty() else ("ID: " + p_id)
-	if not email.is_empty() and not p_id.is_empty():
-		sub_text += "  •  " + p_id
+	var sub_text = ("ID: " + p_id) if not p_id.is_empty() else "ID: ---"
+	if not rel_act.is_empty() and rel_act != "Desconocido" and rel_act != "Unknown":
+		sub_text += "  •  🕒 " + rel_act
 	sub_lbl.text = sub_text
 	sub_lbl.add_theme_font_size_override("font_size", 11)
 	sub_lbl.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
@@ -11357,6 +11418,10 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	# Acciones
 	var is_self = bool(res_data.get("is_self", false))
 	var is_already = GameData.is_friend(email) or GameData.is_friend(p_id) or GameData.is_friend(alias)
+	var is_active = is_self or GameData.is_trainer_active(act_val)
+	
+	var status_btn = _create_activity_status_button(is_active)
+	hbox.add_child(status_btn)
 	
 	if not is_self:
 		var profile_btn = Button.new()

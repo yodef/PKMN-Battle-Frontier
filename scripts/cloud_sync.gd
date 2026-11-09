@@ -91,6 +91,9 @@ func parse_trainer_doc_to_save_data(fields: Dictionary) -> Dictionary:
 	var root_id = str(fields.get("profile_id", {}).get("stringValue", "")).strip_edges()
 	if not root_id.is_empty():
 		save_data["profile"]["id"] = root_id
+	var root_updated = str(fields.get("last_activity_at", fields.get("updated_at", {})).get("stringValue", "")).strip_edges()
+	if not root_updated.is_empty():
+		save_data["profile"]["last_activity_at"] = root_updated
 		
 	return save_data
 
@@ -315,7 +318,8 @@ func save_profile_to_cloud(account_key: String, save_dict: Dictionary, callback:
 	var p_id = str(prof.get("id", "PKMN-000000"))
 	var diamonds = int(save_dict.get("economy", {}).get("diamonds", 0))
 	var candies = int(save_dict.get("economy", {}).get("rare_candies", 0))
-	var now_iso = Time.get_datetime_string_from_system()
+	var now_iso = Time.get_datetime_string_from_system(true)
+	var now_unix = int(Time.get_unix_time_from_system())
 	
 	var payload = {
 		"fields": {
@@ -326,7 +330,9 @@ func save_profile_to_cloud(account_key: String, save_dict: Dictionary, callback:
 			"diamonds": { "integerValue": diamonds },
 			"rare_candies": { "integerValue": candies },
 			"save_json": { "stringValue": json_str },
-			"updated_at": { "stringValue": now_iso }
+			"updated_at": { "stringValue": now_iso },
+			"last_activity_at": { "stringValue": now_iso },
+			"last_active_unix": { "integerValue": now_unix }
 		}
 	}
 	
@@ -664,12 +670,14 @@ func search_trainers(query_text: String, callback: Callable) -> void:
 						elif t_id.to_lower().contains(clean_query):
 							match_found = true
 							
+					var t_updated = str(f.get("last_activity_at", f.get("updated_at", {})).get("stringValue", "")).strip_edges()
 					if match_found:
 						results.append({
 							"alias": t_alias,
 							"email": t_email,
 							"id": t_id,
 							"diamonds": t_diamonds,
+							"last_activity_at": t_updated,
 							"is_self": is_self
 						})
 						
