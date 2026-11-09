@@ -1307,7 +1307,7 @@ text = "⚖️ STADIUM RULES & GENERATION CRITERIA"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
 theme_override_font_sizes/font_size = 11
-text = "• Banned for Rivals: All Legendaries and Tier S/S+ (Venusaur, Alakazam, etc.) are strictly prohibited.\n• Fair Progression: Early rounds use Tier D/C; middle rounds feature Tier B/A; finale uses Tier A and Stage 2.\n• Party Persistence: HP & Status carry over across matches. Buy Potions & Revives at the Camp Shop.\n• In-Camp Evolutions: Evolve your Pokémon between matches whenever their EXP threshold is reached!"
+text = "• Banned for Rivals: All Legendaries and Tier S/S+ (Venusaur, Alakazam, etc.) are strictly prohibited.\n• Fair Progression: Early rounds use Tier D/C; middle rounds feature Tier B/A; finale uses Tier A and Stage 2.\n• Party Persistence: HP & Status carry over across matches. Buy Potions & Revives at the Camp Shop.\n• In-Camp Evolutions: Evolve your Pokémon between matches whenever their EXP threshold is reached!\n• Daily Rewards: Stage clear Gold & Diamond bonuses are granted once per day. Subsequent runs on the same day earn Gold & Diamonds exclusively by defeating rival Pokémon."
 autowrap_mode = 2
 
 [node name="BtnCloseStadiumGuide" type="Button" parent="StadiumGuideModal/Box"]

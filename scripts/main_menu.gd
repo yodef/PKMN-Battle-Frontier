@@ -3046,8 +3046,13 @@ func update_campaign_ui() -> void:
 				campaign_track_diagram.set_campaign_progress(GameData.TOURNAMENT_TOTAL_MATCHES, GameData.TOURNAMENT_TOTAL_MATCHES, true, false)
 		else:
 			var match_info = GameData.get_tournament_match_info(GameData.campaign_match_number)
+			var already_claimed = GameData.is_tournament_match_reward_claimed_today(GameData.campaign_match_number)
 			var milestone_d = int(match_info.get("reward_diamonds", 0))
-			var bonus_str = " (+💎%d)" % milestone_d if milestone_d > 0 else ""
+			var bonus_str = ""
+			if not already_claimed and milestone_d > 0:
+				bonus_str = " (+💎%d)" % milestone_d
+			elif already_claimed:
+				bonus_str = " (Reward Claimed Today)"
 			campaign_match_lbl.text = "🏆 %s%s" % [
 				match_info["phase_name"],
 				bonus_str
@@ -5394,8 +5399,15 @@ func toggle_pokemon_selection(pkmn_id: int) -> void:
 		var cat_entry = GameData.pokemon_catalog.get(pkmn_id)
 		if cat_entry:
 			var st = str(cat_entry.get("stage", "Basic")).strip_edges().to_lower()
-			if st != "basic":
-				return
+			var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower()
+			var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+			if GameData.campaign_submode == "CHAOS":
+				var ev_from = str(cat_entry.get("evolves_from", "")).strip_edges()
+				if not ((is_legendary and ev_from == "") or (st == "basic" and GameData.is_line_legendary(pkmn_id))):
+					return
+			else:
+				if st != "basic" or is_legendary:
+					return
 	var is_player = (team_select_mode == "CAMPAIGN" or current_team_tab == "PLAYER")
 	var team = selected_player_ids if is_player else selected_enemy_ids
 	var idx = team.find(pkmn_id)
@@ -5431,6 +5443,9 @@ func update_team_select_ui() -> void:
 			team_select_title.text = "🗺️ ADVENTURE TEAM"
 			var ep_roman = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII"}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
 			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
+		elif GameData.campaign_submode == "CHAOS":
+			team_select_title.text = "🌌 CHAOS ODYSSEY TEAM"
+			team_select_subtitle.text = "Choose 1 to 3 Legendary or Pseudo-Legendary Basic Pokémon for the Chaos Gauntlet!\nTest your strength against extreme rivals and the Crystal Onix Boss!"
 		else:
 			team_select_title.text = "🏟️ POKÉMON STADIUM TEAM"
 			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Pokémon Stadium (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"

@@ -3548,8 +3548,14 @@ func _resolve_battle_victory() -> void:
 			# Modo Torneo
 			var current_match = GameData.campaign_match_number
 			var match_info = GameData.get_tournament_match_info(current_match)
-			var base_gold = int(match_info.get("reward_gold", 0))
-			var milestone_diamonds = int(match_info.get("reward_diamonds", 0))
+			var already_claimed = GameData.is_tournament_match_reward_claimed_today(current_match)
+			var base_gold = 0
+			var milestone_diamonds = 0
+			if not already_claimed:
+				base_gold = int(match_info.get("reward_gold", 0))
+				milestone_diamonds = int(match_info.get("reward_diamonds", 0))
+				GameData.claim_tournament_match_reward_today(current_match)
+				
 			var total_gold_won = combat_earned_gold + base_gold
 			var total_diamonds_won = combat_earned_diamonds + milestone_diamonds
 				
@@ -3560,8 +3566,12 @@ func _resolve_battle_victory() -> void:
 			var loot_details = "\n💰 Combat Loot: +%d G" % combat_earned_gold
 			if combat_earned_diamonds > 0:
 				loot_details += " & 💎 +%d Diamonds" % combat_earned_diamonds
+			if base_gold > 0:
+				loot_details += " (+%d G Stage Clear)" % base_gold
 			if milestone_diamonds > 0:
 				loot_details += " (+💎 %d Phase Bonus!)" % milestone_diamonds
+			if already_claimed:
+				loot_details += "\n(Daily stage reward already claimed today - Pokémon KO loot only)"
 				
 			GameData.campaign_match_number += 1
 			

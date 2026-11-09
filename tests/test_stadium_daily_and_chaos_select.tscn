@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dqxvsa7a0il8g"]
+
+[ext_resource type="Script" path="res://tests/test_stadium_daily_and_chaos_select.gd" id="1_test"]
+
+[node name="TestStadiumDailyAndChaosSelect" type="Node"]
+script = ExtResource("1_test")

@@ -487,6 +487,8 @@ var campaign_inventory: Dictionary = DEFAULT_INVENTORY.duplicate()
 var campaign_player_team_state: Array = []
 var current_tournament_rival_team: Array[int] = []
 var current_tournament_rival_match: int = -1
+var tournament_rewards_last_date: String = ""
+var tournament_claimed_matches_today: Array[int] = []
 
 # Modo Aventura (Episodios):
 var adventure_current_episode: int = 1
@@ -4132,6 +4134,20 @@ func get_tournament_match_info(match_num: int) -> Dictionary:
 				"desc": "Tournament Complete"
 			}
 
+func is_tournament_match_reward_claimed_today(match_num: int) -> bool:
+	var today = Time.get_date_string_from_system()
+	if tournament_rewards_last_date != today:
+		return false
+	return tournament_claimed_matches_today.has(match_num)
+
+func claim_tournament_match_reward_today(match_num: int) -> void:
+	var today = Time.get_date_string_from_system()
+	if tournament_rewards_last_date != today:
+		tournament_rewards_last_date = today
+		tournament_claimed_matches_today.clear()
+	if not tournament_claimed_matches_today.has(match_num):
+		tournament_claimed_matches_today.append(match_num)
+
 func get_tournament_candidates(stage_target: String = "any", rarity_target: String = "any", allowed_tiers: Array = ["D", "C", "B", "A"]) -> Array[int]:
 	var result: Array[int] = []
 	var st_clean = stage_target.strip_edges().to_lower()
@@ -4992,7 +5008,9 @@ func get_save_dict() -> Dictionary:
 			"tutorial_stage1_id": tutorial_stage1_id,
 			"tutorial_rival_id": tutorial_rival_id,
 			"tutorial_rival_stage1_id": tutorial_rival_stage1_id,
-			"tutorial_combat_phase": tutorial_combat_phase
+			"tutorial_combat_phase": tutorial_combat_phase,
+			"tournament_rewards_last_date": tournament_rewards_last_date,
+			"tournament_claimed_matches_today": tournament_claimed_matches_today.duplicate()
 		},
 		"adventure": {
 			"current_episode": adventure_current_episode,
@@ -5146,6 +5164,12 @@ func apply_save_dict(data: Dictionary) -> bool:
 	tutorial_rival_id = int(camp.get("tutorial_rival_id", -1))
 	tutorial_rival_stage1_id = int(camp.get("tutorial_rival_stage1_id", -1))
 	tutorial_combat_phase = int(camp.get("tutorial_combat_phase", 1))
+	tournament_rewards_last_date = str(camp.get("tournament_rewards_last_date", ""))
+	var raw_tourn_claimed = camp.get("tournament_claimed_matches_today", [])
+	tournament_claimed_matches_today.clear()
+	if typeof(raw_tourn_claimed) == TYPE_ARRAY:
+		for m in raw_tourn_claimed:
+			tournament_claimed_matches_today.append(int(m))
 	
 	# Cargar aventura
 	var adv = data.get("adventure", {})
