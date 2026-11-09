@@ -43,6 +43,8 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var tourn_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox/TournStatus
 @onready var btn_hub_tournament: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox/BtnHubTournament
 @onready var btn_stadium_guide: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox/BtnStadiumGuide
+@onready var chaos_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox/ChaosStatus
+@onready var btn_hub_chaos: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox/BtnHubChaos
 @onready var btn_close_campaign_hub: Button = $CampaignHubModal/Box/BtnCloseCampaignHub
 
 # --- MODAL ADVENTURE EPISODES ---
@@ -515,6 +517,8 @@ func _ready() -> void:
 	btn_hub_tutorial.pressed.connect(_on_hub_tutorial_pressed)
 	btn_hub_adventure.pressed.connect(_on_hub_adventure_pressed)
 	btn_hub_tournament.pressed.connect(_on_select_tournament_pressed)
+	if btn_hub_chaos:
+		btn_hub_chaos.pressed.connect(_on_select_chaos_pressed)
 	btn_close_campaign_hub.pressed.connect(func():
 		campaign_hub_modal.visible = false
 		_update_lobby_header_badge()
@@ -1204,6 +1208,40 @@ func update_campaign_hub_ui() -> void:
 			tourn_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
 			btn_hub_tournament.text = "⛺ Continue Stadium Run (Camp)"
 
+	# 4. Estado de Chaos Odyssey
+	var can_play_chaos = GameData.can_play_chaos_odyssey_today()
+	var boss_rec = GameData.chaos_boss_damage_record
+	var rec_str = "Record damage on Boss: %d HP" % boss_rec
+	if not GameData.is_tutorial_completed():
+		if chaos_status_lbl:
+			chaos_status_lbl.text = "Status: 🔒 Locked (Complete Battle Tutorial to unlock!)\n%s" % rec_str
+			chaos_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+		if btn_hub_chaos:
+			btn_hub_chaos.text = "🔒 Locked (Complete Tutorial)"
+			btn_hub_chaos.disabled = false
+	elif not can_play_chaos and GameData.chaos_player_team_state.is_empty():
+		if chaos_status_lbl:
+			chaos_status_lbl.text = "Status: ⏳ Daily Limit Reached (Available tomorrow!)\n%s" % rec_str
+			chaos_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.7, 0.3))
+		if btn_hub_chaos:
+			btn_hub_chaos.text = "⏳ Daily Limit Reached"
+			btn_hub_chaos.disabled = true
+	elif not GameData.chaos_player_team_state.is_empty():
+		if chaos_status_lbl:
+			var match_desc = "Final Boss: Crystal Onix" if GameData.chaos_match_number == GameData.CHAOS_TOTAL_MATCHES else "Trial %d / %d" % [GameData.chaos_match_number, GameData.CHAOS_TOTAL_MATCHES]
+			chaos_status_lbl.text = "Status: In Progress • %s\n%s" % [match_desc, rec_str]
+			chaos_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		if btn_hub_chaos:
+			btn_hub_chaos.text = "🌌 Continue Chaos Odyssey (Camp) ➜"
+			btn_hub_chaos.disabled = false
+	else:
+		if chaos_status_lbl:
+			chaos_status_lbl.text = "Status: 🔓 Available Today (1 attempt/day)\n%s" % rec_str
+			chaos_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		if btn_hub_chaos:
+			btn_hub_chaos.text = "🌌 Enter Chaos Odyssey ➜"
+			btn_hub_chaos.disabled = false
+
 func update_adventure_episodes_ui() -> void:
 	var ep_badge = adventure_episodes_modal.get_node_or_null("Box/EpisodesWalletBadge")
 	if ep_badge:
@@ -1498,6 +1536,23 @@ func _on_select_tournament_pressed() -> void:
 	campaign_hub_modal.visible = false
 	GameData.campaign_submode = "TOURNAMENT"
 	if GameData.campaign_player_team_state.is_empty():
+		open_team_select_for_campaign()
+	else:
+		update_campaign_ui()
+		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
+
+func _on_select_chaos_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
+	if not GameData.is_tutorial_completed():
+		_show_tutorial_prompt_for_locked_episode()
+		return
+	if not GameData.can_play_chaos_odyssey_today() and GameData.chaos_player_team_state.is_empty():
+		return
+	campaign_hub_modal.visible = false
+	GameData.campaign_submode = "CHAOS"
+	if GameData.chaos_player_team_state.is_empty():
 		open_team_select_for_campaign()
 	else:
 		update_campaign_ui()
@@ -2777,6 +2832,9 @@ func open_team_select_for_campaign() -> void:
 		team_select_title.text = "🗺️ ADVENTURE TEAM"
 		var ep_roman = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII"}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
 		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
+	elif GameData.campaign_submode == "CHAOS":
+		team_select_title.text = "🌌 CHAOS ODYSSEY TEAM"
+		team_select_subtitle.text = "Choose 1 to 3 Legendary or Pseudo-Legendary Basic Pokémon for the Chaos Gauntlet!\nTest your strength against extreme rivals and the Crystal Onix Boss!"
 	else:
 		team_select_title.text = "🏟️ POKÉMON STADIUM TEAM"
 		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Pokémon Stadium (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
@@ -2788,10 +2846,14 @@ func open_team_select_for_campaign() -> void:
 		selected_player_ids.clear()
 		for p in active_team:
 			var cat_entry = GameData.pokemon_catalog.get(int(p["id"]))
-			var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower() if cat_entry else ""
-			var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "legendary")
-			if cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "basic" and not is_legendary:
-				selected_player_ids.append(int(p["id"]))
+			if GameData.campaign_submode == "CHAOS":
+				if cat_entry:
+					selected_player_ids.append(int(p["id"]))
+			else:
+				var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower() if cat_entry else ""
+				var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "legendary")
+				if cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "basic" and not is_legendary:
+					selected_player_ids.append(int(p["id"]))
 	# If starting a fresh run, leave selected_player_ids empty so the player can choose freely
 			
 	update_team_sort_buttons_ui()
@@ -2931,6 +2993,38 @@ func update_campaign_ui() -> void:
 			btn_start_campaign_battle.disabled = not any_alive
 			if campaign_track_diagram:
 				campaign_track_diagram.set_campaign_progress(total_stages, cur_stage, false, true)
+	elif GameData.campaign_submode == "CHAOS":
+		btn_close_campaign.text = "⬅ Exit Chaos Camp"
+		btn_change_campaign_team.visible = (GameData.chaos_match_number == 1)
+		btn_reset_campaign.text = "🔄 Restart Chaos Odyssey"
+		
+		if camp_title:
+			camp_title.text = "🌌 CHAOS ODYSSEY"
+		if camp_desc:
+			camp_desc.text = "Legendary Gauntlet: 6 brutal trials leading up to Boss Crystal Onix (900 HP)!"
+		if camp_team_header:
+			camp_team_header.text = "👥 YOUR CHAOS SQUAD:"
+		
+		var cur_match = GameData.chaos_match_number
+		var total_matches = GameData.CHAOS_TOTAL_MATCHES
+		var match_info = GameData.get_chaos_match_info(cur_match)
+		var is_boss = match_info.get("is_boss", false)
+		
+		if is_boss:
+			campaign_match_lbl.text = "💎 FINAL BOSS: CRYSTAL ONIX (900 HP)"
+			btn_start_campaign_battle.text = "💎 CHALLENGE CRYSTAL ONIX!"
+		else:
+			campaign_match_lbl.text = "🌌 %s • Trial %d / %d" % [match_info.get("phase_name", "Trial"), cur_match, total_matches]
+			btn_start_campaign_battle.text = "⚔️ START TRIAL %d (%d/%d)" % [cur_match, cur_match, total_matches]
+			
+		var any_alive = false
+		for p in cur_team:
+			if p["current_hp"] > 0:
+				any_alive = true
+				break
+		btn_start_campaign_battle.disabled = not any_alive
+		if campaign_track_diagram:
+			campaign_track_diagram.set_campaign_progress(total_matches, cur_match, false, true)
 	else:
 		# Modo Pokémon Stadium
 		btn_close_campaign.text = "⬅ Exit Stadium Camp"
@@ -4910,6 +5004,8 @@ func _on_camp_evo_continue_pressed() -> void:
 func _on_reset_campaign_pressed() -> void:
 	if GameData.campaign_submode == "ADVENTURE":
 		GameData.reset_adventure_episode(GameData.adventure_current_episode)
+	elif GameData.campaign_submode == "CHAOS":
+		GameData.reset_chaos_odyssey()
 	else:
 		GameData.reset_campaign()
 	open_team_select_for_campaign()
@@ -4926,6 +5022,16 @@ func _on_start_campaign_battle_pressed() -> void:
 		for p in GameData.adventure_player_team_state:
 			GameData.player_team_ids.append(int(p["id"]))
 		GameData.enemy_team_ids = GameData.get_adventure_rival_team(GameData.adventure_current_episode, GameData.adventure_current_stage)
+	elif GameData.campaign_submode == "CHAOS":
+		if GameData.chaos_match_number > GameData.CHAOS_TOTAL_MATCHES or GameData.chaos_player_team_state.is_empty():
+			GameData.reset_chaos_odyssey()
+			open_team_select_for_campaign()
+			return
+		GameData.is_campaign_mode = true
+		GameData.player_team_ids.clear()
+		for p in GameData.chaos_player_team_state:
+			GameData.player_team_ids.append(int(p["id"]))
+		GameData.enemy_team_ids = GameData.get_chaos_rival_team(GameData.chaos_match_number)
 	else:
 		if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES:
 			GameData.reset_campaign()
@@ -5112,14 +5218,34 @@ func build_team_select_cards_grid() -> void:
 	# Tanto jugador como rival/jugador 2 solo usan cartas desbloqueadas en el perfil
 	var pool = cards_data
 	if team_select_mode == "CAMPAIGN":
-		var basic_pool = []
-		for c in pool:
-			var st = str(c.get("stage", "Basic")).strip_edges().to_lower()
-			var r = str(c.get("rarity", "Common")).strip_edges().to_lower()
-			var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
-			if st == "basic" and not is_legendary:
-				basic_pool.append(c)
-		pool = basic_pool
+		var allowed_pool = []
+		if GameData.campaign_submode == "CHAOS":
+			for c in cards_data:
+				var cid = int(c.get("id", -1))
+				var st = str(c.get("stage", "Basic")).strip_edges().to_lower()
+				var r = str(c.get("rarity", "Common")).strip_edges().to_lower()
+				var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+				var ev_from = str(c.get("evolves_from", "")).strip_edges()
+				if (is_legendary and ev_from == "") or (st == "basic" and GameData.is_line_legendary(cid)):
+					allowed_pool.append(c)
+			if allowed_pool.size() < 3:
+				allowed_pool.clear()
+				for c in all_catalog_cards:
+					var cid = int(c.get("id", -1))
+					var st = str(c.get("stage", "Basic")).strip_edges().to_lower()
+					var r = str(c.get("rarity", "Common")).strip_edges().to_lower()
+					var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+					var ev_from = str(c.get("evolves_from", "")).strip_edges()
+					if (is_legendary and ev_from == "") or (st == "basic" and GameData.is_line_legendary(cid)):
+						allowed_pool.append(c)
+		else:
+			for c in pool:
+				var st = str(c.get("stage", "Basic")).strip_edges().to_lower()
+				var r = str(c.get("rarity", "Common")).strip_edges().to_lower()
+				var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+				if st == "basic" and not is_legendary:
+					allowed_pool.append(c)
+		pool = allowed_pool
 	current_sorted_team_pool = get_sorted_cards(pool, team_sort_mode)
 	
 	const CARDS_PER_ROW = 4
@@ -5434,11 +5560,14 @@ func update_team_select_ui() -> void:
 	elif team_select_mode == "CAMPAIGN":
 		var p_count = selected_player_ids.size()
 		btn_start_battle.disabled = (p_count < 1)
-		var mode_label = "ADVENTURE" if GameData.campaign_submode == "ADVENTURE" else "TOURNAMENT"
+		var mode_label = "ADVENTURE" if GameData.campaign_submode == "ADVENTURE" else ("CHAOS" if GameData.campaign_submode == "CHAOS" else "TOURNAMENT")
 		if p_count >= 1:
 			btn_start_battle.text = "✅ CONFIRM %s TEAM (%d PKMN)" % [mode_label, p_count]
 		else:
-			btn_start_battle.text = "Choose 1 to 3 BASIC Pokémon for %s" % mode_label.capitalize()
+			if GameData.campaign_submode == "CHAOS":
+				btn_start_battle.text = "Choose 1 to 3 Legendary / Dragon Pokémon"
+			else:
+				btn_start_battle.text = "Choose 1 to 3 BASIC Pokémon for %s" % mode_label.capitalize()
 	else:
 		var p_count = selected_player_ids.size()
 		var e_count = selected_enemy_ids.size()
@@ -5474,6 +5603,8 @@ func _on_start_battle_pressed() -> void:
 			return
 		if GameData.campaign_submode == "ADVENTURE":
 			GameData.change_adventure_team(selected_player_ids)
+		elif GameData.campaign_submode == "CHAOS":
+			GameData.change_chaos_team(selected_player_ids)
 		else:
 			GameData.change_campaign_team(selected_player_ids)
 		team_select_modal.visible = false
@@ -6100,6 +6231,8 @@ func _apply_pokemon_ui_theme() -> void:
 	_apply_retro_button_style(btn_hub_adventure, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 	_apply_retro_button_style(btn_hub_tournament, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), true)
 	_apply_retro_button_style(btn_stadium_guide, Color(0.25, 0.60, 0.85), Color(0.40, 0.85, 1.00), true)
+	if btn_hub_chaos:
+		_apply_retro_button_style(btn_hub_chaos, Color(0.55, 0.25, 0.75), Color(0.80, 0.45, 1.00), true)
 	_apply_retro_button_style(btn_close_campaign_hub, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
 
 	_apply_retro_button_style(btn_hub_adventure_ep1, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)

@@ -37,6 +37,27 @@ var combat_earned_gold: int = 0
 var combat_earned_diamonds: int = 0
 var defeated_rewards_summary: Array[Dictionary] = []
 var enemy_super_potions: int = 0
+var boss_damage_taken_total: int = 0
+
+func get_boss_diamond_rewards_for_damage(damage: int) -> int:
+	var d = int(damage / 10)
+	d += int(damage / 100) * 10
+	if damage >= 500:
+		d += 50
+	return d
+
+func register_boss_damage(dmg: int) -> void:
+	if dmg <= 0:
+		return
+	var prev_total = boss_damage_taken_total
+	boss_damage_taken_total += dmg
+	var prev_d = get_boss_diamond_rewards_for_damage(prev_total)
+	var new_d = get_boss_diamond_rewards_for_damage(boss_damage_taken_total)
+	var diff = new_d - prev_d
+	if diff > 0:
+		GameData.player_diamonds += diff
+		GameData.save_profile()
+		log_action("💎 [b]Crystal Onix[/b] dropped [color=yellow]+%d Diamonds[/color]! (Total Boss DMG: %d / 900 HP)" % [diff, boss_damage_taken_total])
 
 # --- REFERENCIAS A NODOS ---
 @onready var btn_back_menu: Button = $MainContainer/TopBar/BtnBackMenu
@@ -980,6 +1001,9 @@ func _show_forfeit_confirmation_modal() -> void:
 		if GameData.campaign_submode == "ADVENTURE":
 			forfeit_title_lbl.text = "⚠️ RETREAT FROM ADVENTURE?"
 			forfeit_body_lbl.text = "Are you sure you want to retreat?\nCurrent episode progress will be reset.\n(Your earned Gold and Diamonds are safe)."
+		elif GameData.campaign_submode == "CHAOS":
+			forfeit_title_lbl.text = "⚠️ RETREAT FROM CHAOS ODYSSEY?"
+			forfeit_body_lbl.text = "Are you sure you want to retreat?\nYour Chaos Odyssey run will be abandoned.\n(Your Gold and Diamonds are safe)."
 		else:
 			forfeit_title_lbl.text = "⚠️ FORFEIT TOURNAMENT?"
 			forfeit_body_lbl.text = "Are you sure you want to retreat?\nYour current tournament run will be abandoned.\n(Your Gold and Diamonds are safe)."
@@ -1037,6 +1061,12 @@ func _on_return_to_menu() -> void:
 		# Solo si se abandona a mitad de combate (forfeit):
 		# Si sales antes de terminar el combate, se reinicia el progreso del episodio conservando los recursos G y Diamonds
 		GameData.reset_adventure_episode(GameData.adventure_current_episode)
+		GameData.is_campaign_mode = false
+		GameData.save_profile()
+	elif not is_battle_over and GameData.is_campaign_mode and GameData.campaign_submode == "CHAOS":
+		if GameData.chaos_match_number == GameData.CHAOS_TOTAL_MATCHES:
+			GameData.chaos_last_played_date = Time.get_date_string_from_system()
+		GameData.reset_chaos_odyssey()
 		GameData.is_campaign_mode = false
 		GameData.save_profile()
 	if bgm_player and bgm_player.playing:
@@ -1118,6 +1148,7 @@ func start_new_game() -> void:
 	defeated_enemy_indices.clear()
 	combat_earned_gold = 0
 	combat_earned_diamonds = 0
+	boss_damage_taken_total = 0
 	defeated_rewards_summary.clear()
 	sandstorm_turns = 0
 	grassy_terrain_turns = 0
@@ -1151,6 +1182,8 @@ func start_new_game() -> void:
 		if team_state.is_empty():
 			if GameData.campaign_submode == "ADVENTURE":
 				GameData.init_adventure_team(GameData.adventure_current_episode, [0, 1, 2])
+			elif GameData.campaign_submode == "CHAOS":
+				GameData.change_chaos_team([149]) # Fallback Dragonite
 			else:
 				GameData.init_campaign_team([0, 1, 2])
 			team_state = GameData.get_active_campaign_team_state()
@@ -1189,6 +1222,14 @@ func start_new_game() -> void:
 				battle_title_lbl.text = "🗺️ Ep. %s (%s): %s (%d/%d)" % [ep_roman, r_name, trainer_name, GameData.adventure_current_stage, total_stages]
 			else:
 				battle_title_lbl.text = "🗺️ Ep. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name, GameData.adventure_current_stage, total_stages]
+		elif GameData.campaign_submode == "CHAOS":
+			rival_ids = GameData.get_chaos_rival_team(GameData.chaos_match_number)
+			var match_info = GameData.get_chaos_match_info(GameData.chaos_match_number)
+			enemy_super_potions = int(match_info.get("super_potions", 0))
+			if match_info.get("is_boss", false):
+				battle_title_lbl.text = "💎 FINAL BOSS: CRYSTAL ONIX (900 HP)"
+			else:
+				battle_title_lbl.text = "🌌 Chaos Odyssey - Trial %d / %d" % [GameData.chaos_match_number, GameData.CHAOS_TOTAL_MATCHES]
 		else:
 			enemy_super_potions = 0
 			rival_ids = GameData.get_campaign_rival_team(GameData.campaign_match_number)
@@ -1479,6 +1520,8 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		actor.is_seeded_turns -= 1
 		var s_dmg = 2
 		actor.current_hp = max(0, actor.current_hp - s_dmg)
+		if actor.name == "Crystal Onix":
+			register_boss_damage(s_dmg)
 		opponent.current_hp = min(opponent.max_hp, opponent.current_hp + s_dmg)
 		log_action("🌱 [color=green]Leech Seed saps %d HP from %s to %s![/color]" % [s_dmg, actor.name, opponent.name])
 		play_damage_hit(actor_img, "GRASS", s_dmg)
@@ -1498,6 +1541,8 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 	if actor.burn_turns > 0:
 		var bdmg = actor.burn_dmg
 		actor.current_hp = max(0, actor.current_hp - bdmg)
+		if actor.name == "Crystal Onix":
+			register_boss_damage(bdmg)
 		actor.burn_turns -= 1
 		log_action("🔥 [color=orange]%s takes %d Burn damage![/color] (%d turns remaining)" % [actor.name, bdmg, actor.burn_turns])
 		var target_overlay = player_status_overlay if actor == get_active_player() else enemy_status_overlay
@@ -1838,6 +1883,8 @@ func _finish_round() -> void:
 			play_damage_hit(player_card_img, "GROUND", 2)
 		if active_e and active_e.type != "GROUND":
 			active_e.current_hp = max(0, active_e.current_hp - 2)
+			if active_e.name == "Crystal Onix":
+				register_boss_damage(2)
 			spawn_floating_combat_number(enemy_card_img, -2, false)
 			play_damage_hit(enemy_card_img, "GROUND", 2)
 		if check_active_faint() and check_team_defeat():
@@ -1854,6 +1901,8 @@ func _finish_round() -> void:
 		if pkmn and pkmn.is_constricted_dmg > 0:
 			var c_dmg = pkmn.is_constricted_dmg
 			pkmn.current_hp = max(0, pkmn.current_hp - c_dmg)
+			if pkmn.name == "Crystal Onix":
+				register_boss_damage(c_dmg)
 			var node_vis = player_card_img if pkmn == active_p else enemy_card_img
 			pkmn.constricted_turns -= 1
 			log_action("🪢 [color=orange]%s is constricted and takes %d DMG! (%d rounds left)[/color]" % [pkmn.name, c_dmg, max(0, pkmn.constricted_turns)])
@@ -1870,6 +1919,8 @@ func _finish_round() -> void:
 	for pkmn in [active_p, active_e]:
 		if pkmn and pkmn.is_poisoned and pkmn.toxic_envenomed:
 			pkmn.current_hp = max(0, pkmn.current_hp - 1)
+			if pkmn.name == "Crystal Onix":
+				register_boss_damage(1)
 			var node_vis = player_card_img if pkmn == active_p else enemy_card_img
 			log_action("☠️ [color=purple]%s takes 1 extra DMG from Toxic![/color]" % pkmn.name)
 			var overlay = player_status_overlay if pkmn == active_p else enemy_status_overlay
@@ -1985,12 +2036,13 @@ func execute_enemy_ai() -> void:
 		)
 		return
 	
-	# Super Potion de Líder Giovanni:
+	# Super Potion de Líder Giovanni / Rival / Boss:
 	if enemy_super_potions > 0 and e.current_hp > 0 and (e.max_hp - e.current_hp) >= 15:
 		enemy_super_potions -= 1
 		var healed = min(25, e.max_hp - e.current_hp)
 		e.current_hp += healed
-		log_action("[b]Líder Giovanni[/b] used [color=#29B6F6]Super Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [e.name, healed, e.current_hp, e.max_hp])
+		var user_title = "Boss Crystal Onix" if e.name == "Crystal Onix" else ("Líder Giovanni" if GameData.campaign_submode == "ADVENTURE" else "Rival")
+		log_action("[b]%s[/b] used [color=#29B6F6]Super Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [user_title, e.name, healed, e.current_hp, e.max_hp])
 		GameData.play_combat_sfx("use")
 		var tw = create_tween()
 		tw.tween_property(enemy_card_img, "modulate", Color(0.4, 1.8, 0.6), 0.15)
@@ -2420,6 +2472,19 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	# 11. Aplicar daño y secuelas
 	defender.current_hp = max(0, defender.current_hp - final_damage)
 	defender.took_damage_last_turn = (final_damage > 0)
+	if defender.name == "Crystal Onix" and final_damage > 0:
+		register_boss_damage(final_damage)
+
+	if (move.name == "Crystal Blast" or move.effect_type == "BENCH_DAMAGE") and final_damage > 0:
+		var target_bench = get_benched_player_indices() if attacker == get_active_enemy() else get_benched_enemy_indices()
+		var target_team = player_team if attacker == get_active_enemy() else enemy_team
+		var splash_names: Array[String] = []
+		for b_idx in target_bench:
+			if b_idx < target_team.size() and target_team[b_idx].current_hp > 0:
+				target_team[b_idx].current_hp = max(0, target_team[b_idx].current_hp - 3)
+				splash_names.append(target_team[b_idx].name)
+		if not splash_names.is_empty():
+			note_text += " [color=cyan]Crystal Blast blasted the bench (-3 DMG to %s)![/color]" % [", ".join(splash_names)]
 	
 	# Descongelación por daño de Fuego
 	if defender.is_frozen and (move.type == "FIRE" or move.effect_type == "BURN" or (boosted and move.boost_applies_burn)):
@@ -3263,6 +3328,53 @@ func _resolve_battle_victory() -> void:
 						evo_msg
 					]
 				)
+		elif GameData.campaign_submode == "CHAOS":
+			var cur_match = GameData.chaos_match_number
+			var match_info = GameData.get_chaos_match_info(cur_match)
+			var base_gold = int(match_info.get("reward_gold", 0))
+			var total_gold_won = combat_earned_gold + base_gold
+			var total_diamonds_won = combat_earned_diamonds
+			GameData.add_active_campaign_gold(total_gold_won)
+			if total_diamonds_won > 0:
+				GameData.player_diamonds += total_diamonds_won
+			
+			var loot_details = "\n💰 Combat Loot: +%d G" % total_gold_won
+			if total_diamonds_won > 0:
+				loot_details += " & 💎 +%d Diamonds" % total_diamonds_won
+			
+			if match_info.get("is_boss", false):
+				# Final Boss battle (Crystal Onix)
+				if boss_damage_taken_total > GameData.chaos_boss_damage_record:
+					GameData.chaos_boss_damage_record = boss_damage_taken_total
+				GameData.chaos_last_played_date = Time.get_date_string_from_system()
+				var mined_diamonds = get_boss_diamond_rewards_for_damage(boss_damage_taken_total)
+				GameData.reset_chaos_odyssey()
+				GameData.is_campaign_mode = false
+				GameData.save_profile()
+				show_game_over(
+					"💎 CRYSTAL ONIX TRIAL CONQUERED!",
+					"You faced the legendary Boss Crystal Onix!\n\n💥 Damage Inflicted: %d / 900 HP\n💎 Diamonds Mined: +%d Diamonds!\n🏆 Highest Boss Record: %d HP\n\nDaily limit reached. Come back tomorrow for another run!" % [
+						boss_damage_taken_total,
+						mined_diamonds,
+						GameData.chaos_boss_damage_record
+					]
+				)
+			else:
+				# Trials 1 - 6
+				GameData.chaos_match_number += 1
+				GameData.current_chaos_rival_team.clear()
+				GameData.current_chaos_rival_match = -1
+				GameData.save_profile()
+				show_game_over(
+					"⚔️ CHAOS TRIAL %d CONQUERED!" % cur_match,
+					"Victory against the legendary contenders!%s\nCurrent Gold: %d G | Total Diamonds: 💎 %d\n⚠️ Your Pokémon do NOT heal automatically.%s\nVisit the camp shop to prepare for Trial %d!" % [
+						loot_details,
+						GameData.get_active_campaign_gold(),
+						GameData.player_diamonds,
+						evo_msg,
+						GameData.chaos_match_number
+					]
+				)
 		else:
 			# Modo Torneo
 			var current_match = GameData.campaign_match_number
@@ -3391,6 +3503,33 @@ func _resolve_battle_defeat() -> void:
 				"💀 DEFEATED IN ADVENTURE!",
 				"All your Pokémon have fainted in battle.\nEpisode progress was reset, but your Gold (G) and Diamonds are safe!%s\nYou can embark again from the Campaign Hub!" % preserved_msg
 			)
+		elif GameData.campaign_submode == "CHAOS":
+			var cur_match = GameData.chaos_match_number
+			var match_info = GameData.get_chaos_match_info(cur_match)
+			if match_info.get("is_boss", false):
+				if boss_damage_taken_total > GameData.chaos_boss_damage_record:
+					GameData.chaos_boss_damage_record = boss_damage_taken_total
+				GameData.chaos_last_played_date = Time.get_date_string_from_system()
+				var mined_diamonds = get_boss_diamond_rewards_for_damage(boss_damage_taken_total)
+				GameData.reset_chaos_odyssey()
+				GameData.is_campaign_mode = false
+				GameData.save_profile()
+				show_game_over(
+					"💎 CHAOS ODYSSEY - BOSS RESULT",
+					"Your team was pushed to the limit by Crystal Onix!\n\n💥 Damage Inflicted: %d / 900 HP\n💎 Diamonds Mined: +%d Diamonds!\n🏆 Highest Boss Record: %d HP\n\nDaily limit reached. Come back tomorrow for another run!" % [
+						boss_damage_taken_total,
+						mined_diamonds,
+						GameData.chaos_boss_damage_record
+					]
+				)
+			else:
+				GameData.reset_chaos_odyssey()
+				GameData.is_campaign_mode = false
+				GameData.save_profile()
+				show_game_over(
+					"💀 ELIMINATED FROM CHAOS ODYSSEY!",
+					"All your Pokémon have fainted in battle.\nThe Chaos run was reset, but your Gold and Diamonds are safe!%s\nYou can re-enter Chaos Odyssey to try again." % preserved_msg
+				)
 		else:
 			GameData.reset_campaign()
 			GameData.save_profile()
@@ -5419,12 +5558,17 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 		btn_restart.visible = false
 		if GameData.campaign_submode == "ADVENTURE":
 			btn_game_over_menu.text = "⛺ Camp / Shop"
+		elif GameData.campaign_submode == "CHAOS":
+			if GameData.chaos_match_number > GameData.CHAOS_TOTAL_MATCHES or "BOSS" in title_upper or "CRYSTAL ONIX" in title_upper:
+				btn_game_over_menu.text = "🏛️ Campaign Hub"
+			else:
+				btn_game_over_menu.text = "⛺ Camp / Shop"
 		else:
 			if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES:
 				btn_game_over_menu.text = "🏆 Complete Tournament"
 			else:
 				btn_game_over_menu.text = "⛺ Camp / Shop"
-	elif GameData.campaign_submode == "ADVENTURE":
+	elif GameData.campaign_submode in ["ADVENTURE", "CHAOS"]:
 		btn_restart.visible = false
 		btn_game_over_menu.text = "⬅ Return to Campaign Hub"
 	else:

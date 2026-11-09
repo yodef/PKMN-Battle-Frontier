@@ -504,6 +504,17 @@ var adventure_ep6_cleared_routes: Array[String] = []
 var adventure_ep7_selected_route: String = "pokemon_mansion"
 var adventure_ep7_cleared_routes: Array[String] = []
 
+# Modo Chaos Odyssey:
+const CHAOS_TOTAL_MATCHES: int = 7
+const CRYSTAL_ONIX_ID: int = 493
+var chaos_match_number: int = 1 # 1 to 7
+var chaos_inventory: Dictionary = DEFAULT_INVENTORY.duplicate()
+var chaos_player_team_state: Array = []
+var current_chaos_rival_team: Array[int] = []
+var current_chaos_rival_match: int = -1
+var chaos_boss_damage_record: int = 0
+var chaos_last_played_date: String = ""
+
 const ADVENTURE_EPISODES: Dictionary = {
 	1: {
 		"id": 1,
@@ -2275,7 +2286,9 @@ func buy_card_from_hidden_shop(pkmn_id: int) -> Dictionary:
 
 func get_card_rarity_weight(rarity_str: String) -> int:
 	var r = rarity_str.strip_edges().to_lower()
-	if r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
+	if r in ["boss", "special"]:
+		return 0
+	elif r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
 		return 3
 	elif r in ["epic", "epica", "epico", "sr", "super rare"]:
 		return 8
@@ -3061,12 +3074,20 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 	var candidate_ids: Array[int] = []
 	if target_region != "":
 		for id in all_pokemon_ids:
+			if id == CRYSTAL_ONIX_ID:
+				continue
 			var d = pokemon_catalog.get(id, {})
 			if str(d.get("region", "")).to_lower() == target_region.to_lower():
 				candidate_ids.append(id)
 				
 	if candidate_ids.size() < 3:
-		candidate_ids = all_pokemon_ids.duplicate()
+		candidate_ids = []
+		for id in all_pokemon_ids:
+			if id != CRYSTAL_ONIX_ID:
+				var d = pokemon_catalog.get(id, {})
+				var r = str(d.get("rarity", "")).to_lower()
+				if not (r in ["boss", "special"]):
+					candidate_ids.append(id)
 		
 	candidate_ids.shuffle()
 	
@@ -3221,11 +3242,15 @@ func add_active_campaign_gold(val: int) -> void:
 func get_active_campaign_inventory() -> Dictionary:
 	if campaign_submode == "ADVENTURE":
 		return adventure_inventory
+	elif campaign_submode == "CHAOS":
+		return chaos_inventory
 	return campaign_inventory
 
 func get_active_campaign_team_state() -> Array:
 	if campaign_submode == "ADVENTURE":
 		return adventure_player_team_state
+	elif campaign_submode == "CHAOS":
+		return chaos_player_team_state
 	return campaign_player_team_state
 
 func swap_campaign_team_members(idx_a: int, idx_b: int) -> bool:
@@ -4117,8 +4142,8 @@ func get_tournament_candidates(stage_target: String = "any", rarity_target: Stri
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
 		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
 		
-		# 1. Ban Legendary rarity and stage completely from tournament rivals
-		if r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"] or st == "legendary":
+		# 1. Ban Legendary and Boss rarity and stage completely from tournament rivals
+		if id == CRYSTAL_ONIX_ID or r in ["legendary", "legendaria", "legendario", "ur", "ultra rare", "boss", "special"] or st in ["legendary", "boss", "special"]:
 			continue
 			
 		# 2. Ban Tier S and S+ strictly - Rivals MUST stay below Tier S (Tier D, C, B, A only)
@@ -4258,6 +4283,229 @@ func get_campaign_rival_team(match_num: int) -> Array[int]:
 	current_tournament_rival_team = generate_tournament_rival_team(match_num)
 	current_tournament_rival_match = match_num
 	return current_tournament_rival_team
+
+# --- MÉTODOS DE CHAOS ODYSSEY ---
+
+func is_line_legendary(pkmn_id: int) -> bool:
+	if not pokemon_catalog.has(pkmn_id):
+		return false
+	var visited: Array[int] = []
+	var curr_id = pkmn_id
+	while curr_id >= 0 and not (curr_id in visited):
+		visited.append(curr_id)
+		var d = pokemon_catalog.get(curr_id, {})
+		var r = str(d.get("rarity", "")).strip_edges().to_lower()
+		var st = str(d.get("stage", "")).strip_edges().to_lower()
+		if r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"] or st == "legendary":
+			return true
+		var evo_to = str(d.get("evolves_to", "")).strip_edges().to_lower()
+		if evo_to == "":
+			break
+		var next_id = -1
+		for target_id in all_pokemon_ids:
+			var td = pokemon_catalog.get(target_id, {})
+			if str(td.get("name", "")).strip_edges().to_lower() == evo_to:
+				next_id = target_id
+				break
+		curr_id = next_id
+	return false
+
+func get_chaos_legendary_candidates() -> Array[int]:
+	var candidates: Array[int] = []
+	for id in all_pokemon_ids:
+		if id == CRYSTAL_ONIX_ID:
+			continue
+		var d = pokemon_catalog.get(id, {})
+		var r = str(d.get("rarity", "")).strip_edges().to_lower()
+		var st = str(d.get("stage", "")).strip_edges().to_lower()
+		var ev_from = str(d.get("evolves_from", "")).strip_edges()
+		var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+		if is_leg and ev_from == "":
+			candidates.append(id)
+	return candidates
+
+func get_chaos_player_draft_candidates() -> Array[int]:
+	var candidates: Array[int] = get_chaos_legendary_candidates()
+	for id in all_pokemon_ids:
+		if is_line_legendary(id):
+			var d = pokemon_catalog.get(id, {})
+			if str(d.get("stage", "")).strip_edges().to_lower() == "basic" and not (id in candidates):
+				candidates.append(id)
+	return candidates
+
+func can_play_chaos_odyssey_today() -> bool:
+	return chaos_last_played_date != Time.get_date_string_from_system()
+
+func reset_chaos_odyssey() -> void:
+	chaos_match_number = 1
+	chaos_player_team_state.clear()
+	chaos_inventory = DEFAULT_INVENTORY.duplicate()
+	current_chaos_rival_team.clear()
+	current_chaos_rival_match = -1
+	save_profile()
+
+func change_chaos_team(chosen_ids: Array) -> void:
+	var old_hp = {}
+	var old_exp = {}
+	var old_burn = {}
+	var old_poison = {}
+	var old_flinch = {}
+	for p in chaos_player_team_state:
+		old_hp[p["id"]] = p["current_hp"]
+		old_exp[p["id"]] = p.get("current_exp", 0)
+		old_burn[p["id"]] = p.get("burn_turns", 0)
+		old_poison[p["id"]] = p.get("is_poisoned", false)
+		old_flinch[p["id"]] = p.get("is_flinched", false)
+	chaos_player_team_state.clear()
+	for cid in chosen_ids:
+		var d = pokemon_catalog.get(cid, {})
+		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
+		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
+		var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+		var is_dragon_basic = (st == "basic" and is_line_legendary(cid))
+		if is_leg or is_dragon_basic:
+			var inst = create_pokemon_instance(cid)
+			if inst:
+				var hp = old_hp.get(cid, inst.max_hp)
+				var exp_val = old_exp.get(cid, 0)
+				var burn_val = old_burn.get(cid, 0)
+				var poison_val = old_poison.get(cid, false)
+				var flinch_val = old_flinch.get(cid, false)
+				chaos_player_team_state.append({
+					"id": cid,
+					"name": inst.name,
+					"stage": inst.stage,
+					"type": inst.type,
+					"current_hp": hp,
+					"max_hp": inst.max_hp,
+					"speed": inst.speed,
+					"texture_path": inst.texture_path,
+					"current_exp": exp_val,
+					"is_poisoned": poison_val,
+					"burn_turns": burn_val,
+					"is_flinched": flinch_val
+				})
+	save_profile()
+
+func get_chaos_match_info(match_num: int) -> Dictionary:
+	match match_num:
+		1:
+			return {
+				"match_num": 1,
+				"desc": "Trial 1/7: 2 High-Tier Basic Pokémon",
+				"reward_gold": 30,
+				"reward_diamonds": 0,
+				"super_potions": 0,
+				"is_boss": false
+			}
+		2:
+			return {
+				"match_num": 2,
+				"desc": "Trial 2/7: 2 Stage 1 + 1 High-Tier Basic Pokémon",
+				"reward_gold": 50,
+				"reward_diamonds": 0,
+				"super_potions": 0,
+				"is_boss": false
+			}
+		3:
+			return {
+				"match_num": 3,
+				"desc": "Trial 3/7: 2 Stage 2 Pokémon",
+				"reward_gold": 75,
+				"reward_diamonds": 0,
+				"super_potions": 0,
+				"is_boss": false
+			}
+		4:
+			return {
+				"match_num": 4,
+				"desc": "Trial 4/7: 1 High-Tier Basic + 1 Legendary Pokémon (Super Potion 🧪)",
+				"reward_gold": 100,
+				"reward_diamonds": 0,
+				"super_potions": 1,
+				"is_boss": false
+			}
+		5:
+			return {
+				"match_num": 5,
+				"desc": "Trial 5/7: 1 Stage 1 + 1 Stage 2 + 1 Legendary Pokémon (Super Potion 🧪)",
+				"reward_gold": 130,
+				"reward_diamonds": 0,
+				"super_potions": 1,
+				"is_boss": false
+			}
+		6:
+			return {
+				"match_num": 6,
+				"desc": "Trial 6/7: 2 Legendary Pokémon (Super Potion 🧪)",
+				"reward_gold": 175,
+				"reward_diamonds": 0,
+				"super_potions": 1,
+				"is_boss": false
+			}
+		7:
+			return {
+				"match_num": 7,
+				"desc": "FINAL BOSS: 💎 Crystal Onix (900 HP) — Push your limits! (Super Potion 🧪)",
+				"reward_gold": 0,
+				"reward_diamonds": 0,
+				"super_potions": 1,
+				"is_boss": true
+			}
+		_:
+			return {
+				"match_num": match_num,
+				"desc": "Chaos Complete",
+				"reward_gold": 0,
+				"reward_diamonds": 0,
+				"super_potions": 0,
+				"is_boss": false
+			}
+
+func generate_chaos_rival_team(match_num: int) -> Array[int]:
+	match match_num:
+		1:
+			# Match 1: 2 Basics de tier alto
+			var pool = get_tournament_candidates("basic", "any", ["A", "S"])
+			if pool.is_empty():
+				pool = get_tournament_candidates("basic", "any", ["B", "A", "S"])
+			return pick_random_unique(pool, 2)
+		2:
+			# Match 2: 2 Stage 1 y un Basic de tier alto
+			var s1 = pick_random_unique(get_tournament_candidates("stage 1", "any", ["B", "A"]), 2)
+			var b = pick_random_unique(get_tournament_candidates("basic", "any", ["A", "S"]), 1, s1)
+			return s1 + b
+		3:
+			# Match 3: 2 Stage 2
+			var pool = get_tournament_candidates("stage 2", "any", ["B", "A"])
+			return pick_random_unique(pool, 2)
+		4:
+			# Match 4: 1 basic tier alto, 1 legendario (Super Potion 🧪)
+			var b = pick_random_unique(get_tournament_candidates("basic", "any", ["A", "S"]), 1)
+			var leg = pick_random_unique(get_chaos_legendary_candidates(), 1, b)
+			return b + leg
+		5:
+			# Match 5: 1 stage 1, 1 stage 2 y 1 legendario (Super Potion 🧪)
+			var s1 = pick_random_unique(get_tournament_candidates("stage 1", "any", ["B", "A"]), 1)
+			var s2 = pick_random_unique(get_tournament_candidates("stage 2", "any", ["B", "A"]), 1, s1)
+			var leg = pick_random_unique(get_chaos_legendary_candidates(), 1, s1 + s2)
+			return s1 + s2 + leg
+		6:
+			# Match 6: 2 legendarios (Super Potion 🧪)
+			return pick_random_unique(get_chaos_legendary_candidates(), 2)
+		7:
+			# Match 7: Final Boss Crystal Onix (Super Potion 🧪)
+			return [CRYSTAL_ONIX_ID]
+		_:
+			return [CRYSTAL_ONIX_ID]
+
+func get_chaos_rival_team(match_num: int) -> Array[int]:
+	if match_num == current_chaos_rival_match and not current_chaos_rival_team.is_empty():
+		return current_chaos_rival_team
+		
+	current_chaos_rival_team = generate_chaos_rival_team(match_num)
+	current_chaos_rival_match = match_num
+	return current_chaos_rival_team
 
 func get_item_texture(item_name: String) -> Texture2D:
 	var clean = item_name.strip_edges().to_lower()
@@ -4761,6 +5009,13 @@ func get_save_dict() -> Dictionary:
 			"ep7_selected_route": adventure_ep7_selected_route,
 			"ep7_cleared_routes": adventure_ep7_cleared_routes.duplicate()
 		},
+		"chaos_odyssey": {
+			"match_number": chaos_match_number,
+			"inventory": chaos_inventory.duplicate(true),
+			"team_state": chaos_player_team_state.duplicate(true),
+			"boss_damage_record": chaos_boss_damage_record,
+			"last_played_date": chaos_last_played_date
+		},
 		"settings": {
 			"language": settings_language,
 			"music_volume": settings_music_volume,
@@ -4937,6 +5192,17 @@ func apply_save_dict(data: Dictionary) -> bool:
 		reset_adventure_episode(adventure_current_episode)
 	elif adventure_current_stage > total_ep_stages:
 		reset_adventure_episode(adventure_current_episode)
+		
+	# Cargar Chaos Odyssey
+	var chaos = data.get("chaos_odyssey", {})
+	chaos_match_number = int(chaos.get("match_number", 1))
+	chaos_inventory = chaos.get("inventory", DEFAULT_INVENTORY.duplicate())
+	for k in DEFAULT_INVENTORY.keys():
+		if not chaos_inventory.has(k):
+			chaos_inventory[k] = 0
+	chaos_player_team_state = chaos.get("team_state", [])
+	chaos_boss_damage_record = int(chaos.get("boss_damage_record", 0))
+	chaos_last_played_date = str(chaos.get("last_played_date", ""))
 		
 	if campaign_gold > 0 or adventure_current_episode > 1 or adventure_current_stage > 1:
 		profile_welcome_claimed = true

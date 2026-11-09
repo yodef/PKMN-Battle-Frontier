@@ -309,3 +309,4 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 310,Ominous Wind,DARK,6,2,1,1,3,BOOST_IF_FASTER,Blasts the target with a gust of spectral wind. Deals +3 DMG if faster.,Silver Wind.mp3
 311,Vacuum Wave,FIGHTING,4,1,1,1,2,BOOST_IF_FASTER,Whirrs its fists to send a wave of pure vacuum. Deals +2 DMG if faster.,Sonic Boom.mp3
 312,Magnet Bomb,GROUND,6,2,1,1,3,BOOST_DMG,Launches magnetized metal orbs that home in on the target.,Swift.mp3
+313,Crystal Blast,NORMAL,10,2,2,0,0,BENCH_DAMAGE,"Inflicts 10 DMG. If this Move deals DMG, inflicts 3 DMG to all benched foes.",Rock Slide.mp3

@@ -569,6 +569,46 @@ theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "📖 View Encounters Guide (All 9 Rounds)"
 
+[node name="CardChaosOdyssey" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="ChaosVBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ChaosTitle" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.45, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "🌌 Chaos Odyssey"
+
+[node name="ChaosDesc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "High-stakes Gauntlet for Legendary & Dragon Pokémon! Battle 6 extreme trials and challenge the legendary Crystal Onix (900 HP)! Push your limits and mine diamonds (1 attempt per day)."
+autowrap_mode = 2
+
+[node name="ChaosStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: Ready • Record damage on Boss: 0 HP"
+
+[node name="BtnHubChaos" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "🌌 Enter Chaos Odyssey"
+
 [node name="CardLootRates" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
 layout_mode = 2
 
