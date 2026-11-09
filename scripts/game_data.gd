@@ -3581,6 +3581,19 @@ func is_adventure_episode_unlocked(episode_id: int) -> bool:
 func is_adventure_episode_completed(episode_id: int) -> bool:
 	return episode_id in adventure_completed_episodes
 
+func get_earned_gym_badges_count() -> int:
+	# Episodios de Kanto que otorgan medallas de gimnasio:
+	# Ep 1: Boulder, Ep 2: Cascade, Ep 3: Thunder, Ep 4: Rainbow,
+	# Ep 5: Soul, Ep 6: Marsh, Ep 7: Volcano
+	var count = 0
+	for ep in [1, 2, 3, 4, 5, 6, 7]:
+		if ep in adventure_completed_episodes:
+			count += 1
+	return count
+
+func has_all_gym_badges() -> bool:
+	return get_earned_gym_badges_count() >= 8
+
 func complete_adventure_episode(episode_id: int) -> int:
 	# Returns diamonds awarded
 	var bonus = 0

@@ -609,6 +609,13 @@ theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
 theme_override_font_sizes/font_size = 13
 text = "🌌 Enter Chaos Odyssey"
 
+[node name="BtnChaosGuide" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "📖 View Chaos Odyssey Guide (Trials & Boss Info)"
+
 [node name="CardLootRates" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
 layout_mode = 2
 
@@ -715,6 +722,301 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "⬅ Back to Main Menu"
 
+[node name="AdventureRegionsModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AdventureRegionsBg" type="ColorRect" parent="AdventureRegionsModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="Box" type="VBoxContainer" parent="AdventureRegionsModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 16.0
+offset_right = -14.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="AdventureRegionsModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.95, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+text = "🗺️ ADVENTURE REGIONS"
+horizontal_alignment = 1
+
+[node name="RegionsWalletBadge" type="Label" parent="AdventureRegionsModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "💰 Campaign Gold: 0 G  |  💎 0 Diamonds"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="AdventureRegionsModal/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Select a region to explore Gyms, conquer Badges, and advance to the Pokémon League!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="RegionsScroll" type="ScrollContainer" parent="AdventureRegionsModal/Box"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="RegionsVBox" type="VBoxContainer" parent="AdventureRegionsModal/Box/RegionsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="CardRegionKanto" type="PanelContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="KantoVBox" type="VBoxContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="KantoTitle" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin/KantoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 16
+text = "🌲 Kanto Region"
+
+[node name="KantoDesc" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin/KantoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "The classic journey! Battle 7 Gym Leaders across Pewter, Cerulean, Vermilion, Celadon, Fuchsia, Saffron, and Cinnabar Island."
+autowrap_mode = 2
+
+[node name="KantoBadges" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin/KantoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Episodes: 7 Available  |  Gym Badges to Win: 8"
+autowrap_mode = 2
+
+[node name="KantoStatus" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin/KantoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: 🔓 Unlocked • Ready to explore"
+autowrap_mode = 2
+
+[node name="BtnEnterKanto" type="Button" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin/KantoVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "🗺️ Explore Kanto Region (Episodes) ➜"
+autowrap_mode = 2
+
+[node name="CardRegionJohto" type="PanelContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox"]
+modulate = Color(0.75, 0.75, 0.8, 0.85)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="JohtoVBox" type="VBoxContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="JohtoTitle" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto/Margin/JohtoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.65, 0.35, 1)
+theme_override_font_sizes/font_size = 16
+text = "🍂 Johto Region"
+
+[node name="JohtoDesc" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto/Margin/JohtoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Journey through New Bark Town, Goldenrod City, and ancient historical towers."
+autowrap_mode = 2
+
+[node name="JohtoStatus" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto/Margin/JohtoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.55, 0.45, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: 🔒 En desarrollo... (In development)"
+autowrap_mode = 2
+
+[node name="BtnEnterJohto" type="Button" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto/Margin/JohtoVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+theme_override_colors/font_color = Color(0.6, 0.65, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔒 Johto (En desarrollo...)"
+autowrap_mode = 2
+
+[node name="CardRegionHoenn" type="PanelContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox"]
+modulate = Color(0.75, 0.75, 0.8, 0.85)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="HoennVBox" type="VBoxContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HoennTitle" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn/Margin/HoennVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.75, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "🌊 Hoenn Region"
+
+[node name="HoennDesc" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn/Margin/HoennVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Explore tropical landscapes, vast oceans, and ancient legends from Petalburg to Sootopolis."
+autowrap_mode = 2
+
+[node name="HoennStatus" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn/Margin/HoennVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.55, 0.45, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: 🔒 En desarrollo... (In development)"
+autowrap_mode = 2
+
+[node name="BtnEnterHoenn" type="Button" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn/Margin/HoennVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+theme_override_colors/font_color = Color(0.6, 0.65, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔒 Hoenn (En desarrollo...)"
+autowrap_mode = 2
+
+[node name="CardRegionSinnoh" type="PanelContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox"]
+modulate = Color(0.75, 0.75, 0.8, 0.85)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="SinnohVBox" type="VBoxContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SinnohTitle" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh/Margin/SinnohVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "❄️ Sinnoh Region"
+
+[node name="SinnohDesc" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh/Margin/SinnohVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Traverse Mt. Coronet and discover space-time mysteries across the Sinnoh region."
+autowrap_mode = 2
+
+[node name="SinnohStatus" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh/Margin/SinnohVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.55, 0.45, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: 🔒 En desarrollo... (In development)"
+autowrap_mode = 2
+
+[node name="BtnEnterSinnoh" type="Button" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh/Margin/SinnohVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+theme_override_colors/font_color = Color(0.6, 0.65, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔒 Sinnoh (En desarrollo...)"
+autowrap_mode = 2
+
+[node name="CardRegionLeague" type="PanelContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox"]
+modulate = Color(0.85, 0.85, 0.9, 0.9)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="LeagueVBox" type="VBoxContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LeagueTitle" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 16
+text = "🏆 Liga Pokémon (Indigo Plateau)"
+
+[node name="LeagueDesc" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "The ultimate challenge! Face the Elite Four and the Pokémon Champion to claim the Title of Champion."
+autowrap_mode = 2
+
+[node name="LeagueStatus" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: 🔒 Bloqueada (Consigue todas las medallas para acceder)"
+autowrap_mode = 2
+
+[node name="BtnEnterLeague" type="Button" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+theme_override_colors/font_color = Color(0.6, 0.65, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔒 Bloqueada (Requiere todas las medallas)"
+autowrap_mode = 2
+
+[node name="BtnCloseAdventureRegions" type="Button" parent="AdventureRegionsModal/Box"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "⬅ Back to Campaign Modes"
+
 [node name="AdventureEpisodesModal" type="Control" parent="."]
 visible = false
 layout_mode = 1
@@ -750,7 +1052,7 @@ theme_override_constants/separation = 12
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 1)
 theme_override_font_sizes/font_size = 20
-text = "🗺️ ADVENTURE EPISODES"
+text = "🗺️ KANTO ADVENTURE EPISODES"
 horizontal_alignment = 1
 
 [node name="EpisodesWalletBadge" type="Label" parent="AdventureEpisodesModal/Box"]
@@ -1141,7 +1443,7 @@ autowrap_mode = 2
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
-text = "⬅ Back to Campaign Modes"
+text = "⬅ Back to Regions"
 
 [node name="StadiumGuideModal" type="Control" parent="."]
 visible = false

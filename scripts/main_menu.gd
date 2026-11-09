@@ -45,7 +45,20 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var btn_stadium_guide: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox/BtnStadiumGuide
 @onready var chaos_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox/ChaosStatus
 @onready var btn_hub_chaos: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox/BtnHubChaos
+@onready var btn_chaos_guide: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox/BtnChaosGuide
 @onready var btn_close_campaign_hub: Button = $CampaignHubModal/Box/BtnCloseCampaignHub
+
+# --- MODAL ADVENTURE REGIONS ---
+@onready var adventure_regions_modal: Control = $AdventureRegionsModal
+@onready var regions_wallet_badge: Label = $AdventureRegionsModal/Box/RegionsWalletBadge
+@onready var kanto_status_lbl: Label = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin/KantoVBox/KantoStatus
+@onready var btn_enter_kanto: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin/KantoVBox/BtnEnterKanto
+@onready var btn_enter_johto: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto/Margin/JohtoVBox/BtnEnterJohto
+@onready var btn_enter_hoenn: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn/Margin/HoennVBox/BtnEnterHoenn
+@onready var btn_enter_sinnoh: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh/Margin/SinnohVBox/BtnEnterSinnoh
+@onready var league_status_lbl: Label = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/LeagueStatus
+@onready var btn_enter_league: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/BtnEnterLeague
+@onready var btn_close_adventure_regions: Button = $AdventureRegionsModal/Box/BtnCloseAdventureRegions
 
 # --- MODAL ADVENTURE EPISODES ---
 @onready var adventure_episodes_modal: Control = $AdventureEpisodesModal
@@ -524,6 +537,22 @@ func _ready() -> void:
 		_update_lobby_header_badge()
 	)
 	
+	# Modal Adventure Regions
+	if btn_enter_kanto:
+		btn_enter_kanto.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			adventure_regions_modal.visible = false
+			update_adventure_episodes_ui()
+			adventure_episodes_modal.visible = true
+		)
+	if btn_close_adventure_regions:
+		btn_close_adventure_regions.pressed.connect(func():
+			adventure_regions_modal.visible = false
+			update_campaign_hub_ui()
+			campaign_hub_modal.visible = true
+		)
+
 	# Modal Adventure Episodes
 	btn_hub_adventure_ep1.pressed.connect(_on_select_adventure_ep1_pressed)
 	btn_hub_adventure_ep2.pressed.connect(_on_select_adventure_ep2_pressed)
@@ -534,20 +563,21 @@ func _ready() -> void:
 	btn_hub_adventure_ep7.pressed.connect(_on_select_adventure_ep7_pressed)
 	btn_close_adventure_episodes.pressed.connect(func():
 		adventure_episodes_modal.visible = false
-		update_campaign_hub_ui()
-		campaign_hub_modal.visible = true
+		update_adventure_regions_ui()
+		adventure_regions_modal.visible = true
 	)
 
-	# Modal Stadium Encounters Guide
+	# Modal Stadium & Chaos Encounters Guide
 	btn_stadium_guide.pressed.connect(func():
-		_stadium_guide_return_modal = campaign_hub_modal
-		campaign_hub_modal.visible = false
-		stadium_guide_modal.visible = true
+		_open_guide_modal("STADIUM", campaign_hub_modal)
 	)
+	if btn_chaos_guide:
+		btn_chaos_guide.pressed.connect(func():
+			_open_guide_modal("CHAOS", campaign_hub_modal)
+		)
 	btn_camp_stadium_guide.pressed.connect(func():
-		_stadium_guide_return_modal = campaign_modal
-		campaign_modal.visible = false
-		stadium_guide_modal.visible = true
+		var m = "CHAOS" if GameData.campaign_submode == "CHAOS" else "STADIUM"
+		_open_guide_modal(m, campaign_modal)
 	)
 	btn_close_stadium_guide.pressed.connect(func():
 		stadium_guide_modal.visible = false
@@ -565,6 +595,11 @@ func _ready() -> void:
 		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2",
 		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3",
 		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4",
+		"AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto",
+		"AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto",
+		"AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn",
+		"AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh",
+		"AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague",
 		"StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase1Card",
 		"StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase2Card",
 		"StadiumGuideModal/Box/GuideScroll/GuideVBox/Phase3Card",
@@ -875,6 +910,8 @@ func _ready() -> void:
 	
 	# Ocultar modales al inicio
 	campaign_hub_modal.visible = false
+	if adventure_regions_modal:
+		adventure_regions_modal.visible = false
 	adventure_episodes_modal.visible = false
 	if stadium_guide_modal:
 		stadium_guide_modal.visible = false
@@ -1520,6 +1557,33 @@ func update_adventure_episodes_ui() -> void:
 		btn_hub_adventure_ep7.disabled = false
 		_apply_retro_button_style(btn_hub_adventure_ep7, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 
+func update_adventure_regions_ui() -> void:
+	if not is_inside_tree():
+		return
+	if regions_wallet_badge:
+		regions_wallet_badge.text = "💰 Campaign Gold: %d G  |  💎 %d Diamonds" % [GameData.campaign_gold, GameData.player_diamonds]
+	
+	var badges_count = GameData.get_earned_gym_badges_count()
+	if kanto_status_lbl:
+		kanto_status_lbl.text = "Status: 🔓 Unlocked • 🏅 Gym Badges: %d/8 Conquered" % badges_count
+		kanto_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		
+	if league_status_lbl:
+		if GameData.has_all_gym_badges():
+			league_status_lbl.text = "Status: 🔓 Unlocked • Ready to challenge the Indigo Plateau!"
+			league_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			if btn_enter_league:
+				btn_enter_league.disabled = false
+				btn_enter_league.text = "🏆 Enter Pokémon League ➜"
+				_apply_retro_button_style(btn_enter_league, Color(0.85, 0.65, 0.15), Color(1.0, 0.85, 0.3), true)
+		else:
+			league_status_lbl.text = "Status: 🔒 Bloqueada (Consigue todas las medallas • Tienes %d/8)" % badges_count
+			league_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			if btn_enter_league:
+				btn_enter_league.disabled = true
+				btn_enter_league.text = "🔒 Bloqueada (Requiere todas las medallas)"
+				_apply_retro_button_style(btn_enter_league, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+
 func _on_hub_adventure_pressed() -> void:
 	if GameData.is_drag_scrolling():
 		return
@@ -1527,8 +1591,8 @@ func _on_hub_adventure_pressed() -> void:
 		_show_tutorial_prompt_for_locked_episode()
 		return
 	campaign_hub_modal.visible = false
-	update_adventure_episodes_ui()
-	adventure_episodes_modal.visible = true
+	update_adventure_regions_ui()
+	adventure_regions_modal.visible = true
 
 func _on_select_tournament_pressed() -> void:
 	if GameData.is_drag_scrolling():
@@ -2923,6 +2987,10 @@ func update_campaign_ui() -> void:
 	var camp_team_header = campaign_modal.get_node_or_null("Box/TeamHeader")
 	if btn_camp_stadium_guide:
 		btn_camp_stadium_guide.visible = (GameData.campaign_submode != "ADVENTURE")
+		if GameData.campaign_submode == "CHAOS":
+			btn_camp_stadium_guide.text = "📖 View Chaos Odyssey Guide"
+		else:
+			btn_camp_stadium_guide.text = "📖 View Encounters Guide (All 9 Rounds)"
 	if GameData.campaign_submode == "ADVENTURE":
 		btn_close_campaign.text = "⬅ Abandon Episode (Resets Run)"
 		var ep_id = GameData.adventure_current_episode
@@ -6191,10 +6259,27 @@ func _apply_pokemon_ui_theme() -> void:
 		scan_rect_stadium.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		stadium_guide_bg_node.add_child(scan_rect_stadium)
 
+	var adv_reg_bg_node = get_node_or_null("AdventureRegionsModal/AdventureRegionsBg")
+	if adv_reg_bg_node and not adv_reg_bg_node.get_node_or_null("Scanlines"):
+		var scan_rect_adv_reg = TextureRect.new()
+		scan_rect_adv_reg.name = "Scanlines"
+		scan_rect_adv_reg.texture = scan_tex
+		scan_rect_adv_reg.stretch_mode = TextureRect.STRETCH_TILE
+		scan_rect_adv_reg.anchors_preset = Control.PRESET_FULL_RECT
+		scan_rect_adv_reg.anchor_right = 1.0
+		scan_rect_adv_reg.anchor_bottom = 1.0
+		scan_rect_adv_reg.modulate = Color(1, 1, 1, 0.12)
+		scan_rect_adv_reg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		adv_reg_bg_node.add_child(scan_rect_adv_reg)
+
 	# Badges for Campaign
 	var hub_badge_node = get_node_or_null("CampaignHubModal/Box/HubWalletBadge")
 	if hub_badge_node is Label:
 		hub_badge_node.add_theme_stylebox_override("normal", badge_sb.duplicate())
+
+	var reg_badge_node = get_node_or_null("AdventureRegionsModal/Box/RegionsWalletBadge")
+	if reg_badge_node is Label:
+		reg_badge_node.add_theme_stylebox_override("normal", badge_sb.duplicate())
 
 	var ep_badge_node = get_node_or_null("AdventureEpisodesModal/Box/EpisodesWalletBadge")
 	if ep_badge_node is Label:
@@ -6248,7 +6333,23 @@ func _apply_pokemon_ui_theme() -> void:
 	_apply_retro_button_style(btn_stadium_guide, Color(0.25, 0.60, 0.85), Color(0.40, 0.85, 1.00), true)
 	if btn_hub_chaos:
 		_apply_retro_button_style(btn_hub_chaos, Color(0.55, 0.25, 0.75), Color(0.80, 0.45, 1.00), true)
+	if btn_chaos_guide:
+		_apply_retro_button_style(btn_chaos_guide, Color(0.55, 0.25, 0.75), Color(0.80, 0.45, 1.00), true)
 	_apply_retro_button_style(btn_close_campaign_hub, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+
+	# Adventure Regions Buttons
+	if btn_enter_kanto:
+		_apply_retro_button_style(btn_enter_kanto, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+	if btn_enter_johto:
+		_apply_retro_button_style(btn_enter_johto, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	if btn_enter_hoenn:
+		_apply_retro_button_style(btn_enter_hoenn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	if btn_enter_sinnoh:
+		_apply_retro_button_style(btn_enter_sinnoh, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	if btn_enter_league:
+		_apply_retro_button_style(btn_enter_league, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	if btn_close_adventure_regions:
+		_apply_retro_button_style(btn_close_adventure_regions, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
 
 	_apply_retro_button_style(btn_hub_adventure_ep1, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 	_apply_retro_button_style(btn_hub_adventure_ep2, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
@@ -6346,6 +6447,77 @@ func _apply_retro_button_style(btn: Button, border_col: Color = Color(0.25, 0.52
 				var tw = btn.create_tween()
 				tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		)
+
+func _open_guide_modal(mode: String = "STADIUM", return_modal: Control = null) -> void:
+	_stadium_guide_return_modal = return_modal
+	if return_modal:
+		return_modal.visible = false
+		
+	var title_lbl = stadium_guide_modal.get_node_or_null("Box/Title") as Label
+	var desc_lbl = stadium_guide_modal.get_node_or_null("Box/Desc") as Label
+	var p1_header = stadium_guide_modal.get_node_or_null("Box/GuideScroll/GuideVBox/Phase1Card/Margin/P1VBox/P1Header") as Label
+	var p1_info = stadium_guide_modal.get_node_or_null("Box/GuideScroll/GuideVBox/Phase1Card/Margin/P1VBox/P1Info") as Label
+	var p2_header = stadium_guide_modal.get_node_or_null("Box/GuideScroll/GuideVBox/Phase2Card/Margin/P2VBox/P2Header") as Label
+	var p2_info = stadium_guide_modal.get_node_or_null("Box/GuideScroll/GuideVBox/Phase2Card/Margin/P2VBox/P2Info") as Label
+	var p3_header = stadium_guide_modal.get_node_or_null("Box/GuideScroll/GuideVBox/Phase3Card/Margin/P3VBox/P3Header") as Label
+	var p3_info = stadium_guide_modal.get_node_or_null("Box/GuideScroll/GuideVBox/Phase3Card/Margin/P3VBox/P3Info") as Label
+	var rules_header = stadium_guide_modal.get_node_or_null("Box/GuideScroll/GuideVBox/RulesCard/Margin/RulesVBox/RulesHeader") as Label
+	var rules_body = stadium_guide_modal.get_node_or_null("Box/GuideScroll/GuideVBox/RulesCard/Margin/RulesVBox/RulesBody") as Label
+	
+	if mode == "CHAOS":
+		if title_lbl:
+			title_lbl.text = "🌌 CHAOS ODYSSEY: GAUNTLET GUIDE"
+			title_lbl.add_theme_color_override("font_color", Color(0.85, 0.45, 1.0))
+		if desc_lbl:
+			desc_lbl.text = "Roadmap of the 6 extreme trials leading up to Boss Crystal Onix (900 HP) and reward details:"
+		if p1_header:
+			p1_header.text = "🌌 TRIALS 1 - 3: ADVANCED OPPONENTS"
+			p1_header.add_theme_color_override("font_color", Color(0.85, 0.5, 1.0))
+		if p1_info:
+			p1_info.text = "• Trial 1: 2 Basic PKMN de Tier Alto (Tier S / A).\n  Reward: 💰 Progressive Gold.\n\n• Trial 2: 2 Stage 1 + 1 Basic de Tier Alto.\n  Reward: 💰 Progressive Gold.\n\n• Trial 3: 2 Stage 2 powerhouses.\n  Reward: 💰 Progressive Gold.\n  ⚠️ A partir de este combate, las IA rivales llevan 1 Súper Poción en su inventario de combate!"
+		if p2_header:
+			p2_header.text = "⚡ TRIALS 4 - 6: LEGENDARY THREATS"
+			p2_header.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		if p2_info:
+			p2_info.text = "• Trial 4: 1 Basic de Tier Alto + 1 Legendario.\n  Rival Bag: 1 Súper Poción.  |  Reward: 💰 Progressive Gold.\n\n• Trial 5: 1 Stage 1 + 1 Stage 2 + 1 Legendario.\n  Rival Bag: 1 Súper Poción.  |  Reward: 💰 Progressive Gold.\n\n• Trial 6: 2 Legendarios supremos.\n  Rival Bag: 1 Súper Poción.  |  Reward: 💰 Progressive Gold."
+		if p3_header:
+			p3_header.text = "💎 FINAL BOSS: CRYSTAL ONIX (900 HP)"
+			p3_header.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
+		if p3_info:
+			p3_info.text = "• Boss Stats: 900 HP | 8 Energía | 4 Recarga | 3 Velocidad | Debilidad: None.\n• Movimientos: Rock Slide y Crystal Blast (10 DMG, costo 2, efecto: provoca 3 DMG a todos los Pokémon en banca rival).\n• Bolsa del Rival: 1 Súper Poción.\n• Pasiva Especial de Minado de Diamantes:\n  - Cada 10 HP que pierde: +1 Diamante 💎\n  - Cada 100 HP que pierde: +10 Diamantes 💎 adicionales\n  - Al perder 500 HP: +50 Diamantes 💎 adicionales\n• Record Damage: Esta pelea no otorga Oro porque no se puede vencer de forma convencional; está diseñada para llevar a tu equipo legendario al límite y medir tu daño máximo. Se puede jugar una vez al día."
+		if rules_header:
+			rules_header.text = "⚖️ CHAOS ODYSSEY RULES"
+			rules_header.add_theme_color_override("font_color", Color(0.95, 0.75, 0.4))
+		if rules_body:
+			rules_body.text = "• Selección Legendaria: Solo se permite llevar Pokémon Legendarios (o sus pre-evoluciones básicas como Dratini/Dragonair).\n• Campamento Activo: Tienda e inventario disponibles para curar a tu equipo entre combates.\n• Límite Diario: Solo se permite un intento por día para desafiar al Boss y farmear diamantes.\n• Registro de Daño: Tu daño máximo infligido a Crystal Onix se conserva como récord."
+	else:
+		if title_lbl:
+			title_lbl.text = "🏟️ POKÉMON STADIUM: ENCOUNTERS"
+			title_lbl.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+		if desc_lbl:
+			desc_lbl.text = "Roadmap of all 9 rounds across 3 phases, rival team compositions, allowed tiers, and rewards:"
+		if p1_header:
+			p1_header.text = "🥊 PHASE 1: CLASSIFICATION (Rounds 1 - 3)"
+			p1_header.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		if p1_info:
+			p1_info.text = "• Round 1 (Warmup): 1 Basic PKMN (Tier D / C). Fast opening duel.\n  Reward: 💰 10 G  |  💎 1 Diamond\n\n• Round 2 (Duo Clash): 2 Basic PKMN (Tier C / B). Fast-paced 2v2.\n  Reward: 💰 15 G  |  💎 2 Diamonds\n\n• Round 3 (Phase Finale): 1 Basic (Tier B/C) + 1 Stage 1 (Tier B/A).\n  Reward: 💰 25 G  |  💎 5 Diamonds (+5 💎 Phase 1 Bonus!)"
+		if p2_header:
+			p2_header.text = "⚡ PHASE 2: ELIMINATION (Rounds 4 - 6)"
+			p2_header.add_theme_color_override("font_color", Color(0.4, 0.85, 1))
+		if p2_info:
+			p2_info.text = "• Round 4 (Speed Duel): 1 Stage 1 PKMN (Tier B / A). Evolved clash.\n  Reward: 💰 20 G  |  💎 2 Diamonds\n\n• Round 5 (Tag Team): 1 Stage 1 + 1 Basic PKMN (Tier B / A).\n  Reward: 💰 25 G  |  💎 3 Diamonds\n\n• Round 6 (Phase Finale): 2 Stage 1 / Tier A powerhouses.\n  Reward: 💰 40 G  |  💎 10 Diamonds (+10 💎 Phase 2 Bonus!)"
+		if p3_header:
+			p3_header.text = "🏆 PHASE 3: GRAND FINALE (Rounds 7 - 9)"
+			p3_header.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+		if p3_info:
+			p3_info.text = "• Round 7 (Quarterfinals): 1 Stage 2 (Tier A/B) + 1 Stage 1 (Tier A/B).\n  Reward: 💰 30 G  |  💎 4 Diamonds\n\n• Round 8 (Semifinals): 1 Stage 2 (Tier A) + 1 Elite Tier A PKMN.\n  Reward: 💰 40 G  |  💎 5 Diamonds\n\n• Round 9 (Championship): 3 Elite Tier A PKMN (1 Stage 2 + 2 Tier A allies).\n  Reward: 💰 75 G  |  💎 25 Diamonds (+25 💎 Trophy Bonus!)"
+		if rules_header:
+			rules_header.text = "⚖️ STADIUM RULES & GENERATION CRITERIA"
+			rules_header.add_theme_color_override("font_color", Color(0.95, 0.75, 0.4))
+		if rules_body:
+			rules_body.text = "• Banned for Rivals: All Legendaries and Tier S/S+ (Venusaur, Alakazam, etc.) are strictly prohibited.\n• Fair Progression: Early rounds use Tier D/C; middle rounds feature Tier B/A; finale uses Tier A and Stage 2.\n• Party Persistence: HP & Status carry over across matches. Buy Potions & Revives at the Camp Shop.\n• In-Camp Evolutions: Evolve your Pokémon between matches whenever their EXP threshold is reached!\n• Daily Rewards: Stage clear Gold & Diamond bonuses are granted once per day. Subsequent runs on the same day earn Gold & Diamonds exclusively by defeating rival Pokémon."
+			
+	stadium_guide_modal.visible = true
 
 func _create_pokemon_panel_stylebox() -> StyleBoxFlat:
 	var sb = StyleBoxFlat.new()
