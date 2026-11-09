@@ -3594,6 +3594,12 @@ func get_earned_gym_badges_count() -> int:
 func has_all_gym_badges() -> bool:
 	return get_earned_gym_badges_count() >= 8
 
+func has_all_regions_gym_badges() -> bool:
+	# La Liga Pokémon requiere las medallas de todas las regiones (Kanto, Johto, Hoenn, Sinnoh).
+	# Como Johto, Hoenn y Sinnoh están en desarrollo, la liga permanecerá bloqueada
+	# hasta completar la conquista de medallas en todas las regiones.
+	return false
+
 func complete_adventure_episode(episode_id: int) -> int:
 	# Returns diamonds awarded
 	var bonus = 0
@@ -4504,10 +4510,10 @@ func get_chaos_match_info(match_num: int) -> Dictionary:
 		7:
 			return {
 				"match_num": 7,
-				"desc": "FINAL BOSS: 💎 Crystal Onix (900 HP) — Push your limits! (Super Potion 🧪)",
+				"desc": "FINAL BOSS: 💎 Crystal Onix (900 HP) — Push your limits!",
 				"reward_gold": 0,
 				"reward_diamonds": 0,
-				"super_potions": 1,
+				"super_potions": 0,
 				"is_boss": true
 			}
 		_:
@@ -4552,7 +4558,7 @@ func generate_chaos_rival_team(match_num: int) -> Array[int]:
 			# Match 6: 2 legendarios (Super Potion 🧪)
 			return pick_random_unique(get_chaos_legendary_candidates(), 2)
 		7:
-			# Match 7: Final Boss Crystal Onix (Super Potion 🧪)
+			# Match 7: Final Boss Crystal Onix (Sin Items)
 			return [CRYSTAL_ONIX_ID]
 		_:
 			return [CRYSTAL_ONIX_ID]

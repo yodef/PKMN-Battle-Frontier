@@ -1569,7 +1569,8 @@ func update_adventure_regions_ui() -> void:
 		kanto_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
 		
 	if league_status_lbl:
-		if GameData.has_all_gym_badges():
+		var kanto_badges = GameData.get_earned_gym_badges_count()
+		if GameData.has_all_regions_gym_badges():
 			league_status_lbl.text = "Status: 🔓 Unlocked • Ready to challenge the Indigo Plateau!"
 			league_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 			if btn_enter_league:
@@ -1577,11 +1578,11 @@ func update_adventure_regions_ui() -> void:
 				btn_enter_league.text = "🏆 Enter Pokémon League ➜"
 				_apply_retro_button_style(btn_enter_league, Color(0.85, 0.65, 0.15), Color(1.0, 0.85, 0.3), true)
 		else:
-			league_status_lbl.text = "Status: 🔒 Bloqueada (Consigue todas las medallas • Tienes %d/8)" % badges_count
+			league_status_lbl.text = "Status: 🔒 Bloqueada (Requiere las medallas de todas las regiones: Kanto [%d/8], Johto, Hoenn y Sinnoh)" % kanto_badges
 			league_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
 			if btn_enter_league:
 				btn_enter_league.disabled = true
-				btn_enter_league.text = "🔒 Bloqueada (Requiere todas las medallas)"
+				btn_enter_league.text = "🔒 Bloqueada (Requiere medallas de todas las regiones)"
 				_apply_retro_button_style(btn_enter_league, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
 
 func _on_hub_adventure_pressed() -> void:

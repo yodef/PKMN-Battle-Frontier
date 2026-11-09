@@ -999,7 +999,7 @@ autowrap_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
 theme_override_font_sizes/font_size = 12
-text = "Status: 🔒 Bloqueada (Consigue todas las medallas para acceder)"
+text = "Status: 🔒 Bloqueada (Requiere las medallas de todas las regiones para acceder)"
 autowrap_mode = 2
 
 [node name="BtnEnterLeague" type="Button" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox"]
@@ -1008,7 +1008,7 @@ layout_mode = 2
 disabled = true
 theme_override_colors/font_color = Color(0.6, 0.65, 0.75, 1)
 theme_override_font_sizes/font_size = 13
-text = "🔒 Bloqueada (Requiere todas las medallas)"
+text = "🔒 Bloqueada (Requiere medallas de todas las regiones)"
 autowrap_mode = 2
 
 [node name="BtnCloseAdventureRegions" type="Button" parent="AdventureRegionsModal/Box"]

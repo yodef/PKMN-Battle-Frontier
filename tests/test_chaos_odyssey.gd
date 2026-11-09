@@ -98,7 +98,7 @@ func test_chaos_match_info() -> void:
 	assert(m6["reward_gold"] == 175, "Match 6 gold is 175")
 	
 	var m7 = GameData.get_chaos_match_info(7)
-	assert(m7["super_potions"] == 1, "Match 7 must have 1 super potion")
+	assert(m7["super_potions"] == 0, "Match 7 (Boss Crystal Onix) must have 0 super potions / items")
 	assert(m7["is_boss"] == true, "Match 7 must be Boss fight")
 	assert(m7["reward_gold"] == 0, "Match 7 (Boss) gives 0 gold!")
 	print("✓ All 7 Chaos match configurations verified!")
