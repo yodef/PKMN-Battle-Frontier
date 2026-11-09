@@ -38,6 +38,7 @@ var combat_earned_diamonds: int = 0
 var defeated_rewards_summary: Array[Dictionary] = []
 var enemy_super_potions: int = 0
 var boss_damage_taken_total: int = 0
+var last_enemy_switch_round: int = -1
 
 func get_boss_diamond_rewards_for_damage(damage: int) -> int:
 	var d = int(damage / 10)
@@ -1149,6 +1150,7 @@ func start_new_game() -> void:
 	combat_earned_gold = 0
 	combat_earned_diamonds = 0
 	boss_damage_taken_total = 0
+	last_enemy_switch_round = -1
 	defeated_rewards_summary.clear()
 	sandstorm_turns = 0
 	grassy_terrain_turns = 0
@@ -2006,6 +2008,90 @@ func _is_status_move_redundant(move_data, target) -> bool:
 		return (target.toxic_envenomed or not target.is_poisoned)
 	return false
 
+func is_pokemon_at_elemental_disadvantage(defender, attacker) -> bool:
+	if not defender or not attacker:
+		return false
+	if defender.weakness != "" and defender.weakness != "NONE":
+		if GameData.types_match(defender.weakness, attacker.type):
+			return true
+		for m in attacker.moves:
+			if m and GameData.types_match(defender.weakness, m.type):
+				return true
+	return false
+
+func is_pokemon_weak_to(defender, attacker) -> bool:
+	if not defender or not attacker:
+		return false
+	if defender.weakness != "" and defender.weakness != "NONE":
+		if GameData.types_match(defender.weakness, attacker.type):
+			return true
+		for m in attacker.moves:
+			if m and GameData.types_match(defender.weakness, m.type):
+				return true
+	return false
+
+func enemy_do_switch(target_idx: int) -> void:
+	if is_battle_over or target_idx < 0 or target_idx >= enemy_team.size():
+		return
+	var current = get_active_enemy()
+	var target_pkmn = enemy_team[target_idx]
+	if target_pkmn.current_hp <= 0:
+		return
+		
+	# Limpiar estados volátiles en el Pokémon saliente
+	if current:
+		current.is_confused = false
+		current.confused_turns = 0
+		current.is_seeded_turns = 0
+		current.is_constricted_dmg = 0
+		current.constricted_turns = 0
+		current.shield_reduction = 0
+		current.shield_turns = 0
+		current.wall_hp = 0
+		current.is_evasive = false
+		current.evasive_reflects_dmg = 0
+		current.is_digging = false
+		current.damage_buff = 0
+		current.damage_buff_turns = 0
+		current.foe_damage_debuff = 0
+		current.foe_damage_debuff_turns = 0
+		current.temp_speed_mod = 0
+		
+	active_enemy_idx = target_idx
+	reset_selected_energy()
+	last_enemy_switch_round = round_number
+	
+	var rival_title = "Rival" if not GameData.is_campaign_mode else ("Líder Giovanni" if (GameData.campaign_submode == "ADVENTURE" and GameData.adventure_current_episode == 7) else "Rival")
+	log_action("🔄 [b]%s[/b] withdrew [b]%s[/b] due to elemental disadvantage and sent out [b]%s[/b]!" % [rival_title, current.name, target_pkmn.name])
+	GameData.play_combat_sfx("switch")
+	
+	var orig_e_pos = enemy_card_img.position
+	if enemy_card_img.has_meta("original_pos"):
+		orig_e_pos = enemy_card_img.get_meta("original_pos")
+	else:
+		enemy_card_img.set_meta("original_pos", orig_e_pos)
+		
+	update_ui()
+	set_controls_enabled(false)
+	enemy_card_img.position = orig_e_pos + Vector2(0, -35.0)
+	enemy_card_img.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	var sw_tween = create_tween()
+	sw_tween.set_parallel(true)
+	sw_tween.tween_property(enemy_card_img, "position:y", orig_e_pos.y, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	sw_tween.tween_property(enemy_card_img, "modulate:a", 1.0, 0.3)
+	sw_tween.chain().finished.connect(func():
+		if is_instance_valid(enemy_card_img):
+			enemy_card_img.position = orig_e_pos
+			enemy_card_img.modulate = Color.WHITE
+	)
+	
+	var timer = get_tree().create_timer(2.0)
+	timer.timeout.connect(func():
+		if is_battle_over:
+			return
+		end_enemy_turn()
+	)
+
 func execute_enemy_ai() -> void:
 	if is_battle_over or check_team_defeat():
 		return
@@ -2056,6 +2142,53 @@ func execute_enemy_ai() -> void:
 			end_enemy_turn()
 		)
 		return
+
+	# Cambio táctico por desventaja elemental:
+	if not GameData.is_pvp_mode and not GameData.is_online_pvp and e.is_constricted_dmg == 0 and last_enemy_switch_round != round_number:
+		if is_pokemon_at_elemental_disadvantage(e, p):
+			# Verificar si 'e' puede derrotar a 'p' en este turno antes de decidir cambiar
+			var can_ko_now = false
+			for m in e.moves:
+				if m and e.current_energy >= m.min_energy_req:
+					var est_dmg = m.base_damage
+					if GameData.types_match(p.weakness, m.type):
+						est_dmg += WEAKNESS_BONUS
+					if p.current_hp <= est_dmg:
+						can_ko_now = true
+						break
+			
+			if not can_ko_now:
+				var benched = get_benched_enemy_indices()
+				var safe_candidates: Array[int] = []
+				for b_idx in benched:
+					if b_idx < enemy_team.size():
+						var bp = enemy_team[b_idx]
+						if bp.current_hp > 0 and not is_pokemon_weak_to(bp, p):
+							safe_candidates.append(b_idx)
+				
+				if not safe_candidates.is_empty():
+					var best_idx = safe_candidates[0]
+					var best_score = -99
+					for c_idx in safe_candidates:
+						var bp = enemy_team[c_idx]
+						var score = 0
+						if GameData.types_match(p.weakness, bp.type):
+							score += 3
+						for m in bp.moves:
+							if m and GameData.types_match(p.weakness, m.type):
+								score += 2
+								break
+						if GameData.is_attack_resisted(bp.type, bp.resistant, p.type):
+							score += 2
+						score += int(bp.current_hp / 10)
+						if score > best_score:
+							best_score = score
+							best_idx = c_idx
+					
+					enemy_do_switch(best_idx)
+					return
+	
+	var energy_pct: float = float(e.current_energy) / float(max(1, e.max_energy))
 	
 	if e.current_energy <= 0:
 		enemy_do_recover()
@@ -2091,31 +2224,43 @@ func execute_enemy_ai() -> void:
 			bonus = true
 		elif move2.name == "Peck" and (p.type == "GRASS" or p.type == "NORMAL"):
 			bonus = true
-		if bonus or randf() < 0.7:
+		if bonus or randf() < 0.7 or energy_pct > 0.30:
 			perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
 		elif e.current_energy >= move1.min_energy_req and not m1_redundant:
 			perform_attack(e, p, move1, false, move1.cost, enemy_card_img, player_card_img)
-		else:
+		elif energy_pct <= 0.30:
 			enemy_do_recover()
 			return
+		else:
+			perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
 	# 7. Comportamiento general
 	elif not m2_redundant and e.current_energy >= move2.cost:
 		var rng = randf()
-		if (rng < 0.65 or m1_redundant):
+		if (rng < 0.70 or m1_redundant or energy_pct > 0.30):
 			perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
-		elif rng < 0.85 and e.current_energy >= move1.min_energy_req and not m1_redundant:
+		elif rng < 0.90 and e.current_energy >= move1.min_energy_req and not m1_redundant:
 			perform_attack(e, p, move1, false, move1.cost, enemy_card_img, player_card_img)
 		elif m1_redundant:
 			perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
-		else:
+		elif energy_pct <= 0.30:
 			enemy_do_recover()
 			return
-	elif not m2_redundant and e.current_energy >= move2.min_energy_req and move2.cost > 1 and (randf() < 0.4 or m1_redundant):
+		else:
+			perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
+	elif not m2_redundant and e.current_energy >= move2.min_energy_req and move2.cost > 1 and (randf() < 0.4 or m1_redundant or energy_pct > 0.30):
 		var spent = min(e.current_energy, move2.cost)
 		perform_attack(e, p, move2, false, spent, enemy_card_img, player_card_img)
 	elif not m1_redundant and e.current_energy >= move1.min_energy_req:
 		perform_attack(e, p, move1, false, move1.cost, enemy_card_img, player_card_img)
 	elif not m2_redundant and e.current_energy >= move2.min_energy_req:
+		var spent = min(e.current_energy, move2.cost)
+		perform_attack(e, p, move2, false, spent, enemy_card_img, player_card_img)
+	elif energy_pct <= 0.30:
+		enemy_do_recover()
+		return
+	elif e.current_energy >= move1.min_energy_req:
+		perform_attack(e, p, move1, false, move1.cost, enemy_card_img, player_card_img)
+	elif e.current_energy >= move2.min_energy_req:
 		var spent = min(e.current_energy, move2.cost)
 		perform_attack(e, p, move2, false, spent, enemy_card_img, player_card_img)
 	else:
@@ -2131,6 +2276,30 @@ func execute_enemy_ai() -> void:
 
 func enemy_do_recover() -> void:
 	var e = get_active_enemy()
+	var energy_pct: float = float(e.current_energy) / float(max(1, e.max_energy))
+	if energy_pct > 0.30:
+		# Regla del usuario: No recargar energía cuando se tiene más del 30%
+		var p = get_active_player()
+		var move1 = e.moves[0]
+		var move2 = e.moves[1]
+		if e.current_energy >= move2.min_energy_req and move2.base_damage > 0:
+			var spent = min(e.current_energy, move2.cost)
+			perform_attack(e, p, move2, false, spent, enemy_card_img, player_card_img)
+			var next_timer = get_tree().create_timer(2.4)
+			next_timer.timeout.connect(func():
+				if is_battle_over: return
+				end_enemy_turn()
+			)
+			return
+		elif e.current_energy >= move1.min_energy_req:
+			perform_attack(e, p, move1, false, move1.cost, enemy_card_img, player_card_img)
+			var next_timer = get_tree().create_timer(2.4)
+			next_timer.timeout.connect(func():
+				if is_battle_over: return
+				end_enemy_turn()
+			)
+			return
+			
 	var rec = min(e.recover_amount, e.max_energy - e.current_energy)
 	e.current_energy += rec
 	log_action("[b]%s[/b] used [color=cyan]Recharge[/color] and restored [b]+%d[/b] Energy (⚡ %d/%d)." % [e.name, rec, e.current_energy, e.max_energy])

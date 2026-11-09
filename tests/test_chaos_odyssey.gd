@@ -26,7 +26,7 @@ func test_crystal_onix_and_moves() -> void:
 	assert(int(data.get("recover")) == 4, "Recover must be 4! Got: %d" % int(data.get("recover")))
 	assert(int(data.get("speed")) == 3, "Speed must be 3! Got: %d" % int(data.get("speed")))
 	assert(str(data.get("type")) == "ROCK", "Type must be ROCK! Got: %s" % str(data.get("type")))
-	assert(str(data.get("weakness")) == "FIRE", "Weakness must be FIRE! Got: %s" % str(data.get("weakness")))
+	assert(str(data.get("weakness")) == "NONE", "Weakness must be NONE! Got: %s" % str(data.get("weakness")))
 	assert(str(data.get("resistant")) == "WATER", "Resistance must be WATER! Got: %s" % str(data.get("resistant")))
 	assert(str(data.get("passive_name")) == "Diamond Hoard", "Passive must be Diamond Hoard!")
 	

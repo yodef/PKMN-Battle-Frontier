@@ -492,4 +492,4 @@ id,pokedex_num,Stage ,name,hp,energy,speed,type,weakness,resistant,recover,textu
 490,491,Legendary,Darkrai,32,10,5,DARK,FIGHTING,PSYCHIC,5,491.png,Bad Dreams,Reduces HP of sleeping opposing Pokémon.,Dark Pulse,Dark Void,FALSE,Legendary,,,,0,S+,Sinnoh
 491,492,Legendary,Shaymin,32,10,4,GRASS,FIRE,GROUND,5,492.png,Natural Cure,Cures status ailments when switching to the bench.,Energy Ball,Seed Flare,FALSE,Legendary,,,,0,S,Sinnoh
 492,493,Legendary,Arceus,42,10,5,NORMAL,NONE,NONE,6,493.png,Multitype,Adapts its typing dynamically to master all elements.,Hyper Beam,Judgment,FALSE,Legendary,,,,0,S+,Sinnoh
-493,95,Boss,Crystal Onix,900,8,3,ROCK,FIRE,WATER,4,X Crystal Onix.png,Diamond Hoard,"Drops 1 Diamond every 10 HP lost, +10 every 100 HP, and +50 at 500 HP lost.",Rock Slide,Crystal Blast,FALSE,Boss,,,,0,S+,Special
+493,95,Boss,Crystal Onix,900,8,3,ROCK,NONE,WATER,4,X Crystal Onix.png,Diamond Hoard,"Drops 1 Diamond every 10 HP lost, +10 every 100 HP, and +50 at 500 HP lost.",Rock Slide,Crystal Blast,FALSE,Boss,,,,0,S+,Special

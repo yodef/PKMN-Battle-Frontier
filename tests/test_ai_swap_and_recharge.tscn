@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ai_swap_recharge_01"]
+
+[ext_resource type="Script" path="res://tests/test_ai_swap_and_recharge.gd" id="1_test"]
+
+[node name="TestAiSwapAndRecharge" type="Node"]
+script = ExtResource("1_test")
