@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.6.5"
+const GAME_VERSION: String = "v0.6.6"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -4457,7 +4457,7 @@ func get_chaos_match_info(match_num: int) -> Dictionary:
 			return {
 				"match_num": 1,
 				"desc": "Trial 1/7: 2 High-Tier Basic Pokémon",
-				"reward_gold": 30,
+				"reward_gold": 15,
 				"reward_diamonds": 0,
 				"super_potions": 0,
 				"is_boss": false
@@ -4466,7 +4466,7 @@ func get_chaos_match_info(match_num: int) -> Dictionary:
 			return {
 				"match_num": 2,
 				"desc": "Trial 2/7: 2 Stage 1 + 1 High-Tier Basic Pokémon",
-				"reward_gold": 50,
+				"reward_gold": 20,
 				"reward_diamonds": 0,
 				"super_potions": 0,
 				"is_boss": false
@@ -4475,7 +4475,7 @@ func get_chaos_match_info(match_num: int) -> Dictionary:
 			return {
 				"match_num": 3,
 				"desc": "Trial 3/7: 2 Stage 2 Pokémon",
-				"reward_gold": 75,
+				"reward_gold": 25,
 				"reward_diamonds": 0,
 				"super_potions": 0,
 				"is_boss": false
@@ -4484,7 +4484,7 @@ func get_chaos_match_info(match_num: int) -> Dictionary:
 			return {
 				"match_num": 4,
 				"desc": "Trial 4/7: 1 High-Tier Basic + 1 Legendary Pokémon (Super Potion 🧪)",
-				"reward_gold": 100,
+				"reward_gold": 30,
 				"reward_diamonds": 0,
 				"super_potions": 1,
 				"is_boss": false
@@ -4493,7 +4493,7 @@ func get_chaos_match_info(match_num: int) -> Dictionary:
 			return {
 				"match_num": 5,
 				"desc": "Trial 5/7: 1 Stage 1 + 1 Stage 2 + 1 Legendary Pokémon (Super Potion 🧪)",
-				"reward_gold": 130,
+				"reward_gold": 40,
 				"reward_diamonds": 0,
 				"super_potions": 1,
 				"is_boss": false
@@ -4502,7 +4502,7 @@ func get_chaos_match_info(match_num: int) -> Dictionary:
 			return {
 				"match_num": 6,
 				"desc": "Trial 6/7: 2 Legendary Pokémon (Super Potion 🧪)",
-				"reward_gold": 175,
+				"reward_gold": 50,
 				"reward_diamonds": 0,
 				"super_potions": 1,
 				"is_boss": false

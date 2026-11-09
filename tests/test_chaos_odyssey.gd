@@ -70,32 +70,32 @@ func test_chaos_match_info() -> void:
 	var m1 = GameData.get_chaos_match_info(1)
 	assert(m1["super_potions"] == 0, "Match 1 must have 0 super potions")
 	assert(m1["is_boss"] == false, "Match 1 is not boss")
-	assert(m1["reward_gold"] == 30, "Match 1 gold is 30")
+	assert(m1["reward_gold"] == 15, "Match 1 gold is 15")
 	
 	var m2 = GameData.get_chaos_match_info(2)
 	assert(m2["super_potions"] == 0, "Match 2 must have 0 super potions")
 	assert(m2["is_boss"] == false, "Match 2 is not boss")
-	assert(m2["reward_gold"] == 50, "Match 2 gold is 50")
+	assert(m2["reward_gold"] == 20, "Match 2 gold is 20")
 	
 	var m3 = GameData.get_chaos_match_info(3)
 	assert(m3["super_potions"] == 0, "Match 3 must have 0 super potions")
 	assert(m3["is_boss"] == false, "Match 3 is not boss")
-	assert(m3["reward_gold"] == 75, "Match 3 gold is 75")
+	assert(m3["reward_gold"] == 25, "Match 3 gold is 25")
 	
 	var m4 = GameData.get_chaos_match_info(4)
 	assert(m4["super_potions"] == 1, "Match 4 must have 1 super potion")
 	assert(m4["is_boss"] == false, "Match 4 is not boss")
-	assert(m4["reward_gold"] == 100, "Match 4 gold is 100")
+	assert(m4["reward_gold"] == 30, "Match 4 gold is 30")
 	
 	var m5 = GameData.get_chaos_match_info(5)
 	assert(m5["super_potions"] == 1, "Match 5 must have 1 super potion")
 	assert(m5["is_boss"] == false, "Match 5 is not boss")
-	assert(m5["reward_gold"] == 130, "Match 5 gold is 130")
+	assert(m5["reward_gold"] == 40, "Match 5 gold is 40")
 	
 	var m6 = GameData.get_chaos_match_info(6)
 	assert(m6["super_potions"] == 1, "Match 6 must have 1 super potion")
 	assert(m6["is_boss"] == false, "Match 6 is not boss")
-	assert(m6["reward_gold"] == 175, "Match 6 gold is 175")
+	assert(m6["reward_gold"] == 50, "Match 6 gold is 50")
 	
 	var m7 = GameData.get_chaos_match_info(7)
 	assert(m7["super_potions"] == 0, "Match 7 (Boss Crystal Onix) must have 0 super potions / items")

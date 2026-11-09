@@ -6475,22 +6475,22 @@ func _open_guide_modal(mode: String = "STADIUM", return_modal: Control = null) -
 			p1_header.text = "🌌 TRIALS 1 - 3: ADVANCED OPPONENTS"
 			p1_header.add_theme_color_override("font_color", Color(0.85, 0.5, 1.0))
 		if p1_info:
-			p1_info.text = "• Trial 1: 2 Basic PKMN de Tier Alto (Tier S / A).\n  Reward: 💰 Progressive Gold.\n\n• Trial 2: 2 Stage 1 + 1 Basic de Tier Alto.\n  Reward: 💰 Progressive Gold.\n\n• Trial 3: 2 Stage 2 powerhouses.\n  Reward: 💰 Progressive Gold.\n  ⚠️ A partir de este combate, las IA rivales llevan 1 Súper Poción en su inventario de combate!"
+			p1_info.text = "• Trial 1: 2 Basic PKMN de Tier Alto (Tier S / A).\n  Reward: 💰 15 G.\n\n• Trial 2: 2 Stage 1 + 1 Basic de Tier Alto.\n  Reward: 💰 20 G.\n\n• Trial 3: 2 Stage 2 powerhouses.\n  Reward: 💰 25 G.\n  ⚠️ A partir del siguiente combate, las IA rivales llevan 1 Súper Poción en su inventario!"
 		if p2_header:
 			p2_header.text = "⚡ TRIALS 4 - 6: LEGENDARY THREATS"
 			p2_header.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 		if p2_info:
-			p2_info.text = "• Trial 4: 1 Basic de Tier Alto + 1 Legendario.\n  Rival Bag: 1 Súper Poción.  |  Reward: 💰 Progressive Gold.\n\n• Trial 5: 1 Stage 1 + 1 Stage 2 + 1 Legendario.\n  Rival Bag: 1 Súper Poción.  |  Reward: 💰 Progressive Gold.\n\n• Trial 6: 2 Legendarios supremos.\n  Rival Bag: 1 Súper Poción.  |  Reward: 💰 Progressive Gold."
+			p2_info.text = "• Trial 4: 1 Basic de Tier Alto + 1 Legendario.\n  Rival Bag: 1 Súper Poción.  |  Reward: 💰 30 G.\n\n• Trial 5: 1 Stage 1 + 1 Stage 2 + 1 Legendario.\n  Rival Bag: 1 Súper Poción.  |  Reward: 💰 40 G.\n\n• Trial 6: 2 Legendarios supremos.\n  Rival Bag: 1 Súper Poción.  |  Reward: 💰 50 G."
 		if p3_header:
 			p3_header.text = "💎 FINAL BOSS: CRYSTAL ONIX (900 HP)"
 			p3_header.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
 		if p3_info:
-			p3_info.text = "• Boss Stats: 900 HP | 8 Energía | 4 Recarga | 3 Velocidad | Debilidad: None.\n• Movimientos: Rock Slide y Crystal Blast (10 DMG, costo 2, efecto: provoca 3 DMG a todos los Pokémon en banca rival).\n• Bolsa del Rival: 1 Súper Poción.\n• Pasiva Especial de Minado de Diamantes:\n  - Cada 10 HP que pierde: +1 Diamante 💎\n  - Cada 100 HP que pierde: +10 Diamantes 💎 adicionales\n  - Al perder 500 HP: +50 Diamantes 💎 adicionales\n• Record Damage: Esta pelea no otorga Oro porque no se puede vencer de forma convencional; está diseñada para llevar a tu equipo legendario al límite y medir tu daño máximo. Se puede jugar una vez al día."
+			p3_info.text = "• Boss Stats: 900 HP | 8 Energía | 4 Recarga | 3 Velocidad | Debilidad: None.\n• Movimientos: Rock Slide y Crystal Blast (10 DMG, costo 2, efecto: provoca 3 DMG a todos los Pokémon en banca rival).\n• Bolsa de Objetos: Prohibida (Ni el Rival ni el Jugador pueden usar pociones en el Boss).\n• Pasiva Especial de Minado de Diamantes:\n  - Cada 10 HP que pierde: +1 Diamante 💎\n  - Cada 100 HP que pierde: +10 Diamantes 💎 adicionales\n  - Al perder 500 HP: +50 Diamantes 💎 adicionales\n• Record Damage: Esta pelea no otorga Oro porque no se puede vencer de forma convencional; está diseñada para llevar a tu equipo legendario al límite y medir tu daño máximo. Se puede jugar una vez al día."
 		if rules_header:
 			rules_header.text = "⚖️ CHAOS ODYSSEY RULES"
 			rules_header.add_theme_color_override("font_color", Color(0.95, 0.75, 0.4))
 		if rules_body:
-			rules_body.text = "• Selección Legendaria: Solo se permite llevar Pokémon Legendarios (o sus pre-evoluciones básicas como Dratini/Dragonair).\n• Campamento Activo: Tienda e inventario disponibles para curar a tu equipo entre combates.\n• Límite Diario: Solo se permite un intento por día para desafiar al Boss y farmear diamantes.\n• Registro de Daño: Tu daño máximo infligido a Crystal Onix se conserva como récord."
+			rules_body.text = "• Selección Legendaria: Solo se permite llevar Pokémon Legendarios (o sus pre-evoluciones básicas como Dratini/Dragonair).\n• Campamento Activo: Tienda e inventario disponibles para curar a tu equipo entre combates.\n• Sin Objetos en el Boss: En el Trial 7 (Crystal Onix), está prohibido usar Items y Pociones en combate.\n• Límite Diario: Solo se permite un intento por día para desafiar al Boss y farmear diamantes.\n• Registro de Daño: Tu daño máximo infligido a Crystal Onix se conserva como récord."
 	else:
 		if title_lbl:
 			title_lbl.text = "🏟️ POKÉMON STADIUM: ENCOUNTERS"

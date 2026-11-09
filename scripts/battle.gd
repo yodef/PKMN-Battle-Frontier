@@ -60,6 +60,18 @@ func register_boss_damage(dmg: int) -> void:
 		GameData.save_profile()
 		log_action("💎 [b]Crystal Onix[/b] dropped [color=yellow]+%d Diamonds[/color]! (Total Boss DMG: %d / 900 HP)" % [diff, boss_damage_taken_total])
 
+func is_crystal_onix_boss_battle() -> bool:
+	var act_e = get_active_enemy()
+	if act_e and (act_e.name == "Crystal Onix" or act_e.id == GameData.CRYSTAL_ONIX_ID):
+		return true
+	if not enemy_team.is_empty() and (enemy_team[0].name == "Crystal Onix" or enemy_team[0].id == GameData.CRYSTAL_ONIX_ID):
+		return true
+	if GameData.is_campaign_mode and GameData.campaign_submode == "CHAOS":
+		var m_info = GameData.get_chaos_match_info(GameData.chaos_match_number)
+		if m_info.get("is_boss", false):
+			return true
+	return false
+
 # --- REFERENCIAS A NODOS ---
 @onready var btn_back_menu: Button = $MainContainer/TopBar/BtnBackMenu
 @onready var btn_speed: Button = $MainContainer/TopBar/BtnSpeed
@@ -5156,7 +5168,7 @@ func update_ui() -> void:
 			enemy_card_img.texture = e_tex
 			
 	var active_p_peek = get_active_player()
-	var e_pas = " | ✨ %s" % active_e.passive_name if active_e.has_passive else ""
+	var e_pas = " | ✨ %s" % active_e.passive_name if ("has_passive" in active_e and active_e.has_passive) else ""
 	enemy_type_icon.texture = GameData.get_type_icon_texture(active_e.type)
 	enemy_name_lbl.text = "%s (SPD: %d)" % [active_e.name, get_pokemon_effective_speed(active_e, active_p_peek)]
 	var e_resists = GameData.get_effective_resistances(active_e.type, active_e.resistant)
@@ -5622,14 +5634,21 @@ func update_move_button_labels() -> void:
 	btn_recover.disabled = not _is_turn_action_allowed() or (actor.current_energy >= actor.max_energy)
 	
 	if btn_bag:
-		btn_bag.visible = GameData.is_campaign_mode or (GameData.is_tutorial_mode and GameData.tutorial_combat_phase == 2)
-		btn_bag.disabled = not _is_turn_action_allowed()
-		if team_has_negative_status():
-			btn_bag.text = "🎒 Bag ⚠️"
-			btn_bag.modulate = Color(1.2, 0.95, 0.3)
+		if is_crystal_onix_boss_battle():
+			btn_bag.visible = true
+			btn_bag.disabled = true
+			btn_bag.text = "🎒 No Items" if not GameData.is_spanish() else "🎒 Sin Items"
+			btn_bag.modulate = Color(0.65, 0.65, 0.65, 0.7)
+			btn_bag.tooltip_text = GameData.tr_text("Items cannot be used against Boss Crystal Onix!", "¡No se permiten objetos contra el Boss Crystal Onix!")
 		else:
-			btn_bag.text = "🎒 Bag"
-			btn_bag.modulate = Color.WHITE
+			btn_bag.visible = GameData.is_campaign_mode or (GameData.is_tutorial_mode and GameData.tutorial_combat_phase == 2)
+			btn_bag.disabled = not _is_turn_action_allowed()
+			if team_has_negative_status():
+				btn_bag.text = "🎒 Bag ⚠️"
+				btn_bag.modulate = Color(1.2, 0.95, 0.3)
+			else:
+				btn_bag.text = "🎒 Bag"
+				btn_bag.modulate = Color.WHITE
 	if GameData.is_spanish():
 		GameData.apply_language_to_scene_tree()
 
@@ -5650,7 +5669,7 @@ func set_controls_enabled(enabled: bool) -> void:
 	btn_switch_1.disabled = not allow
 	btn_switch_2.disabled = not allow
 	if btn_bag:
-		btn_bag.disabled = not allow
+		btn_bag.disabled = (not allow) or is_crystal_onix_boss_battle()
 	if btn_passive:
 		btn_passive.disabled = not allow
 	if not allow and energy_modal:
@@ -6145,6 +6164,10 @@ func team_has_negative_status() -> bool:
 func _on_bag_pressed() -> void:
 	if not _is_turn_action_allowed():
 		return
+	if is_crystal_onix_boss_battle():
+		var msg = GameData.tr_text("⚠️ Items cannot be used against Boss Crystal Onix!", "⚠️ ¡No se permite usar objetos contra el Boss Crystal Onix!")
+		log_action("[color=red]%s[/color]" % msg)
+		return
 	selected_bag_item = ""
 	bag_targets_section.visible = false
 	bag_items_list.visible = true
@@ -6154,7 +6177,15 @@ func _on_bag_pressed() -> void:
 func refresh_bag_items_ui() -> void:
 	for child in bag_items_list.get_children():
 		child.queue_free()
-		
+
+	if is_crystal_onix_boss_battle():
+		var no_items_lbl = Label.new()
+		no_items_lbl.text = GameData.tr_text("🚫 Items are forbidden in the Crystal Onix Boss Trial!", "🚫 ¡Los objetos están prohibidos en el combate contra Crystal Onix!")
+		no_items_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		no_items_lbl.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
+		bag_items_list.add_child(no_items_lbl)
+		return
+
 	var item_defs = [
 		{
 			"id": "potion",
@@ -6386,6 +6417,11 @@ func show_bag_targets(item_id: String) -> void:
 
 func apply_item_in_battle(item_id: String, target_idx: int) -> void:
 	if not is_player_turn or is_busy:
+		return
+	if is_crystal_onix_boss_battle():
+		var msg = GameData.tr_text("⚠️ Items cannot be used against Boss Crystal Onix!", "⚠️ ¡No se permite usar objetos contra el Boss Crystal Onix!")
+		log_action("[color=red]%s[/color]" % msg)
+		bag_modal.visible = false
 		return
 	if target_idx < 0 or target_idx >= player_team.size():
 		return
