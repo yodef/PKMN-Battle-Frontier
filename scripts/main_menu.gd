@@ -3729,9 +3729,10 @@ func update_campaign_ui() -> void:
 	campaign_revive_count_lbl.text = "Inventory: %d Revives" % revives
 	
 	# Ocultar objetos clave de la tienda (los objetos clave no se venden en la tienda)
-	var poke_flute_row = $CampaignModal/Box/ShopSection/ShopVBox.get_node_or_null("PokeFluteRow")
-	if poke_flute_row:
-		poke_flute_row.visible = false
+	if btn_buy_poke_flute:
+		var poke_flute_row = btn_buy_poke_flute.get_parent()
+		if poke_flute_row:
+			poke_flute_row.visible = false
 	
 	# Botones de compra respetan el límite de 10 consumibles
 	if is_consumable_full:
@@ -5995,8 +5996,9 @@ func _on_start_campaign_battle_pressed() -> void:
 			GameData.player_team_ids.append(int(p["id"]))
 		GameData.enemy_team_ids = GameData.get_chaos_rival_team(GameData.chaos_match_number)
 	else:
-		if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES:
-			GameData.reset_campaign()
+		if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES or GameData.campaign_player_team_state.is_empty():
+			if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES:
+				GameData.reset_campaign()
 			open_team_select_for_campaign()
 			return
 		GameData.is_campaign_mode = true

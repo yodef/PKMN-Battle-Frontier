@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.6.8"
+const GAME_VERSION: String = "v0.6.81"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -4061,6 +4061,7 @@ func reset_campaign() -> void:
 	campaign_player_team_state.clear()
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
+	save_profile()
 
 func init_campaign_team(chosen_ids: Array) -> void:
 	campaign_player_team_state.clear()
@@ -4096,6 +4097,7 @@ func init_campaign_team(chosen_ids: Array) -> void:
 		campaign_inventory["exp_share"] = 1
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
+	save_profile()
 
 func change_campaign_team(chosen_ids: Array) -> void:
 	var old_hp = {}
@@ -4140,6 +4142,7 @@ func change_campaign_team(chosen_ids: Array) -> void:
 				})
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
+	save_profile()
 
 # --- MÉTODOS DE MODO AVENTURA ---
 func reset_adventure_episode(episode_id: int) -> void:
@@ -4187,6 +4190,7 @@ func init_adventure_team(episode_id: int, chosen_ids: Array) -> void:
 					"is_poisoned": false,
 					"is_flinched": false
 				})
+	save_profile()
 
 func change_adventure_team(chosen_ids: Array) -> void:
 	var old_hp = {}
@@ -4229,6 +4233,7 @@ func change_adventure_team(chosen_ids: Array) -> void:
 					"is_poisoned": poison_val,
 					"is_flinched": flinch_val
 				})
+	save_profile()
 
 func get_adventure_episode_info(episode_id: int) -> Dictionary:
 	return ADVENTURE_EPISODES.get(episode_id, {})
