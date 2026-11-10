@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://exp_share_test_scene_01"]
+
+[ext_resource type="Script" path="res://tests/test_exp_share.gd" id="1_exp_share"]
+
+[node name="TestExpShare" type="Node"]
+script = ExtResource("1_exp_share")

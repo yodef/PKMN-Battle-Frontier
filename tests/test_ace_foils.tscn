@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ace_foils_test_01"]
+
+[ext_resource type="Script" path="res://tests/test_ace_foils.gd" id="1_ace"]
+
+[node name="TestAceFoils" type="Node"]
+script = ExtResource("1_ace")

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://test_friend_notif_scene"]
+
+[ext_resource type="Script" path="res://tests/test_friend_notification.gd" id="1_test"]
+
+[node name="TestFriendNotification" type="Node"]
+script = ExtResource("1_test")

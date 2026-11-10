@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://johto_ui_flow_test_01"]
+
+[ext_resource type="Script" path="res://tests/test_johto_ui_flow.gd" id="1_johto_ui"]
+
+[node name="TestJohtoUIFlow" type="Node"]
+script = ExtResource("1_johto_ui")

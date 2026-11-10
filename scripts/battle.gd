@@ -1255,6 +1255,22 @@ func start_new_game() -> void:
 			var inst = GameData.create_pokemon_instance(eid)
 			if inst:
 				enemy_team.append(inst)
+		
+		# Asignar Foil especial a los Pokémon As de Líderes de Gimnasio o Alto Mando
+		if not enemy_team.is_empty():
+			var last_idx = enemy_team.size() - 1
+			if GameData.campaign_submode == "ADVENTURE":
+				var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
+				var is_boss_stage = bool(stage_info.get("is_boss", false)) or stage_info.get("badge_name", "") != ""
+				var t_title = str(stage_info.get("trainer_title", stage_info.get("trainer_name", "")))
+				var is_gym_leader = is_boss_stage and ("Líder" in t_title or "Gym Leader" in t_title or stage_info.get("badge_name", "") != "")
+				var is_e4 = "Alto Mando" in t_title or "Elite Four" in t_title or "Campeón" in t_title or "Champion" in t_title
+				if is_gym_leader:
+					enemy_team[last_idx].foil_type = "gym_leader_ace"
+					enemy_team[last_idx].is_gym_leader_ace = true
+				elif is_e4:
+					enemy_team[last_idx].foil_type = "elite_four_ace"
+					enemy_team[last_idx].is_elite_four_ace = true
 	else:
 		var p_ids = GameData.player_team_ids.duplicate()
 		if p_ids.is_empty():
@@ -2333,6 +2349,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	var eff_cost: int = get_effective_move_cost(move, attacker, defender)
 	var is_full_energy: bool = (energy_to_spend >= eff_cost or eff_cost == 0)
 	var raw_damage: int = 0
+	var effective_damage: int = 0
 	var note_text: String = ""
 	var effect_annulled: bool = false
 	var att_spd = get_pokemon_effective_speed(attacker, defender)
@@ -2446,6 +2463,17 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if attacker.has_passive and attacker.passive_name == "Focus Energy" and att_spd > def_spd:
 		raw_damage += 1
 		note_text += " [color=cyan]Focus Energy (+1 DMG for higher SPD)![/color]"
+		
+	# Furia / Rage (Red Gyarados)
+	if attacker.has_passive and (attacker.passive_name in ["Furia", "Rage"]):
+		if attacker.current_hp <= int(ceil(float(attacker.max_hp) * 0.5)) or attacker.took_damage_last_turn:
+			raw_damage += 2
+			note_text += " [color=crimson]Furia (+2 DMG)![/color]"
+			
+	# Furia Desatada / Unbridled Rage (Red Gyarados Boss)
+	if attacker.has_passive and (attacker.passive_name in ["Furia Desatada", "Unbridled Rage"]):
+		raw_damage += 3
+		note_text += " [color=crimson]Furia Desatada (+3 DMG)![/color]"
 		
 	# Flash Cannon bono cargado
 	if attacker.shield_breaker_bonus > 0 and move.effect_type != "SHIELD_BREAKER":
@@ -2662,7 +2690,9 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				play_damage_hit(attacker_visual, "PSYCHIC", 4)
 
 	# 11. Aplicar daño y secuelas
+	var defender_prev_hp: int = defender.current_hp
 	defender.current_hp = max(0, defender.current_hp - final_damage)
+	effective_damage = max(0, defender_prev_hp - defender.current_hp)
 	defender.took_damage_last_turn = (final_damage > 0)
 	if defender.name == "Crystal Onix" and final_damage > 0:
 		register_boss_damage(final_damage)
@@ -2721,7 +2751,9 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if move.effect_type in ["DOUBLE_HIT", "EXTRA_HIT"] and is_full_energy and not effect_annulled and final_damage > 0:
 		var hit_chance = 0.35 if move.effect_type == "EXTRA_HIT" else 0.50
 		if randf() < hit_chance:
+			var second_hit_hp_before: int = defender.current_hp
 			defender.current_hp = max(0, defender.current_hp - final_damage)
+			effective_damage += max(0, second_hit_hp_before - defender.current_hp)
 			note_text += " [color=yellow]Double Hit struck a 2nd time for %d DMG![/color]" % final_damage
 			multi_hit_events = [
 				{"dmg": final_damage, "is_crit": single_hit_crit},
@@ -3014,15 +3046,16 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	# Registrar último movimiento usado
 	attacker.last_move_used = move.name
 	
-	# Otorgar EXP al Pokémon atacante del jugador conforme provoca daño
+	# Otorgar EXP al Pokémon atacante del jugador conforme provoca daño efectivo infligido
 	var exp_log_str = ""
-	if (attacker in player_team) and final_damage > 0:
+	if (attacker in player_team) and effective_damage > 0:
 		var req = attacker.get_required_exp()
+		var exp_gained: int = 0
 		if req > 0:
 			if attacker.current_exp >= req:
 				exp_log_str = " [color=#FFD700](EXP MAX: %d/%d)[/color]" % [attacker.current_exp, req]
 			else:
-				var exp_gained = min(final_damage, req - attacker.current_exp)
+				exp_gained = min(effective_damage, req - attacker.current_exp)
 				attacker.current_exp += exp_gained
 				var is_now_max = (attacker.current_exp >= req)
 				exp_log_str = " [color=#64B5F6](+%d EXP ➔ %d/%d%s)[/color]" % [
@@ -3039,6 +3072,39 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			var active_team = GameData.get_active_campaign_team_state()
 			if p_idx != -1 and p_idx < active_team.size():
 				active_team[p_idx]["current_exp"] = attacker.current_exp
+
+		# Exp Share (Repartir Experiencia): Mientras esté en la mochila, si el Pokémon activo recibe EXP,
+		# el primer Pokémon en banca que pueda recibir EXP recibe un 20% de la EXP ganada por el Líder.
+		if exp_gained > 0 and GameData.has_exp_share():
+			var target_benched = null
+			var target_benched_idx = -1
+			for b_i in range(player_team.size()):
+				if player_team[b_i] == attacker:
+					continue
+				var b_pkmn = player_team[b_i]
+				var b_req = b_pkmn.get_required_exp()
+				if b_req > 0 and b_pkmn.current_exp < b_req:
+					target_benched = b_pkmn
+					target_benched_idx = b_i
+					break
+			if target_benched != null:
+				var shared_amount: int = max(1, int(round(float(exp_gained) * 0.20)))
+				var b_req: int = target_benched.get_required_exp()
+				var b_actual_gain: int = min(shared_amount, b_req - target_benched.current_exp)
+				if b_actual_gain > 0:
+					target_benched.current_exp += b_actual_gain
+					var b_is_max: bool = (target_benched.current_exp >= b_req)
+					exp_log_str += " [color=#FFD54F][Exp. Share 🎒: %s +%d EXP ➔ %d/%d%s][/color]" % [
+						target_benched.name,
+						b_actual_gain,
+						target_benched.current_exp,
+						b_req,
+						" ⭐ READY TO EVOLVE!" if b_is_max else ""
+					]
+					if GameData.is_campaign_mode:
+						var active_team = GameData.get_active_campaign_team_state()
+						if target_benched_idx != -1 and target_benched_idx < active_team.size():
+							active_team[target_benched_idx]["current_exp"] = target_benched.current_exp
 	
 	var boost_str = " (BOOSTED)" if boosted else ""
 	log_action("[b]%s[/b] used [color=cyan]%s[/color] [%s]%s dealing [b]%d[/b] damage.%s%s" % [
@@ -3480,6 +3546,51 @@ func _resolve_battle_victory() -> void:
 							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n👑 ¡HAS CONQUISTADO EL FINAL DE LA CAMPAÑA KANTO!" % [bonus_diamonds, badge_str]
 					else:
 						first_clear_text = "\n(Route already cleared - replay completed!)"
+				elif ep_id == 106:
+					var cur_route = GameData.adventure_ep106_selected_route
+					var r_info = GameData.get_adventure_route_info(106, cur_route)
+					ep_title_display = "Johto Ep. VI - %s" % str(r_info.get("name_es", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "subway":
+							victory_title = "🎉 SUBTERRÁNEO DE TRIGAL INVESTIGADO!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Torre de Radio de Trigal Unlocked!" % bonus_diamonds
+						elif cur_route == "radio_tower":
+							victory_title = "🎉 TORRE DE RADIO LIBERADA!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Gimnasio Olivo Unlocked!" % bonus_diamonds
+						elif cur_route == "olivine_gym":
+							victory_title = "🎉 EPISODE CONQUERED! %s WON!" % badge_str.to_upper()
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n🔓 Episode VII (Pryce) Unlocked!" % [bonus_diamonds, badge_str]
+					else:
+						first_clear_text = "\n(Route already cleared - replay completed!)"
+				elif ep_id == 107:
+					var cur_route = GameData.adventure_ep107_selected_route
+					var r_info = GameData.get_adventure_route_info(107, cur_route)
+					ep_title_display = "Johto Ep. VII - %s" % str(r_info.get("name_es", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "rocket_hideout":
+							victory_title = "🎉 GUARIDA TEAM ROCKET INFILTRADA JUNTO A LANCE!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Gimnasio Caoba Unlocked!" % bonus_diamonds
+						elif cur_route == "mahogany_gym":
+							victory_title = "🎉 EPISODE CONQUERED! %s WON!" % badge_str.to_upper()
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n🔓 Episode VIII (Ciudad Endrino) Unlocked!" % [bonus_diamonds, badge_str]
+					else:
+						first_clear_text = "\n(Route already cleared - replay completed!)"
+				elif ep_id == 108:
+					var cur_route = GameData.adventure_ep108_selected_route
+					var r_info = GameData.get_adventure_route_info(108, cur_route)
+					ep_title_display = "Johto Ep. VIII - %s" % str(r_info.get("name_es", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "ice_path":
+							victory_title = "🎉 RUTA HELADA ATRAVESADA!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Gimnasio Endrino Unlocked!" % bonus_diamonds
+						elif cur_route == "blackthorn_gym":
+							victory_title = "🎉 GIMNASIO ENDRINO SUPERADO!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Santuario de la Guarida Dragón Unlocked!" % bonus_diamonds
+						elif cur_route == "dragon_den":
+							victory_title = "🏆 CAMPAIGN JOHTO CONQUERED! RISING BADGE WON!"
+							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n👑 ¡HAS CONQUISTADO TODAS LAS MEDALLAS DE JOHTO!\n🌊 ¡El evento especial 'El Lago de la Furia' ahora está disponible!" % [bonus_diamonds, badge_str]
+					else:
+						first_clear_text = "\n(Route already cleared - replay completed!)"
 				else:
 					if bonus_diamonds > 0:
 						first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Episode %d Unlocked!" % [bonus_diamonds, next_ep_id]
@@ -3567,6 +3678,14 @@ func _resolve_battle_victory() -> void:
 						GameData.chaos_match_number
 					]
 				)
+		elif GameData.campaign_submode == "LAKE_OF_RAGE":
+			GameData.complete_lake_of_rage()
+			GameData.player_diamonds += 50
+			GameData.save_profile()
+			show_game_over(
+				"🌊 ¡EL LAGO DE LA FURIA HA SIDO PACIFICADO!",
+				"¡Has derrotado al colosal Gyarados Rojo Enfurecido en una batalla legendaria!\n\n👑 RECOMPENSA EXCLUSIVA: ¡Carta de Gyarados Rojo (Legendary ⭐) añadida a tu colección!\n💎 +50 Diamantes de bonificación.\n\nEl evento ha quedado completado permanentemente."
+			)
 		else:
 			# Modo Torneo
 			var current_match = GameData.campaign_match_number
@@ -3732,6 +3851,13 @@ func _resolve_battle_defeat() -> void:
 					"💀 ELIMINATED FROM CHAOS ODYSSEY!",
 					"All your Pokémon have fainted in battle.\nThe Chaos run was reset, but your Gold and Diamonds are safe!%s\nYou can re-enter Chaos Odyssey to try again." % preserved_msg
 				)
+		elif GameData.campaign_submode == "LAKE_OF_RAGE":
+			GameData.is_campaign_mode = false
+			GameData.save_profile()
+			show_game_over(
+				"💀 DERROTA EN EL LAGO DE LA FURIA",
+				"El Gyarados Rojo Enfurecido desató todo su poder y arrasó a tu equipo.\n\n¡Reorganiza tu escuadrón legendario e inténtalo de nuevo cuando estés listo!"
+			)
 		else:
 			GameData.reset_campaign()
 			GameData.save_profile()
@@ -5623,6 +5749,13 @@ func update_move_button_labels() -> void:
 		elif actor.passive_name == "Charm":
 			btn_passive.text = "✨ Charm\n[Passive: -1 DMG Normal]"
 			btn_passive.disabled = true
+		elif actor.passive_name in ["Furia", "Rage"]:
+			var is_active = (actor.current_hp <= int(ceil(float(actor.max_hp) * 0.5)) or actor.took_damage_last_turn)
+			btn_passive.text = "🔥 Furia\n[%s: +2 DMG]" % ("ACTIVE" if is_active else "INACTIVE")
+			btn_passive.disabled = true
+		elif actor.passive_name in ["Furia Desatada", "Unbridled Rage"]:
+			btn_passive.text = "🔥 Furia Desatada\n[ACTIVE: +3 DMG]"
+			btn_passive.disabled = true
 		else:
 			btn_passive.text = "✨ %s\n[Passive]" % actor.passive_name
 			btn_passive.disabled = true
@@ -6228,6 +6361,12 @@ func refresh_bag_items_ui() -> void:
 			"name": "Revive",
 			"desc": "Revives a fainted Pokémon with 50% max HP.",
 			"icon": "revive"
+		},
+		{
+			"id": "exp_share",
+			"name": "Exp Share",
+			"desc": "Passive item. While in bag, 20% of the EXP earned by the active Pokémon is shared with the first eligible benched Pokémon.",
+			"icon": "exp_share"
 		}
 	]
 	
@@ -6266,7 +6405,12 @@ func refresh_bag_items_ui() -> void:
 		hbox.add_child(info_vbox)
 		
 		var name_lbl = Label.new()
-		name_lbl.text = "%s  (Stock: %d)" % [item["name"], stock]
+		if item_id == "poke_flute":
+			name_lbl.text = "%s  (%s)" % [item["name"], "Owned" if stock > 0 else "Not Owned"]
+		elif item_id == "exp_share":
+			name_lbl.text = "%s  (%s)" % [item["name"], "Passive Active" if stock > 0 else "Not Owned"]
+		else:
+			name_lbl.text = "%s  (Stock: %d)" % [item["name"], stock]
 		name_lbl.add_theme_font_size_override("font_size", 14)
 		if stock > 0:
 			if item_id == "remedy":
@@ -6277,6 +6421,8 @@ func refresh_bag_items_ui() -> void:
 				name_lbl.add_theme_color_override("font_color", Color("#CE93D8"))
 			elif item_id == "revive":
 				name_lbl.add_theme_color_override("font_color", Color("#FFE082"))
+			elif item_id == "exp_share":
+				name_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
 			else:
 				name_lbl.add_theme_color_override("font_color", Color("#FFFFFF"))
 		else:
@@ -6293,9 +6439,13 @@ func refresh_bag_items_ui() -> void:
 		var use_btn = Button.new()
 		use_btn.custom_minimum_size = Vector2(85, 36)
 		use_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		use_btn.text = "Use" if stock > 0 else "Empty"
-		use_btn.disabled = (stock <= 0)
-		use_btn.pressed.connect(func(): show_bag_targets(item_id))
+		if item_id == "exp_share":
+			use_btn.text = "Passive"
+			use_btn.disabled = true
+		else:
+			use_btn.text = "Use" if stock > 0 else "Empty"
+			use_btn.disabled = (stock <= 0)
+			use_btn.pressed.connect(func(): show_bag_targets(item_id))
 		hbox.add_child(use_btn)
 		
 		bag_items_list.add_child(row)

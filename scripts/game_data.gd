@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.6.6"
+const GAME_VERSION: String = "v0.6.7"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -129,6 +129,9 @@ class PokemonData:
 	var rarity: String = "Common"
 	var tier: String = "C"
 	var region: String = "Kanto"
+	var foil_type: String = ""
+	var is_gym_leader_ace: bool = false
+	var is_elite_four_ace: bool = false
 	var evolves_from: String = ""
 	var evolves_to: String = ""
 	var required_stone: String = ""
@@ -478,8 +481,32 @@ const DEFAULT_INVENTORY: Dictionary = {
 	"revive": 0,
 	"remedy": 0,
 	"ether": 0,
-	"poke_flute": 0
+	"poke_flute": 0,
+	"exp_share": 0
 }
+
+# --- SISTEMA DE ACHIEVEMENTS / LOGROS ---
+const ACHIEVEMENTS_DEF: Array[Dictionary] = [
+	{
+		"id": "collect_50_cards",
+		"title": "Conseguir 50 cartas de PKMN distintas",
+		"title_en": "Collect 50 Distinct Pokémon Cards",
+		"desc": "Colecciona al menos 50 cartas de Pokémon diferentes en tu colección.",
+		"desc_en": "Collect at least 50 different Pokémon cards in your collection.",
+		"type": "distinct_cards",
+		"target": 50,
+		"reward_type": "item",
+		"reward_id": "exp_share",
+		"reward_name": "Repartir Experiencia (Exp Share)",
+		"reward_name_en": "Exp Share",
+		"reward_desc": "Objeto permanente no consumible. Comparte el 20% de la EXP ganada en combate con el primer Pokémon de tu banca.",
+		"reward_desc_en": "Permanent non-consumable item. Shares 20% of battle EXP earned with the first Pokémon on your bench."
+	}
+]
+
+var unlocked_achievements: Array[String] = []
+var pending_achievement_notifications: Array[String] = []
+var has_unlocked_exp_share: bool = false
 
 var campaign_match_number: int = 1 # 1 to 9 (10 = Tournament Champion)
 var campaign_gold: int = 0
@@ -505,6 +532,19 @@ var adventure_ep6_selected_route: String = "silph_co"
 var adventure_ep6_cleared_routes: Array[String] = []
 var adventure_ep7_selected_route: String = "pokemon_mansion"
 var adventure_ep7_cleared_routes: Array[String] = []
+
+# Johto Branching Routes & Special Event:
+var adventure_ep106_selected_route: String = "subway"
+var adventure_ep106_cleared_routes: Array[String] = []
+var adventure_ep107_selected_route: String = "rocket_hideout"
+var adventure_ep107_cleared_routes: Array[String] = []
+var adventure_ep108_selected_route: String = "ice_path"
+var adventure_ep108_cleared_routes: Array[String] = []
+var lake_of_rage_completed: bool = false
+const LAKE_OF_RAGE_BOSS_ID: int = 495
+const RED_GYARADOS_BOSS_ID: int = 495
+const RED_GYARADOS_CARD_ID: int = 494
+var adventure_selected_region: String = "KANTO"
 
 # Modo Chaos Odyssey:
 const CHAOS_TOTAL_MATCHES: int = 7
@@ -1159,6 +1199,514 @@ const ADVENTURE_EPISODES: Dictionary = {
 				]
 			}
 		}
+	},
+	101: {
+		"id": 101,
+		"region": "Johto",
+		"title": "Episode I: Zephyr Badge (Violet City)",
+		"title_es": "Episodio I: Medalla Céfiro (Malvalona)",
+		"subtitle": "Journey through Bellsprout Tower & defeat Gym Leader Falkner!",
+		"subtitle_es": "¡Asciende la Torre Bellsprout y desafía al Líder Pegaso!",
+		"reward_diamonds_first_clear": 20,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Joven Chano",
+				"trainer_name": "Joven Chano",
+				"intro": "¡Mi Rattata es el mejor de todos! ¡Está en el 1% superior de los Rattata! ¡Observa!",
+				"outro": "¿Qué?! ¡Pero si mi Rattata nunca había perdido!",
+				"team_pokemon_names": ["Rattata", "Sentret"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Sabio de la Torre",
+				"trainer_name": "Sabio Nico",
+				"intro": "La torre se mece como un Bellsprout ante la tormenta... ¡Siente nuestra calma!",
+				"outro": "Tu espíritu se mantiene firme como los cimientos de la torre.",
+				"team_pokemon_names": ["Bellsprout", "Hoothoot"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Líder de los Sabios",
+				"trainer_name": "Líder Li",
+				"intro": "Solo los dignos alcanzan la cima. ¡Demuestra tu comunión con los espíritus!",
+				"outro": "Tienes la bendición de la torre. Ve y desafía los cielos.",
+				"team_pokemon_names": ["Bellsprout", "Ghastly"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Líder Pegaso",
+				"trainer_name": "Líder Pegaso",
+				"is_boss": true,
+				"badge_name": "Zephyr Badge",
+				"badge_name_es": "Medalla Céfiro",
+				"intro": "¡Soy Pegaso, Líder del Gimnasio Malvalona! ¡La gente dice que los Pokémon Volador caen ante el trueno, pero mis alas jamás se doblegan!",
+				"outro": "¡Impresionante vuelo! Reconozco tu fuerza. ¡Toma la Medalla Céfiro!",
+				"team_pokemon_names": ["Pidgey", "Pidgeotto"]
+			}
+		]
+	},
+	102: {
+		"id": 102,
+		"region": "Johto",
+		"title": "Episode II: Hive Badge (Azalea Town)",
+		"title_es": "Episodio II: Medalla Colmena (Azalea)",
+		"subtitle": "Rescue Slowpoke Well from Team Rocket & conquer Bugsy's Gym!",
+		"subtitle_es": "¡Salva el Pozo Slowpoke del Team Rocket y conquista el Gimnasio de Antón!",
+		"reward_diamonds_first_clear": 25,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Cazabichos",
+				"trainer_name": "Cazabichos Josh",
+				"intro": "¡Los bichos de Azalea son los más rápidos del bosque! ¡Ledyba y Spinarak, piquen!",
+				"outro": "¡Auch! ¡Nuestras redes no pudieron atraparte!",
+				"team_pokemon_names": ["Ledyba", "Spinarak"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Recluta Rocket",
+				"trainer_name": "Recluta Rocket",
+				"intro": "¡Llegas tarde, mocoso! ¡Las colas de Slowpoke se venden por una fortuna en el mercado negro!",
+				"outro": "¡Maldita sea! ¡El jefe Protón no estará contento!",
+				"team_pokemon_names": ["Ekans", "Koffing"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Ejecutivo Rocket Protón",
+				"trainer_name": "Ejecutivo Protón",
+				"intro": "¡Soy Protón, el ejecutivo más despiadado del Team Rocket! ¿Te atreves a meterte en nuestros negocios?",
+				"outro": "Grr... ¡No cantes victoria! ¡El Team Rocket renacerá de las sombras!",
+				"team_pokemon_names": ["Zubat", "Koffing"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Gemelos del Bosque Ilex",
+				"trainer_name": "Gemelos Amy & May",
+				"intro": "¡Cuidamos el santuario del guardián del bosque! ¡Combate con nosotras!",
+				"outro": "¡Vaya! ¡Eres muy fuerte!",
+				"team_pokemon_names": ["Hoppip", "Paras"]
+			},
+			{
+				"stage_num": 5,
+				"trainer_title": "Líder Antón",
+				"trainer_name": "Líder Antón",
+				"is_boss": true,
+				"badge_name": "Hive Badge",
+				"badge_name_es": "Medalla Colmena",
+				"intro": "¡Soy Antón, la enciclopedia viviente de los Pokémon Bicho! ¡Mi Scyther cortará cualquier defensa con su Cortefuria!",
+				"outro": "¡Increíble! Sabes tanto de combates como yo de bichos. ¡Te entrego la Medalla Colmena!",
+				"team_pokemon_names": ["Metapod", "Kakuna", "Scyther"]
+			}
+		]
+	},
+	103: {
+		"id": 103,
+		"region": "Johto",
+		"title": "Episode III: Plain Badge (Goldenrod City)",
+		"title_es": "Episodio III: Medalla Planicie (Trigal)",
+		"subtitle": "Clear the strange tree, contest the National Park, and topple Whitney's Miltank!",
+		"subtitle_es": "¡Supera el árbol misterioso, visita el Parque Nacional y derriba a la Miltank de Blanca!",
+		"reward_diamonds_first_clear": 30,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Árbol Misterioso",
+				"trainer_name": "Sudowoodo Silvestre",
+				"intro": "¡El árbol misterioso de la Ruta 36 cobra vida al regarlo! ¡Es un Sudowoodo enfurecido!",
+				"outro": "¡Sudowoodo se calma y huye hacia el follaje!",
+				"team_pokemon_names": ["Sudowoodo"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Entrenador del Parque",
+				"trainer_name": "Entrenador Nick",
+				"intro": "¡Bienvenido al Concurso de Captura de Bichos del Parque Nacional! ¡Yanma y Pinsir van por el primer puesto!",
+				"outro": "¡Vaya puntuación de combate! Mereces el premio mayor.",
+				"team_pokemon_names": ["Yanma", "Pinsir"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Chica Bonita",
+				"trainer_name": "Chica Bonita Victoria",
+				"intro": "¿Te gustan los trucos impredecibles? ¡El Metrónomo de mi Clefairy te dejará boquiabierto!",
+				"outro": "¡Ay no! ¡Salió el movimiento equivocado!",
+				"team_pokemon_names": ["Clefairy"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Animadora del Gimnasio",
+				"trainer_name": "Animadora Bridget",
+				"intro": "¡Ciudad Trigal tiene el gimnasio más dulce y tierno! ¡Snubbull y Jigglypuff, a la carga!",
+				"outro": "¡Blanca te va a dar una lección que no olvidarás!",
+				"team_pokemon_names": ["Snubbull", "Jigglypuff"]
+			},
+			{
+				"stage_num": 5,
+				"trainer_title": "Líder Blanca",
+				"trainer_name": "Líder Blanca",
+				"is_boss": true,
+				"badge_name": "Plain Badge",
+				"badge_name_es": "Medalla Planicie",
+				"intro": "¡Hola! ¡Soy Blanca! Todos creen que mis Pokémon son tiernos hasta que Miltank entra rodando... ¡Desenrollar continuo!",
+				"outro": "¡Waaaah! ¡Miltank cayó! *Snif*... Eres malo... Bueno, toma la Medalla Planicie antes de que llore más.",
+				"team_pokemon_names": ["Clefairy", "Miltank"]
+			}
+		]
+	},
+	104: {
+		"id": 104,
+		"region": "Johto",
+		"title": "Episode IV: Fog Badge (Ecruteak City)",
+		"title_es": "Episodio IV: Medalla Niebla (Iris)",
+		"subtitle": "Explore the Burned Tower with Eusine and pierce Gym Leader Morty's spectral veil!",
+		"subtitle_es": "¡Explora la Torre Quemada junto a Eusine y supera las ilusiones del Líder Morti!",
+		"reward_diamonds_first_clear": 30,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Médium",
+				"trainer_name": "Médium Martha",
+				"intro": "Los espíritus susurran historias del fuego y la torre... ¡Escucha su mensaje espectral!",
+				"outro": "Tu aura disipa las sombras de este santuario.",
+				"team_pokemon_names": ["Drowzee", "Haunter"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Investigador Eusine",
+				"trainer_name": "Investigador Eusine",
+				"intro": "¡He seguido el rastro de Suicune por todo Johto! ¿Eres tú quien despertó a las tres bestias legendarias?",
+				"outro": "¡Un talento digno de un maestro! Seguiré buscando a Suicune en el norte.",
+				"team_pokemon_names": ["Drowzee", "Electrode"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Sombra de la Torre",
+				"trainer_name": "Espíritu Espectral",
+				"intro": "¡Las cenizas de la torre aún arden con rencor! ¡Gastly y Misdreavus atacarán desde la oscuridad!",
+				"outro": "Las llamas se apagan en paz...",
+				"team_pokemon_names": ["Ghastly", "Misdreavus"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Chica Kimono Sayo",
+				"trainer_name": "Chica Kimono Sayo",
+				"intro": "Danzamos en el Teatro de Danza de Ciudad Iris. ¡Admira el equilibrio entre la luz de Espeon y la noche de Umbreon!",
+				"outro": "Una danza de combate exquisita.",
+				"team_pokemon_names": ["Espeon", "Umbreon"]
+			},
+			{
+				"stage_num": 5,
+				"trainer_title": "Líder Morti",
+				"trainer_name": "Líder Morti",
+				"is_boss": true,
+				"badge_name": "Fog Badge",
+				"badge_name_es": "Medalla Niebla",
+				"intro": "He dedicado mi vida a entrenar en el silencio de la niebla esperando al Pokémon del arcoíris. ¡Mis sombras no te permitirán avanzar!",
+				"outro": "Veo algo brillante en tu interior... Más brillante que la niebla. Toma la Medalla Niebla.",
+				"team_pokemon_names": ["Ghastly", "Haunter", "Gengar"]
+			}
+		]
+	},
+	105: {
+		"id": 105,
+		"region": "Johto",
+		"title": "Episode V: Storm Badge (Cianwood City)",
+		"title_es": "Episodio V: Medalla Tormenta (Orquídea)",
+		"subtitle": "Climb the Glitter Lighthouse, cross the sea, and duel Chuck's martial masters!",
+		"subtitle_es": "¡Sube al Faro Olivo, surca el mar de Johto y desafía a los karatekas de Aníbal!",
+		"reward_diamonds_first_clear": 35,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Marinero del Faro",
+				"trainer_name": "Marinero Ernest",
+				"intro": "¡El faro está a oscuras y Amphy está débil! ¡Poliwhirl y Machop, mantengan despejadas las escaleras!",
+				"outro": "¡Mis músculos no aguantaron el viaje!",
+				"team_pokemon_names": ["Poliwhirl", "Machop"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Caballero del Faro",
+				"trainer_name": "Caballero Alfred",
+				"intro": "Subir hasta la cima requiere elegancia y compostura. ¡Growlithe y Ponyta, al rescate!",
+				"outro": "Un combate sumamente caballeroso.",
+				"team_pokemon_names": ["Growlithe", "Ponyta"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Pescador Tully",
+				"trainer_name": "Pescador Tully",
+				"intro": "¡Los remolinos submarinos ocultan criaturas formidables! ¡Tentacool y Corsola, salpiquen!",
+				"outro": "¡Me diste vuelta el barco con esa potencia!",
+				"team_pokemon_names": ["Tentacool", "Corsola"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Buceadora Katie",
+				"trainer_name": "Buceadora Katie",
+				"intro": "Las corrientes de Orquídea son veloces como el agua. ¡Mareep y Seadra, adelante!",
+				"outro": "¡Qué brazada más fuerte tienes!",
+				"team_pokemon_names": ["Mareep", "Seadra"]
+			},
+			{
+				"stage_num": 5,
+				"trainer_title": "Karateka del Dojo",
+				"trainer_name": "Karateka Yoshi",
+				"intro": "¡En Ciudad Orquídea rompemos rocas con las manos vacías! ¡Hitmonlee y Machop, golpe certero!",
+				"outro": "¡Osu! ¡Tu disciplina supera a la mía!",
+				"team_pokemon_names": ["Machop", "Hitmonlee"]
+			},
+			{
+				"stage_num": 6,
+				"trainer_title": "Líder Aníbal",
+				"trainer_name": "Líder Aníbal",
+				"is_boss": true,
+				"badge_name": "Storm Badge",
+				"badge_name_es": "Medalla Tormenta",
+				"intro": "¡WAHAHA! ¡Estaba meditando bajo esta catarata gigante! ¡Ven aquí y siente la furia de mi Puñodinámico!",
+				"outro": "¡Uff... Uff... Me has derrotado limpiamente! ¡Toma la Medalla Tormenta con orgullo!",
+				"team_pokemon_names": ["Primeape", "Poliwrath"]
+			}
+		]
+	},
+	106: {
+		"id": 106,
+		"region": "Johto",
+		"is_branching": true,
+		"title": "Episode VI: Mineral Badge (Olivine City)",
+		"title_es": "Episodio VI: Medalla Mineral (Olivo)",
+		"subtitle": "Infiltrate Goldenrod Underground, liberate the Radio Tower, and challenge Jasmine's Steelix!",
+		"subtitle_es": "¡Infiltra el subterráneo de Trigal, libera la Torre Radio y desafía al Steelix de Yasmina!",
+		"reward_diamonds_first_clear": 40,
+		"routes": {
+			"subway": {
+				"id": "subway",
+				"name": "Goldenrod Underground",
+				"name_es": "Subterráneo de Trigal",
+				"desc": "Infiltrate the underground tunnels to unmask the fake Director and obtain the Basement Key.",
+				"desc_es": "Infiltra los túneles subterráneos para desenmascarar al falso Director y conseguir la llave.",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Científico Rocket",
+						"trainer_name": "Científico Mitch",
+						"intro": "¡Nuestros experimentos sónicos enloquecerán a los Pokémon! ¡Magnemite y Grimer, ataquen!",
+						"outro": "¡Nuestra tecnología de ondas falló!",
+						"team_pokemon_names": ["Magnemite", "Grimer"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Falso Director",
+						"trainer_name": "Ejecutivo Petrel (Disfraz)",
+						"intro": "¡Jajaja! ¿Creíste que era el verdadero Director de la Torre? ¡Soy Petrel, el maestro del disfraz!",
+						"outro": "¡Toma la Llave del Sótano si te atreves! ¡Mis camaradas te detendrán en la torre!",
+						"team_pokemon_names": ["Koffing", "Weezing"]
+					}
+				]
+			},
+			"radio_tower": {
+				"id": "radio_tower",
+				"name": "Radio Tower Broadcast",
+				"name_es": "Cima de la Torre Radio",
+				"desc": "Ascend the Radio Tower floors and defeat Rocket Executives Petrel and Archer to liberate the broadcast.",
+				"desc_es": "Sube a la cima de la Torre Radio y vence a los Ejecutivos Petrel y Archer para cortar la transmisión.",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Ejecutivo Petrel",
+						"trainer_name": "Ejecutivo Petrel",
+						"intro": "¡No permitiremos que nadie interrumpa nuestra llamada a Giovanni! ¡Houndour y Weezing, elimínenlo!",
+						"outro": "¡El jefe Archer en el mirador se encargará de ti!",
+						"team_pokemon_names": ["Houndour", "Weezing"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Comandante Archer",
+						"trainer_name": "Comandante Archer",
+						"intro": "¡Hemos tomado la señal de toda Johto para llamar a nuestro líder Giovanni! ¡El Team Rocket jamás morirá!",
+						"outro": "¡Giovanni... te hemos fallado de nuevo! ¡Retirada general!",
+						"team_pokemon_names": ["Houndour", "Houndoom"]
+					}
+				]
+			},
+			"olivine_gym": {
+				"id": "olivine_gym",
+				"name": "Olivine City Gym",
+				"name_es": "Gimnasio de Ciudad Olivo",
+				"desc": "Now that Amphy is saved and the crisis is resolved, challenge Gym Leader Jasmine and her steel titan!",
+				"desc_es": "Con Amphy curado y la crisis resuelta, desafía a la Líder Yasmina y a su titán de acero.",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Líder Yasmina",
+						"trainer_name": "Líder Yasmina",
+						"is_boss": true,
+						"badge_name": "Mineral Badge",
+						"badge_name_es": "Medalla Mineral",
+						"intro": "Gracias por cuidar de Amphy en el faro... Pero en el combate soy la maestra del tipo Acero, duro y brillante. ¡Steelix, adelante!",
+						"outro": "Verdaderamente posees un brillo incomparable. Te concedo la Medalla Mineral.",
+						"team_pokemon_names": ["Magnemite", "Magnemite", "Steelix"]
+					}
+				]
+			}
+		}
+	},
+	107: {
+		"id": 107,
+		"region": "Johto",
+		"is_branching": true,
+		"title": "Episode VII: Glacier Badge (Mahogany Town)",
+		"title_es": "Episodio VII: Medalla Glaciar (Caoba)",
+		"subtitle": "Raid the secret Rocket Lab alongside Champion Lance and challenge Gym Leader Pryce!",
+		"subtitle_es": "¡Asalta la base secreta de Caoba junto a Lance y desafía al Líder Fredo!",
+		"reward_diamonds_first_clear": 40,
+		"routes": {
+			"rocket_hideout": {
+				"id": "rocket_hideout",
+				"name": "Mahogany Secret Lab (with Lance)",
+				"name_es": "Guarida Secreta con Lance",
+				"desc": "Infiltrate the subterranean Rocket headquarters with Lance to destroy the wave generator causing the Lake Gyarados rage.",
+				"desc_es": "Infiltra la base de Caoba junto al Campeón Lance para destruir el generador que enfurece al Gyarados del Lago.",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Guardia Rocket",
+						"trainer_name": "Guardia Rocket",
+						"intro": "¡La contraseña no te servirá de nada! ¡Zubat y Grimer, custodia de perímetro!",
+						"outro": "¡Lance y este entrenador rompieron la puerta!",
+						"team_pokemon_names": ["Zubat", "Grimer"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Ejecutiva Ariana",
+						"trainer_name": "Ejecutiva Ariana",
+						"intro": "¡Nadie apaga nuestro generador de evolución forzada! ¡Prepárense para ser aniquilados!",
+						"outro": "¡Malditos sean! ¡El generador está destruido!",
+						"team_pokemon_names": ["Ekans", "Weezing"]
+					}
+				]
+			},
+			"mahogany_gym": {
+				"id": "mahogany_gym",
+				"name": "Mahogany Gym (Pryce)",
+				"name_es": "Gimnasio Caoba (Fredo)",
+				"desc": "Slide through the frozen floor gym and face the veteran master of Ice Pokémon.",
+				"desc_es": "Deslízate por el piso congelado y desafía al veterano maestro del Hielo.",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Esquiadora",
+						"trainer_name": "Esquiadora Roxanne",
+						"intro": "¡El hielo de Caoba no perdona ningún resbalón! ¡Swinub y Delibird, ventisca!",
+						"outro": "¡Qué cálido combate a pesar del frío!",
+						"team_pokemon_names": ["Swinub", "Delibird"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Líder Fredo",
+						"trainer_name": "Líder Fredo",
+						"is_boss": true,
+						"badge_name": "Glacier Badge",
+						"badge_name_es": "Medalla Glaciar",
+						"intro": "He visto pasar décadas entrenando con el frío invernal. Mis Pokémon de hielo son duros como glaciares eternos. ¡Demuestra tu calidez!",
+						"outro": "Tu determinación derrite cualquier tempestad. Eres digno de la Medalla Glaciar.",
+						"team_pokemon_names": ["Seel", "Dewgong", "Piloswine"]
+					}
+				]
+			}
+		}
+	},
+	108: {
+		"id": 108,
+		"region": "Johto",
+		"is_branching": true,
+		"title": "Episode VIII: Rising Badge (Blackthorn City)",
+		"title_es": "Episodio VIII: Medalla Dragón (Endrino)",
+		"subtitle": "Cross the Ice Path, battle Clair's dragons, and prove your spirit in the Dragon's Den!",
+		"subtitle_es": "¡Cruza la Ruta Helada, enfrenta los dragones de Débora y supera la prueba del Santuario Ancestral!",
+		"reward_diamonds_first_clear": 45,
+		"routes": {
+			"ice_path": {
+				"id": "ice_path",
+				"name": "Ice Path Cavern",
+				"name_es": "Caverna de la Ruta Helada",
+				"desc": "Solve tricky ice tile slides and face arctic wild Pokémon deep in the mountain pass.",
+				"desc_es": "Supera los rompecabezas de hielo resbaladizo y desafía a los Pokémon árticos de la cueva.",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Montañero",
+						"trainer_name": "Montañero Devin",
+						"intro": "¡Ten cuidado con los carámbanos! ¡Jynx y Swinub, rayo de hielo!",
+						"outro": "¡Vaya paso firme tienes!",
+						"team_pokemon_names": ["Jynx", "Swinub"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Explorador de Élite",
+						"trainer_name": "Entrenador Paul",
+						"intro": "Solo los mejores entrenadores llegan a Ciudad Endrino. ¡Sneasel y Seadra, ataque coordinado!",
+						"outro": "¡Estás listo para el Gimnasio Dragón!",
+						"team_pokemon_names": ["Sneasel", "Seadra"]
+					}
+				]
+			},
+			"blackthorn_gym": {
+				"id": "blackthorn_gym",
+				"name": "Blackthorn City Gym (Clair)",
+				"name_es": "Gimnasio de Ciudad Endrino",
+				"desc": "Challenge Gym Leader Clair and her fearsome Kingdra over pools of molten lava.",
+				"desc_es": "Desafía a la Líder Débora y a su colosal Kingdra sobre ríos de lava ardiente.",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Domador de Dragones",
+						"trainer_name": "Domador Cody",
+						"intro": "¡Descendemos del clan de dragones de Lance! ¡Dratini y Seadra, ráfaga de dragón!",
+						"outro": "¡Débora no tendrá piedad contigo!",
+						"team_pokemon_names": ["Dratini", "Seadra"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Líder Débora",
+						"trainer_name": "Líder Débora",
+						"is_boss": true,
+						"intro": "¡Soy Débora, la mejor maestra de dragones del mundo! Ni siquiera Lance puede vencerme fácilmente. ¡Mi Kingdra te hará añicos!",
+						"outro": "¿Perdí yo?! ¡Imposible! ¡No puedo aceptarlo! ¡No te daré ninguna medalla hasta que los Venerables de la Cueva del Dragón te juzguen!",
+						"team_pokemon_names": ["Dragonair", "Dragonair", "Kingdra"]
+					}
+				]
+			},
+			"dragon_den": {
+				"id": "dragon_den",
+				"name": "Dragon's Den Shrine",
+				"name_es": "Santuario del Dragón (Prueba Ancestral)",
+				"desc": "Undergo the trial of the Dragon Clan Elders in the subterranean shrine to claim the Rising Badge.",
+				"desc_es": "Ponte a prueba ante los Venerables del Clan Dragón en el santuario para reclamar la Medalla Dragón.",
+				"reward_diamonds_first_clear": 25,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Venerable del Santuario",
+						"trainer_name": "Venerable del Clan Dragón",
+						"is_boss": true,
+						"badge_name": "Rising Badge",
+						"badge_name_es": "Medalla Dragón",
+						"intro": "Joven entrenador... Débora se rehúsa a ceder, pero los dragones reconocen la verdad en el corazón. ¡Ponte a prueba ante el Guardián Sagrado!",
+						"outro": "¡Tu nobleza y rectitud son dignas de un verdadero Maestro! Débora, entrega la Medalla Dragón de inmediato.",
+						"team_pokemon_names": ["Dragonair", "Kingdra"]
+					}
+				]
+			}
+		}
 	}
 }
 
@@ -1799,13 +2347,113 @@ func unlock_pokemon(pkmn_id: int) -> void:
 	if not (pkmn_id in player_unlocked_ids):
 		player_unlocked_ids.append(pkmn_id)
 		player_unlocked_ids.sort()
+		check_all_achievements()
 
 func unlock_all_pokemon() -> void:
 	for id in all_pokemon_ids:
 		if not (id in player_unlocked_ids):
 			player_unlocked_ids.append(id)
 	player_unlocked_ids.sort()
+	check_all_achievements()
 	print("All cards unlocked. Total: ", player_unlocked_ids.size())
+
+# --- MÉTODOS DEL SISTEMA DE ACHIEVEMENTS / LOGROS ---
+func get_distinct_cards_count() -> int:
+	return player_unlocked_ids.size()
+
+func get_achievements_list() -> Array[Dictionary]:
+	return ACHIEVEMENTS_DEF
+
+func get_achievement_def(ach_id: String) -> Dictionary:
+	for ach in ACHIEVEMENTS_DEF:
+		if ach.get("id", "") == ach_id:
+			return ach
+	return {}
+
+func is_achievement_unlocked(ach_id: String) -> bool:
+	return ach_id in unlocked_achievements
+
+func get_achievement_progress(ach_id: String) -> Dictionary:
+	var ach = get_achievement_def(ach_id)
+	if ach.is_empty():
+		return {"current": 0, "target": 1, "is_completed": false, "percent": 0.0}
+	var target = int(ach.get("target", 1))
+	var current = 0
+	var a_type = ach.get("type", "")
+	if a_type == "distinct_cards":
+		current = get_distinct_cards_count()
+	var completed = is_achievement_unlocked(ach_id) or (current >= target)
+	var pct = clampf(float(current) / float(max(1, target)), 0.0, 1.0)
+	return {
+		"current": current,
+		"target": target,
+		"is_completed": completed,
+		"percent": pct
+	}
+
+func unlock_achievement(ach_id: String) -> bool:
+	if ach_id in unlocked_achievements:
+		return false
+	var ach = get_achievement_def(ach_id)
+	if ach.is_empty():
+		return false
+	unlocked_achievements.append(ach_id)
+	if not (ach_id in pending_achievement_notifications):
+		pending_achievement_notifications.append(ach_id)
+	
+	var rew_type = ach.get("reward_type", "")
+	var rew_id = ach.get("reward_id", "")
+	if rew_type == "item" and rew_id == "exp_share":
+		has_unlocked_exp_share = true
+		campaign_inventory["exp_share"] = 1
+		adventure_inventory["exp_share"] = 1
+		chaos_inventory["exp_share"] = 1
+		
+	save_profile()
+	return true
+
+func check_all_achievements() -> Array[String]:
+	var newly_unlocked: Array[String] = []
+	for ach in ACHIEVEMENTS_DEF:
+		var ach_id = str(ach.get("id", ""))
+		if is_achievement_unlocked(ach_id):
+			continue
+		var a_type = ach.get("type", "")
+		var target = int(ach.get("target", 1))
+		var is_met = false
+		if a_type == "distinct_cards":
+			is_met = (get_distinct_cards_count() >= target)
+		if is_met:
+			if unlock_achievement(ach_id):
+				newly_unlocked.append(ach_id)
+	return newly_unlocked
+
+func has_pending_achievement_notifications() -> bool:
+	return not pending_achievement_notifications.is_empty()
+
+func pop_pending_achievement_notification() -> Dictionary:
+	if pending_achievement_notifications.is_empty():
+		return {}
+	var ach_id = pending_achievement_notifications.pop_front()
+	save_profile()
+	return get_achievement_def(ach_id)
+
+func peek_pending_achievement_notification() -> Dictionary:
+	if pending_achievement_notifications.is_empty():
+		return {}
+	return get_achievement_def(pending_achievement_notifications[0])
+
+func dismiss_achievement_notification(ach_id: String) -> void:
+	var idx = pending_achievement_notifications.find(ach_id)
+	if idx != -1:
+		pending_achievement_notifications.remove_at(idx)
+		save_profile()
+
+func has_exp_share() -> bool:
+	var inv = get_active_campaign_inventory()
+	if inv and inv.has("exp_share"):
+		return int(inv.get("exp_share", 0)) > 0
+	return has_unlocked_exp_share or int(campaign_inventory.get("exp_share", 0)) > 0 or int(adventure_inventory.get("exp_share", 0)) > 0
 
 func get_pokemon_id_by_name(pkmn_name: String) -> int:
 	var clean = pkmn_name.strip_edges().to_lower()
@@ -2702,6 +3350,47 @@ var battle_speed_index: int = 0 # 0=1x, 1=1.5x, 2=2x, 3=3x
 var card_foil_shader: Shader = null
 var boss_card_foil_shader: Shader = null
 
+const GYM_LEADER_ACES: Array[String] = [
+	"Onix", "Starmie", "Raichu", "Vileplume", "Venomoth", "Weezing", "Alakazam", "Arcanine", "Rhydon",
+	"Pidgeotto", "Scyther", "Miltank", "Gengar", "Poliwrath", "Steelix", "Piloswine", "Kingdra"
+]
+
+const ELITE_FOUR_ACES: Array[String] = [
+	"Lapras", "Machamp", "Dragonite", "Xatu", "Crobat", "Houndoom", "Metagross", "Salamence", "Milotic", "Garchomp", "Lucario", "Togekiss"
+]
+
+func is_gym_leader_ace(pkmn_data) -> bool:
+	if pkmn_data == null:
+		return false
+	if pkmn_data is Dictionary:
+		if pkmn_data.get("is_gym_leader_ace", false) or pkmn_data.get("foil_type", "") in ["gym_leader_ace", "gym_ace"]:
+			return true
+		var name = str(pkmn_data.get("name", ""))
+		return pkmn_data.get("is_boss", false) and (name in GYM_LEADER_ACES)
+	elif pkmn_data is Object:
+		if ("is_gym_leader_ace" in pkmn_data and pkmn_data.is_gym_leader_ace) or ("foil_type" in pkmn_data and pkmn_data.foil_type in ["gym_leader_ace", "gym_ace"]):
+			return true
+		var name = pkmn_data.name if "name" in pkmn_data else ""
+		var is_b = pkmn_data.is_boss if "is_boss" in pkmn_data else false
+		return is_b and (name in GYM_LEADER_ACES)
+	return false
+
+func is_elite_four_ace(pkmn_data) -> bool:
+	if pkmn_data == null:
+		return false
+	if pkmn_data is Dictionary:
+		if pkmn_data.get("is_elite_four_ace", false) or pkmn_data.get("foil_type", "") in ["elite_four_ace", "elite_ace", "champion_ace"]:
+			return true
+		var name = str(pkmn_data.get("name", ""))
+		return pkmn_data.get("is_elite_four", false) and (name in ELITE_FOUR_ACES)
+	elif pkmn_data is Object:
+		if ("is_elite_four_ace" in pkmn_data and pkmn_data.is_elite_four_ace) or ("foil_type" in pkmn_data and pkmn_data.foil_type in ["elite_four_ace", "elite_ace", "champion_ace"]):
+			return true
+		var name = pkmn_data.name if "name" in pkmn_data else ""
+		var is_e4 = pkmn_data.is_elite_four if "is_elite_four" in pkmn_data else false
+		return is_e4 and (name in ELITE_FOUR_ACES)
+	return false
+
 func get_card_foil_shader() -> Shader:
 	if not card_foil_shader:
 		if ResourceLoader.exists("res://assets/shaders/card_foil.gdshader"):
@@ -2791,6 +3480,34 @@ func create_card_foil_material(rarity_str: String) -> ShaderMaterial:
 		mat.set_shader_parameter("ambient_foil", 0.05)
 		mat.set_shader_parameter("intensity", 0.70)
 		mat.set_shader_parameter("shimmer_speed", 0.85)
+		return mat
+	elif r in ["gym_leader_ace", "gym_ace", "gym_leader", "as_gimnasio", "lider_as", "gym"]:
+		var mat = ShaderMaterial.new()
+		mat.shader = s
+		mat.set_shader_parameter("foil_style", 3) # 3 = Gym Leader Ace: Emblema de Medalla en haz cruzado, ámbar dorado y cian
+		mat.set_shader_parameter("foil_color_1", Color("#FFD54F", 0.90))
+		mat.set_shader_parameter("foil_color_2", Color("#00E5FF", 0.70))
+		mat.set_shader_parameter("sheen_width", 0.25)
+		mat.set_shader_parameter("rainbow_mix", 0.45)
+		mat.set_shader_parameter("sparkle_strength", 0.85)
+		mat.set_shader_parameter("sparkle_density", 0.72)
+		mat.set_shader_parameter("ambient_foil", 0.16)
+		mat.set_shader_parameter("intensity", 1.15)
+		mat.set_shader_parameter("shimmer_speed", 1.10)
+		return mat
+	elif r in ["elite_four_ace", "elite_ace", "elite_four", "as_alto_mando", "alto_mando_as", "champion_ace", "campeon_as", "elite"]:
+		var mat = ShaderMaterial.new()
+		mat.shader = s
+		mat.set_shader_parameter("foil_style", 4) # 4 = Elite Four Ace: Corona de Campeón, carmesí rubí y violeta imperial supremo
+		mat.set_shader_parameter("foil_color_1", Color("#FF1744", 0.94))
+		mat.set_shader_parameter("foil_color_2", Color("#7C4DFF", 0.82))
+		mat.set_shader_parameter("sheen_width", 0.32)
+		mat.set_shader_parameter("rainbow_mix", 0.85)
+		mat.set_shader_parameter("sparkle_strength", 1.0)
+		mat.set_shader_parameter("sparkle_density", 0.65)
+		mat.set_shader_parameter("ambient_foil", 0.25)
+		mat.set_shader_parameter("intensity", 1.35)
+		mat.set_shader_parameter("shimmer_speed", 1.25)
 		return mat
 		
 	return null
@@ -3255,6 +3972,9 @@ func create_pokemon_instance(pkmn_id: int) -> PokemonData:
 	m2.causes_poison = (m2.effect_type == "POISON_IF_FASTER" or m2.effect_type == "POISON")
 	
 	p.moves = [m1, m2]
+	p.foil_type = str(d.get("foil_type", ""))
+	p.is_gym_leader_ace = bool(d.get("is_gym_leader_ace", false))
+	p.is_elite_four_ace = bool(d.get("is_elite_four_ace", false))
 	return p
 
 # --- MÉTODOS DE CAMPAÑA (TORNEO Y AVENTURA) ---
@@ -3313,6 +4033,8 @@ func reset_campaign() -> void:
 	campaign_inventory = DEFAULT_INVENTORY.duplicate()
 	if had_camp_flute > 0:
 		campaign_inventory["poke_flute"] = had_camp_flute
+	if has_unlocked_exp_share:
+		campaign_inventory["exp_share"] = 1
 	campaign_player_team_state.clear()
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
@@ -3347,6 +4069,8 @@ func init_campaign_team(chosen_ids: Array) -> void:
 	campaign_inventory = DEFAULT_INVENTORY.duplicate()
 	if had_camp_flute_init > 0:
 		campaign_inventory["poke_flute"] = had_camp_flute_init
+	if has_unlocked_exp_share:
+		campaign_inventory["exp_share"] = 1
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
 
@@ -3403,6 +4127,8 @@ func reset_adventure_episode(episode_id: int) -> void:
 	adventure_inventory = DEFAULT_INVENTORY.duplicate()
 	if had_adv_flute > 0 or ("pokemon_tower" in adventure_ep5_cleared_routes):
 		adventure_inventory["poke_flute"] = 1
+	if has_unlocked_exp_share:
+		adventure_inventory["exp_share"] = 1
 	adventure_player_team_state.clear()
 
 func init_adventure_team(episode_id: int, chosen_ids: Array) -> void:
@@ -3412,6 +4138,8 @@ func init_adventure_team(episode_id: int, chosen_ids: Array) -> void:
 	adventure_inventory = DEFAULT_INVENTORY.duplicate()
 	if had_adv_flute_init > 0 or ("pokemon_tower" in adventure_ep5_cleared_routes):
 		adventure_inventory["poke_flute"] = 1
+	if has_unlocked_exp_share:
+		adventure_inventory["exp_share"] = 1
 	adventure_player_team_state.clear()
 	for cid in chosen_ids:
 		var d = pokemon_catalog.get(cid, {})
@@ -3525,6 +4253,46 @@ func is_adventure_ep7_route_unlocked(route_id: String) -> bool:
 func is_adventure_ep7_route_completed(route_id: String) -> bool:
 	return route_id in adventure_ep7_cleared_routes
 
+func is_adventure_ep106_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(106):
+		return false
+	if route_id == "subway":
+		return true
+	if route_id == "radio_tower":
+		return "subway" in adventure_ep106_cleared_routes
+	if route_id == "olivine_gym":
+		return ("subway" in adventure_ep106_cleared_routes) and ("radio_tower" in adventure_ep106_cleared_routes)
+	return false
+
+func is_adventure_ep106_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep106_cleared_routes
+
+func is_adventure_ep107_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(107):
+		return false
+	if route_id == "rocket_hideout":
+		return true
+	if route_id == "mahogany_gym":
+		return "rocket_hideout" in adventure_ep107_cleared_routes
+	return false
+
+func is_adventure_ep107_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep107_cleared_routes
+
+func is_adventure_ep108_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(108):
+		return false
+	if route_id == "ice_path":
+		return true
+	if route_id == "blackthorn_gym":
+		return "ice_path" in adventure_ep108_cleared_routes
+	if route_id == "dragon_den":
+		return "blackthorn_gym" in adventure_ep108_cleared_routes
+	return false
+
+func is_adventure_ep108_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep108_cleared_routes
+
 func get_adventure_selected_route(episode_id: int) -> String:
 	if episode_id == 5:
 		return adventure_ep5_selected_route
@@ -3532,7 +4300,45 @@ func get_adventure_selected_route(episode_id: int) -> String:
 		return adventure_ep6_selected_route
 	elif episode_id == 7:
 		return adventure_ep7_selected_route
+	elif episode_id == 106:
+		return adventure_ep106_selected_route
+	elif episode_id == 107:
+		return adventure_ep107_selected_route
+	elif episode_id == 108:
+		return adventure_ep108_selected_route
 	return ""
+
+func set_adventure_selected_route(episode_id: int, route_id: String) -> void:
+	if episode_id == 5:
+		adventure_ep5_selected_route = route_id
+	elif episode_id == 6:
+		adventure_ep6_selected_route = route_id
+	elif episode_id == 7:
+		adventure_ep7_selected_route = route_id
+	elif episode_id == 106:
+		adventure_ep106_selected_route = route_id
+	elif episode_id == 107:
+		adventure_ep107_selected_route = route_id
+	elif episode_id == 108:
+		adventure_ep108_selected_route = route_id
+
+func is_adventure_route_unlocked(episode_id: int, route_id: String) -> bool:
+	if episode_id == 5: return is_adventure_ep5_route_unlocked(route_id)
+	elif episode_id == 6: return is_adventure_ep6_route_unlocked(route_id)
+	elif episode_id == 7: return is_adventure_ep7_route_unlocked(route_id)
+	elif episode_id == 106: return is_adventure_ep106_route_unlocked(route_id)
+	elif episode_id == 107: return is_adventure_ep107_route_unlocked(route_id)
+	elif episode_id == 108: return is_adventure_ep108_route_unlocked(route_id)
+	return false
+
+func is_adventure_route_completed(episode_id: int, route_id: String) -> bool:
+	if episode_id == 5: return is_adventure_ep5_route_completed(route_id)
+	elif episode_id == 6: return is_adventure_ep6_route_completed(route_id)
+	elif episode_id == 7: return is_adventure_ep7_route_completed(route_id)
+	elif episode_id == 106: return is_adventure_ep106_route_completed(route_id)
+	elif episode_id == 107: return is_adventure_ep107_route_completed(route_id)
+	elif episode_id == 108: return is_adventure_ep108_route_completed(route_id)
+	return false
 
 func get_adventure_total_stages(episode_id: int) -> int:
 	var ep = ADVENTURE_EPISODES.get(episode_id, {})
@@ -3574,7 +4380,7 @@ func is_tutorial_completed() -> bool:
 	return tutorial_completed
 
 func is_adventure_episode_unlocked(episode_id: int) -> bool:
-	if episode_id == 1:
+	if episode_id == 1 or episode_id == 101:
 		return tutorial_completed
 	return (episode_id in adventure_unlocked_episodes) and tutorial_completed
 
@@ -3591,14 +4397,37 @@ func get_earned_gym_badges_count() -> int:
 			count += 1
 	return count
 
+func get_johto_gym_badges_count() -> int:
+	# Episodios de Johto que otorgan medallas de gimnasio:
+	# Ep 101: Zephyr, Ep 102: Hive, Ep 103: Plain, Ep 104: Fog,
+	# Ep 105: Storm, Ep 106: Mineral, Ep 107: Glacier, Ep 108: Rising
+	var count = 0
+	for ep in [101, 102, 103, 104, 105, 106, 107, 108]:
+		if ep in adventure_completed_episodes:
+			count += 1
+	return count
+
+func has_all_johto_gym_badges() -> bool:
+	return get_johto_gym_badges_count() >= 8
+
+func is_lake_of_rage_unlocked() -> bool:
+	return has_all_johto_gym_badges()
+
+func is_lake_of_rage_completed() -> bool:
+	return lake_of_rage_completed
+
+func complete_lake_of_rage() -> void:
+	if not lake_of_rage_completed:
+		lake_of_rage_completed = true
+		add_card_copy(RED_GYARADOS_CARD_ID)
+		save_profile()
+
 func has_all_gym_badges() -> bool:
 	return get_earned_gym_badges_count() >= 8
 
 func has_all_regions_gym_badges() -> bool:
-	# La Liga Pokémon requiere las medallas de todas las regiones (Kanto, Johto, Hoenn, Sinnoh).
-	# Como Johto, Hoenn y Sinnoh están en desarrollo, la liga permanecerá bloqueada
-	# hasta completar la conquista de medallas en todas las regiones.
-	return false
+	# La Liga Pokémon requiere las medallas de todas las regiones (Kanto [8], Johto [8], Hoenn, Sinnoh).
+	return get_earned_gym_badges_count() >= 8 and get_johto_gym_badges_count() >= 8
 
 func complete_adventure_episode(episode_id: int) -> int:
 	# Returns diamonds awarded
@@ -3658,6 +4487,62 @@ func complete_adventure_episode(episode_id: int) -> int:
 				player_diamonds += bonus
 				if not (7 in adventure_completed_episodes):
 					adventure_completed_episodes.append(7)
+		save_profile()
+		return bonus
+
+	# Johto Ramificados:
+	if episode_id == 106:
+		var cur_route = adventure_ep106_selected_route
+		if not (cur_route in adventure_ep106_cleared_routes):
+			adventure_ep106_cleared_routes.append(cur_route)
+			if cur_route == "subway":
+				bonus = 20
+				player_diamonds += bonus
+			elif cur_route == "radio_tower":
+				bonus = 20
+				player_diamonds += bonus
+			elif cur_route == "olivine_gym":
+				bonus = 20
+				player_diamonds += bonus
+				if not (107 in adventure_unlocked_episodes):
+					adventure_unlocked_episodes.append(107)
+				if not (106 in adventure_completed_episodes):
+					adventure_completed_episodes.append(106)
+		save_profile()
+		return bonus
+
+	if episode_id == 107:
+		var cur_route = adventure_ep107_selected_route
+		if not (cur_route in adventure_ep107_cleared_routes):
+			adventure_ep107_cleared_routes.append(cur_route)
+			if cur_route == "rocket_hideout":
+				bonus = 20
+				player_diamonds += bonus
+			elif cur_route == "mahogany_gym":
+				bonus = 20
+				player_diamonds += bonus
+				if not (108 in adventure_unlocked_episodes):
+					adventure_unlocked_episodes.append(108)
+				if not (107 in adventure_completed_episodes):
+					adventure_completed_episodes.append(107)
+		save_profile()
+		return bonus
+
+	if episode_id == 108:
+		var cur_route = adventure_ep108_selected_route
+		if not (cur_route in adventure_ep108_cleared_routes):
+			adventure_ep108_cleared_routes.append(cur_route)
+			if cur_route == "ice_path":
+				bonus = 20
+				player_diamonds += bonus
+			elif cur_route == "blackthorn_gym":
+				bonus = 20
+				player_diamonds += bonus
+			elif cur_route == "dragon_den":
+				bonus = 25
+				player_diamonds += bonus
+				if not (108 in adventure_completed_episodes):
+					adventure_completed_episodes.append(108)
 		save_profile()
 		return bonus
 
@@ -4586,6 +5471,8 @@ func get_item_texture(item_name: String) -> Texture2D:
 		file_name = "Hyperpotion.png"
 	elif clean in ["poke_flute", "pokeflute", "poke flute", "poke_flauta", "pokeflauta", "poke flauta"]:
 		file_name = "poke_flute.png"
+	elif clean in ["exp_share", "expshare", "exp share", "repartir_experiencia", "repartir experiencia"]:
+		file_name = "exp_share.png"
 	else:
 		var stone_clean = clean.replace("stone_", "").replace("_stone", "").replace(" stone", "").strip_edges()
 		if stone_clean in ["fire", "water", "leaf", "thunder", "ground", "heart", "night", "psyche", "punch", "scale"]:
@@ -5073,7 +5960,15 @@ func get_save_dict() -> Dictionary:
 			"ep6_selected_route": adventure_ep6_selected_route,
 			"ep6_cleared_routes": adventure_ep6_cleared_routes.duplicate(),
 			"ep7_selected_route": adventure_ep7_selected_route,
-			"ep7_cleared_routes": adventure_ep7_cleared_routes.duplicate()
+			"ep7_cleared_routes": adventure_ep7_cleared_routes.duplicate(),
+			"ep106_selected_route": adventure_ep106_selected_route,
+			"ep106_cleared_routes": adventure_ep106_cleared_routes.duplicate(),
+			"ep107_selected_route": adventure_ep107_selected_route,
+			"ep107_cleared_routes": adventure_ep107_cleared_routes.duplicate(),
+			"ep108_selected_route": adventure_ep108_selected_route,
+			"ep108_cleared_routes": adventure_ep108_cleared_routes.duplicate(),
+			"lake_of_rage_completed": lake_of_rage_completed,
+			"selected_region": adventure_selected_region
 		},
 		"chaos_odyssey": {
 			"match_number": chaos_match_number,
@@ -5098,7 +5993,12 @@ func get_save_dict() -> Dictionary:
 			"missions": daily_missions,
 			"bonus_chest_claimed": daily_bonus_chest_claimed
 		},
-		"friends": player_friends.duplicate(true)
+		"friends": player_friends.duplicate(true),
+		"achievements": {
+			"unlocked": unlocked_achievements.duplicate(),
+			"pending_notifications": pending_achievement_notifications.duplicate(),
+			"has_exp_share": has_unlocked_exp_share
+		}
 	}
 
 func apply_save_dict(data: Dictionary) -> bool:
@@ -5258,6 +6158,28 @@ func apply_save_dict(data: Dictionary) -> bool:
 	for r in raw_ep7_cleared:
 		adventure_ep7_cleared_routes.append(str(r))
 		
+	# Johto rutas y evento
+	adventure_ep106_selected_route = str(adv.get("ep106_selected_route", "subway"))
+	var raw_ep106_cleared = adv.get("ep106_cleared_routes", [])
+	adventure_ep106_cleared_routes.clear()
+	for r in raw_ep106_cleared:
+		adventure_ep106_cleared_routes.append(str(r))
+		
+	adventure_ep107_selected_route = str(adv.get("ep107_selected_route", "rocket_hideout"))
+	var raw_ep107_cleared = adv.get("ep107_cleared_routes", [])
+	adventure_ep107_cleared_routes.clear()
+	for r in raw_ep107_cleared:
+		adventure_ep107_cleared_routes.append(str(r))
+		
+	adventure_ep108_selected_route = str(adv.get("ep108_selected_route", "ice_path"))
+	var raw_ep108_cleared = adv.get("ep108_cleared_routes", [])
+	adventure_ep108_cleared_routes.clear()
+	for r in raw_ep108_cleared:
+		adventure_ep108_cleared_routes.append(str(r))
+		
+	lake_of_rage_completed = bool(adv.get("lake_of_rage_completed", false))
+	adventure_selected_region = str(adv.get("selected_region", "KANTO"))
+		
 	# Sanitizar: si el episodio ya fue completado o la etapa excede el total, reiniciar progreso del run
 	var total_ep_stages = get_adventure_total_stages(adventure_current_episode)
 	if adventure_current_episode in adventure_completed_episodes and adventure_current_stage >= total_ep_stages:
@@ -5306,6 +6228,31 @@ func apply_save_dict(data: Dictionary) -> bool:
 	daily_bonus_chest_claimed = bool(daily.get("bonus_chest_claimed", false))
 	
 	check_and_update_daily_system()
+	
+	# Cargar achievements / logros
+	var ach_save = data.get("achievements", {})
+	unlocked_achievements.clear()
+	var raw_unlocked = ach_save.get("unlocked", [])
+	if raw_unlocked is Array:
+		for ach_id in raw_unlocked:
+			unlocked_achievements.append(str(ach_id))
+			
+	pending_achievement_notifications.clear()
+	var raw_pending = ach_save.get("pending_notifications", [])
+	if raw_pending is Array:
+		for p_ach in raw_pending:
+			pending_achievement_notifications.append(str(p_ach))
+			
+	has_unlocked_exp_share = bool(ach_save.get("has_exp_share", false))
+	if "collect_50_cards" in unlocked_achievements:
+		has_unlocked_exp_share = true
+	
+	if has_unlocked_exp_share:
+		campaign_inventory["exp_share"] = 1
+		adventure_inventory["exp_share"] = 1
+		chaos_inventory["exp_share"] = 1
+		
+	check_all_achievements()
 	
 	# Restaurar timestamps de actividad originales del guardado (evitar que sanitizaciones o rollover de login los pisen)
 	if loaded_act_at != "":

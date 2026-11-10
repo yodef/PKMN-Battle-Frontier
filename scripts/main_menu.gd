@@ -53,6 +53,7 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var regions_wallet_badge: Label = $AdventureRegionsModal/Box/RegionsWalletBadge
 @onready var kanto_status_lbl: Label = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin/KantoVBox/KantoStatus
 @onready var btn_enter_kanto: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin/KantoVBox/BtnEnterKanto
+@onready var johto_status_lbl: Label = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto/Margin/JohtoVBox/JohtoStatus
 @onready var btn_enter_johto: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto/Margin/JohtoVBox/BtnEnterJohto
 @onready var btn_enter_hoenn: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn/Margin/HoennVBox/BtnEnterHoenn
 @onready var btn_enter_sinnoh: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh/Margin/SinnohVBox/BtnEnterSinnoh
@@ -86,6 +87,31 @@ var ep6_route_cards: Dictionary = {}
 
 var adventure_ep7_routes_modal: Control = null
 var ep7_route_cards: Dictionary = {}
+
+var johto_episodes_modal: Control = null
+var johto_routes_modal: Control = null
+var johto_episode_cards: Dictionary = {}
+var johto_lake_of_rage_card: Dictionary = {}
+var johto_routes_cards: Dictionary = {}
+var johto_current_routes_ep: int = 106
+var johto_routes_title_lbl: Label = null
+var johto_routes_subtitle_lbl: Label = null
+var johto_routes_scroll_vbox: VBoxContainer = null
+
+# --- MODALES DE ACHIEVEMENTS / LOGROS ---
+var achievements_modal: Control = null
+var achievements_list_vbox: VBoxContainer = null
+var achievements_summary_lbl: Label = null
+var btn_close_achievements: Button = null
+
+var achievement_notif_modal: Control = null
+var achievement_notif_title_lbl: Label = null
+var achievement_notif_desc_lbl: Label = null
+var achievement_notif_reward_name_lbl: Label = null
+var achievement_notif_reward_desc_lbl: Label = null
+var achievement_notif_icon_rect: TextureRect = null
+var btn_claim_achievement_notif: Button = null
+var _current_notif_ach_id: String = ""
 
 var tutorial_confirm_modal: Control = null
 var tutorial_confirm_title_lbl: Label = null
@@ -408,6 +434,7 @@ var _pending_verify_password: String = ""
 
 # --- MODAL MISIONES Y RECOMPENSAS DIARIAS ---
 @onready var btn_daily_missions: Button = $ContentContainer/MenuButtons/BtnDailyMissions
+@onready var btn_achievements: Button = $ContentContainer/MenuButtons/BtnAchievements
 @onready var daily_modal: Control = $DailyModal
 @onready var daily_streak_badge: Label = $DailyModal/DailyBox/DailyHeaderRow/DailyStreakBadge
 @onready var calendar_grid: HBoxContainer = $DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin/DailyCalendarVBox/CalendarGrid
@@ -428,6 +455,11 @@ var _pending_verify_password: String = ""
 @onready var challenge_desc: Label = $FriendsModal/FriendsBox/ChallengeBanner/ChallengeMargin/ChallengeHBox/ChallengeTextVBox/ChallengeDesc
 @onready var btn_accept_challenge: Button = $FriendsModal/FriendsBox/ChallengeBanner/ChallengeMargin/ChallengeHBox/BtnAcceptChallenge
 @onready var btn_decline_challenge: Button = $FriendsModal/FriendsBox/ChallengeBanner/ChallengeMargin/ChallengeHBox/BtnDeclineChallenge
+@onready var friend_notice_banner: PanelContainer = $FriendsModal/FriendsBox/FriendNoticeBanner
+@onready var friend_notice_title: Label = $FriendsModal/FriendsBox/FriendNoticeBanner/FriendNoticeMargin/FriendNoticeHBox/FriendNoticeTextVBox/FriendNoticeTitle
+@onready var friend_notice_desc: Label = $FriendsModal/FriendsBox/FriendNoticeBanner/FriendNoticeMargin/FriendNoticeHBox/FriendNoticeTextVBox/FriendNoticeDesc
+@onready var btn_add_back_notice: Button = $FriendsModal/FriendsBox/FriendNoticeBanner/FriendNoticeMargin/FriendNoticeHBox/BtnAddBackNotice
+@onready var btn_dismiss_notice: Button = $FriendsModal/FriendsBox/FriendNoticeBanner/FriendNoticeMargin/FriendNoticeHBox/BtnDismissNotice
 @onready var friend_search_input: LineEdit = $FriendsModal/FriendsBox/SearchCard/SearchMargin/SearchHBox/FriendSearchInput
 @onready var btn_search_friend: Button = $FriendsModal/FriendsBox/SearchCard/SearchMargin/SearchHBox/BtnSearchFriend
 @onready var btn_clear_search: Button = $FriendsModal/FriendsBox/SearchCard/SearchMargin/SearchHBox/BtnClearSearch
@@ -445,6 +477,8 @@ var friends_active_tab: String = "MY_FRIENDS"
 var last_search_results: Array = []
 var active_direct_challenge: Dictionary = {}
 var active_friend_rooms_map: Dictionary = {} # host_email -> room_info
+var pending_incoming_friends: Array = []
+var dismissed_friend_notices: Dictionary = {}
 
 var qb_selected_mode: String = "AI" # "AI", "PVP"
 
@@ -542,9 +576,21 @@ func _ready() -> void:
 		btn_enter_kanto.pressed.connect(func():
 			if GameData.is_drag_scrolling():
 				return
+			GameData.adventure_selected_region = "KANTO"
 			adventure_regions_modal.visible = false
 			update_adventure_episodes_ui()
 			adventure_episodes_modal.visible = true
+		)
+	if btn_enter_johto:
+		btn_enter_johto.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			if not GameData.is_tutorial_completed():
+				_show_tutorial_prompt_for_locked_episode()
+				return
+			GameData.adventure_selected_region = "JOHTO"
+			adventure_regions_modal.visible = false
+			_open_johto_episodes_modal()
 		)
 	if btn_close_adventure_regions:
 		btn_close_adventure_regions.pressed.connect(func():
@@ -639,8 +685,11 @@ func _ready() -> void:
 		if camp_pokemon_inspector_modal: camp_pokemon_inspector_modal.visible = false
 		if camp_evo_modal: camp_evo_modal.visible = false
 		if GameData.campaign_submode == "ADVENTURE":
-			update_adventure_episodes_ui()
-			adventure_episodes_modal.visible = true
+			if GameData.adventure_selected_region == "JOHTO":
+				_open_johto_episodes_modal()
+			else:
+				update_adventure_episodes_ui()
+				adventure_episodes_modal.visible = true
 		else:
 			update_campaign_hub_ui()
 			campaign_hub_modal.visible = true
@@ -691,6 +740,8 @@ func _ready() -> void:
 	btn_profile.pressed.connect(_on_profile_pressed)
 	btn_settings.pressed.connect(_on_settings_pressed)
 	btn_daily_missions.pressed.connect(_on_daily_missions_pressed)
+	if btn_achievements:
+		btn_achievements.pressed.connect(_open_achievements_modal)
 	
 	# Modal Misiones Diarias
 	btn_close_daily.pressed.connect(func(): daily_modal.visible = false)
@@ -898,6 +949,20 @@ func _ready() -> void:
 	btn_refresh_friends.pressed.connect(_refresh_friends_and_rooms)
 	btn_accept_challenge.pressed.connect(_on_accept_direct_challenge_pressed)
 	btn_decline_challenge.pressed.connect(_on_decline_direct_challenge_pressed)
+	if btn_add_back_notice:
+		btn_add_back_notice.pressed.connect(_on_add_back_notice_pressed)
+		_apply_retro_button_style(btn_add_back_notice, Color(0.35, 0.3, 0.1), Color(1.0, 0.85, 0.25))
+	if btn_dismiss_notice:
+		btn_dismiss_notice.pressed.connect(_on_dismiss_friend_notice_pressed)
+		_apply_retro_button_style(btn_dismiss_notice, Color(0.35, 0.2, 0.2), Color(0.7, 0.3, 0.3))
+	if friend_notice_banner:
+		var f_banner_sb = StyleBoxFlat.new()
+		f_banner_sb.bg_color = Color(0.1, 0.13, 0.2, 0.95)
+		f_banner_sb.set_border_width_all(1)
+		f_banner_sb.border_color = Color(1.0, 0.8, 0.2, 0.85)
+		f_banner_sb.set_corner_radius_all(8)
+		friend_notice_banner.add_theme_stylebox_override("panel", f_banner_sb)
+		friend_notice_banner.visible = false
 	GameData.friends_updated.connect(_update_friends_ui)
 	friends_modal.visible = false
 	
@@ -988,8 +1053,11 @@ func _ready() -> void:
 		_start_tutorial_flow_or_settings()
 	elif GameData.last_adventure_episode_conquered:
 		GameData.last_adventure_episode_conquered = false
-		update_adventure_episodes_ui()
-		adventure_episodes_modal.visible = true
+		if GameData.adventure_selected_region == "JOHTO":
+			_open_johto_episodes_modal()
+		else:
+			update_adventure_episodes_ui()
+			adventure_episodes_modal.visible = true
 	elif GameData.is_campaign_mode:
 		var active_state = GameData.get_active_campaign_team_state()
 		if active_state.size() > 0:
@@ -1567,6 +1635,18 @@ func update_adventure_regions_ui() -> void:
 	if kanto_status_lbl:
 		kanto_status_lbl.text = "Status: 🔓 Unlocked • 🏅 Gym Badges: %d/8 Conquered" % badges_count
 		kanto_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+
+	var card_johto = get_node_or_null("AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto")
+	if card_johto:
+		card_johto.modulate = Color(1, 1, 1, 1)
+	var johto_badges = GameData.get_johto_gym_badges_count()
+	if johto_status_lbl:
+		johto_status_lbl.text = "Status: 🔓 Unlocked • 🏅 Gym Badges: %d/8 Conquered" % johto_badges
+		johto_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+	if btn_enter_johto:
+		btn_enter_johto.disabled = false
+		btn_enter_johto.text = "🍂 Enter Johto ➜"
+		_apply_retro_button_style(btn_enter_johto, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 		
 	if league_status_lbl:
 		var kanto_badges = GameData.get_earned_gym_badges_count()
@@ -2411,6 +2491,709 @@ func _on_select_adventure_ep7_route_pressed(route_id: String) -> void:
 		GameData.adventure_current_episode = 7
 		open_team_select_for_campaign()
 
+# --- JOHTO CAMPAIGN MODAL & BRANCHING ROUTES ---
+
+func _open_johto_episodes_modal() -> void:
+	_setup_johto_episodes_modal()
+	_refresh_johto_episodes_ui()
+	johto_episodes_modal.visible = true
+
+func _setup_johto_episodes_modal() -> void:
+	if johto_episodes_modal != null:
+		return
+	johto_episodes_modal = Control.new()
+	johto_episodes_modal.name = "JohtoEpisodesModal"
+	johto_episodes_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	johto_episodes_modal.visible = false
+	johto_episodes_modal.z_index = 45
+	add_child(johto_episodes_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.04, 0.08, 0.90)
+	johto_episodes_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	johto_episodes_modal.add_child(center)
+	
+	var panel = PanelContainer.new()
+	var target_w: float = minf(470.0, get_viewport_rect().size.x - 20.0)
+	panel.custom_minimum_size = Vector2(target_w, 0)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color(0.9, 0.65, 0.35, 0.95)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	sb.content_margin_left = 16
+	sb.content_margin_right = 16
+	sb.content_margin_top = 14
+	sb.content_margin_bottom = 14
+	panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	panel.add_child(vbox)
+	
+	var title_lbl = Label.new()
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_lbl.text = "🍂 JOHTO CAMPAIGN: EPISODES & GYMS"
+	title_lbl.add_theme_font_size_override("font_size", 16)
+	title_lbl.add_theme_color_override("font_color", Color(0.95, 0.75, 0.35))
+	vbox.add_child(title_lbl)
+	
+	var subtitle_lbl = Label.new()
+	subtitle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle_lbl.text = "Embark on the 8 Gym Challenges of Johto & defeat the Lake of Rage Boss!"
+	subtitle_lbl.add_theme_font_size_override("font_size", 11)
+	subtitle_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+	vbox.add_child(subtitle_lbl)
+	
+	var wallet_lbl = Label.new()
+	wallet_lbl.name = "JohtoWalletBadge"
+	wallet_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	wallet_lbl.text = "💰 Campaign Gold: %d G  |  💎 %d Diamonds" % [GameData.campaign_gold, GameData.player_diamonds]
+	wallet_lbl.add_theme_font_size_override("font_size", 12)
+	wallet_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+	vbox.add_child(wallet_lbl)
+	
+	var scroll = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, 360)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+	
+	var ep_vbox = VBoxContainer.new()
+	ep_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ep_vbox.add_theme_constant_override("separation", 8)
+	scroll.add_child(ep_vbox)
+	
+	var johto_ep_list = [
+		{
+			"id": 101,
+			"title": "Episodio I: Falkner y la Medalla Céfiro",
+			"desc": "Visita Ciudad Malvalona y asciende la Torre Bellsprout antes de retar al Líder Falkner y sus aves en el Gimnasio Malvalona.",
+			"rewards": "4 Combates  |  Recompensas: 💎 30 Diamantes & 🏅 Medalla Céfiro",
+			"is_branching": false
+		},
+		{
+			"id": 102,
+			"title": "Episodio II: Bugsy y la Medalla Colmena",
+			"desc": "Salva a los Slowpoke en el Pozo Slowpoke del Pueblo Azalea y enfrenta a los expertos en tipo Bicho de Bugsy.",
+			"rewards": "5 Combates  |  Recompensas: 💎 35 Diamantes & 🏅 Medalla Colmena",
+			"is_branching": false
+		},
+		{
+			"id": 103,
+			"title": "Episodio III: Whitney y la Medalla Planicie",
+			"desc": "Llega a la bulliciosa Ciudad Trigal y enfréntate a la temible Whitney y su imparable Miltank desenrollado.",
+			"rewards": "5 Combates  |  Recompensas: 💎 40 Diamantes & 🏅 Medalla Planicie",
+			"is_branching": false
+		},
+		{
+			"id": 104,
+			"title": "Episodio IV: Morty y la Medalla Niebla",
+			"desc": "Explora Ciudad Iris, sus torres milenarias y supera el misterioso Gimnasio Fantasma del Líder Morty.",
+			"rewards": "5 Combates  |  Recompensas: 💎 45 Diamantes & 🏅 Medalla Niebla",
+			"is_branching": false
+		},
+		{
+			"id": 105,
+			"title": "Episodio V: Chuck y la Medalla Tormenta",
+			"desc": "Navega hacia las costas de Ciudad Orquídea y reta al maestro de las artes marciales Chuck bajo su cascada.",
+			"rewards": "6 Combates  |  Recompensas: 💎 50 Diamantes & 🏅 Medalla Tormenta",
+			"is_branching": false
+		},
+		{
+			"id": 106,
+			"title": "Episodio VI: Jasmine y la Medalla Mineral",
+			"desc": "Rutas de Operación: Investiga el Subterráneo de Trigal, libera la Torre de Radio y desafía a Jasmine y su colosal Steelix.",
+			"rewards": "3 Rutas (13 Combates)  |  Recompensas: 💎 60 Diamantes & 🏅 Medalla Mineral",
+			"is_branching": true
+		},
+		{
+			"id": 107,
+			"title": "Episodio VII: Pryce y la Medalla Glaciar",
+			"desc": "Rutas de Operación: Desmantela la base secreta de Team Rocket junto al Campeón Lance y conquista el Gimnasio de Pueblo Caoba.",
+			"rewards": "2 Rutas (10 Combates)  |  Recompensas: 💎 70 Diamantes & 🏅 Medalla Glaciar",
+			"is_branching": true
+		},
+		{
+			"id": 108,
+			"title": "Episodio VIII: Clair y la Medalla Creciente",
+			"desc": "Rutas de Operación: Atraviesa la Ruta Helada, derrota a la maestra de dragones Clair y supera la prueba final en la Guarida Dragón.",
+			"rewards": "3 Rutas (13 Combates)  |  Recompensas: 💎 80 Diamantes & 🏅 Medalla Creciente (Rising Badge)",
+			"is_branching": true
+		}
+	]
+	
+	for ep in johto_ep_list:
+		var ep_id: int = int(ep["id"])
+		var c_panel = PanelContainer.new()
+		c_panel.name = "CardJohtoEp%d" % ep_id
+		var c_sb = StyleBoxFlat.new()
+		c_sb.bg_color = Color(0.12, 0.17, 0.24, 0.95)
+		c_sb.border_color = Color(0.35, 0.40, 0.55, 0.8)
+		c_sb.set_border_width_all(1)
+		c_sb.set_corner_radius_all(6)
+		c_sb.content_margin_left = 12
+		c_sb.content_margin_right = 12
+		c_sb.content_margin_top = 8
+		c_sb.content_margin_bottom = 8
+		c_panel.add_theme_stylebox_override("panel", c_sb)
+		ep_vbox.add_child(c_panel)
+		
+		var cvbox = VBoxContainer.new()
+		cvbox.add_theme_constant_override("separation", 3)
+		c_panel.add_child(cvbox)
+		
+		var ep_title = Label.new()
+		ep_title.text = ep["title"]
+		ep_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_title.add_theme_font_size_override("font_size", 13)
+		ep_title.add_theme_color_override("font_color", Color(1, 1, 1))
+		cvbox.add_child(ep_title)
+		
+		var ep_desc = Label.new()
+		ep_desc.text = ep["desc"]
+		ep_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_desc.add_theme_font_size_override("font_size", 11)
+		ep_desc.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		cvbox.add_child(ep_desc)
+		
+		var ep_rew = Label.new()
+		ep_rew.text = ep["rewards"]
+		ep_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_rew.add_theme_font_size_override("font_size", 11)
+		ep_rew.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		cvbox.add_child(ep_rew)
+		
+		var ep_status = Label.new()
+		ep_status.text = "Status: Ready"
+		ep_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_status.add_theme_font_size_override("font_size", 11)
+		ep_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		cvbox.add_child(ep_status)
+		
+		var ep_btn = Button.new()
+		ep_btn.custom_minimum_size = Vector2(0, 34)
+		ep_btn.add_theme_font_size_override("font_size", 12)
+		ep_btn.text = "Embark"
+		_apply_retro_button_style(ep_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		if ep["is_branching"]:
+			ep_btn.pressed.connect(func():
+				if GameData.is_drag_scrolling():
+					return
+				_open_johto_branching_routes_modal(ep_id)
+			)
+		else:
+			ep_btn.pressed.connect(func():
+				if GameData.is_drag_scrolling():
+					return
+				_on_select_johto_episode_pressed(ep_id)
+			)
+		cvbox.add_child(ep_btn)
+		
+		johto_episode_cards[ep_id] = {
+			"panel": c_panel,
+			"title": ep_title,
+			"desc": ep_desc,
+			"rewards": ep_rew,
+			"status": ep_status,
+			"btn": ep_btn,
+			"is_branching": ep["is_branching"]
+		}
+		
+	# --- Special Event Card: El Lago de la Furia ---
+	var lake_panel = PanelContainer.new()
+	lake_panel.name = "CardLakeOfRage"
+	var lake_sb = StyleBoxFlat.new()
+	lake_sb.bg_color = Color(0.18, 0.08, 0.10, 0.95)
+	lake_sb.border_color = Color(0.95, 0.25, 0.25, 0.9)
+	lake_sb.set_border_width_all(2)
+	lake_sb.set_corner_radius_all(6)
+	lake_sb.content_margin_left = 12
+	lake_sb.content_margin_right = 12
+	lake_sb.content_margin_top = 8
+	lake_sb.content_margin_bottom = 8
+	lake_panel.add_theme_stylebox_override("panel", lake_sb)
+	ep_vbox.add_child(lake_panel)
+	
+	var lake_vbox = VBoxContainer.new()
+	lake_vbox.add_theme_constant_override("separation", 3)
+	lake_panel.add_child(lake_vbox)
+	
+	var lake_title = Label.new()
+	lake_title.text = "🌊 EVENTO ESPECIAL: EL LAGO DE LA FURIA"
+	lake_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lake_title.add_theme_font_size_override("font_size", 13)
+	lake_title.add_theme_color_override("font_color", Color(1.0, 0.35, 0.35))
+	lake_vbox.add_child(lake_title)
+	
+	var lake_desc = Label.new()
+	lake_desc.text = "¡Un Gyarados Rojo colosal ha despertado enfurecido! Desafía al poderoso jefe (600 HP) con tus mejores Pokémon (¡incluyendo Legendarios y Evoluciones!)."
+	lake_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lake_desc.add_theme_font_size_override("font_size", 11)
+	lake_desc.add_theme_color_override("font_color", Color(0.85, 0.8, 0.85))
+	lake_vbox.add_child(lake_desc)
+	
+	var lake_rew = Label.new()
+	lake_rew.text = "👑 Recompensa Exclusiva: Carta de Gyarados Rojo (ID 494) + 💎 50 Diamantes"
+	lake_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lake_rew.add_theme_font_size_override("font_size", 11)
+	lake_rew.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	lake_vbox.add_child(lake_rew)
+	
+	var lake_status = Label.new()
+	lake_status.text = "Status: Locked"
+	lake_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lake_status.add_theme_font_size_override("font_size", 11)
+	lake_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+	lake_vbox.add_child(lake_status)
+	
+	var lake_btn = Button.new()
+	lake_btn.custom_minimum_size = Vector2(0, 36)
+	lake_btn.add_theme_font_size_override("font_size", 12)
+	lake_btn.text = "Desafiar al Lago de la Furia"
+	_apply_retro_button_style(lake_btn, Color(0.7, 0.15, 0.15), Color(0.95, 0.3, 0.3), true)
+	lake_btn.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		_start_lake_of_rage_event()
+	)
+	lake_vbox.add_child(lake_btn)
+	
+	johto_lake_of_rage_card = {
+		"panel": lake_panel,
+		"title": lake_title,
+		"desc": lake_desc,
+		"rewards": lake_rew,
+		"status": lake_status,
+		"btn": lake_btn
+	}
+	
+	var btn_close = Button.new()
+	btn_close.name = "BtnCloseJohtoEpisodes"
+	btn_close.custom_minimum_size = Vector2(0, 36)
+	btn_close.text = "⬅ Return to Regions"
+	btn_close.add_theme_font_size_override("font_size", 12)
+	_apply_retro_button_style(btn_close, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+	btn_close.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		johto_episodes_modal.visible = false
+		update_adventure_regions_ui()
+		adventure_regions_modal.visible = true
+	)
+	vbox.add_child(btn_close)
+
+func _refresh_johto_episodes_ui() -> void:
+	if johto_episodes_modal == null:
+		return
+	var wallet_lbl = johto_episodes_modal.find_child("JohtoWalletBadge", true, false) as Label
+	if wallet_lbl:
+		wallet_lbl.text = "💰 Campaign Gold: %d G  |  💎 %d Diamonds" % [GameData.campaign_gold, GameData.player_diamonds]
+		
+	for ep_id in johto_episode_cards.keys():
+		var card = johto_episode_cards[ep_id]
+		var is_unlocked = GameData.is_adventure_episode_unlocked(ep_id)
+		var is_completed = GameData.is_adventure_episode_completed(ep_id)
+		var is_branching = bool(card.get("is_branching", false))
+		var is_in_progress = (GameData.adventure_current_episode == ep_id and not GameData.adventure_player_team_state.is_empty())
+		
+		var lbl_title = card["title"] as Label
+		var lbl_status = card["status"] as Label
+		var btn = card["btn"] as Button
+		var panel = card["panel"] as PanelContainer
+		
+		if not is_unlocked:
+			panel.modulate = Color(0.7, 0.7, 0.75, 0.8)
+			lbl_title.add_theme_color_override("font_color", Color(0.5, 0.6, 0.7))
+			var prev_ep_num = {101: "el Tutorial", 102: "el Episodio I", 103: "el Episodio II", 104: "el Episodio III", 105: "el Episodio IV", 106: "el Episodio V", 107: "el Episodio VI", 108: "el Episodio VII"}.get(ep_id, "el episodio anterior")
+			lbl_status.text = "Status: 🔒 Locked (Completa %s)" % prev_ep_num
+			lbl_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			btn.text = "🔒 Locked"
+			btn.disabled = true
+			_apply_retro_button_style(btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+		elif is_in_progress:
+			panel.modulate = Color(1, 1, 1, 1)
+			lbl_title.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			if is_branching:
+				var cur_r = GameData.get_adventure_selected_route(ep_id)
+				var r_info = GameData.get_adventure_route_info(ep_id, cur_r)
+				var total = GameData.get_adventure_total_stages(ep_id)
+				lbl_status.text = "Status: En Progreso (%s • Combate %d/%d)" % [str(r_info.get("name_es", "Ruta")), GameData.adventure_current_stage, total]
+			else:
+				var total = GameData.get_adventure_total_stages(ep_id)
+				lbl_status.text = "Status: En Progreso (Combate %d/%d)" % [GameData.adventure_current_stage, total]
+			lbl_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			btn.text = "⛺ Continuar Episodio (Campamento)"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		elif is_completed:
+			panel.modulate = Color(1, 1, 1, 1)
+			lbl_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			if is_branching:
+				var cleared_cnt = GameData.adventure_ep106_cleared_routes.size() if ep_id == 106 else (GameData.adventure_ep107_cleared_routes.size() if ep_id == 107 else GameData.adventure_ep108_cleared_routes.size())
+				lbl_status.text = "Status: 🏅 COMPLETADO (¡Medalla Ganada!) • %d rutas despejadas" % cleared_cnt
+				btn.text = "🗺️ Entrar a las Rutas"
+			else:
+				lbl_status.text = "Status: 🏅 COMPLETADO (¡Medalla Ganada!) • Rejugable"
+				btn.text = "🗺️ Rejugar Episodio"
+			lbl_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		else:
+			panel.modulate = Color(1, 1, 1, 1)
+			lbl_title.add_theme_color_override("font_color", Color(1, 1, 1))
+			if is_branching:
+				var cleared_cnt = GameData.adventure_ep106_cleared_routes.size() if ep_id == 106 else (GameData.adventure_ep107_cleared_routes.size() if ep_id == 107 else GameData.adventure_ep108_cleared_routes.size())
+				lbl_status.text = "Status: Listo para desplegar (%d rutas despejadas)" % cleared_cnt
+				btn.text = "🗺️ Ver Rutas"
+			else:
+				lbl_status.text = "Status: Listo para emprender"
+				btn.text = "🗺️ Emprender Episodio"
+			lbl_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+			
+	# Update Lake of Rage Card
+	if not johto_lake_of_rage_card.is_empty():
+		var l_status = johto_lake_of_rage_card["status"] as Label
+		var l_btn = johto_lake_of_rage_card["btn"] as Button
+		var l_panel = johto_lake_of_rage_card["panel"] as PanelContainer
+		var has_8_badges = GameData.has_all_johto_gym_badges()
+		var is_lake_done = GameData.is_lake_of_rage_completed()
+		
+		if not has_8_badges:
+			l_panel.modulate = Color(0.7, 0.7, 0.75, 0.8)
+			l_status.text = "Status: 🔒 Bloqueado (Requiere las 8 medallas de Johto [%d/8])" % GameData.get_johto_gym_badges_count()
+			l_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			l_btn.text = "🔒 Bloqueado (Requiere 8 Medallas)"
+			l_btn.disabled = true
+			_apply_retro_button_style(l_btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+		elif is_lake_done:
+			l_panel.modulate = Color(1, 1, 1, 1)
+			l_status.text = "Status: 🏅 COMPLETADO (¡Gyarados Rojo Reclutado!) • Repetible"
+			l_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			l_btn.text = "🌊 Reafirmar Dominio en el Lago ➜"
+			l_btn.disabled = false
+			_apply_retro_button_style(l_btn, Color(0.75, 0.20, 0.20), Color(0.95, 0.4, 0.35), true)
+		else:
+			l_panel.modulate = Color(1, 1, 1, 1)
+			l_status.text = "Status: ⚡ DISPONIBLE: ¡El Gyarados Rojo acecha en el lago (600 HP)!"
+			l_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			l_btn.text = "🌊 Desafiar al Lago de la Furia ➜"
+			l_btn.disabled = false
+			_apply_retro_button_style(l_btn, Color(0.75, 0.20, 0.20), Color(0.95, 0.4, 0.35), true)
+
+func _on_select_johto_episode_pressed(episode_id: int) -> void:
+	if GameData.is_drag_scrolling():
+		return
+	if not GameData.is_tutorial_completed():
+		_show_tutorial_prompt_for_locked_episode()
+		return
+	if not GameData.is_adventure_episode_unlocked(episode_id):
+		return
+	if johto_episodes_modal:
+		johto_episodes_modal.visible = false
+	GameData.campaign_submode = "ADVENTURE"
+	GameData.adventure_selected_region = "JOHTO"
+	if GameData.adventure_current_episode != episode_id:
+		GameData.reset_adventure_episode(episode_id)
+	GameData.adventure_current_episode = episode_id
+	if GameData.adventure_player_team_state.is_empty():
+		open_team_select_for_campaign()
+	else:
+		update_campaign_ui()
+		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
+
+func _start_lake_of_rage_event() -> void:
+	if not GameData.has_all_johto_gym_badges():
+		return
+	if johto_episodes_modal:
+		johto_episodes_modal.visible = false
+	GameData.campaign_submode = "LAKE_OF_RAGE"
+	open_team_select_for_campaign()
+
+func _open_johto_branching_routes_modal(ep_id: int) -> void:
+	johto_current_routes_ep = ep_id
+	_setup_johto_routes_modal()
+	_refresh_johto_routes_ui(ep_id)
+	if johto_episodes_modal:
+		johto_episodes_modal.visible = false
+	johto_routes_modal.visible = true
+
+func _setup_johto_routes_modal() -> void:
+	if johto_routes_modal != null:
+		return
+	johto_routes_modal = Control.new()
+	johto_routes_modal.name = "JohtoRoutesModal"
+	johto_routes_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	johto_routes_modal.visible = false
+	johto_routes_modal.z_index = 50
+	add_child(johto_routes_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.04, 0.08, 0.90)
+	johto_routes_modal.add_child(bg)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	johto_routes_modal.add_child(center)
+	
+	var panel = PanelContainer.new()
+	var target_w: float = minf(470.0, get_viewport_rect().size.x - 20.0)
+	panel.custom_minimum_size = Vector2(target_w, 0)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
+	sb.border_color = Color(0.9, 0.65, 0.35, 0.95)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	sb.content_margin_left = 16
+	sb.content_margin_right = 16
+	sb.content_margin_top = 14
+	sb.content_margin_bottom = 14
+	panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	panel.add_child(vbox)
+	
+	johto_routes_title_lbl = Label.new()
+	johto_routes_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	johto_routes_title_lbl.text = "🗺️ JOHTO ROUTES"
+	johto_routes_title_lbl.add_theme_font_size_override("font_size", 16)
+	johto_routes_title_lbl.add_theme_color_override("font_color", Color(0.95, 0.75, 0.35))
+	vbox.add_child(johto_routes_title_lbl)
+	
+	johto_routes_subtitle_lbl = Label.new()
+	johto_routes_subtitle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	johto_routes_subtitle_lbl.text = "Select an operational sector to deploy your team:"
+	johto_routes_subtitle_lbl.add_theme_font_size_override("font_size", 11)
+	johto_routes_subtitle_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+	vbox.add_child(johto_routes_subtitle_lbl)
+	
+	var scroll = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, 320)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+	
+	johto_routes_scroll_vbox = VBoxContainer.new()
+	johto_routes_scroll_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	johto_routes_scroll_vbox.add_theme_constant_override("separation", 8)
+	scroll.add_child(johto_routes_scroll_vbox)
+	
+	var btn_close = Button.new()
+	btn_close.name = "BtnCloseJohtoRoutes"
+	btn_close.custom_minimum_size = Vector2(0, 36)
+	btn_close.text = "⬅ Return to Johto Episodes"
+	btn_close.add_theme_font_size_override("font_size", 12)
+	_apply_retro_button_style(btn_close, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+	btn_close.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		johto_routes_modal.visible = false
+		_open_johto_episodes_modal()
+	)
+	vbox.add_child(btn_close)
+
+func _refresh_johto_routes_ui(ep_id: int) -> void:
+	if johto_routes_scroll_vbox == null:
+		return
+	for child in johto_routes_scroll_vbox.get_children():
+		johto_routes_scroll_vbox.remove_child(child)
+		child.queue_free()
+	johto_routes_cards.clear()
+	
+	var routes_def = []
+	if ep_id == 106:
+		johto_routes_title_lbl.text = "🔩 EPISODIO VI: OPERACIONES DE OLIVO Y TRIGAL"
+		johto_routes_subtitle_lbl.text = "Investiga los sabotajes del Team Rocket y conquista el Gimnasio Olivo:"
+		routes_def = [
+			{
+				"id": "subway",
+				"name": "Subterráneo de Trigal (4 Combates)",
+				"desc": "Investiga los pasadizos subterráneos de Ciudad Trigal repletos de ladrones y reclutas del Team Rocket.",
+				"rewards": "4 Combates  |  Recompensa: 💎 20 Diamantes • Desbloquea la Torre de Radio"
+			},
+			{
+				"id": "radio_tower",
+				"name": "Torre de Radio de Trigal (4 Combates)",
+				"desc": "Infiltra la Torre de Radio para interrumpir la señal que altera y enfurece a los Pokémon de Johto.",
+				"rewards": "4 Combates  |  Recompensa: 💎 20 Diamantes • Desbloquea el Gimnasio Olivo"
+			},
+			{
+				"id": "olivine_gym",
+				"name": "Gimnasio Olivo de Jasmine (5 Combates)",
+				"desc": "Asciende por el Gimnasio Olivo y enfrenta a la Líder Jasmine y su impenetrable Steelix de acero.",
+				"rewards": "5 Combates  |  Recompensa: 💎 20 Diamantes & 🏅 Medalla Mineral (Final Clear!)"
+			}
+		]
+	elif ep_id == 107:
+		johto_routes_title_lbl.text = "❄️ EPISODIO VII: OPERACIONES DE CAOBA"
+		johto_routes_subtitle_lbl.text = "Infiltra la base del Team Rocket con Lance y desafía al veterano Líder Pryce:"
+		routes_def = [
+			{
+				"id": "rocket_hideout",
+				"name": "Laboratorio Secreto del Team Rocket con Lance (5 Combates)",
+				"desc": "Asalta la base subterránea secreta en Caoba codo a codo con el Campeón Lance y su Dragonite.",
+				"rewards": "5 Combates  |  Recompensa: 💎 35 Diamantes • Desbloquea el Gimnasio Caoba"
+			},
+			{
+				"id": "mahogany_gym",
+				"name": "Gimnasio Caoba de Pryce (5 Combates)",
+				"desc": "Deslízate por el laberinto de hielo y derrota al curtido Líder Pryce y su robusto Piloswine.",
+				"rewards": "5 Combates  |  Recompensa: 💎 35 Diamantes & 🏅 Medalla Glaciar (Final Clear!)"
+			}
+		]
+	elif ep_id == 108:
+		johto_routes_title_lbl.text = "🐉 EPISODIO VIII: OPERACIONES DE CIUDAD ENDRINO"
+		johto_routes_subtitle_lbl.text = "Atraviesa la Ruta Helada, reta a Clair y supera la prueba de la Guarida Dragón:"
+		routes_def = [
+			{
+				"id": "ice_path",
+				"name": "Ruta Helada (Ice Path) (4 Combates)",
+				"desc": "Cruza las heladas cavernas de montaña hacia Endrino enfrentando montañeros y orfebres.",
+				"rewards": "4 Combates  |  Recompensa: 💎 25 Diamantes • Desbloquea el Gimnasio Endrino"
+			},
+			{
+				"id": "blackthorn_gym",
+				"name": "Gimnasio Endrino de Clair (5 Combates)",
+				"desc": "Camina sobre pasarelas ardientes y desafía a la Líder Clair y su devastador Kingdra.",
+				"rewards": "5 Combates  |  Recompensa: 💎 30 Diamantes • Desbloquea la Guarida Dragón"
+			},
+			{
+				"id": "dragon_den",
+				"name": "Santuario de la Guarida Dragón (4 Combates)",
+				"desc": "Desciende al lago subterráneo y supera el juicio sagrado de los Sabios del Clan Dragón.",
+				"rewards": "4 Combates  |  Recompensa: 💎 25 Diamantes & 🏅 Medalla Creciente (Rising Badge)"
+			}
+		]
+		
+	for r in routes_def:
+		var r_id: String = str(r["id"])
+		var c_panel = PanelContainer.new()
+		c_panel.name = "JohtoRouteCard_" + r_id
+		var c_sb = StyleBoxFlat.new()
+		c_sb.bg_color = Color(0.12, 0.17, 0.24, 0.95)
+		c_sb.border_color = Color(0.35, 0.40, 0.55, 0.8)
+		c_sb.set_border_width_all(1)
+		c_sb.set_corner_radius_all(6)
+		c_sb.content_margin_left = 12
+		c_sb.content_margin_right = 12
+		c_sb.content_margin_top = 8
+		c_sb.content_margin_bottom = 8
+		c_panel.add_theme_stylebox_override("panel", c_sb)
+		johto_routes_scroll_vbox.add_child(c_panel)
+		
+		var cvbox = VBoxContainer.new()
+		cvbox.add_theme_constant_override("separation", 3)
+		c_panel.add_child(cvbox)
+		
+		var r_title = Label.new()
+		r_title.text = r["name"]
+		r_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_title.add_theme_font_size_override("font_size", 13)
+		r_title.add_theme_color_override("font_color", Color(1, 1, 1))
+		cvbox.add_child(r_title)
+		
+		var r_desc = Label.new()
+		r_desc.text = r["desc"]
+		r_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_desc.add_theme_font_size_override("font_size", 11)
+		r_desc.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		cvbox.add_child(r_desc)
+		
+		var r_rew = Label.new()
+		r_rew.text = r["rewards"]
+		r_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_rew.add_theme_font_size_override("font_size", 11)
+		r_rew.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		cvbox.add_child(r_rew)
+		
+		var r_status = Label.new()
+		r_status.text = "Status: Ready"
+		r_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_status.add_theme_font_size_override("font_size", 11)
+		r_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		cvbox.add_child(r_status)
+		
+		var r_btn = Button.new()
+		r_btn.custom_minimum_size = Vector2(0, 34)
+		r_btn.add_theme_font_size_override("font_size", 12)
+		r_btn.text = "Select Route"
+		_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		r_btn.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			_on_select_johto_route_pressed(ep_id, r_id)
+		)
+		cvbox.add_child(r_btn)
+		
+		var is_unlocked = GameData.is_adventure_route_unlocked(ep_id, r_id)
+		var is_cleared = GameData.is_adventure_route_completed(ep_id, r_id)
+		var is_in_progress = (GameData.adventure_current_episode == ep_id and GameData.get_adventure_selected_route(ep_id) == r_id and not GameData.adventure_player_team_state.is_empty())
+		
+		if not is_unlocked:
+			c_panel.modulate = Color(0.7, 0.7, 0.75, 0.8)
+			r_title.add_theme_color_override("font_color", Color(0.5, 0.6, 0.7))
+			r_status.text = "Status: 🔒 Locked (Complete previous operation)"
+			r_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			r_btn.text = "🔒 Locked"
+			r_btn.disabled = true
+			_apply_retro_button_style(r_btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+		elif is_in_progress:
+			c_panel.modulate = Color(1, 1, 1, 1)
+			r_title.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			var total = GameData.get_adventure_total_stages(ep_id)
+			r_status.text = "Status: En Progreso (Combate %d/%d)" % [GameData.adventure_current_stage, total]
+			r_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			r_btn.text = "⛺ Continuar Ruta (Campamento)"
+			r_btn.disabled = false
+			_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		elif is_cleared:
+			c_panel.modulate = Color(1, 1, 1, 1)
+			r_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			r_status.text = "Status: 🏅 Ruta Despejada • Rejugable"
+			r_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			r_btn.text = "🗺️ Rejugar Ruta"
+			r_btn.disabled = false
+			_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		else:
+			c_panel.modulate = Color(1, 1, 1, 1)
+			r_title.add_theme_color_override("font_color", Color(1, 1, 1))
+			r_status.text = "Status: Listo para desplegar"
+			r_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+			r_btn.text = "🗺️ Emprender Ruta"
+			r_btn.disabled = false
+			_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+func _on_select_johto_route_pressed(ep_id: int, route_id: String) -> void:
+	if not GameData.is_adventure_route_unlocked(ep_id, route_id):
+		return
+	if johto_routes_modal:
+		johto_routes_modal.visible = false
+	if johto_episodes_modal:
+		johto_episodes_modal.visible = false
+	GameData.campaign_submode = "ADVENTURE"
+	GameData.adventure_selected_region = "JOHTO"
+	
+	var is_same_route = (GameData.adventure_current_episode == ep_id and GameData.get_adventure_selected_route(ep_id) == route_id)
+	if is_same_route and not GameData.adventure_player_team_state.is_empty():
+		update_campaign_ui()
+		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
+	else:
+		GameData.set_adventure_selected_route(ep_id, route_id)
+		GameData.reset_adventure_episode(ep_id)
+		GameData.adventure_current_episode = ep_id
+		open_team_select_for_campaign()
+
+
 func _on_hub_tutorial_pressed() -> void:
 	if GameData.is_drag_scrolling():
 		return
@@ -2895,8 +3678,15 @@ func open_team_select_for_campaign() -> void:
 	
 	if GameData.campaign_submode == "ADVENTURE":
 		team_select_title.text = "🗺️ ADVENTURE TEAM"
-		var ep_roman = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII"}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
+		var ep_roman = {
+			1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII",
+			101: "Johto I", 102: "Johto II", 103: "Johto III", 104: "Johto IV",
+			105: "Johto V", 106: "Johto VI", 107: "Johto VII", 108: "Johto VIII"
+		}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
 		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
+	elif GameData.campaign_submode == "LAKE_OF_RAGE":
+		team_select_title.text = "🌊 EL LAGO DE LA FURIA"
+		team_select_subtitle.text = "Choose 1 to 3 Pokémon for the Red Gyarados Boss Event!\n(Legendary Pokémon and all Evolutions allowed!)"
 	elif GameData.campaign_submode == "CHAOS":
 		team_select_title.text = "🌌 CHAOS ODYSSEY TEAM"
 		team_select_subtitle.text = "Choose 1 to 3 Legendary or Pseudo-Legendary Basic Pokémon for the Chaos Gauntlet!\nTest your strength against extreme rivals and the Crystal Onix Boss!"
@@ -2911,7 +3701,7 @@ func open_team_select_for_campaign() -> void:
 		selected_player_ids.clear()
 		for p in active_team:
 			var cat_entry = GameData.pokemon_catalog.get(int(p["id"]))
-			if GameData.campaign_submode == "CHAOS":
+			if GameData.campaign_submode == "CHAOS" or GameData.campaign_submode == "LAKE_OF_RAGE":
 				if cat_entry:
 					selected_player_ids.append(int(p["id"]))
 			else:
@@ -2943,8 +3733,9 @@ func update_campaign_ui() -> void:
 	var remedies = cur_inv.get("remedy", 0)
 	var ethers = cur_inv.get("ether", 0)
 	var poke_flutes = cur_inv.get("poke_flute", 0)
+	var exp_shares = cur_inv.get("exp_share", 0)
 	if btn_camp_bag:
-		var total_items = potions + super_potions + hyper_potions + revives + remedies + ethers + poke_flutes
+		var total_items = potions + super_potions + hyper_potions + revives + remedies + ethers + poke_flutes + exp_shares
 		for st_name in GameData.EVOLUTION_STONE_TYPES:
 			total_items += GameData.get_campaign_stone_count(st_name)
 		btn_camp_bag.text = "🎒 Bag (%d Item%s)" % [total_items, "s" if total_items != 1 else ""]
@@ -4002,6 +4793,12 @@ func _refresh_camp_bag_items_ui() -> void:
 			"name": "Ether",
 			"desc": "Restores 100% Energy (⚡). Used during combat.",
 			"stock": inv.get("ether", 0)
+		},
+		{
+			"id": "exp_share",
+			"name": "Exp Share",
+			"desc": "Passive item. While in bag, 20% of the EXP earned by the active Pokémon is shared with the first eligible benched Pokémon.",
+			"stock": inv.get("exp_share", 0)
 		}
 	]
 	
@@ -4048,7 +4845,7 @@ func _refresh_camp_bag_items_ui() -> void:
 		title_row.add_child(name_lbl)
 		
 		var stock_lbl = Label.new()
-		if item_id == "poke_flute":
+		if item_id in ["poke_flute", "exp_share"]:
 			stock_lbl.text = "[Owned]" if stock > 0 else "[Not Owned]"
 		else:
 			stock_lbl.text = "[Owned: %d]" % stock
@@ -4072,6 +4869,13 @@ func _refresh_camp_bag_items_ui() -> void:
 			use_btn.text = "In Battle Only"
 			use_btn.disabled = true
 			_apply_retro_button_style(use_btn, Color(0.3, 0.3, 0.35), Color(0.4, 0.4, 0.45), false)
+		elif item_id == "exp_share":
+			use_btn.text = "Passive / Pasivo"
+			use_btn.disabled = true
+			if stock > 0:
+				_apply_retro_button_style(use_btn, Color(0.70, 0.50, 0.15), Color(0.95, 0.80, 0.30), false)
+			else:
+				_apply_retro_button_style(use_btn, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
 		else:
 			use_btn.text = "Use / Usar"
 			use_btn.disabled = (stock <= 0)
@@ -5236,9 +6040,14 @@ func _on_close_team_select_pressed() -> void:
 		if state.size() > 0:
 			update_campaign_ui()
 			campaign_modal.visible = true
+		elif GameData.campaign_submode == "LAKE_OF_RAGE":
+			_open_johto_episodes_modal()
 		elif GameData.campaign_submode == "ADVENTURE":
-			update_adventure_episodes_ui()
-			adventure_episodes_modal.visible = true
+			if GameData.adventure_selected_region == "JOHTO":
+				_open_johto_episodes_modal()
+			else:
+				update_adventure_episodes_ui()
+				adventure_episodes_modal.visible = true
 		else:
 			update_campaign_hub_ui()
 			campaign_hub_modal.visible = true
@@ -5312,6 +6121,9 @@ func build_team_select_cards_grid() -> void:
 					var ev_from = str(c.get("evolves_from", "")).strip_edges()
 					if (is_legendary and ev_from == "") or (st == "basic" and GameData.is_line_legendary(cid)):
 						allowed_pool.append(c)
+		elif GameData.campaign_submode == "LAKE_OF_RAGE":
+			for c in pool:
+				allowed_pool.append(c)
 		else:
 			for c in pool:
 				var st = str(c.get("stage", "Basic")).strip_edges().to_lower()
@@ -5644,11 +6456,16 @@ func update_team_select_ui() -> void:
 	elif team_select_mode == "CAMPAIGN":
 		var p_count = selected_player_ids.size()
 		btn_start_battle.disabled = (p_count < 1)
-		var mode_label = "ADVENTURE" if GameData.campaign_submode == "ADVENTURE" else ("CHAOS" if GameData.campaign_submode == "CHAOS" else "TOURNAMENT")
+		var mode_label = "LAKE OF RAGE" if GameData.campaign_submode == "LAKE_OF_RAGE" else ("ADVENTURE" if GameData.campaign_submode == "ADVENTURE" else ("CHAOS" if GameData.campaign_submode == "CHAOS" else "TOURNAMENT"))
 		if p_count >= 1:
-			btn_start_battle.text = "✅ CONFIRM %s TEAM (%d PKMN)" % [mode_label, p_count]
+			if GameData.campaign_submode == "LAKE_OF_RAGE":
+				btn_start_battle.text = "🌊 BATTLE RED GYARADOS (%d PKMN)!" % p_count
+			else:
+				btn_start_battle.text = "✅ CONFIRM %s TEAM (%d PKMN)" % [mode_label, p_count]
 		else:
-			if GameData.campaign_submode == "CHAOS":
+			if GameData.campaign_submode == "LAKE_OF_RAGE":
+				btn_start_battle.text = "Choose 1 to 3 Pokémon for Boss Fight"
+			elif GameData.campaign_submode == "CHAOS":
 				btn_start_battle.text = "Choose 1 to 3 Legendary / Dragon Pokémon"
 			else:
 				btn_start_battle.text = "Choose 1 to 3 BASIC Pokémon for %s" % mode_label.capitalize()
@@ -5685,7 +6502,16 @@ func _on_start_battle_pressed() -> void:
 	if team_select_mode == "CAMPAIGN":
 		if selected_player_ids.is_empty():
 			return
-		if GameData.campaign_submode == "ADVENTURE":
+		if GameData.campaign_submode == "LAKE_OF_RAGE":
+			GameData.is_campaign_mode = true
+			GameData.player_team_ids = selected_player_ids.duplicate()
+			GameData.enemy_team_ids = [GameData.RED_GYARADOS_BOSS_ID]
+			team_select_modal.visible = false
+			if bgm_player and bgm_player.playing:
+				bgm_player.stop()
+			get_tree().change_scene_to_file("res://scenes/battle.tscn")
+			return
+		elif GameData.campaign_submode == "ADVENTURE":
 			GameData.change_adventure_team(selected_player_ids)
 		elif GameData.campaign_submode == "CHAOS":
 			GameData.change_chaos_team(selected_player_ids)
@@ -6045,6 +6871,7 @@ func _apply_pokemon_ui_theme() -> void:
 		btn_collection,
 		btn_shop,
 		btn_daily_missions,
+		btn_achievements,
 		btn_profile,
 		btn_settings,
 		btn_exit,
@@ -10207,6 +11034,13 @@ func _update_lobby_header_badge() -> void:
 			btn_daily_missions.text = "🎁  DAILY MISSIONS & REWARDS  🔔"
 		else:
 			btn_daily_missions.text = "🎁  DAILY MISSIONS & REWARDS"
+	if btn_achievements:
+		if GameData.has_pending_achievement_notifications():
+			btn_achievements.text = "🏆  ACHIEVEMENTS  🔔"
+		else:
+			btn_achievements.text = "🏆  ACHIEVEMENTS"
+			
+	_check_pending_achievement_notifications()
 
 func _create_activity_status_button(is_active: bool, tooltip_info: String = "") -> Button:
 	var btn = Button.new()
@@ -11111,6 +11945,402 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	)
 	act_hbox.add_child(btn_close)
 
+# --- MODAL DE ACHIEVEMENTS / LOGROS ---
+func _open_achievements_modal() -> void:
+	if not GameData.tutorial_completed and GameData.tutorial_step == 1:
+		_start_tutorial_flow_or_settings()
+		return
+	_setup_achievements_modal()
+	_refresh_achievements_ui()
+	achievements_modal.visible = true
+
+func _setup_achievements_modal() -> void:
+	if achievements_modal != null:
+		return
+		
+	achievements_modal = Control.new()
+	achievements_modal.name = "AchievementsModal"
+	achievements_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	achievements_modal.visible = false
+	achievements_modal.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(achievements_modal)
+	
+	# Backdrop oscuro
+	var backdrop = ColorRect.new()
+	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
+	backdrop.color = Color(0, 0, 0, 0.78)
+	backdrop.mouse_filter = Control.MOUSE_FILTER_PASS
+	achievements_modal.add_child(backdrop)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	achievements_modal.add_child(center)
+	
+	var box = PanelContainer.new()
+	box.custom_minimum_size = Vector2(580, 480)
+	
+	var sb_box = StyleBoxFlat.new()
+	sb_box.bg_color = Color(0.08, 0.11, 0.18, 0.98)
+	sb_box.border_color = Color(1.0, 0.82, 0.25, 0.95)
+	sb_box.set_border_width_all(2)
+	sb_box.set_corner_radius_all(10)
+	sb_box.shadow_color = Color(0, 0, 0, 0.8)
+	sb_box.shadow_size = 14
+	box.add_theme_stylebox_override("panel", sb_box)
+	center.add_child(box)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_top", 16)
+	margin.add_theme_constant_override("margin_bottom", 16)
+	box.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	margin.add_child(vbox)
+	
+	# Encabezado
+	var header_hbox = HBoxContainer.new()
+	header_hbox.add_theme_constant_override("separation", 10)
+	vbox.add_child(header_hbox)
+	
+	var title_lbl = Label.new()
+	title_lbl.text = "🏆 " + GameData.tr_text("ACHIEVEMENTS & TROPHIES", "LOGROS Y TROFEOS")
+	title_lbl.add_theme_font_size_override("font_size", 16)
+	title_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_hbox.add_child(title_lbl)
+	
+	btn_close_achievements = Button.new()
+	btn_close_achievements.text = "✖"
+	btn_close_achievements.custom_minimum_size = Vector2(32, 32)
+	_apply_retro_button_style(btn_close_achievements, Color(0.3, 0.15, 0.15), Color(0.8, 0.3, 0.3))
+	btn_close_achievements.pressed.connect(func(): achievements_modal.visible = false)
+	header_hbox.add_child(btn_close_achievements)
+	
+	# Subtítulo y resumen
+	var sub_hbox = HBoxContainer.new()
+	sub_hbox.add_theme_constant_override("separation", 8)
+	vbox.add_child(sub_hbox)
+	
+	achievements_summary_lbl = Label.new()
+	achievements_summary_lbl.add_theme_font_size_override("font_size", 12)
+	achievements_summary_lbl.add_theme_color_override("font_color", Color(0.75, 0.88, 1.0))
+	achievements_summary_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sub_hbox.add_child(achievements_summary_lbl)
+	
+	var sep = HSeparator.new()
+	vbox.add_child(sep)
+	
+	# Lista scrollable de logros
+	var scroll = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(540, 320)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(scroll)
+	
+	achievements_list_vbox = VBoxContainer.new()
+	achievements_list_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	achievements_list_vbox.add_theme_constant_override("separation", 10)
+	scroll.add_child(achievements_list_vbox)
+	
+	# Footer tip
+	var tip_lbl = Label.new()
+	tip_lbl.text = "💡 " + GameData.tr_text("Complete milestones to unlock exclusive permanent rewards and items!", "¡Completa hitos para desbloquear recompensas y objetos permanentes exclusivos!")
+	tip_lbl.add_theme_font_size_override("font_size", 11)
+	tip_lbl.add_theme_color_override("font_color", Color(0.7, 0.75, 0.85))
+	tip_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(tip_lbl)
+
+func _refresh_achievements_ui() -> void:
+	if achievements_list_vbox == null:
+		return
+		
+	for child in achievements_list_vbox.get_children():
+		child.queue_free()
+		
+	var ach_list = GameData.get_achievements_list()
+	var completed_count = 0
+	
+	for ach in ach_list:
+		var ach_id = str(ach.get("id", ""))
+		var prog = GameData.get_achievement_progress(ach_id)
+		var is_done = bool(prog.get("is_completed", false))
+		if is_done:
+			completed_count += 1
+			
+		var card = PanelContainer.new()
+		var sb_card = StyleBoxFlat.new()
+		if is_done:
+			sb_card.bg_color = Color(0.10, 0.22, 0.16, 0.90)
+			sb_card.border_color = Color(0.35, 0.85, 0.45, 0.90)
+		else:
+			sb_card.bg_color = Color(0.10, 0.13, 0.20, 0.85)
+			sb_card.border_color = Color(0.25, 0.35, 0.50, 0.70)
+		sb_card.set_border_width_all(1)
+		sb_card.set_corner_radius_all(8)
+		card.add_theme_stylebox_override("panel", sb_card)
+		
+		var m = MarginContainer.new()
+		m.add_theme_constant_override("margin_left", 12)
+		m.add_theme_constant_override("margin_right", 12)
+		m.add_theme_constant_override("margin_top", 10)
+		m.add_theme_constant_override("margin_bottom", 10)
+		card.add_child(m)
+		
+		var hbox = HBoxContainer.new()
+		hbox.add_theme_constant_override("separation", 14)
+		m.add_child(hbox)
+		
+		# Icono del Reward
+		var icon_rect = TextureRect.new()
+		icon_rect.custom_minimum_size = Vector2(52, 52)
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		
+		var rew_id = str(ach.get("reward_id", ""))
+		var tex = GameData.get_item_texture(rew_id)
+		if tex:
+			icon_rect.texture = tex
+		hbox.add_child(icon_rect)
+		
+		# VBox con Información
+		var info_vbox = VBoxContainer.new()
+		info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		info_vbox.add_theme_constant_override("separation", 3)
+		hbox.add_child(info_vbox)
+		
+		# Fila de Título y Badge
+		var title_row = HBoxContainer.new()
+		title_row.add_theme_constant_override("separation", 8)
+		info_vbox.add_child(title_row)
+		
+		var title_text = GameData.tr_text(str(ach.get("title_en", ach.get("title", ""))), str(ach.get("title", "")))
+		var ach_title_lbl = Label.new()
+		ach_title_lbl.text = title_text
+		ach_title_lbl.add_theme_font_size_override("font_size", 13)
+		ach_title_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.35) if is_done else Color(1.0, 1.0, 1.0))
+		ach_title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		title_row.add_child(ach_title_lbl)
+		
+		var badge_lbl = Label.new()
+		if is_done:
+			badge_lbl.text = "✅ " + GameData.tr_text("COMPLETED", "COMPLETADO")
+			badge_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
+		else:
+			badge_lbl.text = "🔒 " + GameData.tr_text("IN PROGRESS", "EN PROGRESO")
+			badge_lbl.add_theme_color_override("font_color", Color(0.6, 0.75, 0.9))
+		badge_lbl.add_theme_font_size_override("font_size", 11)
+		title_row.add_child(badge_lbl)
+		
+		# Descripción
+		var desc_text = GameData.tr_text(str(ach.get("desc_en", ach.get("desc", ""))), str(ach.get("desc", "")))
+		var ach_desc_lbl = Label.new()
+		ach_desc_lbl.text = desc_text
+		ach_desc_lbl.add_theme_font_size_override("font_size", 11)
+		ach_desc_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		ach_desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		info_vbox.add_child(ach_desc_lbl)
+		
+		# Recompensa
+		var rew_name = GameData.tr_text(str(ach.get("reward_name_en", ach.get("reward_name", ""))), str(ach.get("reward_name", "")))
+		var rew_desc = GameData.tr_text(str(ach.get("reward_desc_en", ach.get("reward_desc", ""))), str(ach.get("reward_desc", "")))
+		var rew_lbl = Label.new()
+		rew_lbl.text = "🎁 " + GameData.tr_text("Reward: ", "Recompensa: ") + rew_name + " (" + rew_desc + ")"
+		rew_lbl.add_theme_font_size_override("font_size", 10)
+		rew_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.25))
+		rew_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		info_vbox.add_child(rew_lbl)
+		
+		# Barra de Progreso
+		var p_hbox = HBoxContainer.new()
+		p_hbox.add_theme_constant_override("separation", 8)
+		info_vbox.add_child(p_hbox)
+		
+		var p_bar = ProgressBar.new()
+		p_bar.custom_minimum_size = Vector2(200, 14)
+		p_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		p_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		p_bar.show_percentage = false
+		p_bar.min_value = 0
+		p_bar.max_value = float(prog.get("target", 1))
+		p_bar.value = float(prog.get("current", 0))
+		p_hbox.add_child(p_bar)
+		
+		var p_lbl = Label.new()
+		p_lbl.text = "%d / %d (%d%%)" % [prog.get("current", 0), prog.get("target", 1), int(prog.get("percent", 0.0) * 100)]
+		p_lbl.add_theme_font_size_override("font_size", 10)
+		p_lbl.add_theme_color_override("font_color", Color(0.85, 0.9, 1.0))
+		p_hbox.add_child(p_lbl)
+		
+		achievements_list_vbox.add_child(card)
+		
+	if achievements_summary_lbl:
+		achievements_summary_lbl.text = "🏆 " + (GameData.tr_text("Completed: %d / %d", "Completados: %d / %d") % [completed_count, ach_list.size()])
+
+# --- MODAL NOTIFICACIÓN AUTOMÁTICA DE LOGRO DESBLOQUEADO (EN LOBBY) ---
+func _check_pending_achievement_notifications() -> void:
+	if not GameData.has_pending_achievement_notifications():
+		return
+	if achievement_notif_modal != null and achievement_notif_modal.visible:
+		return
+	var ach = GameData.peek_pending_achievement_notification()
+	if not ach.is_empty():
+		_show_achievement_notification_modal(ach)
+
+func _setup_achievement_notif_modal() -> void:
+	if achievement_notif_modal != null:
+		return
+		
+	achievement_notif_modal = Control.new()
+	achievement_notif_modal.name = "AchievementNotificationModal"
+	achievement_notif_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	achievement_notif_modal.visible = false
+	achievement_notif_modal.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(achievement_notif_modal)
+	
+	var backdrop = ColorRect.new()
+	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
+	backdrop.color = Color(0, 0, 0, 0.82)
+	backdrop.mouse_filter = Control.MOUSE_FILTER_PASS
+	achievement_notif_modal.add_child(backdrop)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	achievement_notif_modal.add_child(center)
+	
+	var box = PanelContainer.new()
+	box.custom_minimum_size = Vector2(480, 360)
+	var sb_box = StyleBoxFlat.new()
+	sb_box.bg_color = Color(0.08, 0.12, 0.20, 0.98)
+	sb_box.border_color = Color(1.0, 0.84, 0.2, 1.0)
+	sb_box.set_border_width_all(3)
+	sb_box.set_corner_radius_all(12)
+	sb_box.shadow_color = Color(0, 0, 0, 0.85)
+	sb_box.shadow_size = 18
+	box.add_theme_stylebox_override("panel", sb_box)
+	center.add_child(box)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 24)
+	margin.add_theme_constant_override("margin_right", 24)
+	margin.add_theme_constant_override("margin_top", 20)
+	margin.add_theme_constant_override("margin_bottom", 20)
+	box.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	margin.add_child(vbox)
+	
+	# Banner superior
+	var header_lbl = Label.new()
+	header_lbl.text = "🏆 ¡" + GameData.tr_text("ACHIEVEMENT UNLOCKED!", "LOGRO DESBLOQUEADO!") + " 🏆"
+	header_lbl.add_theme_font_size_override("font_size", 16)
+	header_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.25))
+	header_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(header_lbl)
+	
+	# Título del logro
+	achievement_notif_title_lbl = Label.new()
+	achievement_notif_title_lbl.add_theme_font_size_override("font_size", 14)
+	achievement_notif_title_lbl.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	achievement_notif_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(achievement_notif_title_lbl)
+	
+	# Descripción del logro
+	achievement_notif_desc_lbl = Label.new()
+	achievement_notif_desc_lbl.add_theme_font_size_override("font_size", 11)
+	achievement_notif_desc_lbl.add_theme_color_override("font_color", Color(0.75, 0.85, 0.95))
+	achievement_notif_desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	achievement_notif_desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(achievement_notif_desc_lbl)
+	
+	var sep = HSeparator.new()
+	vbox.add_child(sep)
+	
+	# Panel de Recompensa
+	var rew_panel = PanelContainer.new()
+	var sb_rew = StyleBoxFlat.new()
+	sb_rew.bg_color = Color(0.12, 0.18, 0.28, 0.9)
+	sb_rew.border_color = Color(0.3, 0.6, 0.9, 0.8)
+	sb_rew.set_border_width_all(1)
+	sb_rew.set_corner_radius_all(8)
+	rew_panel.add_theme_stylebox_override("panel", sb_rew)
+	vbox.add_child(rew_panel)
+	
+	var rew_margin = MarginContainer.new()
+	rew_margin.add_theme_constant_override("margin_left", 14)
+	rew_margin.add_theme_constant_override("margin_right", 14)
+	rew_margin.add_theme_constant_override("margin_top", 10)
+	rew_margin.add_theme_constant_override("margin_bottom", 10)
+	rew_panel.add_child(rew_margin)
+	
+	var rew_hbox = HBoxContainer.new()
+	rew_hbox.add_theme_constant_override("separation", 14)
+	rew_margin.add_child(rew_hbox)
+	
+	achievement_notif_icon_rect = TextureRect.new()
+	achievement_notif_icon_rect.custom_minimum_size = Vector2(64, 64)
+	achievement_notif_icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	achievement_notif_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	rew_hbox.add_child(achievement_notif_icon_rect)
+	
+	var rew_vbox = VBoxContainer.new()
+	rew_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rew_vbox.add_theme_constant_override("separation", 3)
+	rew_hbox.add_child(rew_vbox)
+	
+	var rew_tag = Label.new()
+	rew_tag.text = "👑 " + GameData.tr_text("EXCLUSIVE REWARD OBTAINED!", "¡RECOMPENSA EXCLUSIVA OBTENIDA!")
+	rew_tag.add_theme_font_size_override("font_size", 10)
+	rew_tag.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	rew_vbox.add_child(rew_tag)
+	
+	achievement_notif_reward_name_lbl = Label.new()
+	achievement_notif_reward_name_lbl.add_theme_font_size_override("font_size", 13)
+	achievement_notif_reward_name_lbl.add_theme_color_override("font_color", Color(1.0, 0.95, 0.7))
+	rew_vbox.add_child(achievement_notif_reward_name_lbl)
+	
+	achievement_notif_reward_desc_lbl = Label.new()
+	achievement_notif_reward_desc_lbl.add_theme_font_size_override("font_size", 11)
+	achievement_notif_reward_desc_lbl.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
+	achievement_notif_reward_desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	rew_vbox.add_child(achievement_notif_reward_desc_lbl)
+	
+	# Botón Entendido
+	btn_claim_achievement_notif = Button.new()
+	btn_claim_achievement_notif.custom_minimum_size = Vector2(160, 40)
+	btn_claim_achievement_notif.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	btn_claim_achievement_notif.text = "✨ " + GameData.tr_text("AWESOME!", "¡GENIAL!")
+	_apply_retro_button_style(btn_claim_achievement_notif, Color(0.2, 0.5, 0.3), Color(0.4, 0.9, 0.5))
+	btn_claim_achievement_notif.pressed.connect(func():
+		GameData.pop_pending_achievement_notification()
+		achievement_notif_modal.visible = false
+		_update_lobby_header_badge()
+		_check_pending_achievement_notifications()
+	)
+	vbox.add_child(btn_claim_achievement_notif)
+
+func _show_achievement_notification_modal(ach: Dictionary) -> void:
+	_setup_achievement_notif_modal()
+	
+	var title_text = GameData.tr_text(str(ach.get("title_en", ach.get("title", ""))), str(ach.get("title", "")))
+	var desc_text = GameData.tr_text(str(ach.get("desc_en", ach.get("desc", ""))), str(ach.get("desc", "")))
+	var rew_name = GameData.tr_text(str(ach.get("reward_name_en", ach.get("reward_name", ""))), str(ach.get("reward_name", "")))
+	var rew_desc = GameData.tr_text(str(ach.get("reward_desc_en", ach.get("reward_desc", ""))), str(ach.get("reward_desc", "")))
+	var rew_id = str(ach.get("reward_id", ""))
+	
+	achievement_notif_title_lbl.text = "✨ %s ✨" % title_text
+	achievement_notif_desc_lbl.text = desc_text
+	achievement_notif_reward_name_lbl.text = rew_name
+	achievement_notif_reward_desc_lbl.text = "🎒 " + rew_desc
+	
+	var tex = GameData.get_item_texture(rew_id)
+	if tex:
+		achievement_notif_icon_rect.texture = tex
+		
+	achievement_notif_modal.visible = true
+
 # --- MODAL MISIONES Y RECOMPENSAS DIARIAS ---
 func _on_daily_missions_pressed() -> void:
 	if not GameData.tutorial_completed and GameData.tutorial_step == 1:
@@ -11458,6 +12688,73 @@ func _refresh_friends_and_rooms() -> void:
 			
 		_update_friends_ui()
 	)
+	
+	# Consultar si otros entrenadores te han agregado como amigo
+	CloudSync.fetch_incoming_friend_additions(func(success: bool, incoming: Array, _msg: String):
+		if success:
+			_process_incoming_friend_notifications(incoming)
+	)
+
+func _process_incoming_friend_notifications(incoming: Array) -> void:
+	pending_incoming_friends.clear()
+	for inc in incoming:
+		var k = str(inc.get("email", inc.get("id", inc.get("alias", "")))).to_lower()
+		var is_already = GameData.is_friend(inc.get("email", "")) or GameData.is_friend(inc.get("id", "")) or GameData.is_friend(inc.get("alias", ""))
+		if not dismissed_friend_notices.has(k) and not is_already:
+			pending_incoming_friends.append(inc)
+	_update_friend_notice_banner()
+
+func _update_friend_notice_banner() -> void:
+	if not friend_notice_banner:
+		return
+	if pending_incoming_friends.is_empty():
+		friend_notice_banner.visible = false
+		return
+	
+	var cur = pending_incoming_friends[0]
+	var c_alias = str(cur.get("alias", "Trainer"))
+	friend_notice_banner.visible = true
+	friend_notice_title.text = "💛 " + GameData.tr_text("FRIEND NOTIFICATION", "NOTIFICACIÓN DE AMISTAD")
+	friend_notice_desc.text = GameData.tr_text("¡%s added you as a friend!", "¡%s te agregó como amigo!") % c_alias
+	btn_add_back_notice.text = "➕ " + GameData.tr_text("Add Back", "Agregar de vuelta")
+
+func _on_add_back_notice_pressed() -> void:
+	if pending_incoming_friends.is_empty():
+		if friend_notice_banner:
+			friend_notice_banner.visible = false
+		return
+	var cur = pending_incoming_friends.pop_front()
+	var alias = str(cur.get("alias", "Trainer"))
+	var email = str(cur.get("email", ""))
+	var p_id = str(cur.get("id", ""))
+	
+	GameData.add_friend(alias, email, p_id)
+	friends_feedback_lbl.text = "✨ " + (GameData.tr_text("'%s' added back to your friends list!", "¡Agregaste a '%s' de vuelta a tus amigos!") % alias)
+	_update_friends_ui()
+	_update_friend_notice_banner()
+	if friends_active_tab == "SEARCH":
+		_populate_search_results_ui()
+
+func _on_dismiss_friend_notice_pressed() -> void:
+	if pending_incoming_friends.is_empty():
+		if friend_notice_banner:
+			friend_notice_banner.visible = false
+		return
+	var cur = pending_incoming_friends.pop_front()
+	var k = str(cur.get("email", cur.get("id", cur.get("alias", "")))).to_lower()
+	dismissed_friend_notices[k] = true
+	_update_friend_notice_banner()
+
+func _remove_pending_incoming_friend(email: String, p_id: String, alias: String) -> void:
+	var rem_idx = -1
+	for i in range(pending_incoming_friends.size()):
+		var p = pending_incoming_friends[i]
+		if (not email.is_empty() and p.get("email", "") == email) or (not p_id.is_empty() and p.get("id", "") == p_id) or (p.get("alias", "") == alias):
+			rem_idx = i
+			break
+	if rem_idx != -1:
+		pending_incoming_friends.remove_at(rem_idx)
+		_update_friend_notice_banner()
 
 func _update_friends_ui() -> void:
 	var friends = GameData.player_friends
@@ -11735,8 +13032,13 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	var p_id = str(res_data.get("id", ""))
 	var act_val = res_data.get("last_activity_at", "")
 	var is_self = bool(res_data.get("is_self", false))
+	var has_added_you = bool(res_data.get("has_added_you", false))
 	var is_already = GameData.is_friend(email) or GameData.is_friend(p_id) or GameData.is_friend(alias)
 	var is_active = is_self or GameData.is_trainer_active(act_val)
+	
+	var name_row = HBoxContainer.new()
+	name_row.add_theme_constant_override("separation", 6)
+	info_vbox.add_child(name_row)
 	
 	var name_lbl = Label.new()
 	if is_self:
@@ -11747,7 +13049,21 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 		name_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 1))
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	info_vbox.add_child(name_lbl)
+	name_row.add_child(name_lbl)
+	
+	if not is_self:
+		if has_added_you and not is_already:
+			var added_badge = Label.new()
+			added_badge.text = "💛 " + GameData.tr_text("Added You", "Te agregó")
+			added_badge.add_theme_font_size_override("font_size", 10)
+			added_badge.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
+			name_row.add_child(added_badge)
+		elif has_added_you and is_already:
+			var mutual_badge = Label.new()
+			mutual_badge.text = "🤝 " + GameData.tr_text("Mutual", "Mutuo")
+			mutual_badge.add_theme_font_size_override("font_size", 10)
+			mutual_badge.add_theme_color_override("font_color", Color(0.4, 0.9, 0.6))
+			name_row.add_child(mutual_badge)
 	
 	var rel_act = GameData.format_relative_activity_time(act_val)
 	var sub_lbl = Label.new()
@@ -11784,29 +13100,38 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	
 	if is_self:
 		add_btn.text = "👤"
-		add_btn.tooltip_text = "Your Profile"
+		add_btn.tooltip_text = GameData.tr_text("Your Profile", "Tu Perfil")
 		add_btn.disabled = true
 		add_btn.add_theme_color_override("font_color", Color(0.65, 0.75, 0.85))
 		_apply_retro_button_style(add_btn, Color(0.25, 0.3, 0.38), Color(0.4, 0.45, 0.55))
 	elif is_already:
 		add_btn.text = "✓"
-		add_btn.tooltip_text = "Already Friends"
+		add_btn.tooltip_text = GameData.tr_text("Already Friends", "Ya son Amigos")
 		add_btn.disabled = true
 		add_btn.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 		_apply_retro_button_style(add_btn, Color(0.15, 0.45, 0.25), Color(0.3, 0.8, 0.4))
 	else:
 		add_btn.text = "➕"
-		add_btn.tooltip_text = "Add Friend"
-		add_btn.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
-		_apply_retro_button_style(add_btn, Color(0.2, 0.5, 0.7), Color(0.4, 0.8, 1.0))
+		if has_added_you:
+			add_btn.tooltip_text = GameData.tr_text("Add Back", "Agregar de vuelta")
+			add_btn.add_theme_color_override("font_color", Color(1, 0.9, 0.2))
+			_apply_retro_button_style(add_btn, Color(0.45, 0.35, 0.1), Color(1, 0.85, 0.25))
+		else:
+			add_btn.tooltip_text = GameData.tr_text("Add Friend", "Agregar Amigo")
+			add_btn.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+			_apply_retro_button_style(add_btn, Color(0.2, 0.5, 0.7), Color(0.4, 0.8, 1.0))
 		add_btn.pressed.connect(func():
 			GameData.add_friend(alias, email, p_id)
 			add_btn.text = "✓"
-			add_btn.tooltip_text = "Friends"
+			add_btn.tooltip_text = GameData.tr_text("Friends", "Amigos")
 			add_btn.disabled = true
 			add_btn.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 			_apply_retro_button_style(add_btn, Color(0.15, 0.45, 0.25), Color(0.3, 0.8, 0.4))
-			friends_feedback_lbl.text = "✨ '%s' added to your friends list!" % alias
+			if has_added_you:
+				friends_feedback_lbl.text = "✨ " + (GameData.tr_text("'%s' added back to your friends list!", "¡Agregaste a '%s' de vuelta a tus amigos!") % alias)
+				_remove_pending_incoming_friend(email, p_id, alias)
+			else:
+				friends_feedback_lbl.text = "✨ " + (GameData.tr_text("'%s' added to your friends list!", "¡'%s' añadido a tu lista de amigos!") % alias)
 			_update_friends_ui()
 		)
 	hbox.add_child(add_btn)

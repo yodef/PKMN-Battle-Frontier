@@ -670,6 +670,31 @@ func search_trainers(query_text: String, callback: Callable) -> void:
 						elif t_id.to_lower().contains(clean_query):
 							match_found = true
 							
+					# Detectar si este entrenador ha agregado al jugador local como amigo
+					var has_added_me = false
+					if not is_self and (not my_email.is_empty() or not my_id.is_empty() or not my_alias.is_empty()):
+						if f.has("save_json"):
+							var raw_s_fr = str(f["save_json"].get("stringValue", ""))
+							if not raw_s_fr.is_empty():
+								var p_s_fr = JSON.parse_string(raw_s_fr)
+								if typeof(p_s_fr) == TYPE_DICTIONARY and p_s_fr.has("friends"):
+									var fr_arr = p_s_fr.get("friends", [])
+									if typeof(fr_arr) == TYPE_ARRAY:
+										for fr in fr_arr:
+											if typeof(fr) == TYPE_DICTIONARY:
+												var fe = str(fr.get("email", "")).strip_edges().to_lower()
+												var fi = str(fr.get("id", "")).strip_edges().to_lower()
+												var fa = str(fr.get("alias", "")).strip_edges().to_lower()
+												if not my_email.is_empty() and fe == my_email:
+													has_added_me = true
+													break
+												elif not my_id.is_empty() and fi == my_id:
+													has_added_me = true
+													break
+												elif not my_alias.is_empty() and my_alias != "trainer" and fa == my_alias:
+													has_added_me = true
+													break
+							
 					var t_updated = str(f.get("last_activity_at", f.get("updated_at", {})).get("stringValue", "")).strip_edges()
 					if match_found:
 						results.append({
@@ -678,7 +703,8 @@ func search_trainers(query_text: String, callback: Callable) -> void:
 							"id": t_id,
 							"diamonds": t_diamonds,
 							"last_activity_at": t_updated,
-							"is_self": is_self
+							"is_self": is_self,
+							"has_added_you": has_added_me
 						})
 						
 			if callback.is_valid():
@@ -693,6 +719,95 @@ func search_trainers(query_text: String, callback: Callable) -> void:
 		http.queue_free()
 		if callback.is_valid():
 			callback.call(false, [], "Failed to initiate search request.")
+
+# Consulta entrenadores que te han agregado como amigo en Google Cloud
+func fetch_incoming_friend_additions(callback: Callable) -> void:
+	var url = "%s?key=%s&pageSize=50" % [FIRESTORE_BASE_URL, API_KEY]
+	var headers = _get_nocache_headers()
+	
+	var http = HTTPRequest.new()
+	add_child(http)
+	
+	http.request_completed.connect(func(result: int, response_code: int, _resp_headers: PackedStringArray, resp_body: PackedByteArray):
+		http.queue_free()
+		
+		if response_code >= 200 and response_code < 300:
+			var resp_text = resp_body.get_string_from_utf8()
+			var parsed = JSON.parse_string(resp_text)
+			var incoming: Array = []
+			
+			if typeof(parsed) == TYPE_DICTIONARY and parsed.has("documents"):
+				var docs = parsed.get("documents", [])
+				var my_email = GameData.profile_email.strip_edges().to_lower() if GameData else ""
+				var my_id = GameData.profile_id.strip_edges().to_lower() if GameData else ""
+				var my_alias = GameData.profile_name.strip_edges().to_lower() if GameData else ""
+				
+				for doc in docs:
+					if typeof(doc) != TYPE_DICTIONARY or not doc.has("fields"):
+						continue
+					var f = doc["fields"]
+					var t_email = str(f.get("email", {}).get("stringValue", "")).strip_edges()
+					var t_alias = str(f.get("trainer_alias", f.get("trainer_name", {})).get("stringValue", "")).strip_edges()
+					var t_id = str(f.get("profile_id", {}).get("stringValue", "")).strip_edges()
+					
+					var is_self = false
+					if not my_email.is_empty() and t_email.to_lower() == my_email:
+						is_self = true
+					elif not my_id.is_empty() and t_id.to_lower() == my_id:
+						is_self = true
+					elif not my_alias.is_empty() and my_alias != "trainer" and t_alias.to_lower() == my_alias:
+						is_self = true
+					if is_self:
+						continue
+						
+					var is_already = false
+					if GameData:
+						is_already = GameData.is_friend(t_email) or GameData.is_friend(t_id) or GameData.is_friend(t_alias)
+					if is_already:
+						continue
+						
+					var has_added_me = false
+					if f.has("save_json"):
+						var raw_s = str(f["save_json"].get("stringValue", ""))
+						if not raw_s.is_empty():
+							var p_s = JSON.parse_string(raw_s)
+							if typeof(p_s) == TYPE_DICTIONARY and p_s.has("friends"):
+								var fr_list = p_s.get("friends", [])
+								if typeof(fr_list) == TYPE_ARRAY:
+									for fr in fr_list:
+										if typeof(fr) == TYPE_DICTIONARY:
+											var fe = str(fr.get("email", "")).strip_edges().to_lower()
+											var fi = str(fr.get("id", "")).strip_edges().to_lower()
+											var fa = str(fr.get("alias", "")).strip_edges().to_lower()
+											if not my_email.is_empty() and fe == my_email:
+												has_added_me = true
+												break
+											elif not my_id.is_empty() and fi == my_id:
+												has_added_me = true
+												break
+											elif not my_alias.is_empty() and my_alias != "trainer" and fa == my_alias:
+												has_added_me = true
+												break
+					if has_added_me:
+						var t_updated = str(f.get("last_activity_at", f.get("updated_at", {})).get("stringValue", "")).strip_edges()
+						incoming.append({
+							"alias": t_alias if not t_alias.is_empty() else "Trainer",
+							"email": t_email,
+							"id": t_id,
+							"last_activity_at": t_updated
+						})
+			if callback.is_valid():
+				callback.call(true, incoming, "Success")
+		else:
+			if callback.is_valid():
+				callback.call(false, [], "Error fetching incoming friends")
+	)
+	
+	var err = http.request(url, headers, HTTPClient.METHOD_GET)
+	if err != OK:
+		http.queue_free()
+		if callback.is_valid():
+			callback.call(false, [], "Failed to initiate incoming friends request.")
 
 # Consulta salas activas de amigos o retos directos
 func fetch_friend_rooms(friends_list: Array, my_email: String, callback: Callable) -> void:
