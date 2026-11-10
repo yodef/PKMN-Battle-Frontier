@@ -73,6 +73,15 @@ func _ready():
 	GameData.lake_of_rage_completed = false
 	GameData.tutorial_completed = true
 	
+	# Backup original adventure state so test doesn't contaminate user profile
+	var original_completed = GameData.adventure_completed_episodes.duplicate()
+	var original_lake_done = GameData.lake_of_rage_completed
+	
+	# Clear Johto episodes for test
+	for ep_id in expected_eps:
+		GameData.adventure_completed_episodes.erase(ep_id)
+	GameData.lake_of_rage_completed = false
+	
 	assert(GameData.is_adventure_episode_unlocked(101), "Episode 101 should be unlocked when tutorial is complete")
 	assert(GameData.get_johto_gym_badges_count() == 0, "Initial Johto badges should be 0")
 	assert(not GameData.has_all_johto_gym_badges(), "has_all_johto_gym_badges should be false")
@@ -90,8 +99,15 @@ func _ready():
 	assert(not GameData.is_lake_of_rage_completed(), "Lake of rage initially not completed")
 	GameData.complete_lake_of_rage()
 	assert(GameData.is_lake_of_rage_completed(), "Lake of rage completed should now be true")
+	# Once completed, is_lake_of_rage_unlocked must be false (not repeatable)
+	assert(not GameData.is_lake_of_rage_unlocked(), "Lake of rage must be locked once completed!")
 	assert(GameData.RED_GYARADOS_CARD_ID in GameData.player_unlocked_ids, "Playable Red Gyarados should now be unlocked in player collection!")
 	print("✓ Johto badges count and Lake of Rage reward flow verified!")
+	
+	# Restore original profile state
+	GameData.adventure_completed_episodes = original_completed
+	GameData.lake_of_rage_completed = original_lake_done
+	GameData.save_profile()
 	
 	# 5. Test Furia Passive Ability in Battle
 	print("\n--- Test 5: Furia Passive Ability Mechanics ---")

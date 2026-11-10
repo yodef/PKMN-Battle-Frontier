@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c_test_lake_of_rage_flow"]
+
+[ext_resource type="Script" path="res://tests/test_lake_of_rage_flow.gd" id="1_test"]
+
+[node name="TestLakeOfRageFlow" type="Node"]
+script = ExtResource("1_test")

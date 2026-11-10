@@ -100,6 +100,7 @@ var johto_routes_scroll_vbox: VBoxContainer = null
 
 # --- MODALES DE ACHIEVEMENTS / LOGROS ---
 var achievements_modal: Control = null
+var achievements_panel: PanelContainer = null
 var achievements_list_vbox: VBoxContainer = null
 var achievements_summary_lbl: Label = null
 var btn_close_achievements: Button = null
@@ -178,6 +179,11 @@ var camp_bag_targets_view: VBoxContainer = null
 var camp_bag_targets_container: VBoxContainer = null
 var camp_bag_prompt_lbl: Label = null
 var camp_bag_selected_item: String = ""
+var camp_bag_active_tab: String = "consumables" # "consumables" or "key_items"
+var camp_bag_tab_bar: HBoxContainer = null
+var btn_camp_tab_consumables: Button = null
+var btn_camp_tab_key_items: Button = null
+var camp_bag_capacity_lbl: Label = null
 var camp_pokemon_inspector_modal: Control = null
 var camp_evo_selector_modal: Control = null
 var camp_evo_modal: Control = null
@@ -684,7 +690,11 @@ func _ready() -> void:
 		if camp_bag_modal: camp_bag_modal.visible = false
 		if camp_pokemon_inspector_modal: camp_pokemon_inspector_modal.visible = false
 		if camp_evo_modal: camp_evo_modal.visible = false
-		if GameData.campaign_submode == "ADVENTURE":
+		if GameData.campaign_submode == "LAKE_OF_RAGE":
+			GameData.campaign_submode = "ADVENTURE"
+			GameData.is_campaign_mode = false
+			_open_johto_episodes_modal()
+		elif GameData.campaign_submode == "ADVENTURE":
 			if GameData.adventure_selected_region == "JOHTO":
 				_open_johto_episodes_modal()
 			else:
@@ -1059,11 +1069,16 @@ func _ready() -> void:
 			update_adventure_episodes_ui()
 			adventure_episodes_modal.visible = true
 	elif GameData.is_campaign_mode:
-		var active_state = GameData.get_active_campaign_team_state()
-		if active_state.size() > 0:
-			update_campaign_ui()
-			campaign_modal.visible = true
-			_check_and_run_camp_evolutions()
+		if GameData.campaign_submode == "LAKE_OF_RAGE":
+			GameData.is_campaign_mode = false
+			GameData.campaign_submode = "ADVENTURE"
+			_open_johto_episodes_modal()
+		else:
+			var active_state = GameData.get_active_campaign_team_state()
+			if active_state.size() > 0:
+				update_campaign_ui()
+				campaign_modal.visible = true
+				_check_and_run_camp_evolutions()
 
 func refresh_cards_data_from_catalog() -> void:
 	cards_data.clear()
@@ -1770,33 +1785,23 @@ func _setup_adventure_ep5_routes_modal() -> void:
 	adventure_ep5_routes_modal.z_index = 45
 	add_child(adventure_ep5_routes_modal)
 	
+	# Fondo sólido a pantalla completa (estilo nativo)
 	var bg = ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.02, 0.04, 0.08, 0.88)
+	bg.color = Color(0.06, 0.08, 0.12, 1.0)
 	adventure_ep5_routes_modal.add_child(bg)
 	
-	var center = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	adventure_ep5_routes_modal.add_child(center)
-	
-	var panel = PanelContainer.new()
-	var ep5_target_w: float = minf(460.0, get_viewport_rect().size.x - 24.0)
-	panel.custom_minimum_size = Vector2(ep5_target_w, 0)
-	var sb = StyleBoxFlat.new()
-	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
-	sb.border_color = Color(0.3, 0.75, 0.85, 0.9)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(10)
-	sb.content_margin_left = 18
-	sb.content_margin_right = 18
-	sb.content_margin_top = 16
-	sb.content_margin_bottom = 16
-	panel.add_theme_stylebox_override("panel", sb)
-	center.add_child(panel)
-	
 	var vbox = VBoxContainer.new()
+	vbox.name = "Ep5RoutesBox"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 20.0
+	vbox.offset_top = 28.0
+	vbox.offset_right = -20.0
+	vbox.offset_bottom = -20.0
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
 	vbox.add_theme_constant_override("separation", 10)
-	panel.add_child(vbox)
+	adventure_ep5_routes_modal.add_child(vbox)
 	
 	var title_lbl = Label.new()
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1813,7 +1818,8 @@ func _setup_adventure_ep5_routes_modal() -> void:
 	vbox.add_child(subtitle_lbl)
 	
 	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(0, 360)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	vbox.add_child(scroll)
 	
@@ -2022,33 +2028,23 @@ func _setup_adventure_ep6_routes_modal() -> void:
 	adventure_ep6_routes_modal.z_index = 45
 	add_child(adventure_ep6_routes_modal)
 	
+	# Fondo sólido a pantalla completa (estilo nativo)
 	var bg = ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.02, 0.04, 0.08, 0.88)
+	bg.color = Color(0.06, 0.08, 0.12, 1.0)
 	adventure_ep6_routes_modal.add_child(bg)
 	
-	var center = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	adventure_ep6_routes_modal.add_child(center)
-	
-	var panel = PanelContainer.new()
-	var ep5_target_w: float = minf(460.0, get_viewport_rect().size.x - 24.0)
-	panel.custom_minimum_size = Vector2(ep5_target_w, 0)
-	var sb = StyleBoxFlat.new()
-	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
-	sb.border_color = Color(0.3, 0.75, 0.85, 0.9)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(10)
-	sb.content_margin_left = 18
-	sb.content_margin_right = 18
-	sb.content_margin_top = 16
-	sb.content_margin_bottom = 16
-	panel.add_theme_stylebox_override("panel", sb)
-	center.add_child(panel)
-	
 	var vbox = VBoxContainer.new()
+	vbox.name = "Ep6RoutesBox"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 20.0
+	vbox.offset_top = 28.0
+	vbox.offset_right = -20.0
+	vbox.offset_bottom = -20.0
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
 	vbox.add_theme_constant_override("separation", 10)
-	panel.add_child(vbox)
+	adventure_ep6_routes_modal.add_child(vbox)
 	
 	var title_lbl = Label.new()
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -2065,7 +2061,8 @@ func _setup_adventure_ep6_routes_modal() -> void:
 	vbox.add_child(subtitle_lbl)
 	
 	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(0, 360)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	vbox.add_child(scroll)
 	
@@ -2274,33 +2271,23 @@ func _setup_adventure_ep7_routes_modal() -> void:
 	adventure_ep7_routes_modal.z_index = 45
 	add_child(adventure_ep7_routes_modal)
 	
+	# Fondo sólido a pantalla completa (estilo nativo)
 	var bg = ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.02, 0.04, 0.08, 0.88)
+	bg.color = Color(0.06, 0.08, 0.12, 1.0)
 	adventure_ep7_routes_modal.add_child(bg)
 	
-	var center = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	adventure_ep7_routes_modal.add_child(center)
-	
-	var panel = PanelContainer.new()
-	var ep5_target_w: float = minf(460.0, get_viewport_rect().size.x - 24.0)
-	panel.custom_minimum_size = Vector2(ep5_target_w, 0)
-	var sb = StyleBoxFlat.new()
-	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
-	sb.border_color = Color(0.9, 0.45, 0.2, 0.9)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(10)
-	sb.content_margin_left = 18
-	sb.content_margin_right = 18
-	sb.content_margin_top = 16
-	sb.content_margin_bottom = 16
-	panel.add_theme_stylebox_override("panel", sb)
-	center.add_child(panel)
-	
 	var vbox = VBoxContainer.new()
+	vbox.name = "Ep7RoutesBox"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 20.0
+	vbox.offset_top = 28.0
+	vbox.offset_right = -20.0
+	vbox.offset_bottom = -20.0
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
 	vbox.add_theme_constant_override("separation", 10)
-	panel.add_child(vbox)
+	adventure_ep7_routes_modal.add_child(vbox)
 	
 	var title_lbl = Label.new()
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -2317,7 +2304,8 @@ func _setup_adventure_ep7_routes_modal() -> void:
 	vbox.add_child(subtitle_lbl)
 	
 	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(0, 320)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	vbox.add_child(scroll)
 	
@@ -2508,33 +2496,23 @@ func _setup_johto_episodes_modal() -> void:
 	johto_episodes_modal.z_index = 45
 	add_child(johto_episodes_modal)
 	
+	# Fondo sólido a pantalla completa (estilo nativo AdventureEpisodesModal)
 	var bg = ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.02, 0.04, 0.08, 0.90)
+	bg.color = Color(0.06, 0.08, 0.12, 1.0)
 	johto_episodes_modal.add_child(bg)
 	
-	var center = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	johto_episodes_modal.add_child(center)
-	
-	var panel = PanelContainer.new()
-	var target_w: float = minf(470.0, get_viewport_rect().size.x - 20.0)
-	panel.custom_minimum_size = Vector2(target_w, 0)
-	var sb = StyleBoxFlat.new()
-	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
-	sb.border_color = Color(0.9, 0.65, 0.35, 0.95)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(10)
-	sb.content_margin_left = 16
-	sb.content_margin_right = 16
-	sb.content_margin_top = 14
-	sb.content_margin_bottom = 14
-	panel.add_theme_stylebox_override("panel", sb)
-	center.add_child(panel)
-	
 	var vbox = VBoxContainer.new()
+	vbox.name = "JohtoEpisodesBox"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 20.0
+	vbox.offset_top = 28.0
+	vbox.offset_right = -20.0
+	vbox.offset_bottom = -20.0
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
 	vbox.add_theme_constant_override("separation", 8)
-	panel.add_child(vbox)
+	johto_episodes_modal.add_child(vbox)
 	
 	var title_lbl = Label.new()
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -2559,7 +2537,8 @@ func _setup_johto_episodes_modal() -> void:
 	vbox.add_child(wallet_lbl)
 	
 	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(0, 360)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	vbox.add_child(scroll)
 	
@@ -2754,8 +2733,9 @@ func _setup_johto_episodes_modal() -> void:
 	var lake_btn = Button.new()
 	lake_btn.custom_minimum_size = Vector2(0, 36)
 	lake_btn.add_theme_font_size_override("font_size", 12)
-	lake_btn.text = "Desafiar al Lago de la Furia"
-	_apply_retro_button_style(lake_btn, Color(0.7, 0.15, 0.15), Color(0.95, 0.3, 0.3), true)
+	lake_btn.text = "🔒 Bloqueado (Completa Johto)"
+	lake_btn.disabled = true
+	_apply_retro_button_style(lake_btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
 	lake_btn.pressed.connect(func():
 		if GameData.is_drag_scrolling():
 			return
@@ -2867,18 +2847,18 @@ func _refresh_johto_episodes_ui() -> void:
 		
 		if not has_8_badges:
 			l_panel.modulate = Color(0.7, 0.7, 0.75, 0.8)
-			l_status.text = "Status: 🔒 Bloqueado (Requiere las 8 medallas de Johto [%d/8])" % GameData.get_johto_gym_badges_count()
+			l_status.text = "Status: 🔒 Bloqueado (Requiere completar los 8 episodios de Johto [%d/8])" % GameData.get_johto_gym_badges_count()
 			l_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
-			l_btn.text = "🔒 Bloqueado (Requiere 8 Medallas)"
+			l_btn.text = "🔒 Bloqueado (Completa Johto)"
 			l_btn.disabled = true
 			_apply_retro_button_style(l_btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
 		elif is_lake_done:
-			l_panel.modulate = Color(1, 1, 1, 1)
-			l_status.text = "Status: 🏅 COMPLETADO (¡Gyarados Rojo Reclutado!) • Repetible"
+			l_panel.modulate = Color(0.85, 0.85, 0.9, 0.9)
+			l_status.text = "Status: 🏅 COMPLETADO (¡Gyarados Rojo Reclutado!) • Evento Finalizado"
 			l_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-			l_btn.text = "🌊 Reafirmar Dominio en el Lago ➜"
-			l_btn.disabled = false
-			_apply_retro_button_style(l_btn, Color(0.75, 0.20, 0.20), Color(0.95, 0.4, 0.35), true)
+			l_btn.text = "🏅 Gyarados Rojo Derrotado"
+			l_btn.disabled = true
+			_apply_retro_button_style(l_btn, Color(0.25, 0.35, 0.30), Color(0.35, 0.45, 0.40), false)
 		else:
 			l_panel.modulate = Color(1, 1, 1, 1)
 			l_status.text = "Status: ⚡ DISPONIBLE: ¡El Gyarados Rojo acecha en el lago (600 HP)!"
@@ -2910,7 +2890,7 @@ func _on_select_johto_episode_pressed(episode_id: int) -> void:
 		_check_and_run_camp_evolutions()
 
 func _start_lake_of_rage_event() -> void:
-	if not GameData.has_all_johto_gym_badges():
+	if not GameData.is_lake_of_rage_unlocked():
 		return
 	if johto_episodes_modal:
 		johto_episodes_modal.visible = false
@@ -2935,33 +2915,23 @@ func _setup_johto_routes_modal() -> void:
 	johto_routes_modal.z_index = 50
 	add_child(johto_routes_modal)
 	
+	# Fondo sólido a pantalla completa (estilo nativo)
 	var bg = ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.02, 0.04, 0.08, 0.90)
+	bg.color = Color(0.06, 0.08, 0.12, 1.0)
 	johto_routes_modal.add_child(bg)
 	
-	var center = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	johto_routes_modal.add_child(center)
-	
-	var panel = PanelContainer.new()
-	var target_w: float = minf(470.0, get_viewport_rect().size.x - 20.0)
-	panel.custom_minimum_size = Vector2(target_w, 0)
-	var sb = StyleBoxFlat.new()
-	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
-	sb.border_color = Color(0.9, 0.65, 0.35, 0.95)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(10)
-	sb.content_margin_left = 16
-	sb.content_margin_right = 16
-	sb.content_margin_top = 14
-	sb.content_margin_bottom = 14
-	panel.add_theme_stylebox_override("panel", sb)
-	center.add_child(panel)
-	
 	var vbox = VBoxContainer.new()
+	vbox.name = "JohtoRoutesBox"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 20.0
+	vbox.offset_top = 28.0
+	vbox.offset_right = -20.0
+	vbox.offset_bottom = -20.0
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
 	vbox.add_theme_constant_override("separation", 8)
-	panel.add_child(vbox)
+	johto_routes_modal.add_child(vbox)
 	
 	johto_routes_title_lbl = Label.new()
 	johto_routes_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -2978,7 +2948,8 @@ func _setup_johto_routes_modal() -> void:
 	vbox.add_child(johto_routes_subtitle_lbl)
 	
 	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(0, 320)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	vbox.add_child(scroll)
 	
@@ -2989,7 +2960,7 @@ func _setup_johto_routes_modal() -> void:
 	
 	var btn_close = Button.new()
 	btn_close.name = "BtnCloseJohtoRoutes"
-	btn_close.custom_minimum_size = Vector2(0, 36)
+	btn_close.custom_minimum_size = Vector2(0, 40)
 	btn_close.text = "⬅ Return to Johto Episodes"
 	btn_close.add_theme_font_size_override("font_size", 12)
 	_apply_retro_button_style(btn_close, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
@@ -3416,7 +3387,9 @@ func _setup_starter_selection_modal() -> void:
 	starter_select_modal.add_child(center)
 	
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(490, 580)
+	var starter_w: float = minf(460.0, get_viewport_rect().size.x - 24.0)
+	var starter_h: float = minf(580.0, get_viewport_rect().size.y - 40.0)
+	panel.custom_minimum_size = Vector2(starter_w, starter_h)
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = Color(0.07, 0.10, 0.16, 0.98)
 	sb.border_color = Color(0.3, 0.75, 0.85, 0.95)
@@ -3473,7 +3446,7 @@ func _setup_starter_selection_modal() -> void:
 		
 	# Cards Scroll / Container
 	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(450, 360)
+	scroll.custom_minimum_size = Vector2(0, 360)
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -3520,7 +3493,7 @@ func _refresh_starter_cards_display() -> void:
 		if d.is_empty(): continue
 		
 		var card_panel = PanelContainer.new()
-		card_panel.custom_minimum_size = Vector2(430, 80)
+		card_panel.custom_minimum_size = Vector2(0, 80)
 		card_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var card_sb = StyleBoxFlat.new()
 		var type_color = GameData.get_type_primary_color(str(d.get("type", "NORMAL")))
@@ -3696,19 +3669,22 @@ func open_team_select_for_campaign() -> void:
 	team_select_tabs.visible = false
 	
 	# Cargar selección del equipo de la campaña activa
-	var active_team = GameData.get_active_campaign_team_state()
-	if active_team.size() > 0:
+	if GameData.campaign_submode == "LAKE_OF_RAGE":
 		selected_player_ids.clear()
-		for p in active_team:
-			var cat_entry = GameData.pokemon_catalog.get(int(p["id"]))
-			if GameData.campaign_submode == "CHAOS" or GameData.campaign_submode == "LAKE_OF_RAGE":
-				if cat_entry:
-					selected_player_ids.append(int(p["id"]))
-			else:
-				var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower() if cat_entry else ""
-				var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "legendary")
-				if cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "basic" and not is_legendary:
-					selected_player_ids.append(int(p["id"]))
+	else:
+		var active_team = GameData.get_active_campaign_team_state()
+		if active_team.size() > 0:
+			selected_player_ids.clear()
+			for p in active_team:
+				var cat_entry = GameData.pokemon_catalog.get(int(p["id"]))
+				if GameData.campaign_submode == "CHAOS":
+					if cat_entry:
+						selected_player_ids.append(int(p["id"]))
+				else:
+					var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower() if cat_entry else ""
+					var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "legendary")
+					if cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "basic" and not is_legendary:
+						selected_player_ids.append(int(p["id"]))
 	# If starting a fresh run, leave selected_player_ids empty so the player can choose freely
 			
 	update_team_sort_buttons_ui()
@@ -3734,14 +3710,14 @@ func update_campaign_ui() -> void:
 	var ethers = cur_inv.get("ether", 0)
 	var poke_flutes = cur_inv.get("poke_flute", 0)
 	var exp_shares = cur_inv.get("exp_share", 0)
+	var consumable_count = GameData.get_consumable_items_count(cur_inv)
+	var is_consumable_full = (consumable_count >= GameData.MAX_CONSUMABLE_ITEMS)
+	
 	if btn_camp_bag:
-		var total_items = potions + super_potions + hyper_potions + revives + remedies + ethers + poke_flutes + exp_shares
-		for st_name in GameData.EVOLUTION_STONE_TYPES:
-			total_items += GameData.get_campaign_stone_count(st_name)
-		btn_camp_bag.text = "🎒 Bag (%d Item%s)" % [total_items, "s" if total_items != 1 else ""]
+		btn_camp_bag.text = "🎒 Bolso (%d/10)" % consumable_count
 	if camp_shop_stones_list and camp_shop_modal and camp_shop_modal.visible:
 		_refresh_camp_shop_stones_ui()
-	campaign_item_count_lbl.text = "Inventory: %d Potions" % potions
+	campaign_item_count_lbl.text = "Bolso: %d/10 Consumibles | %d Potions" % [consumable_count, potions]
 	if campaign_super_potion_count_lbl:
 		campaign_super_potion_count_lbl.text = "Inventory: %d Super Potions" % super_potions
 	if campaign_hyper_potion_count_lbl:
@@ -3752,27 +3728,59 @@ func update_campaign_ui() -> void:
 	campaign_ether_count_lbl.text = "Inventory: %d Ethers" % ethers
 	campaign_revive_count_lbl.text = "Inventory: %d Revives" % revives
 	
-	btn_buy_potion.disabled = (cur_gold < GameData.ITEM_COST_POTION)
-	btn_buy_potion.text = "Buy (%d G)" % GameData.ITEM_COST_POTION
+	# Ocultar objetos clave de la tienda (los objetos clave no se venden en la tienda)
+	var poke_flute_row = $CampaignModal/Box/ShopSection/ShopVBox.get_node_or_null("PokeFluteRow")
+	if poke_flute_row:
+		poke_flute_row.visible = false
+	
+	# Botones de compra respetan el límite de 10 consumibles
+	if is_consumable_full:
+		btn_buy_potion.disabled = true
+		btn_buy_potion.text = "Lleno (10/10)"
+	else:
+		btn_buy_potion.disabled = (cur_gold < GameData.ITEM_COST_POTION)
+		btn_buy_potion.text = "Buy (%d G)" % GameData.ITEM_COST_POTION
+
 	if btn_buy_super_potion:
-		btn_buy_super_potion.disabled = (cur_gold < GameData.ITEM_COST_SUPER_POTION)
-		btn_buy_super_potion.text = "Buy (%d G)" % GameData.ITEM_COST_SUPER_POTION
-	if btn_buy_hyper_potion:
-		btn_buy_hyper_potion.disabled = (cur_gold < GameData.ITEM_COST_HYPER_POTION)
-		btn_buy_hyper_potion.text = "Buy (%d G)" % GameData.ITEM_COST_HYPER_POTION
-	btn_buy_remedy.disabled = (cur_gold < GameData.ITEM_COST_REMEDY)
-	btn_buy_remedy.text = "Buy (%d G)" % GameData.ITEM_COST_REMEDY
-	if btn_buy_poke_flute:
-		if poke_flutes > 0:
-			btn_buy_poke_flute.disabled = true
-			btn_buy_poke_flute.text = "Owned"
+		if is_consumable_full:
+			btn_buy_super_potion.disabled = true
+			btn_buy_super_potion.text = "Lleno (10/10)"
 		else:
-			btn_buy_poke_flute.disabled = (cur_gold < GameData.ITEM_COST_POKE_FLUTE)
-			btn_buy_poke_flute.text = "Buy (%d G)" % GameData.ITEM_COST_POKE_FLUTE
-	btn_buy_ether.disabled = (cur_gold < GameData.ITEM_COST_ETHER)
-	btn_buy_ether.text = "Buy (%d G)" % GameData.ITEM_COST_ETHER
-	btn_buy_revive.disabled = (cur_gold < GameData.ITEM_COST_REVIVE)
-	btn_buy_revive.text = "Buy (%d G)" % GameData.ITEM_COST_REVIVE
+			btn_buy_super_potion.disabled = (cur_gold < GameData.ITEM_COST_SUPER_POTION)
+			btn_buy_super_potion.text = "Buy (%d G)" % GameData.ITEM_COST_SUPER_POTION
+
+	if btn_buy_hyper_potion:
+		if is_consumable_full:
+			btn_buy_hyper_potion.disabled = true
+			btn_buy_hyper_potion.text = "Lleno (10/10)"
+		else:
+			btn_buy_hyper_potion.disabled = (cur_gold < GameData.ITEM_COST_HYPER_POTION)
+			btn_buy_hyper_potion.text = "Buy (%d G)" % GameData.ITEM_COST_HYPER_POTION
+
+	if is_consumable_full:
+		btn_buy_remedy.disabled = true
+		btn_buy_remedy.text = "Lleno (10/10)"
+	else:
+		btn_buy_remedy.disabled = (cur_gold < GameData.ITEM_COST_REMEDY)
+		btn_buy_remedy.text = "Buy (%d G)" % GameData.ITEM_COST_REMEDY
+
+	if btn_buy_poke_flute:
+		btn_buy_poke_flute.disabled = true
+		btn_buy_poke_flute.text = "Not for sale"
+
+	if is_consumable_full:
+		btn_buy_ether.disabled = true
+		btn_buy_ether.text = "Lleno (10/10)"
+	else:
+		btn_buy_ether.disabled = (cur_gold < GameData.ITEM_COST_ETHER)
+		btn_buy_ether.text = "Buy (%d G)" % GameData.ITEM_COST_ETHER
+
+	if is_consumable_full:
+		btn_buy_revive.disabled = true
+		btn_buy_revive.text = "Lleno (10/10)"
+	else:
+		btn_buy_revive.disabled = (cur_gold < GameData.ITEM_COST_REVIVE)
+		btn_buy_revive.text = "Buy (%d G)" % GameData.ITEM_COST_REVIVE
 	
 	var camp_title = campaign_modal.get_node_or_null("Box/Title")
 	var camp_desc = campaign_modal.get_node_or_null("Box/Desc")
@@ -4333,6 +4341,8 @@ func _on_camp_bag_pressed() -> void:
 		camp_bag_modal.visible = true
 		camp_bag_targets_view.visible = false
 		camp_bag_items_view.visible = true
+		if camp_bag_tab_bar: camp_bag_tab_bar.visible = true
+		if camp_bag_capacity_lbl: camp_bag_capacity_lbl.visible = true
 		_refresh_camp_bag_items_ui()
 
 func _setup_camp_modals() -> void:
@@ -4464,6 +4474,13 @@ func _setup_camp_modals() -> void:
 	camp_shop_gold_lbl.add_theme_color_override("font_color", Color("#4DD0E1"))
 	shop_vbox.add_child(camp_shop_gold_lbl)
 	
+	var shop_notice_lbl = Label.new()
+	shop_notice_lbl.text = "⚠️ " + GameData.tr_text("Note: Consumable items are not cumulative between campaigns; Key Items are kept permanently.", "Nota: Los objetos consumibles no son acumulables entre campañas; los Objetos Clave se conservan.")
+	shop_notice_lbl.add_theme_font_size_override("font_size", 10)
+	shop_notice_lbl.add_theme_color_override("font_color", Color(1.0, 0.8, 0.4, 0.95))
+	shop_notice_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	shop_vbox.add_child(shop_notice_lbl)
+	
 	var shop_sep = HSeparator.new()
 	shop_vbox.add_child(shop_sep)
 	
@@ -4529,7 +4546,7 @@ func _setup_camp_modals() -> void:
 	camp_bag_modal.add_child(bag_center)
 	
 	var bag_panel = PanelContainer.new()
-	var bag_w: float = minf(510.0, get_viewport_rect().size.x - 24.0)
+	var bag_w: float = minf(460.0, get_viewport_rect().size.x - 24.0)
 	bag_panel.custom_minimum_size = Vector2(bag_w, 0)
 	var bag_sb = StyleBoxFlat.new()
 	bag_sb.bg_color = Color(0.10, 0.12, 0.16, 0.98)
@@ -4564,13 +4581,48 @@ func _setup_camp_modals() -> void:
 	bag_vbox.add_child(bag_head_row)
 	
 	var bag_sub_lbl = Label.new()
-	bag_sub_lbl.text = "Manage and use your campaign items on your Pokémon team."
-	bag_sub_lbl.add_theme_font_size_override("font_size", 11)
+	bag_sub_lbl.text = "Manage and use your campaign items on your Pokémon team.\n💡 " + GameData.tr_text("Note: Consumable items are not cumulative between campaigns; Key Items are kept permanently.", "Nota: Los objetos consumibles no son acumulables entre campañas; los Objetos Clave se conservan permanentemente.")
+	bag_sub_lbl.add_theme_font_size_override("font_size", 10)
 	bag_sub_lbl.add_theme_color_override("font_color", Color("#B0BEC5"))
+	bag_sub_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	bag_vbox.add_child(bag_sub_lbl)
 	
 	var bag_sep = HSeparator.new()
 	bag_vbox.add_child(bag_sep)
+
+	# Barra de Pestañas de la Mochila (Consumibles vs Objetos Clave)
+	camp_bag_tab_bar = HBoxContainer.new()
+	camp_bag_tab_bar.name = "CampBagTabBar"
+	camp_bag_tab_bar.alignment = BoxContainer.ALIGNMENT_CENTER
+	camp_bag_tab_bar.add_theme_constant_override("separation", 10)
+	bag_vbox.add_child(camp_bag_tab_bar)
+
+	btn_camp_tab_consumables = Button.new()
+	btn_camp_tab_consumables.text = "🧪 Bolso de Objetos"
+	btn_camp_tab_consumables.custom_minimum_size = Vector2(175, 32)
+	btn_camp_tab_consumables.add_theme_font_size_override("font_size", 12)
+	btn_camp_tab_consumables.pressed.connect(func():
+		camp_bag_active_tab = "consumables"
+		_refresh_camp_bag_items_ui()
+	)
+	camp_bag_tab_bar.add_child(btn_camp_tab_consumables)
+
+	btn_camp_tab_key_items = Button.new()
+	btn_camp_tab_key_items.text = "🗝️ Objetos Clave"
+	btn_camp_tab_key_items.custom_minimum_size = Vector2(150, 32)
+	btn_camp_tab_key_items.add_theme_font_size_override("font_size", 12)
+	btn_camp_tab_key_items.pressed.connect(func():
+		camp_bag_active_tab = "key_items"
+		_refresh_camp_bag_items_ui()
+	)
+	camp_bag_tab_bar.add_child(btn_camp_tab_key_items)
+
+	camp_bag_capacity_lbl = Label.new()
+	camp_bag_capacity_lbl.name = "CampBagCapacityLbl"
+	camp_bag_capacity_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	camp_bag_capacity_lbl.add_theme_font_size_override("font_size", 11)
+	camp_bag_capacity_lbl.add_theme_color_override("font_color", Color("#80DEEA"))
+	bag_vbox.add_child(camp_bag_capacity_lbl)
 	
 	# Contenedor de Items (Vista 1)
 	camp_bag_items_view = VBoxContainer.new()
@@ -4601,6 +4653,8 @@ func _setup_camp_modals() -> void:
 	btn_back_to_items.pressed.connect(func():
 		camp_bag_targets_view.visible = false
 		camp_bag_items_view.visible = true
+		if camp_bag_tab_bar: camp_bag_tab_bar.visible = true
+		if camp_bag_capacity_lbl: camp_bag_capacity_lbl.visible = true
 		_refresh_camp_bag_items_ui()
 	)
 	camp_bag_targets_view.add_child(btn_back_to_items)
@@ -4750,57 +4804,80 @@ func _refresh_camp_bag_items_ui() -> void:
 		child.queue_free()
 		
 	var inv = GameData.get_active_campaign_inventory()
+	var consumable_count = GameData.get_consumable_items_count(inv)
 	
-	var item_defs = [
-		{
-			"id": "potion",
-			"name": "Potion",
-			"desc": "Restores up to 10 HP to a damaged Pokémon.",
-			"stock": inv.get("potion", 0)
-		},
-		{
-			"id": "super_potion",
-			"name": "Super Potion",
-			"desc": "Restores up to 25 HP to a damaged Pokémon.",
-			"stock": inv.get("super_potion", 0)
-		},
-		{
-			"id": "hyper_potion",
-			"name": "Hyper Potion",
-			"desc": "Restores 100% HP (Full Max HP) to a damaged Pokémon.",
-			"stock": inv.get("hyper_potion", 0)
-		},
-		{
-			"id": "revive",
-			"name": "Revive",
-			"desc": "Revives a fainted Pokémon with 50% max HP.",
-			"stock": inv.get("revive", 0)
-		},
-		{
-			"id": "remedy",
-			"name": "Remedy",
-			"desc": "Cures all negative status conditions (Burn, Poison, Flinch, etc).",
-			"stock": inv.get("remedy", 0)
-		},
-		{
-			"id": "poke_flute",
-			"name": "Poké Flute",
-			"desc": "Plays a melody that awakens any sleeping Pokémon. Permanent item (not consumed).",
-			"stock": inv.get("poke_flute", 0)
-		},
-		{
-			"id": "ether",
-			"name": "Ether",
-			"desc": "Restores 100% Energy (⚡). Used during combat.",
-			"stock": inv.get("ether", 0)
-		},
-		{
-			"id": "exp_share",
-			"name": "Exp Share",
-			"desc": "Passive item. While in bag, 20% of the EXP earned by the active Pokémon is shared with the first eligible benched Pokémon.",
-			"stock": inv.get("exp_share", 0)
-		}
-	]
+	if camp_bag_tab_bar:
+		camp_bag_tab_bar.visible = true
+	if camp_bag_capacity_lbl:
+		camp_bag_capacity_lbl.visible = true
+		
+	if btn_camp_tab_consumables and btn_camp_tab_key_items:
+		btn_camp_tab_consumables.text = "🧪 Bolso (%d/10)" % consumable_count
+		btn_camp_tab_key_items.text = "🗝️ Objetos Clave"
+		if camp_bag_active_tab == "consumables":
+			_apply_retro_button_style(btn_camp_tab_consumables, Color(0.20, 0.45, 0.65), Color(0.35, 0.70, 0.95), false)
+			_apply_retro_button_style(btn_camp_tab_key_items, Color(0.18, 0.22, 0.28), Color(0.30, 0.38, 0.48), false)
+			camp_bag_capacity_lbl.text = "📦 Capacidad: %d / %d Consumibles (No acumulables entre campañas)" % [consumable_count, GameData.MAX_CONSUMABLE_ITEMS]
+		else:
+			_apply_retro_button_style(btn_camp_tab_consumables, Color(0.18, 0.22, 0.28), Color(0.30, 0.38, 0.48), false)
+			_apply_retro_button_style(btn_camp_tab_key_items, Color(0.65, 0.45, 0.15), Color(0.95, 0.70, 0.25), false)
+			camp_bag_capacity_lbl.text = "🗝️ Objetos Clave (Permanentes, no consumibles)"
+
+	var item_defs = []
+	if camp_bag_active_tab == "consumables":
+		item_defs = [
+			{
+				"id": "potion",
+				"name": "Potion",
+				"desc": "Restores up to 10 HP to a damaged Pokémon.",
+				"stock": inv.get("potion", 0)
+			},
+			{
+				"id": "super_potion",
+				"name": "Super Potion",
+				"desc": "Restores up to 25 HP to a damaged Pokémon.",
+				"stock": inv.get("super_potion", 0)
+			},
+			{
+				"id": "hyper_potion",
+				"name": "Hyper Potion",
+				"desc": "Restores 100% HP (Full Max HP) to a damaged Pokémon.",
+				"stock": inv.get("hyper_potion", 0)
+			},
+			{
+				"id": "revive",
+				"name": "Revive",
+				"desc": "Revives a fainted Pokémon with 50% max HP.",
+				"stock": inv.get("revive", 0)
+			},
+			{
+				"id": "remedy",
+				"name": "Remedy",
+				"desc": "Cures all negative status conditions (Burn, Poison, Flinch, etc).",
+				"stock": inv.get("remedy", 0)
+			},
+			{
+				"id": "ether",
+				"name": "Ether",
+				"desc": "Restores 100% Energy (⚡). Used during combat.",
+				"stock": inv.get("ether", 0)
+			}
+		]
+	else:
+		item_defs = [
+			{
+				"id": "poke_flute",
+				"name": "Poké Flute",
+				"desc": "Plays a melody that awakens any sleeping Pokémon. Permanent item (not consumed).",
+				"stock": inv.get("poke_flute", 0)
+			},
+			{
+				"id": "exp_share",
+				"name": "Exp Share",
+				"desc": "Passive item. While in bag, 20% of the EXP earned by the active Pokémon is shared with the first eligible benched Pokémon.",
+				"stock": inv.get("exp_share", 0)
+			}
+		]
 	
 	for it in item_defs:
 		var item_id = it["id"]
@@ -4889,83 +4966,86 @@ func _refresh_camp_bag_items_ui() -> void:
 		hbox.add_child(use_btn)
 		camp_bag_items_view.add_child(row)
 		
-	# Mostrar Piedras Evolutivas en posesión dentro de la Mochila
-	for st_type in GameData.EVOLUTION_STONE_TYPES:
-		var st_owned = GameData.get_campaign_stone_count(st_type)
-		if st_owned <= 0:
-			continue
-		var s_row = PanelContainer.new()
-		var s_sb = StyleBoxFlat.new()
-		s_sb.bg_color = Color(0.08, 0.11, 0.18, 0.92)
-		s_sb.border_color = Color(0.65, 0.52, 0.18, 0.85)
-		s_sb.set_border_width_all(1)
-		s_sb.set_corner_radius_all(6)
-		s_sb.content_margin_left = 10
-		s_sb.content_margin_right = 10
-		s_sb.content_margin_top = 6
-		s_sb.content_margin_bottom = 6
-		s_row.add_theme_stylebox_override("panel", s_sb)
-		
-		var s_hbox = HBoxContainer.new()
-		s_hbox.add_theme_constant_override("separation", 10)
-		s_row.add_child(s_hbox)
-		
-		var s_ico = TextureRect.new()
-		s_ico.custom_minimum_size = Vector2(36, 36)
-		s_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		s_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		s_ico.texture = GameData.get_item_texture(st_type)
-		s_hbox.add_child(s_ico)
-		
-		var s_info = VBoxContainer.new()
-		s_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		s_info.add_theme_constant_override("separation", 2)
-		s_hbox.add_child(s_info)
-		
-		var s_title = Label.new()
-		s_title.text = "%s  [Owned: %d]" % [GameData.get_stone_display_name(st_type), st_owned]
-		s_title.add_theme_font_size_override("font_size", 12)
-		s_title.add_theme_color_override("font_color", Color("#FFF59D"))
-		s_info.add_child(s_title)
-		
-		var s_desc = Label.new()
-		s_desc.text = "Evolution Stone (1x for Stage 1 • 2x for Stage 2)."
-		s_desc.add_theme_font_size_override("font_size", 10)
-		s_desc.add_theme_color_override("font_color", Color("#B0BEC5"))
-		s_info.add_child(s_desc)
-		
-		var s_btn = Button.new()
-		s_btn.custom_minimum_size = Vector2(90, 32)
-		s_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		s_btn.add_theme_font_size_override("font_size", 11)
-		s_btn.text = "✨ Evolve"
-		var match_team_idx = -1
-		var team = GameData.get_active_campaign_team_state()
-		for tidx in range(team.size()):
-			var tp = team[tidx]
-			var topts = GameData.get_evolution_options(int(tp.get("id", -1)), true)
-			for topt in topts:
-				if str(topt.get("stone_type", "")) == st_type:
-					match_team_idx = tidx
+	# Mostrar Piedras Evolutivas en posesión dentro de la Mochila (Pestaña Consumibles)
+	if camp_bag_active_tab == "consumables":
+		for st_type in GameData.EVOLUTION_STONE_TYPES:
+			var st_owned = GameData.get_campaign_stone_count(st_type)
+			if st_owned <= 0:
+				continue
+			var s_row = PanelContainer.new()
+			var s_sb = StyleBoxFlat.new()
+			s_sb.bg_color = Color(0.08, 0.11, 0.18, 0.92)
+			s_sb.border_color = Color(0.65, 0.52, 0.18, 0.85)
+			s_sb.set_border_width_all(1)
+			s_sb.set_corner_radius_all(6)
+			s_sb.content_margin_left = 10
+			s_sb.content_margin_right = 10
+			s_sb.content_margin_top = 6
+			s_sb.content_margin_bottom = 6
+			s_row.add_theme_stylebox_override("panel", s_sb)
+			
+			var s_hbox = HBoxContainer.new()
+			s_hbox.add_theme_constant_override("separation", 10)
+			s_row.add_child(s_hbox)
+			
+			var s_ico = TextureRect.new()
+			s_ico.custom_minimum_size = Vector2(36, 36)
+			s_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			s_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			s_ico.texture = GameData.get_item_texture(st_type)
+			s_hbox.add_child(s_ico)
+			
+			var s_info = VBoxContainer.new()
+			s_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			s_info.add_theme_constant_override("separation", 2)
+			s_hbox.add_child(s_info)
+			
+			var s_title = Label.new()
+			s_title.text = "%s  [Owned: %d]" % [GameData.get_stone_display_name(st_type), st_owned]
+			s_title.add_theme_font_size_override("font_size", 12)
+			s_title.add_theme_color_override("font_color", Color("#FFF59D"))
+			s_info.add_child(s_title)
+			
+			var s_desc = Label.new()
+			s_desc.text = "Evolution Stone (1x for Stage 1 • 2x for Stage 2)."
+			s_desc.add_theme_font_size_override("font_size", 10)
+			s_desc.add_theme_color_override("font_color", Color("#B0BEC5"))
+			s_info.add_child(s_desc)
+			
+			var s_btn = Button.new()
+			s_btn.custom_minimum_size = Vector2(90, 32)
+			s_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			s_btn.add_theme_font_size_override("font_size", 11)
+			s_btn.text = "✨ Evolve"
+			var match_team_idx = -1
+			var team = GameData.get_active_campaign_team_state()
+			for tidx in range(team.size()):
+				var tp = team[tidx]
+				var topts = GameData.get_evolution_options(int(tp.get("id", -1)), true)
+				for topt in topts:
+					if str(topt.get("stone_type", "")) == st_type:
+						match_team_idx = tidx
+						break
+				if match_team_idx != -1:
 					break
+			s_btn.disabled = (match_team_idx == -1)
 			if match_team_idx != -1:
-				break
-		s_btn.disabled = (match_team_idx == -1)
-		if match_team_idx != -1:
-			_apply_retro_button_style(s_btn, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), false)
-			var target_tidx = match_team_idx
-			s_btn.pressed.connect(func():
-				camp_bag_modal.visible = false
-				_open_camp_evolution_selector(target_tidx)
-			)
-		else:
-			_apply_retro_button_style(s_btn, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
-		s_hbox.add_child(s_btn)
-		camp_bag_items_view.add_child(s_row)
+				_apply_retro_button_style(s_btn, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), false)
+				var target_tidx = match_team_idx
+				s_btn.pressed.connect(func():
+					camp_bag_modal.visible = false
+					_open_camp_evolution_selector(target_tidx)
+				)
+			else:
+				_apply_retro_button_style(s_btn, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
+			s_hbox.add_child(s_btn)
+			camp_bag_items_view.add_child(s_row)
 
 func _show_camp_bag_targets(item_id: String) -> void:
 	camp_bag_selected_item = item_id
 	camp_bag_items_view.visible = false
+	if camp_bag_tab_bar: camp_bag_tab_bar.visible = false
+	if camp_bag_capacity_lbl: camp_bag_capacity_lbl.visible = false
 	camp_bag_targets_view.visible = true
 	
 	for child in camp_bag_targets_container.get_children():
@@ -5199,7 +5279,8 @@ func _setup_camp_pokemon_inspector_modal() -> void:
 	camp_pokemon_inspector_modal.add_child(insp_center)
 	
 	var insp_panel = PanelContainer.new()
-	insp_panel.custom_minimum_size = Vector2(490, 0)
+	var insp_w: float = minf(460.0, get_viewport_rect().size.x - 24.0)
+	insp_panel.custom_minimum_size = Vector2(insp_w, 0)
 	var insp_sb = StyleBoxFlat.new()
 	insp_sb.bg_color = Color(0.08, 0.11, 0.17, 0.98)
 	insp_sb.border_color = Color(0.25, 0.55, 0.65, 0.90)
@@ -5213,7 +5294,9 @@ func _setup_camp_pokemon_inspector_modal() -> void:
 	insp_center.add_child(insp_panel)
 	
 	var insp_scroll = ScrollContainer.new()
-	insp_scroll.custom_minimum_size = Vector2(460, 480)
+	insp_scroll.custom_minimum_size = Vector2(0, 480)
+	insp_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	insp_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	insp_panel.add_child(insp_scroll)
 	
 	var insp_vbox = VBoxContainer.new()
@@ -5562,7 +5645,8 @@ func _setup_camp_evolution_selector_modal() -> void:
 	center.add_child(panel)
 	
 	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(436, 460)
+	scroll.custom_minimum_size = Vector2(0, 460)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	panel.add_child(scroll)
 	
@@ -6036,12 +6120,16 @@ func _on_close_team_select_pressed() -> void:
 	if team_select_mode == "ONLINE_LOBBY":
 		online_lobby_modal.visible = true
 	elif team_select_mode == "CAMPAIGN":
+		if GameData.campaign_submode == "LAKE_OF_RAGE":
+			GameData.campaign_submode = "ADVENTURE"
+			GameData.is_campaign_mode = false
+			selected_player_ids.clear()
+			_open_johto_episodes_modal()
+			return
 		var state = GameData.get_active_campaign_team_state()
 		if state.size() > 0:
 			update_campaign_ui()
 			campaign_modal.visible = true
-		elif GameData.campaign_submode == "LAKE_OF_RAGE":
-			_open_johto_episodes_modal()
 		elif GameData.campaign_submode == "ADVENTURE":
 			if GameData.adventure_selected_region == "JOHTO":
 				_open_johto_episodes_modal()
@@ -11437,7 +11525,9 @@ func _build_or_update_showcase_picker_ui() -> void:
 	showcase_picker_modal.add_child(center)
 	
 	var card_panel = PanelContainer.new()
-	card_panel.custom_minimum_size = Vector2(450, 620)
+	var pick_w: float = minf(450.0, get_viewport_rect().size.x - 24.0)
+	var pick_h: float = minf(620.0, get_viewport_rect().size.y - 40.0)
+	card_panel.custom_minimum_size = Vector2(pick_w, pick_h)
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
 	sb.border_color = Color(0.25, 0.52, 0.60)
@@ -11755,7 +11845,9 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	friend_profile_modal.add_child(center)
 	
 	var card_panel = PanelContainer.new()
-	card_panel.custom_minimum_size = Vector2(440, 600)
+	var prof_w: float = minf(440.0, get_viewport_rect().size.x - 24.0)
+	var prof_h: float = minf(600.0, get_viewport_rect().size.y - 40.0)
+	card_panel.custom_minimum_size = Vector2(prof_w, prof_h)
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = Color(0.08, 0.12, 0.18, 0.98)
 	sb.border_color = Color(0.25, 0.52, 0.60)
@@ -11965,92 +12057,79 @@ func _setup_achievements_modal() -> void:
 	achievements_modal.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(achievements_modal)
 	
-	# Backdrop oscuro
-	var backdrop = ColorRect.new()
-	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
-	backdrop.color = Color(0, 0, 0, 0.78)
-	backdrop.mouse_filter = Control.MOUSE_FILTER_PASS
-	achievements_modal.add_child(backdrop)
+	# Fondo sólido a pantalla completa (mismo estándar que FriendsModal y SettingsModal)
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.06, 0.08, 0.12, 1.0)
+	achievements_modal.add_child(bg)
 	
-	var center = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	achievements_modal.add_child(center)
-	
-	var box = PanelContainer.new()
-	box.custom_minimum_size = Vector2(580, 480)
-	
-	var sb_box = StyleBoxFlat.new()
-	sb_box.bg_color = Color(0.08, 0.11, 0.18, 0.98)
-	sb_box.border_color = Color(1.0, 0.82, 0.25, 0.95)
-	sb_box.set_border_width_all(2)
-	sb_box.set_corner_radius_all(10)
-	sb_box.shadow_color = Color(0, 0, 0, 0.8)
-	sb_box.shadow_size = 14
-	box.add_theme_stylebox_override("panel", sb_box)
-	center.add_child(box)
-	
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 18)
-	margin.add_theme_constant_override("margin_right", 18)
-	margin.add_theme_constant_override("margin_top", 16)
-	margin.add_theme_constant_override("margin_bottom", 16)
-	box.add_child(margin)
-	
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 10)
-	margin.add_child(vbox)
+	var box = VBoxContainer.new()
+	box.name = "AchievementsBox"
+	box.set_anchors_preset(Control.PRESET_FULL_RECT)
+	box.offset_left = 20.0
+	box.offset_top = 28.0
+	box.offset_right = -20.0
+	box.offset_bottom = -20.0
+	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	box.grow_vertical = Control.GROW_DIRECTION_BOTH
+	box.add_theme_constant_override("separation", 12)
+	achievements_modal.add_child(box)
 	
 	# Encabezado
 	var header_hbox = HBoxContainer.new()
 	header_hbox.add_theme_constant_override("separation", 10)
-	vbox.add_child(header_hbox)
+	box.add_child(header_hbox)
 	
 	var title_lbl = Label.new()
 	title_lbl.text = "🏆 " + GameData.tr_text("ACHIEVEMENTS & TROPHIES", "LOGROS Y TROFEOS")
-	title_lbl.add_theme_font_size_override("font_size", 16)
+	title_lbl.add_theme_font_size_override("font_size", 17)
 	title_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header_hbox.add_child(title_lbl)
 	
-	btn_close_achievements = Button.new()
-	btn_close_achievements.text = "✖"
-	btn_close_achievements.custom_minimum_size = Vector2(32, 32)
-	_apply_retro_button_style(btn_close_achievements, Color(0.3, 0.15, 0.15), Color(0.8, 0.3, 0.3))
-	btn_close_achievements.pressed.connect(func(): achievements_modal.visible = false)
-	header_hbox.add_child(btn_close_achievements)
-	
-	# Subtítulo y resumen
-	var sub_hbox = HBoxContainer.new()
-	sub_hbox.add_theme_constant_override("separation", 8)
-	vbox.add_child(sub_hbox)
-	
 	achievements_summary_lbl = Label.new()
-	achievements_summary_lbl.add_theme_font_size_override("font_size", 12)
-	achievements_summary_lbl.add_theme_color_override("font_color", Color(0.75, 0.88, 1.0))
-	achievements_summary_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sub_hbox.add_child(achievements_summary_lbl)
+	achievements_summary_lbl.add_theme_font_size_override("font_size", 13)
+	achievements_summary_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
+	achievements_summary_lbl.size_flags_horizontal = Control.SIZE_SHRINK_END
+	header_hbox.add_child(achievements_summary_lbl)
 	
 	var sep = HSeparator.new()
-	vbox.add_child(sep)
+	box.add_child(sep)
 	
-	# Lista scrollable de logros
+	# Tip informativo superior
+	var tip_lbl = Label.new()
+	tip_lbl.text = "💡 " + GameData.tr_text("Complete milestones to unlock exclusive permanent rewards and items!", "¡Completa hitos para desbloquear recompensas y objetos permanentes exclusivos!")
+	tip_lbl.add_theme_font_size_override("font_size", 11)
+	tip_lbl.add_theme_color_override("font_color", Color(0.7, 0.78, 0.90))
+	tip_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tip_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(tip_lbl)
+	
+	# Lista scrollable de logros a pantalla completa
 	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(540, 320)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(scroll)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	box.add_child(scroll)
 	
 	achievements_list_vbox = VBoxContainer.new()
 	achievements_list_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	achievements_list_vbox.add_theme_constant_override("separation", 10)
 	scroll.add_child(achievements_list_vbox)
 	
-	# Footer tip
-	var tip_lbl = Label.new()
-	tip_lbl.text = "💡 " + GameData.tr_text("Complete milestones to unlock exclusive permanent rewards and items!", "¡Completa hitos para desbloquear recompensas y objetos permanentes exclusivos!")
-	tip_lbl.add_theme_font_size_override("font_size", 11)
-	tip_lbl.add_theme_color_override("font_color", Color(0.7, 0.75, 0.85))
-	tip_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(tip_lbl)
+	# Botón Volver al Lobby
+	btn_close_achievements = Button.new()
+	btn_close_achievements.name = "BtnCloseAchievements"
+	btn_close_achievements.custom_minimum_size = Vector2(0, 40)
+	btn_close_achievements.text = "⬅ " + GameData.tr_text("Back to Lobby", "Volver al Lobby")
+	btn_close_achievements.add_theme_font_size_override("font_size", 13)
+	_apply_retro_button_style(btn_close_achievements, Color(0.20, 0.45, 0.55), Color(0.35, 0.75, 0.90), false)
+	btn_close_achievements.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		achievements_modal.visible = false
+	)
+	box.add_child(btn_close_achievements)
 
 func _refresh_achievements_ui() -> void:
 	if achievements_list_vbox == null:
@@ -12070,6 +12149,7 @@ func _refresh_achievements_ui() -> void:
 			completed_count += 1
 			
 		var card = PanelContainer.new()
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var sb_card = StyleBoxFlat.new()
 		if is_done:
 			sb_card.bg_color = Color(0.10, 0.22, 0.16, 0.90)
@@ -12082,19 +12162,20 @@ func _refresh_achievements_ui() -> void:
 		card.add_theme_stylebox_override("panel", sb_card)
 		
 		var m = MarginContainer.new()
-		m.add_theme_constant_override("margin_left", 12)
-		m.add_theme_constant_override("margin_right", 12)
+		m.add_theme_constant_override("margin_left", 10)
+		m.add_theme_constant_override("margin_right", 10)
 		m.add_theme_constant_override("margin_top", 10)
 		m.add_theme_constant_override("margin_bottom", 10)
 		card.add_child(m)
 		
 		var hbox = HBoxContainer.new()
-		hbox.add_theme_constant_override("separation", 14)
+		hbox.add_theme_constant_override("separation", 10)
+		hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		m.add_child(hbox)
 		
 		# Icono del Reward
 		var icon_rect = TextureRect.new()
-		icon_rect.custom_minimum_size = Vector2(52, 52)
+		icon_rect.custom_minimum_size = Vector2(44, 44)
 		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
@@ -12112,15 +12193,17 @@ func _refresh_achievements_ui() -> void:
 		
 		# Fila de Título y Badge
 		var title_row = HBoxContainer.new()
-		title_row.add_theme_constant_override("separation", 8)
+		title_row.add_theme_constant_override("separation", 6)
+		title_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		info_vbox.add_child(title_row)
 		
 		var title_text = GameData.tr_text(str(ach.get("title_en", ach.get("title", ""))), str(ach.get("title", "")))
 		var ach_title_lbl = Label.new()
 		ach_title_lbl.text = title_text
-		ach_title_lbl.add_theme_font_size_override("font_size", 13)
+		ach_title_lbl.add_theme_font_size_override("font_size", 12)
 		ach_title_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.35) if is_done else Color(1.0, 1.0, 1.0))
 		ach_title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		ach_title_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		title_row.add_child(ach_title_lbl)
 		
 		var badge_lbl = Label.new()
@@ -12131,6 +12214,9 @@ func _refresh_achievements_ui() -> void:
 			badge_lbl.text = "🔒 " + GameData.tr_text("IN PROGRESS", "EN PROGRESO")
 			badge_lbl.add_theme_color_override("font_color", Color(0.6, 0.75, 0.9))
 		badge_lbl.add_theme_font_size_override("font_size", 11)
+		badge_lbl.custom_minimum_size = Vector2(105, 0)
+		badge_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		badge_lbl.size_flags_horizontal = Control.SIZE_SHRINK_END
 		title_row.add_child(badge_lbl)
 		
 		# Descripción
@@ -12155,10 +12241,11 @@ func _refresh_achievements_ui() -> void:
 		# Barra de Progreso
 		var p_hbox = HBoxContainer.new()
 		p_hbox.add_theme_constant_override("separation", 8)
+		p_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		info_vbox.add_child(p_hbox)
 		
 		var p_bar = ProgressBar.new()
-		p_bar.custom_minimum_size = Vector2(200, 14)
+		p_bar.custom_minimum_size = Vector2(80, 14)
 		p_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		p_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		p_bar.show_percentage = false
@@ -12171,6 +12258,7 @@ func _refresh_achievements_ui() -> void:
 		p_lbl.text = "%d / %d (%d%%)" % [prog.get("current", 0), prog.get("target", 1), int(prog.get("percent", 0.0) * 100)]
 		p_lbl.add_theme_font_size_override("font_size", 10)
 		p_lbl.add_theme_color_override("font_color", Color(0.85, 0.9, 1.0))
+		p_lbl.size_flags_horizontal = Control.SIZE_SHRINK_END
 		p_hbox.add_child(p_lbl)
 		
 		achievements_list_vbox.add_child(card)
@@ -12210,7 +12298,8 @@ func _setup_achievement_notif_modal() -> void:
 	achievement_notif_modal.add_child(center)
 	
 	var box = PanelContainer.new()
-	box.custom_minimum_size = Vector2(480, 360)
+	var notif_w: float = minf(460.0, get_viewport_rect().size.x - 24.0)
+	box.custom_minimum_size = Vector2(notif_w, 0)
 	var sb_box = StyleBoxFlat.new()
 	sb_box.bg_color = Color(0.08, 0.12, 0.20, 0.98)
 	sb_box.border_color = Color(1.0, 0.84, 0.2, 1.0)
@@ -12222,10 +12311,10 @@ func _setup_achievement_notif_modal() -> void:
 	center.add_child(box)
 	
 	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 24)
-	margin.add_theme_constant_override("margin_right", 24)
-	margin.add_theme_constant_override("margin_top", 20)
-	margin.add_theme_constant_override("margin_bottom", 20)
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
 	box.add_child(margin)
 	
 	var vbox = VBoxContainer.new()
@@ -12245,6 +12334,7 @@ func _setup_achievement_notif_modal() -> void:
 	achievement_notif_title_lbl.add_theme_font_size_override("font_size", 14)
 	achievement_notif_title_lbl.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	achievement_notif_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	achievement_notif_title_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(achievement_notif_title_lbl)
 	
 	# Descripción del logro

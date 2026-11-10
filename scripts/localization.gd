@@ -772,7 +772,6 @@ const PHRASE_REPLACEMENTS: Array = [
 	["• RIVAL'S TURN (", "• TURNO DEL RIVAL ("],
 	["READY TO EVOLVE!", "¡LISTO PARA EVOLUCIONAR!"],
 	["Flash Cannon (+", "¡Foco Resplandor (+"],
-	[" out of freeze!", "!"],
 	["Continue Stage ", "Continuar Etapa "],
 	["Non-GROUND type", "tipo No-TIERRA"],
 	["non-GROUND type", "tipo no-TIERRA"],
@@ -1003,7 +1002,6 @@ const PHRASE_REPLACEMENTS: Array = [
 	["fainted!", "¡se debilitó!"],
 	[" round, ", " ronda, "],
 	[" round)!", " ronda)!"],
-	[" again!", "!"],
 	["Diamond", "Diamante"],
 	["(Empty)", "(Vacío)"],
 	["Potions", "Pociones"],
@@ -1123,7 +1121,7 @@ static func translate_es_to_en(text: String) -> String:
 	for pair in PHRASE_REPLACEMENTS:
 		var en_val = pair[0]
 		var es_val = pair[1]
-		if es_val != "" and result.contains(es_val):
+		if es_val.strip_edges().length() >= 4 and not es_val.strip_edges() in ["!", "?", ".", ",", ":", ";"] and result.contains(es_val):
 			result = result.replace(es_val, en_val)
 	return result
 

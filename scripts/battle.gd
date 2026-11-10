@@ -155,6 +155,11 @@ var selected_energy_move2: int = -1
 @onready var bag_targets_container: VBoxContainer = $BagModal/CenterBox/Panel/Margin/VBox/TargetsSection/TargetsContainer
 @onready var btn_cancel_bag: Button = $BagModal/CenterBox/Panel/Margin/VBox/BtnCancelBag
 var selected_bag_item: String = ""
+var battle_bag_active_tab: String = "consumables" # "consumables" or "key_items"
+var battle_bag_tab_bar: HBoxContainer = null
+var btn_battle_tab_consumables: Button = null
+var btn_battle_tab_key_items: Button = null
+var battle_bag_capacity_lbl: Label = null
 
 # --- TABLA DE EFECTIVIDADES POR TIPO ---
 @onready var btn_type_chart: Button = $MainContainer/TopBar/BtnTypeChart
@@ -274,6 +279,12 @@ func _ready() -> void:
 	bm_sb.set_border_width_all(2)
 	bm_sb.set_corner_radius_all(10)
 	bag_panel.add_theme_stylebox_override("panel", bm_sb)
+	if bag_panel:
+		var bag_w: float = minf(460.0, get_viewport_rect().size.x - 20.0)
+		bag_panel.custom_minimum_size = Vector2(bag_w, 0)
+	if type_chart_panel:
+		var tc_w: float = minf(460.0, get_viewport_rect().size.x - 20.0)
+		type_chart_panel.custom_minimum_size = Vector2(tc_w, 0)
 	
 	# Estilo para EvolutionModal
 	if evolution_modal:
@@ -1011,7 +1022,11 @@ func _show_forfeit_confirmation_modal() -> void:
 		forfeit_body_lbl.text = "Are you sure you want to surrender?\nYou will forfeit the match to %s." % r_name
 		btn_confirm_forfeit.text = "🏳️ Forfeit & Surrender"
 	elif GameData.is_campaign_mode:
-		if GameData.campaign_submode == "ADVENTURE":
+		if GameData.campaign_submode == "LAKE_OF_RAGE":
+			forfeit_title_lbl.text = "🌊 ¿HUIR DEL LAGO DE LA FURIA?"
+			forfeit_body_lbl.text = "¿Seguro que deseas retirarte del combate contra Gyarados Rojo?\nPodrás volver a desafiarlo cuando tu equipo esté listo."
+			btn_confirm_forfeit.text = "🏳️ Huir del Lago"
+		elif GameData.campaign_submode == "ADVENTURE":
 			forfeit_title_lbl.text = "⚠️ RETREAT FROM ADVENTURE?"
 			forfeit_body_lbl.text = "Are you sure you want to retreat?\nCurrent episode progress will be reset.\n(Your earned Gold and Diamonds are safe)."
 		elif GameData.campaign_submode == "CHAOS":
@@ -1070,7 +1085,11 @@ func _on_return_to_menu() -> void:
 	if GameData.is_online_pvp:
 		OnlineManager.leave_or_delete_room()
 		GameData.is_online_pvp = false
-	if not is_battle_over and GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
+	if not is_battle_over and GameData.is_campaign_mode and GameData.campaign_submode == "LAKE_OF_RAGE":
+		GameData.is_campaign_mode = false
+		GameData.campaign_submode = "ADVENTURE"
+		GameData.save_profile()
+	elif not is_battle_over and GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
 		# Solo si se abandona a mitad de combate (forfeit):
 		# Si sales antes de terminar el combate, se reinicia el progreso del episodio conservando los recursos G y Diamonds
 		GameData.reset_adventure_episode(GameData.adventure_current_episode)
@@ -1192,69 +1211,86 @@ func start_new_game() -> void:
 			enemy_team = [e_inst]
 			battle_title_lbl.text = "🎓 Battle Tutorial: %s vs %s" % [p_inst.name, e_inst.name]
 	elif GameData.is_campaign_mode:
-		var team_state = GameData.get_active_campaign_team_state()
-		if team_state.is_empty():
+		if GameData.campaign_submode == "LAKE_OF_RAGE":
+			player_team = []
+			for pid in GameData.player_team_ids:
+				var inst = GameData.create_pokemon_instance(pid)
+				if inst:
+					inst.current_hp = inst.max_hp
+					inst.current_energy = 0
+					player_team.append(inst)
+			if player_team.is_empty():
+				var fb = GameData.create_pokemon_instance(0)
+				if fb: player_team.append(fb)
+				
+			var red_gya = GameData.create_pokemon_instance(GameData.RED_GYARADOS_BOSS_ID)
+			enemy_team = [red_gya] if red_gya else []
+			enemy_super_potions = 0
+			battle_title_lbl.text = "🌊 EVENT BOSS: GYARADOS ROJO ENFURECIDO (600 HP)"
+		else:
+			var team_state = GameData.get_active_campaign_team_state()
+			if team_state.is_empty():
+				if GameData.campaign_submode == "ADVENTURE":
+					GameData.init_adventure_team(GameData.adventure_current_episode, [0, 1, 2])
+				elif GameData.campaign_submode == "CHAOS":
+					GameData.change_chaos_team([149]) # Fallback Dragonite
+				else:
+					GameData.init_campaign_team([0, 1, 2])
+				team_state = GameData.get_active_campaign_team_state()
+				
+			player_team = []
+			for p_state in team_state:
+				var inst = GameData.create_pokemon_instance(int(p_state["id"]))
+				if inst:
+					inst.current_hp = p_state["current_hp"]
+					var req = inst.get_required_exp()
+					var loaded_exp = int(p_state.get("current_exp", 0))
+					inst.current_exp = min(req, loaded_exp) if req > 0 else 0
+					inst.max_exp = req
+					inst.burn_turns = int(p_state.get("burn_turns", 0))
+					inst.is_poisoned = bool(p_state.get("is_poisoned", false))
+					inst.is_flinched = bool(p_state.get("is_flinched", false))
+					player_team.append(inst)
+				
+			var rival_ids: Array[int] = []
 			if GameData.campaign_submode == "ADVENTURE":
-				GameData.init_adventure_team(GameData.adventure_current_episode, [0, 1, 2])
+				rival_ids = GameData.get_adventure_rival_team(GameData.adventure_current_episode, GameData.adventure_current_stage)
+				var total_stages = GameData.get_adventure_total_stages(GameData.adventure_current_episode)
+				var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
+				var trainer_name = stage_info.get("trainer_name", "Trainer")
+				if stage_info.has("super_potions"):
+					enemy_super_potions = int(stage_info.get("super_potions", 0))
+				elif bool(stage_info.get("has_super_potion", false)):
+					enemy_super_potions = 1
+				else:
+					enemy_super_potions = 0
+				if GameData.adventure_current_episode in [5, 6]:
+					var cur_route = GameData.adventure_ep5_selected_route if GameData.adventure_current_episode == 5 else GameData.adventure_ep6_selected_route
+					var r_info = GameData.get_adventure_route_info(GameData.adventure_current_episode, cur_route)
+					var r_name = str(r_info.get("name_es", r_info.get("name", "Ruta")))
+					var ep_roman = "V" if GameData.adventure_current_episode == 5 else "VI"
+					battle_title_lbl.text = "🗺️ Ep. %s (%s): %s (%d/%d)" % [ep_roman, r_name, trainer_name, GameData.adventure_current_stage, total_stages]
+				else:
+					battle_title_lbl.text = "🗺️ Ep. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name, GameData.adventure_current_stage, total_stages]
 			elif GameData.campaign_submode == "CHAOS":
-				GameData.change_chaos_team([149]) # Fallback Dragonite
-			else:
-				GameData.init_campaign_team([0, 1, 2])
-			team_state = GameData.get_active_campaign_team_state()
-			
-		player_team = []
-		for p_state in team_state:
-			var inst = GameData.create_pokemon_instance(int(p_state["id"]))
-			if inst:
-				inst.current_hp = p_state["current_hp"]
-				var req = inst.get_required_exp()
-				var loaded_exp = int(p_state.get("current_exp", 0))
-				inst.current_exp = min(req, loaded_exp) if req > 0 else 0
-				inst.max_exp = req
-				inst.burn_turns = int(p_state.get("burn_turns", 0))
-				inst.is_poisoned = bool(p_state.get("is_poisoned", false))
-				inst.is_flinched = bool(p_state.get("is_flinched", false))
-				player_team.append(inst)
-			
-		var rival_ids: Array[int] = []
-		if GameData.campaign_submode == "ADVENTURE":
-			rival_ids = GameData.get_adventure_rival_team(GameData.adventure_current_episode, GameData.adventure_current_stage)
-			var total_stages = GameData.get_adventure_total_stages(GameData.adventure_current_episode)
-			var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
-			var trainer_name = stage_info.get("trainer_name", "Trainer")
-			if stage_info.has("super_potions"):
-				enemy_super_potions = int(stage_info.get("super_potions", 0))
-			elif bool(stage_info.get("has_super_potion", false)):
-				enemy_super_potions = 1
+				rival_ids = GameData.get_chaos_rival_team(GameData.chaos_match_number)
+				var match_info = GameData.get_chaos_match_info(GameData.chaos_match_number)
+				enemy_super_potions = int(match_info.get("super_potions", 0))
+				if match_info.get("is_boss", false):
+					battle_title_lbl.text = "💎 FINAL BOSS: CRYSTAL ONIX (900 HP)"
+				else:
+					battle_title_lbl.text = "🌌 Chaos Odyssey - Trial %d / %d" % [GameData.chaos_match_number, GameData.CHAOS_TOTAL_MATCHES]
 			else:
 				enemy_super_potions = 0
-			if GameData.adventure_current_episode in [5, 6]:
-				var cur_route = GameData.adventure_ep5_selected_route if GameData.adventure_current_episode == 5 else GameData.adventure_ep6_selected_route
-				var r_info = GameData.get_adventure_route_info(GameData.adventure_current_episode, cur_route)
-				var r_name = str(r_info.get("name_es", r_info.get("name", "Ruta")))
-				var ep_roman = "V" if GameData.adventure_current_episode == 5 else "VI"
-				battle_title_lbl.text = "🗺️ Ep. %s (%s): %s (%d/%d)" % [ep_roman, r_name, trainer_name, GameData.adventure_current_stage, total_stages]
-			else:
-				battle_title_lbl.text = "🗺️ Ep. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name, GameData.adventure_current_stage, total_stages]
-		elif GameData.campaign_submode == "CHAOS":
-			rival_ids = GameData.get_chaos_rival_team(GameData.chaos_match_number)
-			var match_info = GameData.get_chaos_match_info(GameData.chaos_match_number)
-			enemy_super_potions = int(match_info.get("super_potions", 0))
-			if match_info.get("is_boss", false):
-				battle_title_lbl.text = "💎 FINAL BOSS: CRYSTAL ONIX (900 HP)"
-			else:
-				battle_title_lbl.text = "🌌 Chaos Odyssey - Trial %d / %d" % [GameData.chaos_match_number, GameData.CHAOS_TOTAL_MATCHES]
-		else:
-			enemy_super_potions = 0
-			rival_ids = GameData.get_campaign_rival_team(GameData.campaign_match_number)
-			var match_info = GameData.get_tournament_match_info(GameData.campaign_match_number)
-			battle_title_lbl.text = "🏆 %s - Battle %d / %d" % [match_info["phase_name"], GameData.campaign_match_number, GameData.TOURNAMENT_TOTAL_MATCHES]
-			
-		enemy_team = []
-		for eid in rival_ids:
-			var inst = GameData.create_pokemon_instance(eid)
-			if inst:
-				enemy_team.append(inst)
+				rival_ids = GameData.get_campaign_rival_team(GameData.campaign_match_number)
+				var match_info = GameData.get_tournament_match_info(GameData.campaign_match_number)
+				battle_title_lbl.text = "🏆 %s - Battle %d / %d" % [match_info["phase_name"], GameData.campaign_match_number, GameData.TOURNAMENT_TOTAL_MATCHES]
+				
+			enemy_team = []
+			for eid in rival_ids:
+				var inst = GameData.create_pokemon_instance(eid)
+				if inst:
+					enemy_team.append(inst)
 		
 		# Asignar Foil especial a los Pokémon As de Líderes de Gimnasio o Alto Mando
 		if not enemy_team.is_empty():
@@ -1335,7 +1371,9 @@ func start_new_game() -> void:
 	elif GameData.is_online_pvp:
 		mode_str = "ONLINE BATTLE"
 	elif GameData.is_campaign_mode:
-		if GameData.campaign_submode == "ADVENTURE":
+		if GameData.campaign_submode == "LAKE_OF_RAGE":
+			mode_str = "EL LAGO DE LA FURIA - GYARADOS ROJO (BOSS)"
+		elif GameData.campaign_submode == "ADVENTURE":
 			var total_stages = GameData.get_adventure_total_stages(GameData.adventure_current_episode)
 			var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
 			var trainer_name = stage_info.get("trainer_name", "Trainer")
@@ -1590,56 +1628,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 			)
 			return true
 				
-	# 3. Sleep
-	if actor.is_asleep_turns > 0:
-		actor.is_asleep_turns -= 1
-		if actor.is_asleep_turns > 0:
-			log_action("💤 [b]%s[/b] [color=lightblue]is fast asleep and cannot move! (%d rounds remaining)[/color]" % [actor.name, actor.is_asleep_turns])
-			update_ui()
-			var timer = get_tree().create_timer(2.0)
-			timer.timeout.connect(func():
-				if is_player: end_player_turn() else: end_enemy_turn()
-			)
-			return true
-		else:
-			actor.immune_sleep_rounds = 1
-			log_action("✨ [b]%s[/b] [color=green]woke up from sleep and gained 1 round Sleep immunity![/color]" % actor.name)
-			
-	# 4. Freeze
-	if actor.is_frozen:
-		actor.frozen_turns += 1
-		if actor.frozen_turns >= 2 or randf() < 0.25:
-			actor.is_frozen = false
-			actor.frozen_turns = 0
-			log_action("🔥 [b]%s[/b] [color=orange]thawed out and can move![/color]" % actor.name)
-		else:
-			log_action("❄️ [b]%s[/b] [color=cyan]is frozen solid and cannot move! (%d/2)[/color]" % [actor.name, actor.frozen_turns])
-			update_ui()
-			var timer = get_tree().create_timer(2.0)
-			timer.timeout.connect(func():
-				if is_player: end_player_turn() else: end_enemy_turn()
-			)
-			return true
-			
-	# 5. Paralyze (25% chance unable to act, recharges energy instead, retains status)
-	if actor.is_paralyzed:
-		if randf() < 0.25:
-			var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
-			actor.current_energy += rec
-			log_action("⚡ [b]%s[/b] [color=yellow]is paralyzed! Unable to attack, recharged +%d Energy (⚡ %d/%d). (%d rounds left)[/color]" % [actor.name, rec, actor.current_energy, actor.max_energy, actor.paralyze_turns])
-			var target_overlay = player_status_overlay if actor == get_active_player() else enemy_status_overlay
-			if target_overlay:
-				target_overlay.trigger_paralyze_effect(1.4)
-			update_ui()
-			var timer = get_tree().create_timer(2.0)
-			timer.timeout.connect(func():
-				if is_player: end_player_turn() else: end_enemy_turn()
-			)
-			return true
-		else:
-			log_action("⚡ [b]%s[/b] [color=yellow]is paralyzed but pushed through the paralysis![/color]" % actor.name)
-			
-	# 6. Must Rest (Hyper Beam / Giga Impact / Mind Bending)
+	# 3. Must Rest (Hyper Beam / Giga Impact / Mind Bending)
 	if actor.rest_next_turn:
 		actor.rest_next_turn = false
 		var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
@@ -1655,34 +1644,17 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 			if is_player: end_player_turn() else: end_enemy_turn()
 		)
 		return true
-		
-	# 7. Confusion (35% snap out or max 3 turns, else self-inflicts 2 DMG and skips turn)
-	if actor.is_confused:
-		actor.confused_turns += 1
-		if actor.confused_turns >= 3 or randf() < 0.35:
-			actor.is_confused = false
-			actor.confused_turns = 0
-			log_action("✨ [b]%s[/b] [color=green]snapped out of confusion![/color]" % actor.name)
-		else:
-			var self_dmg = 2
-			actor.current_hp = max(0, actor.current_hp - self_dmg)
-			log_action("🌀 [b]%s[/b] [color=magenta]is confused! It hurt itself in its confusion for %d DMG! (%d/3)[/color]" % [actor.name, self_dmg, actor.confused_turns])
-			play_damage_hit(actor_img, "NORMAL", self_dmg)
-			spawn_floating_combat_number(actor_img, -self_dmg, false)
-			update_ui()
-			if check_active_faint():
-				if check_team_defeat():
-					return true
-			var timer = get_tree().create_timer(2.0)
-			timer.timeout.connect(func():
-				if is_player: end_player_turn() else: end_enemy_turn()
-			)
-			return true
 
-	# 8. Flinch
+	# 4. Flinch (Forced Recharge)
 	if actor.is_flinched:
 		actor.is_flinched = false
-		log_action("💫 [b]%s[/b] [color=yellow]flinched and cannot act this round![/color]" % actor.name)
+		var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
+		actor.current_energy += rec
+		log_action("💫 [b]%s[/b] [color=yellow]flinched and was forced to Recharge! +%d Energy (⚡ %d/%d).[/color]" % [actor.name, rec, actor.current_energy, actor.max_energy])
+		if rec > 0:
+			GameData.play_combat_sfx("power up.wav")
+			var actor_vis = player_card_img if is_player else enemy_card_img
+			spawn_floating_combat_number(actor_vis, rec, false, false, true)
 		update_ui()
 		var timer = get_tree().create_timer(2.0)
 		timer.timeout.connect(func():
@@ -1691,6 +1663,91 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		return true
 		
 	return false
+
+# Checks if an action (Move or Recharge) can proceed or fails due to status conditions (Sleep, Freeze, Paralysis, Confusion).
+func _check_action_impeding_status(actor, is_player: bool) -> bool:
+	if not actor:
+		return true
+
+	# 1. Sleep: Decrement sleep turns upon attempting an action
+	if actor.is_asleep_turns > 0:
+		actor.is_asleep_turns -= 1
+		if actor.is_asleep_turns > 0:
+			log_action("💤 [b]%s[/b] [color=lightblue]is fast asleep and cannot move! (%d rounds remaining)[/color]" % [actor.name, actor.is_asleep_turns])
+			update_ui()
+			_end_failed_action_turn(is_player)
+			return false
+		else:
+			actor.immune_sleep_rounds = 1
+			log_action("✨ [b]%s[/b] [color=green]woke up from sleep and gained 1 round Sleep immunity![/color]" % actor.name)
+			update_ui()
+
+	# 2. Freeze: Thaw check
+	if actor.is_frozen:
+		actor.frozen_turns += 1
+		if actor.frozen_turns >= 2 or randf() < 0.25:
+			actor.is_frozen = false
+			actor.frozen_turns = 0
+			log_action("🔥 [b]%s[/b] [color=orange]thawed out and can move![/color]" % actor.name)
+			update_ui()
+		else:
+			log_action("❄️ [b]%s[/b] [color=cyan]is frozen solid and cannot move! (%d/2)[/color]" % [actor.name, actor.frozen_turns])
+			update_ui()
+			_end_failed_action_turn(is_player)
+			return false
+
+	# 3. Paralysis: 25% chance unable to act
+	if actor.is_paralyzed:
+		if randf() < 0.25:
+			log_action("⚡ [b]%s[/b] [color=yellow]is fully paralyzed! It cannot move! (%d rounds left)[/color]" % [actor.name, actor.paralyze_turns])
+			var target_overlay = player_status_overlay if (actor == get_active_player()) else enemy_status_overlay
+			if target_overlay:
+				target_overlay.trigger_paralyze_effect(1.4)
+			update_ui()
+			_end_failed_action_turn(is_player)
+			return false
+		else:
+			log_action("⚡ [b]%s[/b] [color=yellow]is paralyzed but pushed through the paralysis![/color]" % actor.name)
+			update_ui()
+
+	# 4. Confusion: 35% snap out or max 3 turns, else self-inflicts 2 DMG
+	if actor.is_confused:
+		actor.confused_turns += 1
+		if actor.confused_turns >= 3 or randf() < 0.35:
+			actor.is_confused = false
+			actor.confused_turns = 0
+			log_action("✨ [b]%s[/b] [color=green]snapped out of confusion![/color]" % actor.name)
+			update_ui()
+		else:
+			var self_dmg = 2
+			actor.current_hp = max(0, actor.current_hp - self_dmg)
+			log_action("🌀 [b]%s[/b] [color=magenta]is confused! It hurt itself in its confusion for %d DMG! (%d/3)[/color]" % [actor.name, self_dmg, actor.confused_turns])
+			var actor_img = player_card_img if (actor == get_active_player()) else enemy_card_img
+			play_damage_hit(actor_img, "NORMAL", self_dmg)
+			spawn_floating_combat_number(actor_img, -self_dmg, false)
+			update_ui()
+			if check_active_faint():
+				if check_team_defeat():
+					return false
+			_end_failed_action_turn(is_player)
+			return false
+
+	return true
+
+func _end_failed_action_turn(is_player: bool) -> void:
+	can_player_act = false
+	is_busy = true
+	set_controls_enabled(false)
+	var timer = get_tree().create_timer(1.8)
+	timer.timeout.connect(func():
+		if is_battle_over:
+			return
+		is_busy = false
+		if is_player:
+			end_player_turn()
+		else:
+			end_enemy_turn()
+	)
 
 func start_player_turn() -> void:
 	if is_battle_over or check_team_defeat():
@@ -2129,6 +2186,8 @@ func execute_enemy_ai() -> void:
 	
 	# Si tiene pasiva Turtle Shell y recibió daño, contraataca
 	if e.has_passive and e.passive_name == "Turtle Shell" and e.took_damage_last_turn and e.current_energy >= 1:
+		if not _check_action_impeding_status(e, false):
+			return
 		e.current_energy -= 1
 		e.temp_speed_mod = 2
 		e.speed_mod_expires_round = round_number + 1
@@ -2216,6 +2275,10 @@ func execute_enemy_ai() -> void:
 					enemy_do_switch(best_idx)
 					return
 	
+	# Verificación de estados alterados (Sleep, Paralysis, Freeze, Confusion) al intentar actuar
+	if not _check_action_impeding_status(e, false):
+		return
+
 	var energy_pct: float = float(e.current_energy) / float(max(1, e.max_energy))
 	
 	if e.current_energy <= 0:
@@ -2400,10 +2463,11 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		update_ui()
 		return
 
-	# 6. Movimientos con probabilidad de fallo (MISS e.g. Guillotine)
+	# 6. Movimientos con probabilidad de fallo (MISS e.g. Thunder)
 	if move.effect_type == "MISS" and randf() < 0.33:
-		attacker.current_energy = min(attacker.max_energy, attacker.current_energy + 1)
-		log_action("[b]%s[/b] used [color=cyan]%s[/color], but it [color=red]missed completely![/color] (Refunded 1 Energy⚡)" % [attacker.name, move.name])
+		var refund_energy = move.cost
+		attacker.current_energy = min(attacker.max_energy, attacker.current_energy + refund_energy)
+		log_action("[b]%s[/b] used [color=cyan]%s[/color], but it [color=red]missed completely![/color] (Refunded %d Energy⚡)" % [attacker.name, move.name, refund_energy])
 		shake_node(defender_visual)
 		update_ui()
 		return
@@ -2546,9 +2610,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		note_text += " [color=yellow]Bonus vs Paralyzed (+4 DMG)![/color]"
 	if move.effect_type == "OVERCHARGE" and defender.is_paralyzed:
 		raw_damage += 6
-		defender.is_paralyzed = false
-		defender.paralyze_turns = 0
-		note_text += " [color=yellow]Overcharge (+6 DMG & cured Paralyze)![/color]"
+		note_text += " [color=yellow]Overcharge (+6 DMG vs Paralyzed)![/color]"
 	if move.effect_type == "DOUBLE_DMG" and "extra energy" in move.description.to_lower():
 		if boosted:
 			raw_damage *= 2
@@ -2587,7 +2649,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		if is_full_energy:
 			var dice_roll = randi_range(1, 6)
 			note_text += " [color=yellow](🎲 Die: %d)[/color]" % dice_roll
-			if dice_roll <= 3:
+			if dice_roll == 1:
 				attacker.current_hp = max(0, attacker.current_hp - 1)
 				attacker.current_energy = min(attacker.max_energy, attacker.current_energy + 1)
 				raw_damage = 0
@@ -2712,7 +2774,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if defender.is_frozen and (move.type == "FIRE" or move.effect_type == "BURN" or (boosted and move.boost_applies_burn)):
 		defender.is_frozen = false
 		defender.frozen_turns = 0
-		note_text += " [color=orange]Fire thawed %s out of freeze![/color]" % defender.name
+		note_text += " [color=orange]" + (GameData.tr_text("Fire thawed %s out of freeze!", "¡El fuego descongeló a %s!") % defender.name) + "[/color]"
 	
 	# Conversion (Porygon)
 	if defender.has_passive and defender.passive_name == "Conversion" and final_damage > 0:
@@ -2998,7 +3060,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		# Rencor (LOCK e.g. Spite)
 		if move.effect_type == "LOCK":
 			attacker.lock_foe_move = defender.last_move_used
-			note_text += " [color=purple]Spite locked foe from using %s again![/color]" % attacker.lock_foe_move
+			note_text += " [color=purple]" + (GameData.tr_text("Spite locked foe from using %s again!", "¡Rencor bloqueó al rival de volver a usar %s!") % attacker.lock_foe_move) + "[/color]"
 
 		# Amnesia (MEMORY_FADE)
 		if move.effect_type == "MEMORY_FADE":
@@ -4118,14 +4180,20 @@ func _on_evo_continue_pressed() -> void:
 func execute_player_move(move, boosted: bool, energy_to_spend: int) -> void:
 	if not _is_turn_action_allowed():
 		return
-	can_player_act = false
-	is_busy = true
-	set_controls_enabled(false)
 	var is_p2 = (not is_player_turn and GameData.is_pvp_mode)
+	var is_p = not is_p2
 	var actor = get_active_enemy() if is_p2 else get_active_player()
 	var defender = get_active_player() if is_p2 else get_active_enemy()
 	var actor_img = enemy_card_img if is_p2 else player_card_img
 	var defender_img = player_card_img if is_p2 else enemy_card_img
+
+	if not _check_action_impeding_status(actor, is_p):
+		chk_boost.button_pressed = false
+		return
+
+	can_player_act = false
+	is_busy = true
+	set_controls_enabled(false)
 	
 	perform_attack(actor, defender, move, boosted, energy_to_spend, actor_img, defender_img)
 	chk_boost.button_pressed = false
@@ -4517,9 +4585,13 @@ func _on_recover_pressed() -> void:
 	if not _is_turn_action_allowed():
 		return
 	var is_p2 = (not is_player_turn and GameData.is_pvp_mode)
+	var is_p = not is_p2
 	var actor = get_active_enemy() if is_p2 else get_active_player()
 	if actor.current_energy >= actor.max_energy:
 		log_action("[color=yellow]%s's energy is already full (%d/%d)![/color]" % [actor.name, actor.current_energy, actor.max_energy])
+		return
+
+	if not _check_action_impeding_status(actor, is_p):
 		return
 		
 	can_player_act = false
@@ -5903,7 +5975,9 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 		btn_game_over_menu.text = "🏆 Return to Campaign Hub"
 	elif GameData.is_campaign_mode:
 		btn_restart.visible = false
-		if GameData.campaign_submode == "ADVENTURE":
+		if GameData.campaign_submode == "LAKE_OF_RAGE":
+			btn_game_over_menu.text = "🗺️ Return to Johto"
+		elif GameData.campaign_submode == "ADVENTURE":
 			btn_game_over_menu.text = "⛺ Camp / Shop"
 		elif GameData.campaign_submode == "CHAOS":
 			if GameData.chaos_match_number > GameData.CHAOS_TOTAL_MATCHES or "BOSS" in title_upper or "CRYSTAL ONIX" in title_upper:
@@ -6304,14 +6378,44 @@ func _on_bag_pressed() -> void:
 	selected_bag_item = ""
 	bag_targets_section.visible = false
 	bag_items_list.visible = true
+	if bag_panel:
+		var bag_w: float = minf(460.0, get_viewport_rect().size.x - 20.0)
+		bag_panel.custom_minimum_size = Vector2(bag_w, 0)
+	if battle_bag_tab_bar: battle_bag_tab_bar.visible = true
+	if battle_bag_capacity_lbl: battle_bag_capacity_lbl.visible = true
 	refresh_bag_items_ui()
 	bag_modal.visible = true
+
+func _style_battle_tab_btn(btn: Button, active: bool, active_color: Color) -> void:
+	if not btn:
+		return
+	var sb = StyleBoxFlat.new()
+	sb.set_corner_radius_all(6)
+	sb.content_margin_top = 4
+	sb.content_margin_bottom = 4
+	sb.content_margin_left = 10
+	sb.content_margin_right = 10
+	if active:
+		sb.bg_color = active_color.darkened(0.5)
+		sb.border_color = active_color
+		sb.set_border_width_all(2)
+		btn.add_theme_color_override("font_color", Color.WHITE)
+	else:
+		sb.bg_color = Color(0.10, 0.14, 0.20, 0.85)
+		sb.border_color = Color(0.25, 0.35, 0.45, 0.6)
+		sb.set_border_width_all(1)
+		btn.add_theme_color_override("font_color", Color(0.65, 0.75, 0.85))
+	btn.add_theme_stylebox_override("normal", sb)
+	btn.add_theme_stylebox_override("hover", sb)
+	btn.add_theme_stylebox_override("pressed", sb)
 
 func refresh_bag_items_ui() -> void:
 	for child in bag_items_list.get_children():
 		child.queue_free()
 
 	if is_crystal_onix_boss_battle():
+		if battle_bag_tab_bar: battle_bag_tab_bar.visible = false
+		if battle_bag_capacity_lbl: battle_bag_capacity_lbl.visible = false
 		var no_items_lbl = Label.new()
 		no_items_lbl.text = GameData.tr_text("🚫 Items are forbidden in the Crystal Onix Boss Trial!", "🚫 ¡Los objetos están prohibidos en el combate contra Crystal Onix!")
 		no_items_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -6319,56 +6423,120 @@ func refresh_bag_items_ui() -> void:
 		bag_items_list.add_child(no_items_lbl)
 		return
 
-	var item_defs = [
-		{
-			"id": "potion",
-			"name": "Potion",
-			"desc": "Restores up to 10 HP to an active or benched Pokémon.",
-			"icon": "potion"
-		},
-		{
-			"id": "super_potion",
-			"name": "Super Potion",
-			"desc": "Restores up to 25 HP to an active or benched Pokémon.",
-			"icon": "super_potion"
-		},
-		{
-			"id": "hyper_potion",
-			"name": "Hyper Potion",
-			"desc": "Restores 100% HP (Full Max HP) to an active or benched Pokémon.",
-			"icon": "hyper_potion"
-		},
-		{
-			"id": "ether",
-			"name": "Ether",
-			"desc": "Restores 100% Energy (⚡) to an active or benched Pokémon.",
-			"icon": "ether"
-		},
-		{
-			"id": "remedy",
-			"name": "Remedy",
-			"desc": "Cures all negative status conditions (Burn, Poison, Flinch, etc).",
-			"icon": "remedy"
-		},
-		{
-			"id": "poke_flute",
-			"name": "Poké Flute",
-			"desc": "Plays a melody that awakens any sleeping Pokémon. Permanent item (not consumed).",
-			"icon": "poke_flute"
-		},
-		{
-			"id": "revive",
-			"name": "Revive",
-			"desc": "Revives a fainted Pokémon with 50% max HP.",
-			"icon": "revive"
-		},
-		{
-			"id": "exp_share",
-			"name": "Exp Share",
-			"desc": "Passive item. While in bag, 20% of the EXP earned by the active Pokémon is shared with the first eligible benched Pokémon.",
-			"icon": "exp_share"
-		}
-	]
+	var bag_vbox = $BagModal/CenterBox/Panel/Margin/VBox
+	if battle_bag_tab_bar == null and bag_vbox:
+		battle_bag_tab_bar = HBoxContainer.new()
+		battle_bag_tab_bar.name = "BattleBagTabBar"
+		battle_bag_tab_bar.alignment = BoxContainer.ALIGNMENT_CENTER
+		battle_bag_tab_bar.add_theme_constant_override("separation", 10)
+
+		btn_battle_tab_consumables = Button.new()
+		btn_battle_tab_consumables.text = "🧪 Bolso de Objetos"
+		btn_battle_tab_consumables.custom_minimum_size = Vector2(175, 32)
+		btn_battle_tab_consumables.add_theme_font_size_override("font_size", 12)
+		btn_battle_tab_consumables.pressed.connect(func():
+			battle_bag_active_tab = "consumables"
+			refresh_bag_items_ui()
+		)
+		battle_bag_tab_bar.add_child(btn_battle_tab_consumables)
+
+		btn_battle_tab_key_items = Button.new()
+		btn_battle_tab_key_items.text = "🗝️ Objetos Clave"
+		btn_battle_tab_key_items.custom_minimum_size = Vector2(150, 32)
+		btn_battle_tab_key_items.add_theme_font_size_override("font_size", 12)
+		btn_battle_tab_key_items.pressed.connect(func():
+			battle_bag_active_tab = "key_items"
+			refresh_bag_items_ui()
+		)
+		battle_bag_tab_bar.add_child(btn_battle_tab_key_items)
+
+		battle_bag_capacity_lbl = Label.new()
+		battle_bag_capacity_lbl.name = "BattleBagCapacityLbl"
+		battle_bag_capacity_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		battle_bag_capacity_lbl.add_theme_font_size_override("font_size", 11)
+		battle_bag_capacity_lbl.add_theme_color_override("font_color", Color("#80DEEA"))
+
+		var items_idx = bag_items_list.get_index()
+		bag_vbox.add_child(battle_bag_tab_bar)
+		bag_vbox.move_child(battle_bag_tab_bar, items_idx)
+		bag_vbox.add_child(battle_bag_capacity_lbl)
+		bag_vbox.move_child(battle_bag_capacity_lbl, items_idx + 1)
+
+	if battle_bag_tab_bar:
+		battle_bag_tab_bar.visible = true
+	if battle_bag_capacity_lbl:
+		battle_bag_capacity_lbl.visible = true
+
+	var cur_inv = GameData.get_active_campaign_inventory()
+	var consumable_count = GameData.get_consumable_items_count(cur_inv)
+
+	if btn_battle_tab_consumables and btn_battle_tab_key_items:
+		btn_battle_tab_consumables.text = "🧪 Bolso (%d/10)" % consumable_count
+		btn_battle_tab_key_items.text = "🗝️ Objetos Clave"
+		if battle_bag_active_tab == "consumables":
+			_style_battle_tab_btn(btn_battle_tab_consumables, true, Color(0.25, 0.70, 0.95))
+			_style_battle_tab_btn(btn_battle_tab_key_items, false, Color(0.85, 0.65, 0.25))
+			battle_bag_capacity_lbl.text = "📦 Capacidad: %d / %d Consumibles (No acumulables entre campañas)" % [consumable_count, GameData.MAX_CONSUMABLE_ITEMS]
+		else:
+			_style_battle_tab_btn(btn_battle_tab_consumables, false, Color(0.25, 0.70, 0.95))
+			_style_battle_tab_btn(btn_battle_tab_key_items, true, Color(0.85, 0.65, 0.25))
+			battle_bag_capacity_lbl.text = "🗝️ Objetos Clave (Permanentes, no consumibles)"
+
+	var item_defs = []
+	if battle_bag_active_tab == "consumables":
+		item_defs = [
+			{
+				"id": "potion",
+				"name": "Potion",
+				"desc": "Restores up to 10 HP to an active or benched Pokémon.",
+				"icon": "potion"
+			},
+			{
+				"id": "super_potion",
+				"name": "Super Potion",
+				"desc": "Restores up to 25 HP to an active or benched Pokémon.",
+				"icon": "super_potion"
+			},
+			{
+				"id": "hyper_potion",
+				"name": "Hyper Potion",
+				"desc": "Restores 100% HP (Full Max HP) to an active or benched Pokémon.",
+				"icon": "hyper_potion"
+			},
+			{
+				"id": "ether",
+				"name": "Ether",
+				"desc": "Restores 100% Energy (⚡) to an active or benched Pokémon.",
+				"icon": "ether"
+			},
+			{
+				"id": "remedy",
+				"name": "Remedy",
+				"desc": "Cures all negative status conditions (Burn, Poison, Flinch, etc).",
+				"icon": "remedy"
+			},
+			{
+				"id": "revive",
+				"name": "Revive",
+				"desc": "Revives a fainted Pokémon with 50% max HP.",
+				"icon": "revive"
+			}
+		]
+	else:
+		item_defs = [
+			{
+				"id": "poke_flute",
+				"name": "Poké Flute",
+				"desc": "Plays a melody that awakens any sleeping Pokémon. Permanent item (not consumed).",
+				"icon": "poke_flute"
+			},
+			{
+				"id": "exp_share",
+				"name": "Exp Share",
+				"desc": "Passive item. While in bag, 20% of the EXP earned by the active Pokémon is shared with the first eligible benched Pokémon.",
+				"icon": "exp_share"
+			}
+		]
 	
 	for item in item_defs:
 		var item_id = item["id"]
@@ -6453,6 +6621,8 @@ func refresh_bag_items_ui() -> void:
 func show_bag_targets(item_id: String) -> void:
 	selected_bag_item = item_id
 	bag_items_list.visible = false
+	if battle_bag_tab_bar: battle_bag_tab_bar.visible = false
+	if battle_bag_capacity_lbl: battle_bag_capacity_lbl.visible = false
 	bag_targets_section.visible = true
 	
 	for child in bag_targets_container.get_children():
@@ -6562,6 +6732,9 @@ func show_bag_targets(item_id: String) -> void:
 	back_btn.pressed.connect(func():
 		bag_targets_section.visible = false
 		bag_items_list.visible = true
+		if battle_bag_tab_bar: battle_bag_tab_bar.visible = true
+		if battle_bag_capacity_lbl: battle_bag_capacity_lbl.visible = true
+		refresh_bag_items_ui()
 	)
 	bag_targets_container.add_child(back_btn)
 
@@ -6682,6 +6855,9 @@ func play_heal_flash(target_idx: int) -> void:
 # --- LÓGICA DE TABLA DE EFECTIVIDADES POR TIPO ---
 
 func _on_type_chart_pressed() -> void:
+	if type_chart_panel:
+		var tc_w: float = minf(460.0, get_viewport_rect().size.x - 20.0)
+		type_chart_panel.custom_minimum_size = Vector2(tc_w, 0)
 	_update_type_chart_matchup()
 	type_chart_modal.visible = true
 

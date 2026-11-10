@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.6.7"
+const GAME_VERSION: String = "v0.6.8"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -157,7 +157,10 @@ class PokemonData:
 		return req > 0 and current_exp >= req
 
 	func get_effective_speed() -> int:
-		return max(1, speed + temp_speed_mod)
+		var spd = max(1, speed + temp_speed_mod)
+		if is_paralyzed or paralyze_turns > 0:
+			spd = max(1, spd - 2)
+		return spd
 
 # Base de datos de movimientos cargada desde poke_moves.csv
 var moves_catalog: Dictionary = {}
@@ -468,6 +471,24 @@ const ITEM_COST_REVIVE: int = 9
 const ITEM_COST_REMEDY: int = 3
 const ITEM_COST_ETHER: int = 5
 const ITEM_COST_STONE: int = 10
+
+const MAX_CONSUMABLE_ITEMS: int = 10
+const CONSUMABLE_ITEM_IDS: Array[String] = [
+	"potion", "super_potion", "hyper_potion", "revive", "remedy", "ether"
+]
+const KEY_ITEM_IDS: Array[String] = [
+	"poke_flute", "exp_share"
+]
+
+func get_consumable_items_count(inv: Dictionary = {}) -> int:
+	var target_inv = inv if not inv.is_empty() else get_active_campaign_inventory()
+	var total: int = 0
+	for it_id in CONSUMABLE_ITEM_IDS:
+		total += int(target_inv.get(it_id, 0))
+	return total
+
+func is_consumable_inventory_full(inv: Dictionary = {}) -> bool:
+	return get_consumable_items_count(inv) >= MAX_CONSUMABLE_ITEMS
 
 const EVOLUTION_STONE_TYPES: Array[String] = [
 	"Fire", "Water", "Leaf", "Thunder", "Ground",
@@ -4002,6 +4023,8 @@ func get_active_campaign_team_state() -> Array:
 		return adventure_player_team_state
 	elif campaign_submode == "CHAOS":
 		return chaos_player_team_state
+	elif campaign_submode == "LAKE_OF_RAGE":
+		return []
 	return campaign_player_team_state
 
 func swap_campaign_team_members(idx_a: int, idx_b: int) -> bool:
@@ -4411,7 +4434,7 @@ func has_all_johto_gym_badges() -> bool:
 	return get_johto_gym_badges_count() >= 8
 
 func is_lake_of_rage_unlocked() -> bool:
-	return has_all_johto_gym_badges()
+	return has_all_johto_gym_badges() and not lake_of_rage_completed
 
 func is_lake_of_rage_completed() -> bool:
 	return lake_of_rage_completed
@@ -4710,20 +4733,26 @@ func use_revive_on_campaign_pkmn(index: int) -> bool:
 	return true
 
 func buy_campaign_potion() -> bool:
-	var cur_gold = get_active_campaign_gold()
 	var inv = get_active_campaign_inventory()
+	if is_consumable_inventory_full(inv):
+		return false
+	var cur_gold = get_active_campaign_gold()
 	if cur_gold >= ITEM_COST_POTION:
 		set_active_campaign_gold(cur_gold - ITEM_COST_POTION)
 		inv["potion"] = inv.get("potion", 0) + 1
+		save_profile()
 		return true
 	return false
 
 func buy_campaign_revive() -> bool:
-	var cur_gold = get_active_campaign_gold()
 	var inv = get_active_campaign_inventory()
+	if is_consumable_inventory_full(inv):
+		return false
+	var cur_gold = get_active_campaign_gold()
 	if cur_gold >= ITEM_COST_REVIVE:
 		set_active_campaign_gold(cur_gold - ITEM_COST_REVIVE)
 		inv["revive"] = inv.get("revive", 0) + 1
+		save_profile()
 		return true
 	return false
 
@@ -4755,20 +4784,26 @@ func use_remedy_on_campaign_pkmn(index: int) -> bool:
 	return true
 
 func buy_campaign_remedy() -> bool:
-	var cur_gold = get_active_campaign_gold()
 	var inv = get_active_campaign_inventory()
+	if is_consumable_inventory_full(inv):
+		return false
+	var cur_gold = get_active_campaign_gold()
 	if cur_gold >= ITEM_COST_REMEDY:
 		set_active_campaign_gold(cur_gold - ITEM_COST_REMEDY)
 		inv["remedy"] = inv.get("remedy", 0) + 1
+		save_profile()
 		return true
 	return false
 
 func buy_campaign_ether() -> bool:
-	var cur_gold = get_active_campaign_gold()
 	var inv = get_active_campaign_inventory()
+	if is_consumable_inventory_full(inv):
+		return false
+	var cur_gold = get_active_campaign_gold()
 	if cur_gold >= ITEM_COST_ETHER:
 		set_active_campaign_gold(cur_gold - ITEM_COST_ETHER)
 		inv["ether"] = inv.get("ether", 0) + 1
+		save_profile()
 		return true
 	return false
 
@@ -4790,8 +4825,10 @@ func use_super_potion_on_campaign_pkmn(index: int) -> bool:
 	return true
 
 func buy_campaign_super_potion() -> bool:
-	var cur_gold = get_active_campaign_gold()
 	var inv = get_active_campaign_inventory()
+	if is_consumable_inventory_full(inv):
+		return false
+	var cur_gold = get_active_campaign_gold()
 	if cur_gold >= ITEM_COST_SUPER_POTION:
 		set_active_campaign_gold(cur_gold - ITEM_COST_SUPER_POTION)
 		inv["super_potion"] = inv.get("super_potion", 0) + 1
@@ -4817,8 +4854,10 @@ func use_hyper_potion_on_campaign_pkmn(index: int) -> bool:
 	return true
 
 func buy_campaign_hyper_potion() -> bool:
-	var cur_gold = get_active_campaign_gold()
 	var inv = get_active_campaign_inventory()
+	if is_consumable_inventory_full(inv):
+		return false
+	var cur_gold = get_active_campaign_gold()
 	if cur_gold >= ITEM_COST_HYPER_POTION:
 		set_active_campaign_gold(cur_gold - ITEM_COST_HYPER_POTION)
 		inv["hyper_potion"] = inv.get("hyper_potion", 0) + 1
@@ -4844,15 +4883,7 @@ func use_poke_flute_on_campaign_pkmn(index: int) -> bool:
 	return true
 
 func buy_campaign_poke_flute() -> bool:
-	var cur_gold = get_active_campaign_gold()
-	var inv = get_active_campaign_inventory()
-	if inv.get("poke_flute", 0) > 0:
-		return false # Ya se tiene en posesión (objeto permanente)
-	if cur_gold >= ITEM_COST_POKE_FLUTE:
-		set_active_campaign_gold(cur_gold - ITEM_COST_POKE_FLUTE)
-		inv["poke_flute"] = 1
-		save_profile()
-		return true
+	# Key items / Objetos Clave no se pueden comprar en la tienda
 	return false
 
 # --- EVOLUTION STONES & INTERACTIVE CAMP EVOLUTION (VARIANT 1) ---
