@@ -2404,6 +2404,27 @@ func enemy_do_recover() -> void:
 	)
 
 # --- EJECUCIÓN DE ATAQUES Y HABILIDADES ---
+func _get_status_proc_chance(move, boosted: bool, requires_boost: bool) -> float:
+	if requires_boost:
+		return 1.0 if boosted else 0.0
+	var desc_l = move.description.to_lower()
+	var chance_pct = -1.0
+	if "30% chance to " in desc_l or "has a 30%" in desc_l or (move.effect_type == "FLINCH" and "30%" in desc_l):
+		chance_pct = 0.30
+	elif "20% chance to " in desc_l or "has a 20%" in desc_l or (move.effect_type == "FLINCH" and "20%" in desc_l):
+		chance_pct = 0.20
+	elif "15% chance to " in desc_l or "has a 15%" in desc_l or (move.effect_type == "FLINCH" and "15%" in desc_l):
+		chance_pct = 0.15
+	if chance_pct > 0.0:
+		return 1.0 if boosted else chance_pct
+	if move.effect_type == "FLINCH" and "extra energy" in desc_l:
+		return 1.0 if boosted else 0.0
+	return 1.0
+
+func _roll_status_proc(move, boosted: bool, requires_boost: bool) -> bool:
+	var rate = _get_status_proc_chance(move, boosted, requires_boost)
+	return rate >= 1.0 or (rate > 0.0 and randf() < rate)
+
 func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: int, attacker_visual: Node, defender_visual: Node) -> void:
 	attacker.current_energy -= energy_to_spend
 	if attacker == get_active_player() and GameData.is_campaign_mode:
@@ -2840,7 +2861,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		# Quemadura
 		var should_burn = false
 		if move.effect_type == "BURN":
-			should_burn = boosted if requires_boost_for_status else true
+			should_burn = _roll_status_proc(move, boosted, requires_boost_for_status)
 		elif boosted and (move.boost_applies_burn or move.name == "Inferno"):
 			should_burn = true
 		if should_burn:
@@ -2856,7 +2877,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 					def_overlay.trigger_burn_effect()
 			
 		# Envenenamiento
-		if move.effect_type == "POISON":
+		if move.effect_type == "POISON" and _roll_status_proc(move, boosted, requires_boost_for_status):
 			if defender.is_poisoned:
 				note_text += " [color=gray](%s is already poisoned - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Poisoned!", Color("#a855f7"))
@@ -2892,7 +2913,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				note_text += " [color=gray](Toxic requires foe to be poisoned first)[/color]"
 				
 		# Congelación (FREEZE)
-		if move.effect_type == "FREEZE" and (boosted if requires_boost_for_status else true):
+		if move.effect_type == "FREEZE" and _roll_status_proc(move, boosted, requires_boost_for_status):
 			if defender.is_frozen or defender.frozen_turns > 0:
 				note_text += " [color=gray](%s is already frozen - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Frozen!", Color("#38bdf8"))
@@ -2914,7 +2935,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				note_text += " [color=lightblue]Put foe to SLEEP (2 rounds)![/color]"
 			
 		# Parálisis (PARALYZE)
-		if move.effect_type == "PARALYZE" and (boosted if requires_boost_for_status else true):
+		if move.effect_type == "PARALYZE" and _roll_status_proc(move, boosted, requires_boost_for_status):
 			if defender.is_paralyzed or defender.paralyze_turns > 0:
 				note_text += " [color=gray](%s is already paralyzed - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Paralyzed!", Color("#facc15"))
@@ -2924,7 +2945,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				note_text += " [color=yellow]Inflicted PARALYZE (25% chance cannot act, 2 rounds)![/color]"
 			
 		# Confusión (CONFUSION)
-		if move.effect_type == "CONFUSION" and (boosted if requires_boost_for_status else true):
+		if move.effect_type == "CONFUSION" and _roll_status_proc(move, boosted, requires_boost_for_status):
 			if defender.is_confused or defender.confused_turns > 0:
 				note_text += " [color=gray](%s is already confused - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Confused!", Color("#e879f9"))
@@ -2953,27 +2974,13 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				note_text += " [color=green]Planted Leech Seed on foe (saps 2 HP x 3 rounds)![/color]"
 			
 		# Flinch (FLINCH)
-		if move.effect_type == "FLINCH":
-			var flinch_rate = 0.0
-			if boosted:
-				flinch_rate = 1.0
-			elif "30%" in move.description:
-				flinch_rate = 0.30
-			elif "20%" in move.description:
-				flinch_rate = 0.20
-			elif "15%" in move.description:
-				flinch_rate = 0.15
-			elif "extra energy" in move.description.to_lower():
-				flinch_rate = 0.0
+		if move.effect_type == "FLINCH" and _roll_status_proc(move, boosted, false):
+			if not defender.was_flinched_last_round:
+				defender.is_flinched = true
+				defender.flinched_this_round = true
+				note_text += " [color=yellow]Inflicted FLINCH (loses turn this round)![/color]"
 			else:
-				flinch_rate = 1.0
-			if flinch_rate > 0 and randf() < flinch_rate:
-				if not defender.was_flinched_last_round:
-					defender.is_flinched = true
-					defender.flinched_this_round = true
-					note_text += " [color=yellow]Inflicted FLINCH (loses turn this round)![/color]"
-				else:
-					note_text += " [color=gray](Immune to Flinch: already flinched last round)[/color]"
+				note_text += " [color=gray](Immune to Flinch: already flinched last round)[/color]"
 
 		# Reducción de Velocidad al rival (SLOW_FOE / BLIND)
 		if move.reduces_foe_speed or move.effect_type in ["SLOW_FOE", "BLIND"]:
@@ -3021,9 +3028,9 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				attacker.shield_turns = 4 if "4 rounds" in move.description else (3 if "3 rounds" in move.description else 2)
 				note_text += " [color=blue]Activated Shield: -%d DMG for %d rounds![/color]" % [attacker.shield_reduction, attacker.shield_turns]
 
-		# Aumento de ataque propio (DMG_BOOST / RELAXED / GROWING e.g. Belly Drum / Calm Mind / Growth)
+		# Aumento de ataque propio (DMG_BOOST / RELAXED / GROWING e.g. Belly Drum / Calm Mind / Growth / Charge)
 		if move.effect_type in ["DMG_BOOST", "RELAXED", "GROWING"]:
-			attacker.damage_buff = 8 if "+8 DMG" in move.description else (5 if "+5" in move.description else 2)
+			attacker.damage_buff = 8 if "+8" in move.description else (6 if "+6" in move.description else (5 if "+5" in move.description else 2))
 			attacker.damage_buff_turns = 2 if "2 Moves" in move.description else 1
 			note_text += " [color=yellow]Boosted attack power: +%d DMG! [/color]" % attacker.damage_buff
 
@@ -3742,11 +3749,12 @@ func _resolve_battle_victory() -> void:
 				)
 		elif GameData.campaign_submode == "LAKE_OF_RAGE":
 			GameData.complete_lake_of_rage()
-			GameData.player_diamonds += 50
+			var lake_diamonds = GameData.LAKE_OF_RAGE_REWARD_DIAMONDS
+			GameData.player_diamonds += lake_diamonds
 			GameData.save_profile()
 			show_game_over(
 				"🌊 ¡EL LAGO DE LA FURIA HA SIDO PACIFICADO!",
-				"¡Has derrotado al colosal Gyarados Rojo Enfurecido en una batalla legendaria!\n\n👑 RECOMPENSA EXCLUSIVA: ¡Carta de Gyarados Rojo (Legendary ⭐) añadida a tu colección!\n💎 +50 Diamantes de bonificación.\n\nEl evento ha quedado completado permanentemente."
+				"¡Has derrotado al colosal Gyarados Rojo Enfurecido en una batalla legendaria!\n\n👑 RECOMPENSA EXCLUSIVA: ¡Carta de Gyarados Rojo (Legendary ⭐) añadida a tu colección!\n💎 +%d Diamantes de bonificación.\n\nEl evento ha quedado completado permanentemente." % lake_diamonds
 			)
 		else:
 			# Modo Torneo

@@ -161,5 +161,85 @@ func _ready():
 	print("✓ Furia ACTIVE after taking damage: dealt 12 DMG (+2 DMG bonus)!")
 	
 	battle.queue_free()
+
+	# 6. Test Standardized Diamond Rewards & Johto vs Kanto Balance
+	print("\n--- Test 6: Standardized Diamond Rewards & Johto vs Kanto Difficulty Balance ---")
+	var saved_diamonds = GameData.player_diamonds
+	var saved_comp = GameData.adventure_completed_episodes.duplicate()
+	var saved_unl = GameData.adventure_unlocked_episodes.duplicate()
+	var saved_r106 = GameData.adventure_ep106_cleared_routes.duplicate()
+	var saved_r107 = GameData.adventure_ep107_cleared_routes.duplicate()
+	var saved_r108 = GameData.adventure_ep108_cleared_routes.duplicate()
+	var saved_s106 = GameData.adventure_ep106_selected_route
+	var saved_s107 = GameData.adventure_ep107_selected_route
+	var saved_s108 = GameData.adventure_ep108_selected_route
+
+	GameData.player_diamonds = 0
+	for ep_id in expected_eps:
+		GameData.adventure_completed_episodes.erase(ep_id)
+	GameData.adventure_ep106_cleared_routes.clear()
+	GameData.adventure_ep107_cleared_routes.clear()
+	GameData.adventure_ep108_cleared_routes.clear()
+
+	var expected_ep_rewards = {
+		101: 15, 102: 20, 103: 20, 104: 25, 105: 25,
+		106: 30, 107: 25, 108: 35
+	}
+	var expected_route_rewards = {
+		106: {"subway": 10, "radio_tower": 10, "olivine_gym": 10},
+		107: {"rocket_hideout": 10, "mahogany_gym": 15},
+		108: {"ice_path": 10, "blackthorn_gym": 15, "dragon_den": 10}
+	}
+
+	var johto_stages_total = 0
+	var johto_diamonds_total = 0
+	for ep_id in expected_eps:
+		var stg_count = GameData.get_adventure_episode_total_stages_all_routes(ep_id)
+		var dia_total = GameData.get_adventure_episode_total_diamonds(ep_id)
+		johto_stages_total += stg_count
+		johto_diamonds_total += dia_total
+		assert(dia_total == expected_ep_rewards[ep_id], "Ep %d total diamonds expected %d, got %d" % [ep_id, expected_ep_rewards[ep_id], dia_total])
+
+		if expected_route_rewards.has(ep_id):
+			for r_id in expected_route_rewards[ep_id].keys():
+				GameData.set_adventure_selected_route(ep_id, r_id)
+				var r_bonus = GameData.complete_adventure_episode(ep_id)
+				assert(r_bonus == expected_route_rewards[ep_id][r_id], "Ep %d route %s expected %d, got %d" % [ep_id, r_id, expected_route_rewards[ep_id][r_id], r_bonus])
+				assert(GameData.complete_adventure_episode(ep_id) == 0, "Replay of Ep %d route %s must yield 0" % [ep_id, r_id])
+		else:
+			var bonus = GameData.complete_adventure_episode(ep_id)
+			assert(bonus == expected_ep_rewards[ep_id], "Ep %d completion expected %d, got %d" % [ep_id, expected_ep_rewards[ep_id], bonus])
+			assert(GameData.complete_adventure_episode(ep_id) == 0, "Replay of Ep %d must yield 0" % ep_id)
+
+	assert(johto_stages_total == 39, "Johto must have 39 total battles across Ep 101-108, got %d" % johto_stages_total)
+	assert(johto_diamonds_total == 195, "Johto Ep 101-108 total diamonds must be 195, got %d" % johto_diamonds_total)
+	assert(GameData.player_diamonds == 195, "Player diamonds after clearing Ep 101-108 must be 195, got %d" % GameData.player_diamonds)
+	assert(GameData.LAKE_OF_RAGE_REWARD_DIAMONDS == 30, "Lake of Rage bonus must be 30 diamonds")
+
+	var kanto_stages_total = 0
+	var kanto_diamonds_total = 0
+	for k_ep in [1, 2, 3, 4, 5, 6, 7]:
+		kanto_stages_total += GameData.get_adventure_episode_total_stages_all_routes(k_ep)
+		kanto_diamonds_total += GameData.get_adventure_episode_total_diamonds(k_ep)
+
+	assert(kanto_stages_total == 61 and kanto_diamonds_total == 290, "Kanto baseline expected 61 battles / 290 diamonds")
+	assert(johto_diamonds_total + GameData.LAKE_OF_RAGE_REWARD_DIAMONDS < kanto_diamonds_total, "Johto (including Lake of Rage) must award fewer diamonds than longer/harder Kanto campaign")
+	assert(GameData.calculate_adventure_standard_diamonds(4, 1) == 15, "Standard helper Tier 1 (4 stg) -> 15")
+	assert(GameData.calculate_adventure_standard_diamonds(5, 1) == 20, "Standard helper Tier 1 (5 stg) -> 20")
+	assert(GameData.calculate_adventure_standard_diamonds(2, 3, true) == 15, "Standard helper Tier 3 Boss (2 stg) -> 15")
+
+	# Restore profile state
+	GameData.player_diamonds = saved_diamonds
+	GameData.adventure_completed_episodes = saved_comp
+	GameData.adventure_unlocked_episodes = saved_unl
+	GameData.adventure_ep106_cleared_routes = saved_r106
+	GameData.adventure_ep107_cleared_routes = saved_r107
+	GameData.adventure_ep108_cleared_routes = saved_r108
+	GameData.adventure_ep106_selected_route = saved_s106
+	GameData.adventure_ep107_selected_route = saved_s107
+	GameData.adventure_ep108_selected_route = saved_s108
+	GameData.save_profile()
+	print("✓ Johto standardized rewards (39 battles -> 195💎 + 30💎 boss = 225💎 vs Kanto 61 battles -> 290💎) verified!")
+
 	print("\n=== ALL JOHTO EPISODES & RED GYARADOS TESTS PASSED PERFECTLY! ===")
 	get_tree().quit(0)

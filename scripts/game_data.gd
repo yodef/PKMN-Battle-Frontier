@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.6.81"
+const GAME_VERSION: String = "v0.6.84"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -565,6 +565,12 @@ var lake_of_rage_completed: bool = false
 const LAKE_OF_RAGE_BOSS_ID: int = 495
 const RED_GYARADOS_BOSS_ID: int = 495
 const RED_GYARADOS_CARD_ID: int = 494
+# Estandar de recompensas de Diamantes por Liga/Region (base para Johto, Hoenn, Sinnoh, etc.):
+# - Tier 1 (Medallas 1-2, Basic/Stage 1): ~4.0 Diamantes/combate, redondeado a multiplos de 5 (15-20 Diamantes por 4-5 combates)
+# - Tier 2 (Medallas 3-5, Stage 1-2): ~4.5 Diamantes/combate, redondeado a multiplos de 5 (20-35 Diamantes segun combates)
+# - Tier 3 (Medallas 6-8 / Rutas finales): ~5.0-5.5 Diamantes/combate (min 10 en rutas cortas de 1-2 combates; 15 si incluye Jefe/Gimnasio de 2+ combates; 20-35 en rutas largas de 4-6 combates)
+# - Evento Jefe Post-Liga con Carta Legendaria exclusiva: 30 Diamantes + Carta exclusiva
+const LAKE_OF_RAGE_REWARD_DIAMONDS: int = 30
 var adventure_selected_region: String = "KANTO"
 
 # Modo Chaos Odyssey:
@@ -1228,7 +1234,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title_es": "Episodio I: Medalla Céfiro (Malvalona)",
 		"subtitle": "Journey through Bellsprout Tower & defeat Gym Leader Falkner!",
 		"subtitle_es": "¡Asciende la Torre Bellsprout y desafía al Líder Pegaso!",
-		"reward_diamonds_first_clear": 20,
+		"reward_diamonds_first_clear": 15,
 		"stages": [
 			{
 				"stage_num": 1,
@@ -1274,7 +1280,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title_es": "Episodio II: Medalla Colmena (Azalea)",
 		"subtitle": "Rescue Slowpoke Well from Team Rocket & conquer Bugsy's Gym!",
 		"subtitle_es": "¡Salva el Pozo Slowpoke del Team Rocket y conquista el Gimnasio de Antón!",
-		"reward_diamonds_first_clear": 25,
+		"reward_diamonds_first_clear": 20,
 		"stages": [
 			{
 				"stage_num": 1,
@@ -1328,7 +1334,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title_es": "Episodio III: Medalla Planicie (Trigal)",
 		"subtitle": "Clear the strange tree, contest the National Park, and topple Whitney's Miltank!",
 		"subtitle_es": "¡Supera el árbol misterioso, visita el Parque Nacional y derriba a la Miltank de Blanca!",
-		"reward_diamonds_first_clear": 30,
+		"reward_diamonds_first_clear": 20,
 		"stages": [
 			{
 				"stage_num": 1,
@@ -1382,7 +1388,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title_es": "Episodio IV: Medalla Niebla (Iris)",
 		"subtitle": "Explore the Burned Tower with Eusine and pierce Gym Leader Morty's spectral veil!",
 		"subtitle_es": "¡Explora la Torre Quemada junto a Eusine y supera las ilusiones del Líder Morti!",
-		"reward_diamonds_first_clear": 30,
+		"reward_diamonds_first_clear": 25,
 		"stages": [
 			{
 				"stage_num": 1,
@@ -1436,7 +1442,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title_es": "Episodio V: Medalla Tormenta (Orquídea)",
 		"subtitle": "Climb the Glitter Lighthouse, cross the sea, and duel Chuck's martial masters!",
 		"subtitle_es": "¡Sube al Faro Olivo, surca el mar de Johto y desafía a los karatekas de Aníbal!",
-		"reward_diamonds_first_clear": 35,
+		"reward_diamonds_first_clear": 25,
 		"stages": [
 			{
 				"stage_num": 1,
@@ -1499,7 +1505,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title_es": "Episodio VI: Medalla Mineral (Olivo)",
 		"subtitle": "Infiltrate Goldenrod Underground, liberate the Radio Tower, and challenge Jasmine's Steelix!",
 		"subtitle_es": "¡Infiltra el subterráneo de Trigal, libera la Torre Radio y desafía al Steelix de Yasmina!",
-		"reward_diamonds_first_clear": 40,
+		"reward_diamonds_first_clear": 30,
 		"routes": {
 			"subway": {
 				"id": "subway",
@@ -1507,7 +1513,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"name_es": "Subterráneo de Trigal",
 				"desc": "Infiltrate the underground tunnels to unmask the fake Director and obtain the Basement Key.",
 				"desc_es": "Infiltra los túneles subterráneos para desenmascarar al falso Director y conseguir la llave.",
-				"reward_diamonds_first_clear": 20,
+				"reward_diamonds_first_clear": 10,
 				"stages": [
 					{
 						"stage_num": 1,
@@ -1533,7 +1539,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"name_es": "Cima de la Torre Radio",
 				"desc": "Ascend the Radio Tower floors and defeat Rocket Executives Petrel and Archer to liberate the broadcast.",
 				"desc_es": "Sube a la cima de la Torre Radio y vence a los Ejecutivos Petrel y Archer para cortar la transmisión.",
-				"reward_diamonds_first_clear": 20,
+				"reward_diamonds_first_clear": 10,
 				"stages": [
 					{
 						"stage_num": 1,
@@ -1559,7 +1565,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"name_es": "Gimnasio de Ciudad Olivo",
 				"desc": "Now that Amphy is saved and the crisis is resolved, challenge Gym Leader Jasmine and her steel titan!",
 				"desc_es": "Con Amphy curado y la crisis resuelta, desafía a la Líder Yasmina y a su titán de acero.",
-				"reward_diamonds_first_clear": 20,
+				"reward_diamonds_first_clear": 10,
 				"stages": [
 					{
 						"stage_num": 1,
@@ -1584,7 +1590,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title_es": "Episodio VII: Medalla Glaciar (Caoba)",
 		"subtitle": "Raid the secret Rocket Lab alongside Champion Lance and challenge Gym Leader Pryce!",
 		"subtitle_es": "¡Asalta la base secreta de Caoba junto a Lance y desafía al Líder Fredo!",
-		"reward_diamonds_first_clear": 40,
+		"reward_diamonds_first_clear": 25,
 		"routes": {
 			"rocket_hideout": {
 				"id": "rocket_hideout",
@@ -1592,7 +1598,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"name_es": "Guarida Secreta con Lance",
 				"desc": "Infiltrate the subterranean Rocket headquarters with Lance to destroy the wave generator causing the Lake Gyarados rage.",
 				"desc_es": "Infiltra la base de Caoba junto al Campeón Lance para destruir el generador que enfurece al Gyarados del Lago.",
-				"reward_diamonds_first_clear": 20,
+				"reward_diamonds_first_clear": 10,
 				"stages": [
 					{
 						"stage_num": 1,
@@ -1618,7 +1624,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"name_es": "Gimnasio Caoba (Fredo)",
 				"desc": "Slide through the frozen floor gym and face the veteran master of Ice Pokémon.",
 				"desc_es": "Deslízate por el piso congelado y desafía al veterano maestro del Hielo.",
-				"reward_diamonds_first_clear": 20,
+				"reward_diamonds_first_clear": 15,
 				"stages": [
 					{
 						"stage_num": 1,
@@ -1651,7 +1657,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title_es": "Episodio VIII: Medalla Dragón (Endrino)",
 		"subtitle": "Cross the Ice Path, battle Clair's dragons, and prove your spirit in the Dragon's Den!",
 		"subtitle_es": "¡Cruza la Ruta Helada, enfrenta los dragones de Débora y supera la prueba del Santuario Ancestral!",
-		"reward_diamonds_first_clear": 45,
+		"reward_diamonds_first_clear": 35,
 		"routes": {
 			"ice_path": {
 				"id": "ice_path",
@@ -1659,7 +1665,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"name_es": "Caverna de la Ruta Helada",
 				"desc": "Solve tricky ice tile slides and face arctic wild Pokémon deep in the mountain pass.",
 				"desc_es": "Supera los rompecabezas de hielo resbaladizo y desafía a los Pokémon árticos de la cueva.",
-				"reward_diamonds_first_clear": 20,
+				"reward_diamonds_first_clear": 10,
 				"stages": [
 					{
 						"stage_num": 1,
@@ -1685,7 +1691,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"name_es": "Gimnasio de Ciudad Endrino",
 				"desc": "Challenge Gym Leader Clair and her fearsome Kingdra over pools of molten lava.",
 				"desc_es": "Desafía a la Líder Débora y a su colosal Kingdra sobre ríos de lava ardiente.",
-				"reward_diamonds_first_clear": 20,
+				"reward_diamonds_first_clear": 15,
 				"stages": [
 					{
 						"stage_num": 1,
@@ -1712,7 +1718,7 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"name_es": "Santuario del Dragón (Prueba Ancestral)",
 				"desc": "Undergo the trial of the Dragon Clan Elders in the subterranean shrine to claim the Rising Badge.",
 				"desc_es": "Ponte a prueba ante los Venerables del Clan Dragón en el santuario para reclamar la Medalla Dragón.",
-				"reward_diamonds_first_clear": 25,
+				"reward_diamonds_first_clear": 10,
 				"stages": [
 					{
 						"stage_num": 1,
@@ -3843,7 +3849,7 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 	var candidate_ids: Array[int] = []
 	if target_region != "":
 		for id in all_pokemon_ids:
-			if id == CRYSTAL_ONIX_ID:
+			if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
 				continue
 			var d = pokemon_catalog.get(id, {})
 			if str(d.get("region", "")).to_lower() == target_region.to_lower():
@@ -3852,7 +3858,7 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 	if candidate_ids.size() < 3:
 		candidate_ids = []
 		for id in all_pokemon_ids:
-			if id != CRYSTAL_ONIX_ID:
+			if not (id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]):
 				var d = pokemon_catalog.get(id, {})
 				var r = str(d.get("rarity", "")).to_lower()
 				if not (r in ["boss", "special"]):
@@ -4379,6 +4385,49 @@ func get_adventure_total_stages(episode_id: int) -> int:
 	var stages = ep.get("stages", [])
 	return stages.size()
 
+func get_adventure_episode_total_stages_all_routes(episode_id: int) -> int:
+	"""Returns the total number of battles across an episode (summing all routes if branching)."""
+	var ep = ADVENTURE_EPISODES.get(episode_id, {})
+	if ep.get("is_branching", false):
+		var total = 0
+		var routes = ep.get("routes", {})
+		for r_id in routes.keys():
+			total += routes[r_id].get("stages", []).size()
+		return total
+	return ep.get("stages", []).size()
+
+func get_adventure_route_stage_count(episode_id: int, route_id: String) -> int:
+	"""Returns the number of battles in a specific branching route."""
+	var r_data = get_adventure_route_info(episode_id, route_id)
+	return r_data.get("stages", []).size()
+
+func get_adventure_route_diamonds(episode_id: int, route_id: String) -> int:
+	"""Returns the first-clear Diamond reward for a branching route from ADVENTURE_EPISODES."""
+	var r_data = get_adventure_route_info(episode_id, route_id)
+	return int(r_data.get("reward_diamonds_first_clear", 10))
+
+func get_adventure_episode_total_diamonds(episode_id: int) -> int:
+	"""Returns the total first-clear Diamonds across all routes (or direct episode reward)."""
+	var ep = ADVENTURE_EPISODES.get(episode_id, {})
+	if ep.get("is_branching", false):
+		var total = 0
+		var routes = ep.get("routes", {})
+		for r_id in routes.keys():
+			total += int(routes[r_id].get("reward_diamonds_first_clear", 10))
+		return total
+	return int(ep.get("reward_diamonds_first_clear", 20))
+
+func calculate_adventure_standard_diamonds(num_stages: int, difficulty_tier: int, is_boss_route: bool = false) -> int:
+	"""Standardized league Diamond reward scale by stage count and difficulty tier (1=Early, 2=Mid, 3=Late)."""
+	var rate = 4.0
+	if difficulty_tier == 2:
+		rate = 4.5
+	elif difficulty_tier >= 3:
+		rate = 5.25
+	var raw = float(num_stages) * rate + (2.5 if (is_boss_route and num_stages >= 2 and difficulty_tier >= 3) else 0.0)
+	var rounded = int(round(raw / 5.0) * 5.0)
+	return maxi(10, rounded)
+
 func get_adventure_stage_info(episode_id: int, stage_num: int) -> Dictionary:
 	var ep = ADVENTURE_EPISODES.get(episode_id, {})
 	var stages = []
@@ -4457,6 +4506,21 @@ func has_all_regions_gym_badges() -> bool:
 	# La Liga Pokémon requiere las medallas de todas las regiones (Kanto [8], Johto [8], Hoenn, Sinnoh).
 	return get_earned_gym_badges_count() >= 8 and get_johto_gym_badges_count() >= 8
 
+func _complete_adventure_branch_route(episode_id: int, cur_route: String, cleared_routes: Array[String], final_route: String, next_episode_id: int = -1) -> int:
+	"""Grants standardized route diamonds from ADVENTURE_EPISODES and advances branching progression."""
+	var bonus = 0
+	if not (cur_route in cleared_routes):
+		cleared_routes.append(cur_route)
+		bonus = get_adventure_route_diamonds(episode_id, cur_route)
+		player_diamonds += bonus
+		if cur_route == final_route:
+			if next_episode_id > 0 and not (next_episode_id in adventure_unlocked_episodes):
+				adventure_unlocked_episodes.append(next_episode_id)
+			if not (episode_id in adventure_completed_episodes):
+				adventure_completed_episodes.append(episode_id)
+	save_profile()
+	return bonus
+
 func complete_adventure_episode(episode_id: int) -> int:
 	# Returns diamonds awarded
 	var bonus = 0
@@ -4518,61 +4582,15 @@ func complete_adventure_episode(episode_id: int) -> int:
 		save_profile()
 		return bonus
 
-	# Johto Ramificados:
+	# Johto Ramificados (leen recompensas estandarizadas directamente de ADVENTURE_EPISODES):
 	if episode_id == 106:
-		var cur_route = adventure_ep106_selected_route
-		if not (cur_route in adventure_ep106_cleared_routes):
-			adventure_ep106_cleared_routes.append(cur_route)
-			if cur_route == "subway":
-				bonus = 20
-				player_diamonds += bonus
-			elif cur_route == "radio_tower":
-				bonus = 20
-				player_diamonds += bonus
-			elif cur_route == "olivine_gym":
-				bonus = 20
-				player_diamonds += bonus
-				if not (107 in adventure_unlocked_episodes):
-					adventure_unlocked_episodes.append(107)
-				if not (106 in adventure_completed_episodes):
-					adventure_completed_episodes.append(106)
-		save_profile()
-		return bonus
+		return _complete_adventure_branch_route(106, adventure_ep106_selected_route, adventure_ep106_cleared_routes, "olivine_gym", 107)
 
 	if episode_id == 107:
-		var cur_route = adventure_ep107_selected_route
-		if not (cur_route in adventure_ep107_cleared_routes):
-			adventure_ep107_cleared_routes.append(cur_route)
-			if cur_route == "rocket_hideout":
-				bonus = 20
-				player_diamonds += bonus
-			elif cur_route == "mahogany_gym":
-				bonus = 20
-				player_diamonds += bonus
-				if not (108 in adventure_unlocked_episodes):
-					adventure_unlocked_episodes.append(108)
-				if not (107 in adventure_completed_episodes):
-					adventure_completed_episodes.append(107)
-		save_profile()
-		return bonus
+		return _complete_adventure_branch_route(107, adventure_ep107_selected_route, adventure_ep107_cleared_routes, "mahogany_gym", 108)
 
 	if episode_id == 108:
-		var cur_route = adventure_ep108_selected_route
-		if not (cur_route in adventure_ep108_cleared_routes):
-			adventure_ep108_cleared_routes.append(cur_route)
-			if cur_route == "ice_path":
-				bonus = 20
-				player_diamonds += bonus
-			elif cur_route == "blackthorn_gym":
-				bonus = 20
-				player_diamonds += bonus
-			elif cur_route == "dragon_den":
-				bonus = 25
-				player_diamonds += bonus
-				if not (108 in adventure_completed_episodes):
-					adventure_completed_episodes.append(108)
-		save_profile()
-		return bonus
+		return _complete_adventure_branch_route(108, adventure_ep108_selected_route, adventure_ep108_cleared_routes, "dragon_den", -1)
 
 	if not (episode_id in adventure_completed_episodes):
 		adventure_completed_episodes.append(episode_id)
@@ -5117,24 +5135,34 @@ func claim_tournament_match_reward_today(match_num: int) -> void:
 	if not tournament_claimed_matches_today.has(match_num):
 		tournament_claimed_matches_today.append(match_num)
 
+func is_valid_tournament_rival_id(pkmn_id: int) -> bool:
+	if pkmn_id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
+		return false
+	var d = pokemon_catalog.get(pkmn_id, {})
+	if d.is_empty():
+		return false
+	var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
+	var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
+	if r in ["legendary", "legendaria", "legendario", "ur", "ultra rare", "boss", "special"] or st in ["legendary", "boss", "special"]:
+		return false
+	var p_tier = str(d.get("tier", "C")).strip_edges().to_upper()
+	if p_tier in ["S", "S+", "SS", "SSS"]:
+		return false
+	return true
+
 func get_tournament_candidates(stage_target: String = "any", rarity_target: String = "any", allowed_tiers: Array = ["D", "C", "B", "A"]) -> Array[int]:
 	var result: Array[int] = []
 	var st_clean = stage_target.strip_edges().to_lower()
 	var r_clean = rarity_target.strip_edges().to_lower()
 	
 	for id in all_pokemon_ids:
+		# 1-2. Strictly ban Red Gyarados, Bosses, Legendaries, Special, and Tier S/S+
+		if not is_valid_tournament_rival_id(id):
+			continue
 		var d = pokemon_catalog.get(id, {})
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
 		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
-		
-		# 1. Ban Legendary and Boss rarity and stage completely from tournament rivals
-		if id == CRYSTAL_ONIX_ID or r in ["legendary", "legendaria", "legendario", "ur", "ultra rare", "boss", "special"] or st in ["legendary", "boss", "special"]:
-			continue
-			
-		# 2. Ban Tier S and S+ strictly - Rivals MUST stay below Tier S (Tier D, C, B, A only)
 		var p_tier = str(d.get("tier", "C")).strip_edges().to_upper()
-		if p_tier in ["S", "S+", "SS", "SSS"]:
-			continue
 		if not allowed_tiers.is_empty() and not (p_tier in allowed_tiers):
 			continue
 			
@@ -5263,7 +5291,13 @@ func generate_tournament_rival_team(match_num: int) -> Array[int]:
 
 func get_campaign_rival_team(match_num: int) -> Array[int]:
 	if match_num == current_tournament_rival_match and not current_tournament_rival_team.is_empty():
-		return current_tournament_rival_team
+		var all_legal = true
+		for pid in current_tournament_rival_team:
+			if not is_valid_tournament_rival_id(int(pid)):
+				all_legal = false
+				break
+		if all_legal:
+			return current_tournament_rival_team
 		
 	current_tournament_rival_team = generate_tournament_rival_team(match_num)
 	current_tournament_rival_match = match_num
@@ -5298,7 +5332,7 @@ func is_line_legendary(pkmn_id: int) -> bool:
 func get_chaos_legendary_candidates() -> Array[int]:
 	var candidates: Array[int] = []
 	for id in all_pokemon_ids:
-		if id == CRYSTAL_ONIX_ID:
+		if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
 			continue
 		var d = pokemon_catalog.get(id, {})
 		var r = str(d.get("rarity", "")).strip_edges().to_lower()

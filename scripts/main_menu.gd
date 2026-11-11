@@ -7,8 +7,8 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var btn_campaign: Button = $ContentContainer/MenuButtons/BtnCampaign
 @onready var btn_quick_battle: Button = $ContentContainer/MenuButtons/BtnQuickBattle
 @onready var btn_online_multiplayer: Button = $ContentContainer/MenuButtons/BtnOnlineMultiplayer
-@onready var btn_collection: Button = $ContentContainer/MenuButtons/BtnCollection
-@onready var btn_shop: Button = $ContentContainer/MenuButtons/BtnShop
+@onready var btn_collection: Button = $ContentContainer/MenuButtons/FeatureIconsRow/BtnCollection
+@onready var btn_shop: Button = $ContentContainer/MenuButtons/FeatureIconsRow/BtnShop
 @onready var btn_profile: Button = $ContentContainer/MenuButtons/AuxButtonsRow/BtnProfile
 @onready var btn_settings: Button = $ContentContainer/MenuButtons/AuxButtonsRow/BtnSettings
 @onready var btn_exit: Button = $ContentContainer/MenuButtons/BtnExit
@@ -439,8 +439,8 @@ var _pending_verify_password: String = ""
 @onready var btn_close_online_lobby: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/BtnCloseOnlineLobby
 
 # --- MODAL MISIONES Y RECOMPENSAS DIARIAS ---
-@onready var btn_daily_missions: Button = $ContentContainer/MenuButtons/BtnDailyMissions
-@onready var btn_achievements: Button = $ContentContainer/MenuButtons/BtnAchievements
+@onready var btn_daily_missions: Button = $ContentContainer/MenuButtons/ProgressRow/BtnDailyMissions
+@onready var btn_achievements: Button = $ContentContainer/MenuButtons/ProgressRow/BtnAchievements
 @onready var daily_modal: Control = $DailyModal
 @onready var daily_streak_badge: Label = $DailyModal/DailyBox/DailyHeaderRow/DailyStreakBadge
 @onready var calendar_grid: HBoxContainer = $DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin/DailyCalendarVBox/CalendarGrid
@@ -2552,56 +2552,56 @@ func _setup_johto_episodes_modal() -> void:
 			"id": 101,
 			"title": "Episodio I: Falkner y la Medalla Céfiro",
 			"desc": "Visita Ciudad Malvalona y asciende la Torre Bellsprout antes de retar al Líder Falkner y sus aves en el Gimnasio Malvalona.",
-			"rewards": "4 Combates  |  Recompensas: 💎 30 Diamantes & 🏅 Medalla Céfiro",
+			"rewards": "%d Combates  |  Recompensas: 💎 %d Diamantes & 🏅 Medalla Céfiro" % [GameData.get_adventure_episode_total_stages_all_routes(101), GameData.get_adventure_episode_total_diamonds(101)],
 			"is_branching": false
 		},
 		{
 			"id": 102,
 			"title": "Episodio II: Bugsy y la Medalla Colmena",
 			"desc": "Salva a los Slowpoke en el Pozo Slowpoke del Pueblo Azalea y enfrenta a los expertos en tipo Bicho de Bugsy.",
-			"rewards": "5 Combates  |  Recompensas: 💎 35 Diamantes & 🏅 Medalla Colmena",
+			"rewards": "%d Combates  |  Recompensas: 💎 %d Diamantes & 🏅 Medalla Colmena" % [GameData.get_adventure_episode_total_stages_all_routes(102), GameData.get_adventure_episode_total_diamonds(102)],
 			"is_branching": false
 		},
 		{
 			"id": 103,
 			"title": "Episodio III: Whitney y la Medalla Planicie",
 			"desc": "Llega a la bulliciosa Ciudad Trigal y enfréntate a la temible Whitney y su imparable Miltank desenrollado.",
-			"rewards": "5 Combates  |  Recompensas: 💎 40 Diamantes & 🏅 Medalla Planicie",
+			"rewards": "%d Combates  |  Recompensas: 💎 %d Diamantes & 🏅 Medalla Planicie" % [GameData.get_adventure_episode_total_stages_all_routes(103), GameData.get_adventure_episode_total_diamonds(103)],
 			"is_branching": false
 		},
 		{
 			"id": 104,
 			"title": "Episodio IV: Morty y la Medalla Niebla",
 			"desc": "Explora Ciudad Iris, sus torres milenarias y supera el misterioso Gimnasio Fantasma del Líder Morty.",
-			"rewards": "5 Combates  |  Recompensas: 💎 45 Diamantes & 🏅 Medalla Niebla",
+			"rewards": "%d Combates  |  Recompensas: 💎 %d Diamantes & 🏅 Medalla Niebla" % [GameData.get_adventure_episode_total_stages_all_routes(104), GameData.get_adventure_episode_total_diamonds(104)],
 			"is_branching": false
 		},
 		{
 			"id": 105,
 			"title": "Episodio V: Chuck y la Medalla Tormenta",
 			"desc": "Navega hacia las costas de Ciudad Orquídea y reta al maestro de las artes marciales Chuck bajo su cascada.",
-			"rewards": "6 Combates  |  Recompensas: 💎 50 Diamantes & 🏅 Medalla Tormenta",
+			"rewards": "%d Combates  |  Recompensas: 💎 %d Diamantes & 🏅 Medalla Tormenta" % [GameData.get_adventure_episode_total_stages_all_routes(105), GameData.get_adventure_episode_total_diamonds(105)],
 			"is_branching": false
 		},
 		{
 			"id": 106,
 			"title": "Episodio VI: Jasmine y la Medalla Mineral",
 			"desc": "Rutas de Operación: Investiga el Subterráneo de Trigal, libera la Torre de Radio y desafía a Jasmine y su colosal Steelix.",
-			"rewards": "3 Rutas (13 Combates)  |  Recompensas: 💎 60 Diamantes & 🏅 Medalla Mineral",
+			"rewards": "3 Rutas (%d Combates)  |  Recompensas: 💎 %d Diamantes & 🏅 Medalla Mineral" % [GameData.get_adventure_episode_total_stages_all_routes(106), GameData.get_adventure_episode_total_diamonds(106)],
 			"is_branching": true
 		},
 		{
 			"id": 107,
 			"title": "Episodio VII: Pryce y la Medalla Glaciar",
 			"desc": "Rutas de Operación: Desmantela la base secreta de Team Rocket junto al Campeón Lance y conquista el Gimnasio de Pueblo Caoba.",
-			"rewards": "2 Rutas (10 Combates)  |  Recompensas: 💎 70 Diamantes & 🏅 Medalla Glaciar",
+			"rewards": "2 Rutas (%d Combates)  |  Recompensas: 💎 %d Diamantes & 🏅 Medalla Glaciar" % [GameData.get_adventure_episode_total_stages_all_routes(107), GameData.get_adventure_episode_total_diamonds(107)],
 			"is_branching": true
 		},
 		{
 			"id": 108,
 			"title": "Episodio VIII: Clair y la Medalla Creciente",
 			"desc": "Rutas de Operación: Atraviesa la Ruta Helada, derrota a la maestra de dragones Clair y supera la prueba final en la Guarida Dragón.",
-			"rewards": "3 Rutas (13 Combates)  |  Recompensas: 💎 80 Diamantes & 🏅 Medalla Creciente (Rising Badge)",
+			"rewards": "3 Rutas (%d Combates)  |  Recompensas: 💎 %d Diamantes & 🏅 Medalla Creciente (Rising Badge)" % [GameData.get_adventure_episode_total_stages_all_routes(108), GameData.get_adventure_episode_total_diamonds(108)],
 			"is_branching": true
 		}
 	]
@@ -2717,7 +2717,7 @@ func _setup_johto_episodes_modal() -> void:
 	lake_vbox.add_child(lake_desc)
 	
 	var lake_rew = Label.new()
-	lake_rew.text = "👑 Recompensa Exclusiva: Carta de Gyarados Rojo (ID 494) + 💎 50 Diamantes"
+	lake_rew.text = "👑 Recompensa Exclusiva: Carta de Gyarados Rojo (ID 494) + 💎 %d Diamantes" % GameData.LAKE_OF_RAGE_REWARD_DIAMONDS
 	lake_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lake_rew.add_theme_font_size_override("font_size", 11)
 	lake_rew.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
@@ -2980,68 +2980,78 @@ func _refresh_johto_routes_ui(ep_id: int) -> void:
 		child.queue_free()
 	johto_routes_cards.clear()
 	
+	var _fmt_combates := func(n: int) -> String:
+		return "1 Combate" if n == 1 else "%d Combates" % n
 	var routes_def = []
 	if ep_id == 106:
 		johto_routes_title_lbl.text = "🔩 EPISODIO VI: OPERACIONES DE OLIVO Y TRIGAL"
 		johto_routes_subtitle_lbl.text = "Investiga los sabotajes del Team Rocket y conquista el Gimnasio Olivo:"
+		var c_sub = GameData.get_adventure_route_stage_count(106, "subway")
+		var c_rad = GameData.get_adventure_route_stage_count(106, "radio_tower")
+		var c_oli = GameData.get_adventure_route_stage_count(106, "olivine_gym")
 		routes_def = [
 			{
 				"id": "subway",
-				"name": "Subterráneo de Trigal (4 Combates)",
+				"name": "Subterráneo de Trigal (%s)" % _fmt_combates.call(c_sub),
 				"desc": "Investiga los pasadizos subterráneos de Ciudad Trigal repletos de ladrones y reclutas del Team Rocket.",
-				"rewards": "4 Combates  |  Recompensa: 💎 20 Diamantes • Desbloquea la Torre de Radio"
+				"rewards": "%s  |  Recompensa: 💎 %d Diamantes • Desbloquea la Torre de Radio" % [_fmt_combates.call(c_sub), GameData.get_adventure_route_diamonds(106, "subway")]
 			},
 			{
 				"id": "radio_tower",
-				"name": "Torre de Radio de Trigal (4 Combates)",
+				"name": "Torre de Radio de Trigal (%s)" % _fmt_combates.call(c_rad),
 				"desc": "Infiltra la Torre de Radio para interrumpir la señal que altera y enfurece a los Pokémon de Johto.",
-				"rewards": "4 Combates  |  Recompensa: 💎 20 Diamantes • Desbloquea el Gimnasio Olivo"
+				"rewards": "%s  |  Recompensa: 💎 %d Diamantes • Desbloquea el Gimnasio Olivo" % [_fmt_combates.call(c_rad), GameData.get_adventure_route_diamonds(106, "radio_tower")]
 			},
 			{
 				"id": "olivine_gym",
-				"name": "Gimnasio Olivo de Jasmine (5 Combates)",
+				"name": "Gimnasio Olivo de Jasmine (%s)" % _fmt_combates.call(c_oli),
 				"desc": "Asciende por el Gimnasio Olivo y enfrenta a la Líder Jasmine y su impenetrable Steelix de acero.",
-				"rewards": "5 Combates  |  Recompensa: 💎 20 Diamantes & 🏅 Medalla Mineral (Final Clear!)"
+				"rewards": "%s  |  Recompensa: 💎 %d Diamantes & 🏅 Medalla Mineral (Final Clear!)" % [_fmt_combates.call(c_oli), GameData.get_adventure_route_diamonds(106, "olivine_gym")]
 			}
 		]
 	elif ep_id == 107:
 		johto_routes_title_lbl.text = "❄️ EPISODIO VII: OPERACIONES DE CAOBA"
 		johto_routes_subtitle_lbl.text = "Infiltra la base del Team Rocket con Lance y desafía al veterano Líder Pryce:"
+		var c_roc = GameData.get_adventure_route_stage_count(107, "rocket_hideout")
+		var c_mah = GameData.get_adventure_route_stage_count(107, "mahogany_gym")
 		routes_def = [
 			{
 				"id": "rocket_hideout",
-				"name": "Laboratorio Secreto del Team Rocket con Lance (5 Combates)",
+				"name": "Laboratorio Secreto del Team Rocket con Lance (%s)" % _fmt_combates.call(c_roc),
 				"desc": "Asalta la base subterránea secreta en Caoba codo a codo con el Campeón Lance y su Dragonite.",
-				"rewards": "5 Combates  |  Recompensa: 💎 35 Diamantes • Desbloquea el Gimnasio Caoba"
+				"rewards": "%s  |  Recompensa: 💎 %d Diamantes • Desbloquea el Gimnasio Caoba" % [_fmt_combates.call(c_roc), GameData.get_adventure_route_diamonds(107, "rocket_hideout")]
 			},
 			{
 				"id": "mahogany_gym",
-				"name": "Gimnasio Caoba de Pryce (5 Combates)",
+				"name": "Gimnasio Caoba de Pryce (%s)" % _fmt_combates.call(c_mah),
 				"desc": "Deslízate por el laberinto de hielo y derrota al curtido Líder Pryce y su robusto Piloswine.",
-				"rewards": "5 Combates  |  Recompensa: 💎 35 Diamantes & 🏅 Medalla Glaciar (Final Clear!)"
+				"rewards": "%s  |  Recompensa: 💎 %d Diamantes & 🏅 Medalla Glaciar (Final Clear!)" % [_fmt_combates.call(c_mah), GameData.get_adventure_route_diamonds(107, "mahogany_gym")]
 			}
 		]
 	elif ep_id == 108:
 		johto_routes_title_lbl.text = "🐉 EPISODIO VIII: OPERACIONES DE CIUDAD ENDRINO"
 		johto_routes_subtitle_lbl.text = "Atraviesa la Ruta Helada, reta a Clair y supera la prueba de la Guarida Dragón:"
+		var c_ice = GameData.get_adventure_route_stage_count(108, "ice_path")
+		var c_bla = GameData.get_adventure_route_stage_count(108, "blackthorn_gym")
+		var c_den = GameData.get_adventure_route_stage_count(108, "dragon_den")
 		routes_def = [
 			{
 				"id": "ice_path",
-				"name": "Ruta Helada (Ice Path) (4 Combates)",
+				"name": "Ruta Helada (Ice Path) (%s)" % _fmt_combates.call(c_ice),
 				"desc": "Cruza las heladas cavernas de montaña hacia Endrino enfrentando montañeros y orfebres.",
-				"rewards": "4 Combates  |  Recompensa: 💎 25 Diamantes • Desbloquea el Gimnasio Endrino"
+				"rewards": "%s  |  Recompensa: 💎 %d Diamantes • Desbloquea el Gimnasio Endrino" % [_fmt_combates.call(c_ice), GameData.get_adventure_route_diamonds(108, "ice_path")]
 			},
 			{
 				"id": "blackthorn_gym",
-				"name": "Gimnasio Endrino de Clair (5 Combates)",
+				"name": "Gimnasio Endrino de Clair (%s)" % _fmt_combates.call(c_bla),
 				"desc": "Camina sobre pasarelas ardientes y desafía a la Líder Clair y su devastador Kingdra.",
-				"rewards": "5 Combates  |  Recompensa: 💎 30 Diamantes • Desbloquea la Guarida Dragón"
+				"rewards": "%s  |  Recompensa: 💎 %d Diamantes • Desbloquea la Guarida Dragón" % [_fmt_combates.call(c_bla), GameData.get_adventure_route_diamonds(108, "blackthorn_gym")]
 			},
 			{
 				"id": "dragon_den",
-				"name": "Santuario de la Guarida Dragón (4 Combates)",
+				"name": "Santuario de la Guarida Dragón (%s)" % _fmt_combates.call(c_den),
 				"desc": "Desciende al lago subterráneo y supera el juicio sagrado de los Sabios del Clan Dragón.",
-				"rewards": "4 Combates  |  Recompensa: 💎 25 Diamantes & 🏅 Medalla Creciente (Rising Badge)"
+				"rewards": "%s  |  Recompensa: 💎 %d Diamantes & 🏅 Medalla Creciente (Rising Badge)" % [_fmt_combates.call(c_den), GameData.get_adventure_route_diamonds(108, "dragon_den")]
 			}
 		]
 		
@@ -6216,9 +6226,12 @@ func build_team_select_cards_grid() -> void:
 				allowed_pool.append(c)
 		else:
 			for c in pool:
+				var cid = int(c.get("id", -1))
+				if cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_CARD_ID, GameData.RED_GYARADOS_BOSS_ID]:
+					continue
 				var st = str(c.get("stage", "Basic")).strip_edges().to_lower()
 				var r = str(c.get("rarity", "Common")).strip_edges().to_lower()
-				var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+				var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare", "boss", "special"]) or (st in ["legendary", "boss", "special"])
 				if st == "basic" and not is_legendary:
 					allowed_pool.append(c)
 		pool = allowed_pool
@@ -6949,17 +6962,111 @@ func _on_collection_pressed() -> void:
 	collection_modal.visible = true
 
 # --- RETRO POKÉMON GBA THEME SYSTEM ---
+func _configure_dock_medallion_button(btn: Button, icon_tex: Texture2D, pill_name: String, label_text: String, inner_pad: int) -> void:
+	btn.text = ""
+	btn.tooltip_text = label_text
+	btn.icon = icon_tex
+	btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn.expand_icon = true
+	btn.flat = false
+	btn.clip_contents = false
+	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	btn.custom_minimum_size = Vector2(74, 74)
+
+	var pill = btn.get_node_or_null(pill_name) as PanelContainer
+	if not pill:
+		pill = PanelContainer.new()
+		pill.name = pill_name
+		pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		pill.z_index = 60
+		pill.visible = false
+		var pill_sb = StyleBoxFlat.new()
+		pill_sb.bg_color = Color(0.06, 0.11, 0.18, 0.96)
+		pill_sb.border_color = Color(0.40, 0.85, 0.95)
+		pill_sb.set_border_width_all(2)
+		pill_sb.set_corner_radius_all(6)
+		pill_sb.content_margin_left = 10
+		pill_sb.content_margin_right = 10
+		pill_sb.content_margin_top = 3
+		pill_sb.content_margin_bottom = 3
+		pill.add_theme_stylebox_override("panel", pill_sb)
+		var pill_lbl = Label.new()
+		pill_lbl.name = "Label"
+		pill_lbl.text = label_text
+		pill_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		pill_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		pill_lbl.add_theme_font_size_override("font_size", 13)
+		pill_lbl.add_theme_color_override("font_color", Color(1.0, 0.92, 0.45))
+		pill.add_child(pill_lbl)
+		btn.add_child(pill)
+
+	var make_round_sb = func(bg: Color, border: Color, bw: int, pad: int, shadow: int) -> StyleBoxFlat:
+		var sb = StyleBoxFlat.new()
+		sb.bg_color = bg
+		sb.border_color = border
+		sb.set_border_width_all(bw)
+		sb.set_corner_radius_all(37)
+		sb.content_margin_left = pad
+		sb.content_margin_right = pad
+		sb.content_margin_top = pad
+		sb.content_margin_bottom = pad
+		sb.shadow_color = Color(0.0, 0.0, 0.0, 0.45)
+		sb.shadow_size = shadow
+		sb.shadow_offset = Vector2(0, 2)
+		return sb
+
+	btn.add_theme_stylebox_override("normal", make_round_sb.call(Color(0.09, 0.14, 0.20, 0.95), Color(0.28, 0.58, 0.72), 2, inner_pad, 4))
+	btn.add_theme_stylebox_override("hover", make_round_sb.call(Color(0.14, 0.24, 0.35, 1.0), Color(0.45, 0.88, 1.0), 3, max(2, inner_pad - 1), 6))
+	btn.add_theme_stylebox_override("pressed", make_round_sb.call(Color(0.06, 0.10, 0.15, 1.0), Color(0.95, 0.85, 0.35), 2, inner_pad + 2, 1))
+	btn.add_theme_stylebox_override("focus", make_round_sb.call(Color(0.09, 0.14, 0.20, 0.95), Color(0.45, 0.88, 1.0), 2, inner_pad, 4))
+
+	btn.mouse_entered.connect(func():
+		if btn:
+			btn.pivot_offset = Vector2(btn.size.x / 2.0 if btn.size.x > 0 else 37.0, btn.size.y / 2.0 if btn.size.y > 0 else 37.0)
+			var tw = btn.create_tween()
+			tw.tween_property(btn, "scale", Vector2(1.10, 1.10), 0.10).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			if pill:
+				pill.visible = true
+				pill.reset_size()
+				var bw = btn.size.x if btn.size.x > 0 else 74.0
+				var pw = pill.size.x if pill.size.x > 0 else 80.0
+				var ph = pill.size.y if pill.size.y > 0 else 26.0
+				pill.position = Vector2((bw - pw) * 0.5, -ph + 2.0)
+				pill.pivot_offset = Vector2(pw * 0.5, ph)
+				pill.scale = Vector2(0.8, 0.8)
+				pill.modulate.a = 0.0
+				var ptw = pill.create_tween().set_parallel(true)
+				ptw.tween_property(pill, "position:y", -ph - 6.0, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+				ptw.tween_property(pill, "scale", Vector2(1.0, 1.0), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+				ptw.tween_property(pill, "modulate:a", 1.0, 0.10)
+	)
+	btn.mouse_exited.connect(func():
+		if btn:
+			btn.pivot_offset = Vector2(btn.size.x / 2.0 if btn.size.x > 0 else 37.0, btn.size.y / 2.0 if btn.size.y > 0 else 37.0)
+			var tw = btn.create_tween()
+			tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			if pill:
+				pill.visible = false
+				pill.modulate.a = 0.0
+	)
+
 func _apply_pokemon_ui_theme() -> void:
 	var tex_pokeball = preload("res://assets/ui/menu_pokeball.png")
 	var tex_pokeball_active = preload("res://assets/ui/menu_pokeball_active.png")
+	var tex_pokedex = preload("res://assets/ui/pokedex.png")
+	var tex_pokemart = preload("res://assets/ui/pokemart.png")
+
+	if btn_collection:
+		_configure_dock_medallion_button(btn_collection, tex_pokedex, "PokedexHoverPill", "PokéDex", 9)
+	if btn_shop:
+		_configure_dock_medallion_button(btn_shop, tex_pokemart, "ShopHoverPill", "PokéMart", 7)
 	
 	# Apply pokeball bullet icons and styling to Lobby & Login buttons
 	var lobby_btns = [
 		btn_campaign,
 		btn_quick_battle,
 		btn_online_multiplayer,
-		btn_collection,
-		btn_shop,
 		btn_daily_missions,
 		btn_achievements,
 		btn_profile,
@@ -9090,7 +9197,7 @@ func _create_pack_reveal_container() -> void:
 	var btn_col = Button.new()
 	btn_col.name = "BtnCol"
 	btn_col.custom_minimum_size = Vector2(0, 40)
-	btn_col.text = "📖 View in My Collection"
+	btn_col.text = "📖 View in PokéDex"
 	btn_col.add_theme_font_size_override("font_size", 13)
 	btn_col.add_theme_color_override("font_color", Color("#40C4FF"))
 	btn_col.pressed.connect(func():
@@ -11121,14 +11228,14 @@ func _update_lobby_header_badge() -> void:
 			trainer_status_badge.tooltip_text = "Local / Guest Account\nTrainer ID: %s" % GameData.profile_id
 	if btn_daily_missions:
 		if GameData.has_any_daily_reward_ready():
-			btn_daily_missions.text = "🎁  DAILY MISSIONS & REWARDS  🔔"
+			btn_daily_missions.text = "🎁 DAILY MISSIONS 🔔"
 		else:
-			btn_daily_missions.text = "🎁  DAILY MISSIONS & REWARDS"
+			btn_daily_missions.text = "🎁 DAILY MISSIONS"
 	if btn_achievements:
 		if GameData.has_pending_achievement_notifications():
-			btn_achievements.text = "🏆  ACHIEVEMENTS  🔔"
+			btn_achievements.text = "🏆 ACHIEVEMENTS 🔔"
 		else:
-			btn_achievements.text = "🏆  ACHIEVEMENTS"
+			btn_achievements.text = "🏆 ACHIEVEMENTS"
 			
 	_check_pending_achievement_notifications()
 

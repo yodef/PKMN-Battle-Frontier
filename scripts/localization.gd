@@ -21,9 +21,13 @@ const EXACT_EN_TO_ES: Dictionary = {
 	"🛒  SHOP\nBooster Packs & Cards": "🛒  TIENDA\nSobres y Cartas",
 	"🎁  DAILY MISSIONS & REWARDS": "🎁  MISIONES DIARIAS Y RECOMPENSAS",
 	"🎁  DAILY MISSIONS & REWARDS  🔔": "🎁  MISIONES DIARIAS Y RECOMPENSAS  🔔",
+	"🎁 DAILY MISSIONS": "🎁 MISIONES DIARIAS",
+	"🎁 DAILY MISSIONS 🔔": "🎁 MISIONES DIARIAS 🔔",
 	"📅  DAILY MISSIONS & REWARDS": "📅  MISIONES DIARIAS Y RECOMPENSAS",
 	"🏆  ACHIEVEMENTS": "🏆  LOGROS",
 	"🏆  ACHIEVEMENTS  🔔": "🏆  LOGROS  🔔",
+	"🏆 ACHIEVEMENTS": "🏆 LOGROS",
+	"🏆 ACHIEVEMENTS 🔔": "🏆 LOGROS 🔔",
 	"👤  PROFILE": "👤  PERFIL",
 	"👥  FRIENDS": "👥  AMIGOS",
 	"⚙️  SETTINGS": "⚙️  AJUSTES",
@@ -156,8 +160,11 @@ const EXACT_EN_TO_ES: Dictionary = {
 	"🔒 Card Not Unlocked": "🔒 Carta No Desbloqueada",
 	"Need Gold": "Falta Oro",
 
-	# --- Mi Colección (CollectionModal) ---
-	"🃏 MY COLLECTION": "🃏 MI COLECCIÓN",
+	# --- PokéDex (CollectionModal) ---
+	"📖 POKÉDEX": "📖 POKÉDEX",
+	"📖 View in PokéDex": "📖 Ver en la PokéDex",
+	"🎴 MY COLLECTION": "📖 POKÉDEX",
+	"🃏 MY COLLECTION": "📖 POKÉDEX",
 	"⬅ Back to Grid": "⬅ Volver a la Cuadrícula",
 	"CARD DETAILS": "DETALLES DE LA CARTA",
 	"🔒 CARD NOT UNLOCKED\nOpen Booster Packs in the Shop to obtain this Pokémon!": "🔒 CARTA NO DESBLOQUEADA\n¡Abre Sobres en la Tienda para obtener este Pokémon!",

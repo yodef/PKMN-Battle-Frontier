@@ -95,33 +95,25 @@ theme_override_font_sizes/font_size = 15
 text = "🌐  ONLINE BATTLE
 (Cloud Rooms & Challenges)"
 
-[node name="BtnCollection" type="Button" parent="ContentContainer/MenuButtons"]
-custom_minimum_size = Vector2(0, 58)
+[node name="ProgressRow" type="HBoxContainer" parent="ContentContainer/MenuButtons"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "🎴  MY COLLECTION
-(View Cards & Stages)"
+theme_override_constants/separation = 8
 
-[node name="BtnShop" type="Button" parent="ContentContainer/MenuButtons"]
-custom_minimum_size = Vector2(0, 58)
+[node name="BtnDailyMissions" type="Button" parent="ContentContainer/MenuButtons/ProgressRow"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "🛒  SHOP
-(Gen 1 Kanto Booster)"
-
-[node name="BtnDailyMissions" type="Button" parent="ContentContainer/MenuButtons"]
-custom_minimum_size = Vector2(0, 58)
-layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
-theme_override_font_sizes/font_size = 14
-text = "🎁  DAILY MISSIONS & REWARDS"
+theme_override_font_sizes/font_size = 12
+text = "🎁 DAILY MISSIONS"
 
-[node name="BtnAchievements" type="Button" parent="ContentContainer/MenuButtons"]
-custom_minimum_size = Vector2(0, 58)
+[node name="BtnAchievements" type="Button" parent="ContentContainer/MenuButtons/ProgressRow"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
-theme_override_font_sizes/font_size = 14
-text = "🏆  ACHIEVEMENTS"
+theme_override_font_sizes/font_size = 12
+text = "🏆 ACHIEVEMENTS"
 
 [node name="AuxButtonsRow" type="HBoxContainer" parent="ContentContainer/MenuButtons"]
 layout_mode = 2
@@ -157,6 +149,31 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.4, 0.4, 1)
 theme_override_font_sizes/font_size = 13
 text = "🚪  EXIT GAME"
+
+[node name="FeatureIconsRow" type="HBoxContainer" parent="ContentContainer/MenuButtons"]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="BtnCollection" type="Button" parent="ContentContainer/MenuButtons/FeatureIconsRow"]
+custom_minimum_size = Vector2(74, 74)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+tooltip_text = "PokéDex"
+text = ""
+icon_alignment = 1
+expand_icon = true
+
+[node name="BtnShop" type="Button" parent="ContentContainer/MenuButtons/FeatureIconsRow"]
+custom_minimum_size = Vector2(74, 74)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+tooltip_text = "PokéMart"
+text = ""
+icon_alignment = 1
+expand_icon = true
 
 [node name="FooterLabel" type="Label" parent="ContentContainer"]
 layout_mode = 2
@@ -2007,7 +2024,7 @@ alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 theme_override_font_sizes/font_size = 20
-text = "🎴 MY COLLECTION"
+text = "📖 POKÉDEX"
 horizontal_alignment = 1
 
 [node name="StatsLbl" type="Label" parent="CollectionModal/GridView"]

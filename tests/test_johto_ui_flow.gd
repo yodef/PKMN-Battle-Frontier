@@ -26,7 +26,12 @@ func _ready() -> void:
 	assert(main_menu.johto_episodes_modal.visible, "johto_episodes_modal should be visible")
 	assert(main_menu.johto_episode_cards.size() == 8, "Must have 8 episode cards for Johto")
 	assert(not main_menu.johto_lake_of_rage_card.is_empty(), "Lake of Rage card must exist")
-	print("✓ Johto episodes modal created with 8 episode cards + Lake of Rage card")
+	assert(main_menu.johto_episode_cards[101]["rewards"].text.contains("15 Diamantes"), "Ep 101 UI must show 15 Diamantes")
+	assert(main_menu.johto_episode_cards[106]["rewards"].text.contains("5 Combates") and main_menu.johto_episode_cards[106]["rewards"].text.contains("30 Diamantes"), "Ep 106 UI must show 5 Combates & 30 Diamantes")
+	assert(main_menu.johto_episode_cards[107]["rewards"].text.contains("4 Combates") and main_menu.johto_episode_cards[107]["rewards"].text.contains("25 Diamantes"), "Ep 107 UI must show 4 Combates & 25 Diamantes")
+	assert(main_menu.johto_episode_cards[108]["rewards"].text.contains("5 Combates") and main_menu.johto_episode_cards[108]["rewards"].text.contains("35 Diamantes"), "Ep 108 UI must show 5 Combates & 35 Diamantes")
+	assert(main_menu.johto_lake_of_rage_card["rewards"].text.contains("30 Diamantes"), "Lake of Rage UI must show 30 Diamantes")
+	print("✓ Johto episodes modal created with 8 episode cards + Lake of Rage card and accurate UI reward/battle counts")
 	
 	print("\n--- Test 3: Episode 101 Unlocked & Lake of Rage Locked (Initial) ---")
 	var ep101_card = main_menu.johto_episode_cards[101]
