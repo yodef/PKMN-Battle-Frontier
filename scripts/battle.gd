@@ -24,6 +24,9 @@ var round_number: int = 0
 var round_order: Array[String] = [] # ["PLAYER", "ENEMY"] o ["ENEMY", "PLAYER"]
 var round_step: int = 0             # 0 = 1er turno de la ronda, 1 = 2do turno de la ronda
 var combat_history: Array[String] = []
+var enemy_combat_history: Array[String] = []
+var player_combat_history: Array[String] = []
+var global_combat_history: Array[String] = []
 var is_battle_over: bool = false
 var sandstorm_turns: int = 0
 var grassy_terrain_turns: int = 0
@@ -100,8 +103,11 @@ const SPEED_LABELS: Array[String] = ["⏩ 1x", "⏩ 1.5x", "⏩ 2x", "⏩ 3x"]
 @onready var enemy_energy_lbl: Label = $MainContainer/EnemySection/HBox/Info/EnemyEnergyLbl
 @onready var enemy_status_lbl: Label = $MainContainer/EnemySection/HBox/Info/HPBox/HPTopRow/EnemyStatusLbl
 
-@onready var log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/LogLabel
+@onready var enemy_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/EnemyLogLabel
 @onready var turn_badge: Label = $MainContainer/CenterLog/Margin/VBox/TurnBadge
+@onready var global_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/GlobalLogLabel
+@onready var player_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/PlayerLogLabel
+@onready var log_label: RichTextLabel = player_log_label
 
 @onready var player_card_img: Control = $MainContainer/PlayerSection/HBox/PlayerCard
 @onready var player_type_icon: TextureRect = $MainContainer/PlayerSection/HBox/Info/PlayerNameRow/PlayerTypeIcon
@@ -1180,7 +1186,8 @@ func _cleanse_pokemon_status(pkmn) -> void:
 		pkmn.foe_damage_debuff = 0
 		pkmn.foe_damage_debuff_turns = 0
 		if had_status:
-			log_action("✨ [b]%s[/b]'s [color=green]Natural Cure[/color] cleansed all status ailments upon switching!" % pkmn.name)
+			var pk_side = "PLAYER" if (pkmn == get_active_player() or player_team.has(pkmn)) else "ENEMY"
+			log_action("✨ [b]%s[/b]'s [color=green]Natural Cure[/color] cleansed all status ailments upon switching!" % pkmn.name, pk_side)
 
 func _trigger_entry_passives(entrant, opponent, is_player: bool) -> void:
 	if not entrant or not opponent:
@@ -1189,7 +1196,7 @@ func _trigger_entry_passives(entrant, opponent, is_player: bool) -> void:
 	if entrant.has_passive and entrant.passive_name == "Intimidate":
 		opponent.foe_damage_debuff = max(opponent.foe_damage_debuff, 2)
 		opponent.foe_damage_debuff_turns = 1
-		log_action("✨ [b]%s[/b]'s [color=orange]Intimidate[/color] cut %s's attack (-2 DMG on next attack)!" % [entrant.name, opponent.name])
+		log_action("✨ [b]%s[/b]'s [color=orange]Intimidate[/color] cut %s's attack (-2 DMG on next attack)!" % [entrant.name, opponent.name], "PLAYER" if is_player else "ENEMY")
 		if opp_visual:
 			spawn_floating_combat_text(opp_visual, "Intimidated (-2 DMG)", Color("#f97316"))
 
@@ -1218,6 +1225,9 @@ func start_new_game() -> void:
 	active_player_idx = 0
 	active_enemy_idx = 0
 	combat_history.clear()
+	enemy_combat_history.clear()
+	player_combat_history.clear()
+	global_combat_history.clear()
 	_render_combat_log()
 	reset_selected_energy()
 	
@@ -1491,30 +1501,30 @@ func start_new_game() -> void:
 		else:
 			var match_info_start = GameData.get_tournament_match_info(GameData.campaign_match_number)
 			mode_str = "%s (Battle %d/%d)" % [match_info_start.get("phase_name", "Tournament").to_upper(), GameData.campaign_match_number, GameData.TOURNAMENT_TOTAL_MATCHES]
-	log_action("[b]%s![/b]\nYour Leader: [b]%s[/b] enters the field.\nRival sends out: [b]%s[/b]." % [mode_str, active_p.name, active_e.name])
+	log_action("[b]%s![/b]\nYour Leader: [b]%s[/b] enters the field.\nRival sends out: [b]%s[/b]." % [mode_str, active_p.name, active_e.name], "GLOBAL")
 	if GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
 		var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
 		var is_es = (GameData.settings_language == "es")
 		var intro_dialogue = str(stage_info.get("intro_es" if is_es else "intro", stage_info.get("intro", "")))
 		var trainer_name = str(stage_info.get("trainer_name_es" if is_es else "trainer_name", stage_info.get("trainer_name", "Opponent")))
 		if intro_dialogue != "":
-			log_action("💬 [b]%s[/b]: \"%s\"" % [trainer_name, intro_dialogue])
+			log_action("💬 [b]%s[/b]: \"%s\"" % [trainer_name, intro_dialogue], "GLOBAL")
 	if active_e.has_passive and active_e.passive_name == "String Shot":
-		log_action("✨ Weedle's [color=cyan]String Shot[/color] passively reduces foe's Speed by 1.")
+		log_action("✨ Weedle's [color=cyan]String Shot[/color] passively reduces foe's Speed by 1.", "ENEMY")
 	_trigger_entry_passives(active_p, active_e, true)
 	_trigger_entry_passives(active_e, active_p, false)
 	
 	if GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
 		var cur_ep = GameData.adventure_current_episode
 		if cur_ep == 305:
-			log_action("🌫️ [color=purple]EERIE MIST: A spooky spectral fog engulfs Hearthome Gym! Ghost & Dark moves deal +2 DMG![/color]")
+			log_action("🌫️ [color=purple]EERIE MIST: A spooky spectral fog engulfs Hearthome Gym! Ghost & Dark moves deal +2 DMG![/color]", "GLOBAL")
 		elif cur_ep == 307:
-			log_action("❄️ [color=cyan]HAIL BLIZZARD: A fierce polar blizzard sweeps Snowpoint Gym! Ice & Water moves deal +2 DMG![/color]")
+			log_action("❄️ [color=cyan]HAIL BLIZZARD: A fierce polar blizzard sweeps Snowpoint Gym! Ice & Water moves deal +2 DMG![/color]", "GLOBAL")
 		elif cur_ep == 308:
 			var cur_r = GameData.get_adventure_selected_route(308)
 			if cur_r == "spear_pillar":
 				trick_room_turns = 99
-				log_action("🌀 [color=purple]SPACE-TIME DISTORTION! Dialga's presence warps time and space into a permanent Trick Room! Slower Pokémon act first![/color]")
+				log_action("🌀 [color=purple]SPACE-TIME DISTORTION! Dialga's presence warps time and space into a permanent Trick Room! Slower Pokémon act first![/color]", "GLOBAL")
 	
 	if GameData.is_campaign_mode and not GameData.is_tutorial_mode:
 		GameData.record_campaign_battle_participation()
@@ -1635,7 +1645,7 @@ func start_new_round() -> void:
 			round_order = ["ENEMY", "PLAYER"]
 			initiative_msg = "[b]━━━ ROUND %d ━━━[/b]%s\nSpeed Tie (SPD %d vs %d)! 🪙 [color=yellow]Coin Toss:[/color] Rival [b]%s[/b] wins the tiebreaker and takes the first turn." % [round_number, tr_tag, p_spd, e_spd, e.name]
 			
-	log_action(initiative_msg)
+	log_action(initiative_msg, "GLOBAL")
 	update_ui()
 	set_controls_enabled(false)
 	
@@ -1730,6 +1740,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 	if not actor or not opponent:
 		return false
 	actor.is_digging = false
+	var st_side = "PLAYER" if is_player else "ENEMY"
 		
 	# 1. Leech Seed (Seeded)
 	if actor.is_seeded_turns > 0:
@@ -1739,7 +1750,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		if actor.name == "Crystal Onix":
 			register_boss_damage(s_dmg)
 		opponent.current_hp = min(opponent.max_hp, opponent.current_hp + s_dmg)
-		log_action("🌱 [color=green]Leech Seed saps %d HP from %s to %s![/color]" % [s_dmg, actor.name, opponent.name])
+		log_action("🌱 [color=green]Leech Seed saps %d HP from %s to %s![/color]" % [s_dmg, actor.name, opponent.name], st_side)
 		play_damage_hit(actor_img, "GRASS", s_dmg)
 		spawn_floating_combat_number(actor_img, -s_dmg, false)
 		spawn_floating_combat_number(opponent_img, s_dmg, true)
@@ -1760,7 +1771,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		if actor.name == "Crystal Onix":
 			register_boss_damage(bdmg)
 		actor.burn_turns -= 1
-		log_action("🔥 [color=orange]%s takes %d Burn damage![/color] (%d turns remaining)" % [actor.name, bdmg, actor.burn_turns])
+		log_action("🔥 [color=orange]%s takes %d Burn damage![/color] (%d turns remaining)" % [actor.name, bdmg, actor.burn_turns], st_side)
 		var target_overlay = player_status_overlay if actor == get_active_player() else enemy_status_overlay
 		if target_overlay:
 			target_overlay.trigger_burn_effect()
@@ -1782,7 +1793,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		# Fatigue recharge: only +1 Energy during forced rest to prevent infinite 25 DMG cycling
 		var rec = min(1, actor.max_energy - actor.current_energy)
 		actor.current_energy += rec
-		log_action("😴 [b]%s[/b] [color=cyan]must rest this round and recharged +%d Energy (⚡ %d/%d).[/color]" % [actor.name, rec, actor.current_energy, actor.max_energy])
+		log_action("😴 [b]%s[/b] [color=cyan]must rest this round and recharged +%d Energy (⚡ %d/%d).[/color]" % [actor.name, rec, actor.current_energy, actor.max_energy], st_side)
 		if rec > 0:
 			GameData.play_combat_sfx("power up.wav")
 			var actor_vis = player_card_img if is_player else enemy_card_img
@@ -1799,7 +1810,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		actor.is_flinched = false
 		var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
 		actor.current_energy += rec
-		log_action("💫 [b]%s[/b] [color=yellow]flinched and was forced to Recharge! +%d Energy (⚡ %d/%d).[/color]" % [actor.name, rec, actor.current_energy, actor.max_energy])
+		log_action("💫 [b]%s[/b] [color=yellow]flinched and was forced to Recharge! +%d Energy (⚡ %d/%d).[/color]" % [actor.name, rec, actor.current_energy, actor.max_energy], st_side)
 		if rec > 0:
 			GameData.play_combat_sfx("power up.wav")
 			var actor_vis = player_card_img if is_player else enemy_card_img
@@ -1817,18 +1828,19 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 func _check_action_impeding_status(actor, is_player: bool) -> bool:
 	if not actor:
 		return true
+	var st_side = "PLAYER" if is_player else "ENEMY"
 
 	# 1. Sleep: Decrement sleep turns upon attempting an action
 	if actor.is_asleep_turns > 0:
 		actor.is_asleep_turns -= 1
 		if actor.is_asleep_turns > 0:
-			log_action("💤 [b]%s[/b] [color=lightblue]is fast asleep and cannot move! (%d rounds remaining)[/color]" % [actor.name, actor.is_asleep_turns])
+			log_action("💤 [b]%s[/b] [color=lightblue]is fast asleep and cannot move! (%d rounds remaining)[/color]" % [actor.name, actor.is_asleep_turns], st_side)
 			update_ui()
 			_end_failed_action_turn(is_player)
 			return false
 		else:
 			actor.immune_sleep_rounds = 1
-			log_action("✨ [b]%s[/b] [color=green]woke up from sleep and gained 1 round Sleep immunity![/color]" % actor.name)
+			log_action("✨ [b]%s[/b] [color=green]woke up from sleep and gained 1 round Sleep immunity![/color]" % actor.name, st_side)
 			update_ui()
 
 	# 2. Freeze: Thaw check
@@ -1837,10 +1849,10 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 		if actor.frozen_turns >= 2 or randf() < 0.25:
 			actor.is_frozen = false
 			actor.frozen_turns = 0
-			log_action("🔥 [b]%s[/b] [color=orange]thawed out and can move![/color]" % actor.name)
+			log_action("🔥 [b]%s[/b] [color=orange]thawed out and can move![/color]" % actor.name, st_side)
 			update_ui()
 		else:
-			log_action("❄️ [b]%s[/b] [color=cyan]is frozen solid and cannot move! (%d/2)[/color]" % [actor.name, actor.frozen_turns])
+			log_action("❄️ [b]%s[/b] [color=cyan]is frozen solid and cannot move! (%d/2)[/color]" % [actor.name, actor.frozen_turns], st_side)
 			update_ui()
 			_end_failed_action_turn(is_player)
 			return false
@@ -1848,7 +1860,7 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 	# 3. Paralysis: 25% chance unable to act
 	if actor.is_paralyzed:
 		if randf() < 0.25:
-			log_action("⚡ [b]%s[/b] [color=yellow]is fully paralyzed! It cannot move! (%d rounds left)[/color]" % [actor.name, actor.paralyze_turns])
+			log_action("⚡ [b]%s[/b] [color=yellow]is fully paralyzed! It cannot move! (%d rounds left)[/color]" % [actor.name, actor.paralyze_turns], st_side)
 			var target_overlay = player_status_overlay if (actor == get_active_player()) else enemy_status_overlay
 			if target_overlay:
 				target_overlay.trigger_paralyze_effect(1.4)
@@ -1856,7 +1868,7 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 			_end_failed_action_turn(is_player)
 			return false
 		else:
-			log_action("⚡ [b]%s[/b] [color=yellow]is paralyzed but pushed through the paralysis![/color]" % actor.name)
+			log_action("⚡ [b]%s[/b] [color=yellow]is paralyzed but pushed through the paralysis![/color]" % actor.name, st_side)
 			update_ui()
 
 	# 4. Confusion: 35% snap out or max 3 turns, else self-inflicts 2 DMG
@@ -1865,12 +1877,12 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 		if actor.confused_turns >= 3 or randf() < 0.35:
 			actor.is_confused = false
 			actor.confused_turns = 0
-			log_action("✨ [b]%s[/b] [color=green]snapped out of confusion![/color]" % actor.name)
+			log_action("✨ [b]%s[/b] [color=green]snapped out of confusion![/color]" % actor.name, st_side)
 			update_ui()
 		else:
 			var self_dmg = 2
 			actor.current_hp = max(0, actor.current_hp - self_dmg)
-			log_action("🌀 [b]%s[/b] [color=magenta]is confused! It hurt itself in its confusion for %d DMG! (%d/3)[/color]" % [actor.name, self_dmg, actor.confused_turns])
+			log_action("🌀 [b]%s[/b] [color=magenta]is confused! It hurt itself in its confusion for %d DMG! (%d/3)[/color]" % [actor.name, self_dmg, actor.confused_turns], st_side)
 			var actor_img = player_card_img if (actor == get_active_player()) else enemy_card_img
 			play_damage_hit(actor_img, "NORMAL", self_dmg)
 			spawn_floating_combat_number(actor_img, -self_dmg, false)
@@ -2130,7 +2142,7 @@ func _finish_round() -> void:
 	# Sandstorm check: 2 DMG to non-GROUND active Pokemon
 	if sandstorm_turns > 0:
 		sandstorm_turns -= 1
-		log_action("🌪️ [color=yellow]Sandstorm rages! (%d rounds remaining)[/color]" % sandstorm_turns)
+		log_action("🌪️ [color=yellow]Sandstorm rages! (%d rounds remaining)[/color]" % sandstorm_turns, "GLOBAL")
 		if active_p and active_p.type != "GROUND" and not (active_p.has_passive and active_p.passive_name == "Levitate"):
 			active_p.current_hp = max(0, active_p.current_hp - 2)
 			spawn_floating_combat_number(player_card_img, -2, false)
@@ -2148,13 +2160,13 @@ func _finish_round() -> void:
 	if grassy_terrain_turns > 0:
 		grassy_terrain_turns -= 1
 		if grassy_terrain_turns == 0:
-			log_action("🌿 [color=green]The Grassy Terrain faded away.[/color]")
+			log_action("🌿 [color=green]The Grassy Terrain faded away.[/color]", "GLOBAL")
 
 	# Trick Room countdown
 	if trick_room_turns > 0 and trick_room_turns < 90:
 		trick_room_turns -= 1
 		if trick_room_turns == 0:
-			log_action("🌀 [color=purple]The twisted dimensions returned to normal! Trick Room ended.[/color]")
+			log_action("🌀 [color=purple]The twisted dimensions returned to normal! Trick Room ended.[/color]", "GLOBAL")
 
 	# Constrict (Sand Tomb 2 DMG, Wrap 1 DMG - capped at constricted_turns)
 	for pkmn in [active_p, active_e]:
@@ -2164,14 +2176,15 @@ func _finish_round() -> void:
 			if pkmn.name == "Crystal Onix":
 				register_boss_damage(c_dmg)
 			var node_vis = player_card_img if pkmn == active_p else enemy_card_img
+			var p_side = "PLAYER" if pkmn == active_p else "ENEMY"
 			pkmn.constricted_turns -= 1
-			log_action("🪢 [color=orange]%s is constricted and takes %d DMG! (%d rounds left)[/color]" % [pkmn.name, c_dmg, max(0, pkmn.constricted_turns)])
+			log_action("🪢 [color=orange]%s is constricted and takes %d DMG! (%d rounds left)[/color]" % [pkmn.name, c_dmg, max(0, pkmn.constricted_turns)], p_side)
 			spawn_floating_combat_number(node_vis, -c_dmg, false)
 			play_damage_hit(node_vis, "NORMAL", c_dmg)
 			if pkmn.constricted_turns <= 0:
 				pkmn.is_constricted_dmg = 0
 				pkmn.constricted_turns = 0
-				log_action("✨ [b]%s[/b] [color=green]broke free from constriction![/color]" % pkmn.name)
+				log_action("✨ [b]%s[/b] [color=green]broke free from constriction![/color]" % pkmn.name, p_side)
 	if check_active_faint() and check_team_defeat():
 		return
 
@@ -2182,7 +2195,8 @@ func _finish_round() -> void:
 			if pkmn.name == "Crystal Onix":
 				register_boss_damage(1)
 			var node_vis = player_card_img if pkmn == active_p else enemy_card_img
-			log_action("☠️ [color=purple]%s takes 1 extra DMG from Toxic![/color]" % pkmn.name)
+			var p_side = "PLAYER" if pkmn == active_p else "ENEMY"
+			log_action("☠️ [color=purple]%s takes 1 extra DMG from Toxic![/color]" % pkmn.name, p_side)
 			var overlay = player_status_overlay if pkmn == active_p else enemy_status_overlay
 			if overlay:
 				overlay.trigger_poison_effect()
@@ -3589,9 +3603,10 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 							active_team[target_benched_idx]["current_exp"] = target_benched.current_exp
 	
 	var boost_str = " (BOOSTED)" if boosted else ""
+	var move_side = "PLAYER" if attacker == get_active_player() else "ENEMY"
 	log_action("[b]%s[/b] used [color=cyan]%s[/color] [%s]%s dealing [b]%d[/b] damage.%s%s" % [
 		attacker.name, move.name, move.type, boost_str, final_damage, note_text, exp_log_str
-	])
+	], move_side)
 	
 	lunge_card(attacker_visual, attacker == get_active_player())
 	GameData.play_move_sfx(move.name)
@@ -5533,10 +5548,10 @@ func _setup_battle_hud_theme() -> void:
 	diag_box.texture_margin_top = 7
 	diag_box.texture_margin_right = 7
 	diag_box.texture_margin_bottom = 7
-	diag_box.content_margin_left = 12
-	diag_box.content_margin_top = 8
-	diag_box.content_margin_right = 12
-	diag_box.content_margin_bottom = 8
+	diag_box.content_margin_left = 10
+	diag_box.content_margin_top = 4
+	diag_box.content_margin_right = 10
+	diag_box.content_margin_bottom = 4
 	
 	if has_node("MainContainer/CenterLog"):
 		$MainContainer/CenterLog.add_theme_stylebox_override("panel", diag_box)
@@ -6566,17 +6581,7 @@ func set_controls_enabled(enabled: bool) -> void:
 	if GameData.is_spanish():
 		GameData.apply_language_to_scene_tree()
 
-const MAX_COMBAT_LOG_VISIBLE: int = 6
 const MAX_COMBAT_HISTORY: int = 50
-const COMBAT_LOG_GRADIENT_COLORS: Array[String] = [
-	"#485c6c", # 5 turnos atrás (más diluido / tenue)
-	"#5c7488", # 4 turnos atrás
-	"#7692a8", # 3 turnos atrás
-	"#98b4cc", # 2 turnos atrás
-	"#c4dcf0", # 1 turno atrás (azul hielo claro)
-	"#ffffff"  # Acción más reciente (abajo, blanco brillante y resalte)
-]
-const COMBAT_LOG_FONT_SIZES: Array[int] = [10, 10, 10, 11, 11, 13]
 
 var _combat_log_tag_regex: RegEx = null
 
@@ -6586,71 +6591,172 @@ func _get_combat_log_regex() -> RegEx:
 		_combat_log_tag_regex.compile("\\[/?(?:color(=[^\\]]+)?|b)\\]")
 	return _combat_log_tag_regex
 
-func log_action(text: String) -> void:
+func _detect_action_side(text: String) -> String:
+	var t_lower = text.to_lower()
+	
+	# 1. Eventos globales / neutrales (clima, terreno, espacio raro, inicio de ronda, diálogos neutrales, etc.)
+	if t_lower.contains("sandstorm") or t_lower.contains("tormenta de arena") \
+	or t_lower.contains("grassy terrain") or t_lower.contains("terreno de hierba") \
+	or t_lower.contains("trick room") or t_lower.contains("espacio raro") \
+	or t_lower.contains("eerie mist") or t_lower.contains("niebla espectral") \
+	or t_lower.contains("hail blizzard") or t_lower.contains("polar blizzard") \
+	or t_lower.contains("space-time distortion") \
+	or t_lower.contains("double k.o.") or t_lower.contains("double ko") \
+	or t_lower.contains("both teams have fainted") \
+	or t_lower.contains("battle ready") or t_lower.contains("batalla lista") \
+	or t_lower.begins_with("💬") or t_lower.contains("enters the field.\nrival") \
+	or (t_lower.contains("enters the field") and t_lower.contains("rival sends out")):
+		return "GLOBAL"
+	
+	# 2. Eventos del rival
+	if t_lower.contains("rival") or t_lower.contains("foe dropped") \
+	or t_lower.contains("player 2") or t_lower.contains("banca rival"):
+		return "ENEMY"
+	
+	# 3. Eventos del jugador
+	if t_lower.contains("trainer") or t_lower.contains("entrenador") \
+	or t_lower.contains("your ") or t_lower.contains("tu ") \
+	or t_lower.contains("not enough energy") or t_lower.contains("no tienes suficiente") \
+	or t_lower.contains("diamonds") or t_lower.contains("diamantes") \
+	or t_lower.contains("exp") or t_lower.contains("tactical switch") \
+	or t_lower.contains("poké flute") or t_lower.contains("poke flute") \
+	or t_lower.contains("your bench") or t_lower.contains("tu banca"):
+		return "PLAYER"
+	
+	# 4. Comprobación por nombre de los Pokémon activos
+	var cur_e = get_active_enemy()
+	var cur_p = get_active_player()
+	var e_name = cur_e.name if cur_e else ""
+	var p_name = cur_p.name if cur_p else ""
+	
+	if not e_name.is_empty() and text.contains(e_name):
+		if not p_name.is_empty() and text.contains(p_name):
+			var idx_p = text.find(p_name)
+			var idx_e = text.find(e_name)
+			if idx_e < idx_p:
+				return "ENEMY"
+			else:
+				return "PLAYER"
+		return "ENEMY"
+	
+	if not p_name.is_empty() and text.contains(p_name):
+		return "PLAYER"
+		
+	if is_player_turn:
+		return "PLAYER"
+	return "ENEMY"
+
+func log_action(text: String, side: String = "AUTO") -> void:
 	if text.contains("\n"):
 		var raw_lines = text.split("\n", false)
 		for raw in raw_lines:
 			var s = raw.strip_edges()
 			if not s.is_empty():
-				_append_single_combat_log(s)
+				_append_routed_combat_log(s, side)
 	else:
 		var s = text.strip_edges()
 		if not s.is_empty():
-			_append_single_combat_log(s)
+			_append_routed_combat_log(s, side)
 	_render_combat_log()
 
-func _append_single_combat_log(entry: String) -> void:
+func _append_routed_combat_log(entry: String, side: String) -> void:
 	combat_history.append(entry)
 	if combat_history.size() > MAX_COMBAT_HISTORY:
 		combat_history.pop_front()
+	
+	var actual_side = side
+	if actual_side == "AUTO" or actual_side.is_empty():
+		actual_side = _detect_action_side(entry)
+	
+	if actual_side == "ENEMY":
+		enemy_combat_history.append(entry)
+		if enemy_combat_history.size() > MAX_COMBAT_HISTORY:
+			enemy_combat_history.pop_front()
+	elif actual_side == "PLAYER":
+		player_combat_history.append(entry)
+		if player_combat_history.size() > MAX_COMBAT_HISTORY:
+			player_combat_history.pop_front()
+	else:
+		global_combat_history.append(entry)
+		if global_combat_history.size() > MAX_COMBAT_HISTORY:
+			global_combat_history.pop_front()
 
 func _render_combat_log() -> void:
-	if not log_label:
+	_render_enemy_combat_log()
+	_render_global_combat_log()
+	_render_player_combat_log()
+
+func _render_enemy_combat_log() -> void:
+	if not enemy_log_label:
 		return
-	if combat_history.is_empty():
-		var ready_msg = Localization.translate_en_to_es("Battle Ready!") if GameData.is_spanish() else "Battle Ready!"
-		var empty_pads: Array[String] = []
-		for p in range(MAX_COMBAT_LOG_VISIBLE - 1):
-			empty_pads.append("")
-		empty_pads.append("[center][font_size=13][b][color=#ffffff]%s[/color][/b][/font_size][/center]" % ready_msg)
-		log_label.text = "\n".join(empty_pads)
-		return
-	
-	var visible_slice: Array[String] = []
-	if combat_history.size() > MAX_COMBAT_LOG_VISIBLE:
-		visible_slice = combat_history.slice(combat_history.size() - MAX_COMBAT_LOG_VISIBLE, combat_history.size())
-	else:
-		visible_slice = combat_history.duplicate()
-	
-	var empty_padding = MAX_COMBAT_LOG_VISIBLE - visible_slice.size()
-	var formatted_lines: Array[String] = []
-	for p in range(empty_padding):
-		formatted_lines.append("")
-	
-	var regex = _get_combat_log_regex()
 	var is_sp = GameData.is_spanish()
+	if enemy_combat_history.is_empty():
+		var empty_text = "• Rival esperando acción •" if is_sp else "• Rival awaiting action •"
+		enemy_log_label.text = "\n[center][color=#6a4848][font_size=10]%s[/font_size][/color][/center]" % empty_text
+		return
 	
-	for i in range(visible_slice.size()):
-		var grad_idx = empty_padding + i
-		var color = COMBAT_LOG_GRADIENT_COLORS[grad_idx]
-		var fsize = COMBAT_LOG_FONT_SIZES[grad_idx]
-		var line_str = visible_slice[i]
-		if is_sp:
-			line_str = Localization.translate_en_to_es(line_str)
+	var slice = enemy_combat_history.slice(max(0, enemy_combat_history.size() - 2), enemy_combat_history.size())
+	var lines: Array[String] = []
+	var regex = _get_combat_log_regex()
+	
+	if slice.size() == 1:
+		lines.append("")
+		var s0 = Localization.translate_en_to_es(slice[0]) if is_sp else slice[0]
+		lines.append("[center][font_size=11][color=#ff8585]🔴[/color] [b][color=#ffffff]%s[/color][/b][/font_size][/center]" % s0)
+	else:
+		var l0 = Localization.translate_en_to_es(slice[0]) if is_sp else slice[0]
+		var clean_l0 = regex.sub(l0, "", true)
+		lines.append("[center][font_size=10][color=#7a5252]%s[/color][/font_size][/center]" % clean_l0)
+		var l1 = Localization.translate_en_to_es(slice[1]) if is_sp else slice[1]
+		lines.append("[center][font_size=11][color=#ff8585]🔴[/color] [b][color=#ffffff]%s[/color][/b][/font_size][/center]" % l1)
 		
-		if grad_idx < MAX_COMBAT_LOG_VISIBLE - 1:
-			# Mensajes anteriores: se eliminan etiquetas de color y negrita para que tomen el tono degradado/diluido
-			var clean_str = regex.sub(line_str, "", true)
-			formatted_lines.append("[center][font_size=%d][color=%s]%s[/color][/font_size][/center]" % [fsize, color, clean_str])
-		else:
-			# Mensaje más reciente (abajo): mayor tamaño, negrita y resalta con sus colores originales o blanco
-			formatted_lines.append("[center][font_size=%d][b][color=#ffffff]%s[/color][/b][/font_size][/center]" % [fsize, line_str])
+	enemy_log_label.text = "\n".join(lines)
+	if enemy_log_label.scroll_following:
+		var v = enemy_log_label.get_v_scroll_bar()
+		if v: v.value = v.max_value
+
+func _render_player_combat_log() -> void:
+	if not player_log_label:
+		return
+	var is_sp = GameData.is_spanish()
+	if player_combat_history.is_empty():
+		var empty_text = "• Elige tu movimiento •" if is_sp else "• Select your move •"
+		player_log_label.text = "\n[center][color=#405c48][font_size=10]%s[/font_size][/color][/center]" % empty_text
+		return
 	
-	log_label.text = "\n".join(formatted_lines)
-	if log_label.scroll_following:
-		var v_bar = log_label.get_v_scroll_bar()
-		if v_bar:
-			v_bar.value = v_bar.max_value
+	var slice = player_combat_history.slice(max(0, player_combat_history.size() - 2), player_combat_history.size())
+	var lines: Array[String] = []
+	var regex = _get_combat_log_regex()
+	
+	if slice.size() == 1:
+		lines.append("")
+		var s0 = Localization.translate_en_to_es(slice[0]) if is_sp else slice[0]
+		lines.append("[center][font_size=11][color=#51cf66]🟢[/color] [b][color=#ffffff]%s[/color][/b][/font_size][/center]" % s0)
+	else:
+		var l0 = Localization.translate_en_to_es(slice[0]) if is_sp else slice[0]
+		var clean_l0 = regex.sub(l0, "", true)
+		lines.append("[center][font_size=10][color=#486e56]%s[/color][/font_size][/center]" % clean_l0)
+		var l1 = Localization.translate_en_to_es(slice[1]) if is_sp else slice[1]
+		lines.append("[center][font_size=11][color=#51cf66]🟢[/color] [b][color=#ffffff]%s[/color][/b][/font_size][/center]" % l1)
+		
+	player_log_label.text = "\n".join(lines)
+	if player_log_label.scroll_following:
+		var v = player_log_label.get_v_scroll_bar()
+		if v: v.value = v.max_value
+
+func _render_global_combat_log() -> void:
+	if not global_log_label:
+		return
+	var is_sp = GameData.is_spanish()
+	if global_combat_history.is_empty():
+		var ready_msg = Localization.translate_en_to_es("Battle Ready!") if is_sp else "Battle Ready!"
+		global_log_label.text = "[center][color=#88a0b0][font_size=11]%s[/font_size][/color][/center]" % ready_msg
+		return
+	
+	var latest = global_combat_history[-1]
+	if is_sp:
+		latest = Localization.translate_en_to_es(latest)
+	global_log_label.text = "[center][font_size=11][b][color=#ffd54f]%s[/color][/b][/font_size][/center]" % latest
 
 func show_game_over(title: String, subtitle: String) -> void:
 	if is_enemy_fainting or is_player_fainting:
