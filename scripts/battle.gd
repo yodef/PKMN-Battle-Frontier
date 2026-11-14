@@ -1218,6 +1218,7 @@ func start_new_game() -> void:
 	active_player_idx = 0
 	active_enemy_idx = 0
 	combat_history.clear()
+	_render_combat_log()
 	reset_selected_energy()
 	
 	if enemy_card_img:
@@ -6565,29 +6566,91 @@ func set_controls_enabled(enabled: bool) -> void:
 	if GameData.is_spanish():
 		GameData.apply_language_to_scene_tree()
 
+const MAX_COMBAT_LOG_VISIBLE: int = 6
+const MAX_COMBAT_HISTORY: int = 50
+const COMBAT_LOG_GRADIENT_COLORS: Array[String] = [
+	"#485c6c", # 5 turnos atrás (más diluido / tenue)
+	"#5c7488", # 4 turnos atrás
+	"#7692a8", # 3 turnos atrás
+	"#98b4cc", # 2 turnos atrás
+	"#c4dcf0", # 1 turno atrás (azul hielo claro)
+	"#ffffff"  # Acción más reciente (abajo, blanco brillante y resalte)
+]
+const COMBAT_LOG_FONT_SIZES: Array[int] = [10, 10, 10, 11, 11, 13]
+
+var _combat_log_tag_regex: RegEx = null
+
+func _get_combat_log_regex() -> RegEx:
+	if _combat_log_tag_regex == null:
+		_combat_log_tag_regex = RegEx.new()
+		_combat_log_tag_regex.compile("\\[/?(?:color(=[^\\]]+)?|b)\\]")
+	return _combat_log_tag_regex
+
 func log_action(text: String) -> void:
-	combat_history.append(text)
-	if combat_history.size() > 2:
-		combat_history.pop_front()
+	if text.contains("\n"):
+		var raw_lines = text.split("\n", false)
+		for raw in raw_lines:
+			var s = raw.strip_edges()
+			if not s.is_empty():
+				_append_single_combat_log(s)
+	else:
+		var s = text.strip_edges()
+		if not s.is_empty():
+			_append_single_combat_log(s)
 	_render_combat_log()
+
+func _append_single_combat_log(entry: String) -> void:
+	combat_history.append(entry)
+	if combat_history.size() > MAX_COMBAT_HISTORY:
+		combat_history.pop_front()
 
 func _render_combat_log() -> void:
 	if not log_label:
 		return
 	if combat_history.is_empty():
 		var ready_msg = Localization.translate_en_to_es("Battle Ready!") if GameData.is_spanish() else "Battle Ready!"
-		log_label.text = "[center]" + ready_msg + "[/center]"
+		var empty_pads: Array[String] = []
+		for p in range(MAX_COMBAT_LOG_VISIBLE - 1):
+			empty_pads.append("")
+		empty_pads.append("[center][font_size=13][b][color=#ffffff]%s[/color][/b][/font_size][/center]" % ready_msg)
+		log_label.text = "\n".join(empty_pads)
 		return
-	var l0 = combat_history[0]
-	var l1 = combat_history[1] if combat_history.size() > 1 else ""
-	if GameData.is_spanish():
-		l0 = Localization.translate_en_to_es(l0)
-		if l1 != "":
-			l1 = Localization.translate_en_to_es(l1)
-	if combat_history.size() == 1:
-		log_label.text = "[center]" + l0 + "[/center]"
+	
+	var visible_slice: Array[String] = []
+	if combat_history.size() > MAX_COMBAT_LOG_VISIBLE:
+		visible_slice = combat_history.slice(combat_history.size() - MAX_COMBAT_LOG_VISIBLE, combat_history.size())
 	else:
-		log_label.text = "[center][color=#788a9c][font_size=11]%s[/font_size][/color]\n[font_size=13]%s[/font_size][/center]" % [l0, l1]
+		visible_slice = combat_history.duplicate()
+	
+	var empty_padding = MAX_COMBAT_LOG_VISIBLE - visible_slice.size()
+	var formatted_lines: Array[String] = []
+	for p in range(empty_padding):
+		formatted_lines.append("")
+	
+	var regex = _get_combat_log_regex()
+	var is_sp = GameData.is_spanish()
+	
+	for i in range(visible_slice.size()):
+		var grad_idx = empty_padding + i
+		var color = COMBAT_LOG_GRADIENT_COLORS[grad_idx]
+		var fsize = COMBAT_LOG_FONT_SIZES[grad_idx]
+		var line_str = visible_slice[i]
+		if is_sp:
+			line_str = Localization.translate_en_to_es(line_str)
+		
+		if grad_idx < MAX_COMBAT_LOG_VISIBLE - 1:
+			# Mensajes anteriores: se eliminan etiquetas de color y negrita para que tomen el tono degradado/diluido
+			var clean_str = regex.sub(line_str, "", true)
+			formatted_lines.append("[center][font_size=%d][color=%s]%s[/color][/font_size][/center]" % [fsize, color, clean_str])
+		else:
+			# Mensaje más reciente (abajo): mayor tamaño, negrita y resalta con sus colores originales o blanco
+			formatted_lines.append("[center][font_size=%d][b][color=#ffffff]%s[/color][/b][/font_size][/center]" % [fsize, line_str])
+	
+	log_label.text = "\n".join(formatted_lines)
+	if log_label.scroll_following:
+		var v_bar = log_label.get_v_scroll_bar()
+		if v_bar:
+			v_bar.value = v_bar.max_value
 
 func show_game_over(title: String, subtitle: String) -> void:
 	if is_enemy_fainting or is_player_fainting:

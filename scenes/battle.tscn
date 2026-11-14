@@ -303,16 +303,16 @@ theme_override_font_sizes/font_size = 13
 text = "Energy: ⚡⚡⚡ (3/3)"
 
 [node name="CenterLog" type="PanelContainer" parent="MainContainer" unique_id=775992375]
-custom_minimum_size = Vector2(0, 110)
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 size_flags_vertical = 3
 
 [node name="Margin" type="MarginContainer" parent="MainContainer/CenterLog" unique_id=710323644]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
 
 [node name="VBox" type="VBoxContainer" parent="MainContainer/CenterLog/Margin" unique_id=1377476126]
 layout_mode = 2
@@ -325,12 +325,14 @@ text = "YOUR TURN"
 horizontal_alignment = 1
 
 [node name="LogLabel" type="RichTextLabel" parent="MainContainer/CenterLog/Margin/VBox" unique_id=969458149]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/line_separation = 2
 bbcode_enabled = true
 text = "[center]Battle Ready![/center]"
-fit_content = true
+scroll_active = true
+scroll_following = true
 
 [node name="PlayerSection" type="PanelContainer" parent="MainContainer" unique_id=1799993231]
 layout_mode = 2
