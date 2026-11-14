@@ -235,6 +235,55 @@ var current_evo_tween: Tween = null
 var current_evo_finish_cb: Callable = Callable()
 var completed_evolutions_this_battle: Array[Dictionary] = []
 
+var enemy_trainer_name: String = ""
+
+func get_player_trainer_name() -> String:
+	var pname = GameData.profile_name.strip_edges()
+	if pname.is_empty() or pname.to_lower() == "trainer":
+		return "Entrenador" if GameData.is_spanish() else "Trainer"
+	return pname
+
+func get_enemy_trainer_name() -> String:
+	var is_sp = GameData.is_spanish()
+	if GameData.is_tutorial_mode:
+		return "Prof. Oak"
+	if GameData.is_online_pvp:
+		if not GameData.online_rival_name.is_empty():
+			return GameData.online_rival_name
+		return "Rival Online" if is_sp else "Online Rival"
+	if GameData.is_campaign_mode:
+		if GameData.campaign_submode == "LAKE_OF_RAGE":
+			return "Gyarados Rojo" if is_sp else "Red Gyarados"
+		elif GameData.campaign_submode == "CHAOS":
+			var match_info = GameData.get_chaos_match_info(GameData.chaos_match_number)
+			if match_info.get("is_boss", false):
+				return "Onix Cristal" if is_sp else "Crystal Onix"
+			return "Guardián del Caos" if is_sp else "Chaos Guardian"
+		elif GameData.campaign_submode == "ADVENTURE":
+			var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
+			var tname = str(stage_info.get("trainer_name_es" if is_sp else "trainer_name", stage_info.get("trainer_name", "")))
+			if not tname.is_empty():
+				return tname
+			return "Entrenador Rival" if is_sp else "Rival Trainer"
+		else:
+			match GameData.campaign_match_number:
+				1: return "Joven Tristán" if is_sp else "Youngster Tristan"
+				2: return "Cazabichos Sammy" if is_sp else "Bug Catcher Sammy"
+				3: return "Campista Drew" if is_sp else "Camper Drew"
+				4: return "Entrenador Guay Allen" if is_sp else "Cooltrainer Allen"
+				5: return "Chica Lisa" if is_sp else "Lass Lisa"
+				6: return "As del Duelo Roy" if is_sp else "Ace Trainer Roy"
+				7: return "Veterano Marcus" if is_sp else "Veteran Marcus"
+				8: return "Líder Retador Gary" if is_sp else "Rival Gary"
+				9: return "Campeón del Torneo Lance" if is_sp else "Tournament Champion Lance"
+				_: return "Entrenador del Torneo" if is_sp else "Tournament Trainer"
+	if not enemy_trainer_name.is_empty():
+		return enemy_trainer_name
+	var e = get_active_enemy()
+	if enemy_team.size() == 1 and e and not e.name.is_empty():
+		return e.name
+	return "Entrenador Rival" if is_sp else "Rival Trainer"
+
 # --- TUTORIAL DE COMBATE ---
 var tutorial_callout_modal: Control = null
 var tutorial_callout_badge_lbl: Label = null
@@ -1554,7 +1603,13 @@ func start_new_game() -> void:
 		else:
 			var match_info_start = GameData.get_tournament_match_info(GameData.campaign_match_number)
 			mode_str = "%s (Battle %d/%d)" % [match_info_start.get("phase_name", "Tournament").to_upper(), GameData.campaign_match_number, GameData.TOURNAMENT_TOTAL_MATCHES]
-	log_action("[b]%s![/b]\nYour Leader: [b]%s[/b] enters the field.\nRival sends out: [b]%s[/b]." % [mode_str, active_p.name, active_e.name], "GLOBAL")
+	_update_combat_log_headers()
+	var p_tname = get_player_trainer_name()
+	var e_tname = get_enemy_trainer_name()
+	if GameData.is_spanish():
+		log_action("[b]%s![/b]\n[b]%s[/b] envía a [b]%s[/b] al combate.\n[b]%s[/b] envía a [b]%s[/b]." % [mode_str, p_tname, active_p.name, e_tname, active_e.name], "GLOBAL")
+	else:
+		log_action("[b]%s![/b]\n[b]%s[/b] sends out [b]%s[/b] into battle.\n[b]%s[/b] sends out [b]%s[/b]." % [mode_str, p_tname, active_p.name, e_tname, active_e.name], "GLOBAL")
 	if GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
 		var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
 		var is_es = (GameData.settings_language == "es")
@@ -1696,7 +1751,7 @@ func start_new_round() -> void:
 			initiative_msg = "[b]━━━ ROUND %d ━━━[/b]%s\nSpeed Tie (SPD %d vs %d)! 🪙 [color=yellow]Coin Toss:[/color] [b]%s[/b] wins the tiebreaker and takes the first turn." % [round_number, tr_tag, p_spd, e_spd, p.name]
 		else:
 			round_order = ["ENEMY", "PLAYER"]
-			initiative_msg = "[b]━━━ ROUND %d ━━━[/b]%s\nSpeed Tie (SPD %d vs %d)! 🪙 [color=yellow]Coin Toss:[/color] Rival [b]%s[/b] wins the tiebreaker and takes the first turn." % [round_number, tr_tag, p_spd, e_spd, e.name]
+			initiative_msg = "[b]━━━ ROUND %d ━━━[/b]%s\nSpeed Tie (SPD %d vs %d)! 🪙 [color=yellow]Coin Toss:[/color] [b]%s's %s[/b] wins the tiebreaker and takes the first turn." % [round_number, tr_tag, p_spd, e_spd, get_enemy_trainer_name(), e.name]
 			
 	log_action(initiative_msg, "GLOBAL")
 	update_ui()
@@ -1988,7 +2043,10 @@ func start_player_turn() -> void:
 		turn_badge.text = "ROUND %d • 🔴 PLAYER 1'S TURN (%s)" % [round_number, p.name]
 		turn_badge.modulate = Color(0.2, 0.9, 0.3)
 	else:
-		turn_badge.text = "ROUND %d • YOUR TURN (%s)" % [round_number, p.name]
+		if GameData.is_spanish():
+			turn_badge.text = "RONDA %d • TURNO DE %s (%s)" % [round_number, get_player_trainer_name().to_upper(), p.name]
+		else:
+			turn_badge.text = "ROUND %d • %s'S TURN (%s)" % [round_number, get_player_trainer_name().to_upper(), p.name]
 		turn_badge.modulate = Color(0.2, 0.9, 0.3)
 	
 	if _process_turn_start_status(p, e, player_card_img, enemy_card_img, true):
@@ -2113,7 +2171,10 @@ func start_enemy_turn() -> void:
 		turn_badge.text = "ROUND %d • 🔵 PLAYER 2'S TURN (%s)" % [round_number, e.name]
 		turn_badge.modulate = Color(0.3, 0.8, 1.0)
 	else:
-		turn_badge.text = "ROUND %d • RIVAL'S TURN (%s)" % [round_number, e.name]
+		if GameData.is_spanish():
+			turn_badge.text = "RONDA %d • TURNO DE %s (%s)" % [round_number, get_enemy_trainer_name().to_upper(), e.name]
+		else:
+			turn_badge.text = "ROUND %d • %s'S TURN (%s)" % [round_number, get_enemy_trainer_name().to_upper(), e.name]
 		turn_badge.modulate = Color(0.95, 0.3, 0.2)
 	
 	if _process_turn_start_status(e, p, enemy_card_img, player_card_img, false):
@@ -2391,7 +2452,7 @@ func enemy_do_switch(target_idx: int) -> void:
 	last_enemy_switch_round = round_number
 	_trigger_entry_passives(target_pkmn, get_active_player(), false)
 	
-	var rival_title = "Rival" if not GameData.is_campaign_mode else ("Líder Giovanni" if (GameData.campaign_submode == "ADVENTURE" and GameData.adventure_current_episode == 7) else "Rival")
+	var rival_title = get_enemy_trainer_name()
 	log_action("🔄 [b]%s[/b] withdrew [b]%s[/b] due to elemental disadvantage and sent out [b]%s[/b]!" % [rival_title, current.name, target_pkmn.name])
 	GameData.play_combat_sfx("switch")
 	
@@ -2459,7 +2520,7 @@ func execute_enemy_ai() -> void:
 		enemy_super_potions -= 1
 		var healed = min(25, e.max_hp - e.current_hp)
 		e.current_hp += healed
-		var user_title = "Boss Crystal Onix" if e.name == "Crystal Onix" else ("Líder Giovanni" if GameData.campaign_submode == "ADVENTURE" else "Rival")
+		var user_title = get_enemy_trainer_name()
 		log_action("[b]%s[/b] used [color=#29B6F6]Super Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [user_title, e.name, healed, e.current_hp, e.max_hp])
 		GameData.play_combat_sfx("use")
 		var tw = create_tween()
@@ -3807,7 +3868,7 @@ func _animate_faint_and_replacement(is_player: bool, fainted_pkmn, next_idx: int
 			else:
 				active_enemy_idx = next_idx
 				var new_e = get_active_enemy()
-				log_action("Rival sends out [b]%s[/b]!" % new_e.name)
+				log_action("[b]%s[/b] sends out [b]%s[/b]!" % [get_enemy_trainer_name(), new_e.name])
 				if new_e.has_passive and new_e.passive_name == "String Shot":
 					log_action("✨ Weedle's [color=cyan]String Shot[/color] passively reduces foe's Speed by 1.")
 				_trigger_entry_passives(new_e, get_active_player(), false)
@@ -3851,7 +3912,7 @@ func check_active_faint() -> bool:
 	
 	if active_e and active_e.current_hp <= 0 and not is_enemy_fainting:
 		var next_e_idx = find_next_alive_enemy()
-		log_action("[b]Rival's %s fainted![/b]" % active_e.name)
+		log_action("[b]%s's %s fainted![/b]" % [get_enemy_trainer_name(), active_e.name])
 		_animate_faint_and_replacement(false, active_e, next_e_idx)
 		triggered = true
 		if next_e_idx == -1:
@@ -3860,7 +3921,7 @@ func check_active_faint() -> bool:
 			
 	if active_p and active_p.current_hp <= 0 and not is_player_fainting:
 		var next_p_idx = find_next_alive_player()
-		log_action("[b]Your %s fainted in battle![/b]" % active_p.name)
+		log_action("[b]%s's %s fainted in battle![/b]" % [get_player_trainer_name(), active_p.name])
 		_animate_faint_and_replacement(true, active_p, next_p_idx)
 		triggered = true
 		if next_p_idx == -1:
@@ -5361,7 +5422,7 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 		active_player_idx = target_idx
 		reset_selected_energy()
 		_trigger_entry_passives(target_pkmn, get_active_enemy(), true)
-		log_action("[b]Tactical switch![/b] %s withdraws, [b]%s[/b] enters!" % [current.name, target_pkmn.name])
+		log_action("[b]Tactical switch![/b] [b]%s[/b] withdraws [b]%s[/b] and sends out [b]%s[/b]!" % [get_player_trainer_name(), current.name, target_pkmn.name])
 		
 		var orig_p_pos = player_card_img.position
 		if player_card_img.has_meta("original_pos"): orig_p_pos = player_card_img.get_meta("original_pos")
@@ -6058,6 +6119,8 @@ func _format_status_list(pkmn) -> Array:
 func update_ui() -> void:
 	if player_team.is_empty() or enemy_team.is_empty():
 		return
+	
+	_update_combat_log_headers()
 		
 	var active_e = get_active_enemy()
 	var enemy_benched_idx = get_benched_enemy_indices()
@@ -6701,19 +6764,27 @@ func _detect_action_side(text: String) -> String:
 	or t_lower.contains("eerie mist") or t_lower.contains("niebla espectral") \
 	or t_lower.contains("hail blizzard") or t_lower.contains("polar blizzard") \
 	or t_lower.contains("space-time distortion") \
+	or t_lower.contains("coin toss") or t_lower.contains("desempate") \
 	or t_lower.contains("double k.o.") or t_lower.contains("double ko") \
 	or t_lower.contains("both teams have fainted") \
 	or t_lower.contains("battle ready") or t_lower.contains("batalla lista") \
-	or t_lower.begins_with("💬") or t_lower.contains("enters the field.\nrival") \
-	or (t_lower.contains("enters the field") and t_lower.contains("rival sends out")):
+	or t_lower.begins_with("💬") \
+	or (t_lower.contains("enters the field") and (t_lower.contains("sends out") or t_lower.contains("envía a"))) \
+	or (t_lower.contains("al combate") and t_lower.contains("envía a")):
 		return "GLOBAL"
 	
 	# 2. Eventos del rival
+	var e_tname = get_enemy_trainer_name().to_lower()
+	if not e_tname.is_empty() and t_lower.contains(e_tname):
+		return "ENEMY"
 	if t_lower.contains("rival") or t_lower.contains("foe dropped") \
 	or t_lower.contains("player 2") or t_lower.contains("banca rival"):
 		return "ENEMY"
 	
 	# 3. Eventos del jugador
+	var p_tname = get_player_trainer_name().to_lower()
+	if not p_tname.is_empty() and t_lower.contains(p_tname):
+		return "PLAYER"
 	if t_lower.contains("trainer") or t_lower.contains("entrenador") \
 	or t_lower.contains("your ") or t_lower.contains("tu ") \
 	or t_lower.contains("not enough energy") or t_lower.contains("no tienes suficiente") \
@@ -6804,7 +6875,7 @@ func _render_enemy_combat_log() -> void:
 	var f_sizes = _get_combat_log_font_sizes()
 	enemy_log_label.add_theme_constant_override("line_separation", f_sizes.line_sep)
 	if enemy_combat_history.is_empty():
-		var empty_text = "• Rival esperando acción •" if is_sp else "• Rival awaiting action •"
+		var empty_text = ("• %s en espera de acción •" if is_sp else "• %s awaiting action •") % get_enemy_trainer_name()
 		enemy_log_label.text = "\n[center][color=#6a4848][font_size=%d]%s[/font_size][/color][/center]" % [f_sizes.old, empty_text]
 		return
 	
@@ -6842,7 +6913,7 @@ func _render_player_combat_log() -> void:
 	var f_sizes = _get_combat_log_font_sizes()
 	player_log_label.add_theme_constant_override("line_separation", f_sizes.line_sep)
 	if player_combat_history.is_empty():
-		var empty_text = "• Elige tu movimiento •" if is_sp else "• Select your move •"
+		var empty_text = ("• Turno de %s: selecciona un movimiento •" if is_sp else "• %s: select your move •") % get_player_trainer_name()
 		player_log_label.text = "\n[center][color=#405c48][font_size=%d]%s[/font_size][/color][/center]" % [f_sizes.old, empty_text]
 		return
 	
@@ -6987,11 +7058,10 @@ func _update_dynamic_font_label() -> void:
 			lbl_dynamic_font_info.text = "💡 Fuente automática: Mini (%dpx, anti-scroll)" % f_sizes.current if is_sp else "💡 Dynamic font: Mini (%dpx, anti-scroll)" % f_sizes.current
 
 func _update_combat_log_headers() -> void:
-	var is_sp = GameData.is_spanish()
 	if enemy_header_lbl:
-		enemy_header_lbl.text = "🔴 RIVAL"
+		enemy_header_lbl.text = "🔴 " + get_enemy_trainer_name().to_upper()
 	if player_header_lbl:
-		player_header_lbl.text = "🟢 JUGADOR" if is_sp else "🟢 PLAYER"
+		player_header_lbl.text = "🟢 " + get_player_trainer_name().to_upper()
 
 func _update_battle_settings_ui() -> void:
 	var is_sp = GameData.is_spanish()
@@ -7521,7 +7591,7 @@ func _on_poke_flute_action_pressed() -> void:
 	active_p.immune_sleep_rounds = 1
 	
 	var holder_str = (" (held by [b]%s[/b])" % holder.name) if holder != active_p else ""
-	log_action("🎶 [b]Trainer[/b] played the [color=gold]Poké Flute[/color]%s! [b]%s[/b] woke up! (Turn consumed) 💤✨" % [holder_str, active_p.name])
+	log_action("🎶 [b]%s[/b] played the [color=gold]Poké Flute[/color]%s! [b]%s[/b] woke up! (Turn consumed) 💤✨" % [get_player_trainer_name(), holder_str, active_p.name])
 	GameData.play_combat_sfx("use")
 	
 	if GameData.is_campaign_mode:
@@ -7977,33 +8047,40 @@ func apply_item_in_battle(item_id: String, target_idx: int) -> void:
 		target_pkmn.foe_damage_debuff = 0
 		target_pkmn.foe_damage_debuff_turns = 0
 		target_pkmn.is_flinched = false
-		log_action("[b]Trainer[/b] used [color=lightgreen]Remedy[/color] on [b]%s[/b]! All negative status conditions were cleansed! 🌿" % target_pkmn.name)
+		var p_tname = get_player_trainer_name()
+		log_action("[b]%s[/b] used [color=lightgreen]Remedy[/color] on [b]%s[/b]! All negative status conditions were cleansed! 🌿" % [p_tname, target_pkmn.name])
 	elif item_id == "potion":
 		healed = min(10, target_pkmn.max_hp - target_pkmn.current_hp)
 		target_pkmn.current_hp += healed
-		log_action("[b]Trainer[/b] used [color=cyan]Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
+		var p_tname = get_player_trainer_name()
+		log_action("[b]%s[/b] used [color=cyan]Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [p_tname, target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
 	elif item_id == "super_potion":
 		healed = min(25, target_pkmn.max_hp - target_pkmn.current_hp)
 		target_pkmn.current_hp += healed
-		log_action("[b]Trainer[/b] used [color=#29B6F6]Super Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
+		var p_tname = get_player_trainer_name()
+		log_action("[b]%s[/b] used [color=#29B6F6]Super Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [p_tname, target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
 	elif item_id == "hyper_potion":
 		healed = target_pkmn.max_hp - target_pkmn.current_hp
 		target_pkmn.current_hp = target_pkmn.max_hp
-		log_action("[b]Trainer[/b] used [color=#EC407A]Hyper Potion[/color] on [b]%s[/b], restoring all [color=green]+%d HP (100%% Max)![/color] 🧪 (%d/%d)" % [target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
+		var p_tname = get_player_trainer_name()
+		log_action("[b]%s[/b] used [color=#EC407A]Hyper Potion[/color] on [b]%s[/b], restoring all [color=green]+%d HP (100%% Max)![/color] 🧪 (%d/%d)" % [p_tname, target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
 	elif item_id == "poke_flute":
 		target_pkmn.is_asleep_turns = 0
 		target_pkmn.immune_sleep_rounds = 1
 		var holder = get_poke_flute_holder()
 		var holder_str = (" (held by [b]%s[/b])" % holder.name) if holder and holder != target_pkmn else ""
-		log_action("🎶 [b]Trainer[/b] played the [color=gold]Poké Flute[/color]%s! [b]%s[/b] woke up! (Turn consumed) 💤✨" % [holder_str, target_pkmn.name])
+		var p_tname = get_player_trainer_name()
+		log_action("🎶 [b]%s[/b] played the [color=gold]Poké Flute[/color]%s! [b]%s[/b] woke up! (Turn consumed) 💤✨" % [p_tname, holder_str, target_pkmn.name])
 	elif item_id == "ether":
 		energy_recovered = target_pkmn.max_energy - target_pkmn.current_energy
 		target_pkmn.current_energy = target_pkmn.max_energy
-		log_action("[b]Trainer[/b] used [color=#B388FF]Ether[/color] on [b]%s[/b], restoring [color=yellow]+%d Energy (100%% Max)![/color] ⚡ (%d/%d)" % [target_pkmn.name, energy_recovered, target_pkmn.current_energy, target_pkmn.max_energy])
+		var p_tname = get_player_trainer_name()
+		log_action("[b]%s[/b] used [color=#B388FF]Ether[/color] on [b]%s[/b], restoring [color=yellow]+%d Energy (100%% Max)![/color] ⚡ (%d/%d)" % [p_tname, target_pkmn.name, energy_recovered, target_pkmn.current_energy, target_pkmn.max_energy])
 	elif item_id == "revive":
 		target_pkmn.current_hp = max(1, int(target_pkmn.max_hp * 0.5))
 		healed = target_pkmn.current_hp
-		log_action("[b]Trainer[/b] used [color=yellow]Revive[/color] on [b]%s[/b]! Revived with [color=green]%d HP[/color]! 💖" % [target_pkmn.name, target_pkmn.current_hp])
+		var p_tname = get_player_trainer_name()
+		log_action("[b]%s[/b] used [color=yellow]Revive[/color] on [b]%s[/b]! Revived with [color=green]%d HP[/color]! 💖" % [p_tname, target_pkmn.name, target_pkmn.current_hp])
 		
 	# Sincronizar estado en campaña activa
 	var active_team = GameData.get_active_campaign_team_state()

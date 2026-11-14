@@ -344,9 +344,12 @@ layout_mode = 2
 
 [node name="EnemyHeaderLbl" type="Label" parent="MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox/HeaderRow" unique_id=884102944]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.55, 0.55, 0.85)
 theme_override_font_sizes/font_size = 9
 text = "🔴 RIVAL"
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="EnemyLogLabel" type="RichTextLabel" parent="MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox" unique_id=884102941]
 custom_minimum_size = Vector2(0, 30)
@@ -408,9 +411,12 @@ layout_mode = 2
 
 [node name="PlayerHeaderLbl" type="Label" parent="MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox/HeaderRow" unique_id=1582049105]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.5, 0.9, 0.6, 0.85)
 theme_override_font_sizes/font_size = 9
 text = "🟢 JUGADOR"
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="PlayerLogLabel" type="RichTextLabel" parent="MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox" unique_id=1582049102]
 custom_minimum_size = Vector2(0, 30)
