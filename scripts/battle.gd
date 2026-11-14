@@ -27,6 +27,7 @@ var combat_history: Array[String] = []
 var is_battle_over: bool = false
 var sandstorm_turns: int = 0
 var grassy_terrain_turns: int = 0
+var trick_room_turns: int = 0
 var pending_opponent_actions: Array[Dictionary] = []
 var is_waiting_for_online_opponent: bool = false
 var is_processing_opponent_action: bool = false
@@ -985,12 +986,15 @@ func _setup_tutorial_callout_modal() -> void:
 	btn_tutorial_callout_next.pressed.connect(_on_tutorial_callout_next_pressed)
 	vbox.add_child(btn_tutorial_callout_next)
 
-func _show_tutorial_callout(step_key: String, badge: String, title: String, text_bbcode: String, btn_text: String = "Understood! ➡️", callback: Callable = Callable()) -> void:
+func _show_tutorial_callout(step_key: String, badge: String, title: String, text_bbcode: String, btn_text: String = "", callback: Callable = Callable()) -> void:
 	_setup_tutorial_callout_modal()
 	tutorial_callout_badge_lbl.text = badge.to_upper()
 	tutorial_callout_title_lbl.text = title
 	tutorial_callout_text_lbl.text = text_bbcode
-	btn_tutorial_callout_next.text = btn_text
+	if btn_text.is_empty():
+		btn_tutorial_callout_next.text = GameData.tr_text("Understood! ➡️", "¡Entendido! ➡️")
+	else:
+		btn_tutorial_callout_next.text = btn_text
 	tutorial_callout_callback = callback
 	tutorial_steps_shown[step_key] = true
 	tutorial_callout_modal.visible = true
@@ -1011,11 +1015,16 @@ func _on_back_menu_pressed() -> void:
 
 func _show_forfeit_confirmation_modal() -> void:
 	_setup_forfeit_confirmation_modal()
+	if btn_cancel_forfeit:
+		btn_cancel_forfeit.text = GameData.tr_text("⚔️ Keep Battling", "⚔️ Seguir Luchando")
 	
 	if GameData.is_tutorial_mode:
-		forfeit_title_lbl.text = "🎓 EXIT TUTORIAL?"
-		forfeit_body_lbl.text = "Are you sure you want to exit the Tutorial?\nYou can restart it anytime to learn mechanics and claim your 💎 5 Diamonds."
-		btn_confirm_forfeit.text = "🚪 Exit Tutorial"
+		forfeit_title_lbl.text = GameData.tr_text("🎓 EXIT TUTORIAL?", "🎓 ¿SALIR DEL TUTORIAL?")
+		forfeit_body_lbl.text = GameData.tr_text(
+			"Are you sure you want to exit the Tutorial?\nYou can restart it anytime to learn mechanics and claim your 💎 5 Diamonds.",
+			"¿Estás seguro de que deseas salir del Tutorial?\nPuedes reiniciarlo en cualquier momento para aprender las mecánicas y reclamar tus 💎 5 Diamantes."
+		)
+		btn_confirm_forfeit.text = GameData.tr_text("🚪 Exit Tutorial", "🚪 Salir del Tutorial")
 	elif GameData.is_online_pvp:
 		var r_name = GameData.online_rival_name if not GameData.online_rival_name.is_empty() else "your opponent"
 		forfeit_title_lbl.text = "🏳️ FORFEIT MATCH?"
@@ -1127,14 +1136,51 @@ func get_active_enemy():
 		return enemy_team[0]
 	return enemy_team[active_enemy_idx]
 
-# Calcula la velocidad efectiva considerando pasivas de campo (como String Shot de Weedle)
+# Calcula la velocidad efectiva considerando pasivas de campo (como String Shot de Weedle y Clorofila / Nado Rápido)
 func get_pokemon_effective_speed(pkmn, opponent) -> int:
 	if pkmn == null:
 		return 1
 	var spd = pkmn.get_effective_speed()
 	if opponent and opponent.has_passive and opponent.passive_name == "String Shot":
 		spd = max(1, spd - 1)
+	if pkmn and pkmn.has_passive and pkmn.passive_name in ["Chlorophyll", "Swift Swim", "Weather Rush", "Sand Rush"]:
+		if sandstorm_turns > 0 or grassy_terrain_turns > 0:
+			spd += 3
 	return spd
+
+func _cleanse_pokemon_status(pkmn) -> void:
+	if not pkmn:
+		return
+	if pkmn.has_passive and pkmn.passive_name == "Natural Cure":
+		var had_status = (pkmn.burn_turns > 0 or pkmn.is_poisoned or pkmn.is_paralyzed or pkmn.is_frozen or pkmn.is_asleep_turns > 0 or pkmn.is_confused or pkmn.is_seeded_turns > 0)
+		pkmn.burn_turns = 0
+		pkmn.is_poisoned = false
+		pkmn.toxic_envenomed = false
+		pkmn.is_paralyzed = false
+		pkmn.paralyze_turns = 0
+		pkmn.is_asleep_turns = 0
+		pkmn.is_frozen = false
+		pkmn.frozen_turns = 0
+		pkmn.is_confused = false
+		pkmn.confused_turns = 0
+		pkmn.is_seeded_turns = 0
+		pkmn.is_constricted_dmg = 0
+		pkmn.constricted_turns = 0
+		pkmn.foe_damage_debuff = 0
+		pkmn.foe_damage_debuff_turns = 0
+		if had_status:
+			log_action("✨ [b]%s[/b]'s [color=green]Natural Cure[/color] cleansed all status ailments upon switching!" % pkmn.name)
+
+func _trigger_entry_passives(entrant, opponent, is_player: bool) -> void:
+	if not entrant or not opponent:
+		return
+	var opp_visual = enemy_card_img if is_player else player_card_img
+	if entrant.has_passive and entrant.passive_name == "Intimidate":
+		opponent.foe_damage_debuff = max(opponent.foe_damage_debuff, 2)
+		opponent.foe_damage_debuff_turns = 1
+		log_action("✨ [b]%s[/b]'s [color=orange]Intimidate[/color] cut %s's attack (-2 DMG on next attack)!" % [entrant.name, opponent.name])
+		if opp_visual:
+			spawn_floating_combat_text(opp_visual, "Intimidated (-2 DMG)", Color("#f97316"))
 
 func get_benched_player_indices() -> Array[int]:
 	var indices: Array[int] = []
@@ -1185,6 +1231,7 @@ func start_new_game() -> void:
 	defeated_rewards_summary.clear()
 	sandstorm_turns = 0
 	grassy_terrain_turns = 0
+	trick_room_turns = 0
 	pending_opponent_actions.clear()
 	is_waiting_for_online_opponent = false
 	is_processing_opponent_action = false
@@ -1201,7 +1248,7 @@ func start_new_game() -> void:
 			var e_stage1 = GameData.create_pokemon_instance(e_s1_id)
 			var e_bench = GameData.create_pokemon_instance(16) # Pidgey (Tier D)
 			enemy_team = [e_stage1, e_bench]
-			battle_title_lbl.text = "🎓 Advanced Tutorial: %s vs %s" % [p_stage1.name, e_stage1.name]
+			battle_title_lbl.text = GameData.tr_text("🎓 Advanced Tutorial: %s vs %s", "🎓 Tutorial Avanzado: %s vs %s") % [p_stage1.name, e_stage1.name]
 		else:
 			var p_id = GameData.tutorial_starter_id if GameData.tutorial_starter_id >= 0 else 1
 			var e_id = GameData.tutorial_rival_id if GameData.tutorial_rival_id >= 0 else 0
@@ -1209,7 +1256,7 @@ func start_new_game() -> void:
 			var e_inst = GameData.create_pokemon_instance(e_id)
 			player_team = [p_inst]
 			enemy_team = [e_inst]
-			battle_title_lbl.text = "🎓 Battle Tutorial: %s vs %s" % [p_inst.name, e_inst.name]
+			battle_title_lbl.text = GameData.tr_text("🎓 Battle Tutorial: %s vs %s", "🎓 Tutorial de Combate: %s vs %s") % [p_inst.name, e_inst.name]
 	elif GameData.is_campaign_mode:
 		if GameData.campaign_submode == "LAKE_OF_RAGE":
 			player_team = []
@@ -1264,11 +1311,13 @@ func start_new_game() -> void:
 					enemy_super_potions = 1
 				else:
 					enemy_super_potions = 0
-				if GameData.adventure_current_episode in [5, 6]:
-					var cur_route = GameData.adventure_ep5_selected_route if GameData.adventure_current_episode == 5 else GameData.adventure_ep6_selected_route
+				var ep_info = GameData.get_adventure_episode_info(GameData.adventure_current_episode)
+				if ep_info.get("is_branching", false):
+					var cur_route = GameData.get_adventure_selected_route(GameData.adventure_current_episode)
 					var r_info = GameData.get_adventure_route_info(GameData.adventure_current_episode, cur_route)
 					var r_name = str(r_info.get("name_es", r_info.get("name", "Ruta")))
-					var ep_roman = "V" if GameData.adventure_current_episode == 5 else "VI"
+					var ep_num = GameData.adventure_current_episode
+					var ep_roman = "V" if ep_num == 5 else ("VI" if ep_num == 6 else ("VII" if ep_num == 7 else ("Johto VI" if ep_num == 106 else ("Johto VII" if ep_num == 107 else ("Johto VIII" if ep_num == 108 else ("Hoenn IV" if ep_num == 204 else ("Hoenn VI" if ep_num == 206 else ("Hoenn VIII" if ep_num == 208 else str(ep_num)))))))))
 					battle_title_lbl.text = "🗺️ Ep. %s (%s): %s (%d/%d)" % [ep_roman, r_name, trainer_name, GameData.adventure_current_stage, total_stages]
 				else:
 					battle_title_lbl.text = "🗺️ Ep. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name, GameData.adventure_current_stage, total_stages]
@@ -1376,12 +1425,15 @@ func start_new_game() -> void:
 		elif GameData.campaign_submode == "ADVENTURE":
 			var total_stages = GameData.get_adventure_total_stages(GameData.adventure_current_episode)
 			var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
-			var trainer_name = stage_info.get("trainer_name", "Trainer")
-			if GameData.adventure_current_episode in [5, 6]:
-				var cur_route = GameData.adventure_ep5_selected_route if GameData.adventure_current_episode == 5 else GameData.adventure_ep6_selected_route
+			var is_es = (GameData.settings_language == "es")
+			var trainer_name = str(stage_info.get("trainer_name_es" if is_es else "trainer_name", stage_info.get("trainer_name", "Trainer")))
+			var ep_info = GameData.get_adventure_episode_info(GameData.adventure_current_episode)
+			if ep_info.get("is_branching", false):
+				var cur_route = GameData.get_adventure_selected_route(GameData.adventure_current_episode)
 				var r_info = GameData.get_adventure_route_info(GameData.adventure_current_episode, cur_route)
-				var r_name = str(r_info.get("name_es", r_info.get("name", "Ruta")))
-				var ep_roman = "V" if GameData.adventure_current_episode == 5 else "VI"
+				var r_name = str(r_info.get("name_es" if is_es else "name", r_info.get("name", "Route")))
+				var ep_num = GameData.adventure_current_episode
+				var ep_roman = "V" if ep_num == 5 else ("VI" if ep_num == 6 else ("VII" if ep_num == 7 else ("Johto VI" if ep_num == 106 else ("Johto VII" if ep_num == 107 else ("Johto VIII" if ep_num == 108 else ("Hoenn IV" if ep_num == 204 else ("Hoenn VI" if ep_num == 206 else ("Hoenn VIII" if ep_num == 208 else str(ep_num)))))))))
 				mode_str = "ADVENTURE EP. %s - %s: %s (%d/%d)" % [ep_roman, r_name.to_upper(), trainer_name.to_upper(), GameData.adventure_current_stage, total_stages]
 			else:
 				mode_str = "ADVENTURE EP. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name.to_upper(), GameData.adventure_current_stage, total_stages]
@@ -1391,12 +1443,18 @@ func start_new_game() -> void:
 	log_action("[b]%s![/b]\nYour Leader: [b]%s[/b] enters the field.\nRival sends out: [b]%s[/b]." % [mode_str, active_p.name, active_e.name])
 	if GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
 		var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
-		var intro_dialogue = stage_info.get("intro", "")
-		var trainer_name = stage_info.get("trainer_name", "Opponent")
+		var is_es = (GameData.settings_language == "es")
+		var intro_dialogue = str(stage_info.get("intro_es" if is_es else "intro", stage_info.get("intro", "")))
+		var trainer_name = str(stage_info.get("trainer_name_es" if is_es else "trainer_name", stage_info.get("trainer_name", "Opponent")))
 		if intro_dialogue != "":
 			log_action("💬 [b]%s[/b]: \"%s\"" % [trainer_name, intro_dialogue])
 	if active_e.has_passive and active_e.passive_name == "String Shot":
 		log_action("✨ Weedle's [color=cyan]String Shot[/color] passively reduces foe's Speed by 1.")
+	_trigger_entry_passives(active_p, active_e, true)
+	_trigger_entry_passives(active_e, active_p, false)
+	
+	if GameData.is_campaign_mode and not GameData.is_tutorial_mode:
+		GameData.record_campaign_battle_participation()
 	
 	turn_badge.text = "STARTING BATTLE..."
 	turn_badge.modulate = Color(1.0, 0.85, 0.2)
@@ -1479,12 +1537,18 @@ func start_new_round() -> void:
 	var e_spd = get_pokemon_effective_speed(e, p)
 	
 	var initiative_msg = ""
-	if p_spd > e_spd:
+	var p_is_faster = (p_spd < e_spd) if (trick_room_turns > 0) else (p_spd > e_spd)
+	var e_is_faster = (e_spd < p_spd) if (trick_room_turns > 0) else (e_spd > p_spd)
+	var tr_tag = " [color=purple]🌀 TRICK ROOM ACTIVE (%d rds left)![/color]" % trick_room_turns if trick_room_turns > 0 else ""
+	
+	if p_is_faster:
 		round_order = ["PLAYER", "ENEMY"]
-		initiative_msg = "[b]━━━ ROUND %d ━━━[/b]\n[b]%s[/b] is faster (SPD %d vs %d) and [color=green]takes the first turn[/color]." % [round_number, p.name, p_spd, e_spd]
-	elif e_spd > p_spd:
+		var reason = "is slower and acts first via Trick Room" if trick_room_turns > 0 else "is faster and takes the first turn"
+		initiative_msg = "[b]━━━ ROUND %d ━━━[/b]%s\n[b]%s[/b] (SPD %d vs %d) %s." % [round_number, tr_tag, p.name, p_spd, e_spd, reason]
+	elif e_is_faster:
 		round_order = ["ENEMY", "PLAYER"]
-		initiative_msg = "[b]━━━ ROUND %d ━━━[/b]\nRival [b]%s[/b] is faster (SPD %d vs %d) and [color=red]takes the first turn[/color]." % [round_number, e.name, e_spd, p_spd]
+		var reason = "is slower and acts first via Trick Room" if trick_room_turns > 0 else "is faster and takes the first turn"
+		initiative_msg = "[b]━━━ ROUND %d ━━━[/b]%s\nRival [b]%s[/b] (SPD %d vs %d) %s." % [round_number, tr_tag, e.name, e_spd, p_spd, reason]
 	else:
 		var coin = randf() < 0.5
 		if GameData.is_online_pvp:
@@ -1494,10 +1558,10 @@ func start_new_round() -> void:
 			coin = true
 		if coin:
 			round_order = ["PLAYER", "ENEMY"]
-			initiative_msg = "[b]━━━ ROUND %d ━━━[/b]\nSpeed Tie (SPD %d vs %d)! 🪙 [color=yellow]Coin Toss:[/color] [b]%s[/b] wins the tiebreaker and takes the first turn." % [round_number, p_spd, e_spd, p.name]
+			initiative_msg = "[b]━━━ ROUND %d ━━━[/b]%s\nSpeed Tie (SPD %d vs %d)! 🪙 [color=yellow]Coin Toss:[/color] [b]%s[/b] wins the tiebreaker and takes the first turn." % [round_number, tr_tag, p_spd, e_spd, p.name]
 		else:
 			round_order = ["ENEMY", "PLAYER"]
-			initiative_msg = "[b]━━━ ROUND %d ━━━[/b]\nSpeed Tie (SPD %d vs %d)! 🪙 [color=yellow]Coin Toss:[/color] Rival [b]%s[/b] wins the tiebreaker and takes the first turn." % [round_number, p_spd, e_spd, e.name]
+			initiative_msg = "[b]━━━ ROUND %d ━━━[/b]%s\nSpeed Tie (SPD %d vs %d)! 🪙 [color=yellow]Coin Toss:[/color] Rival [b]%s[/b] wins the tiebreaker and takes the first turn." % [round_number, tr_tag, p_spd, e_spd, e.name]
 			
 	log_action(initiative_msg)
 	update_ui()
@@ -1511,17 +1575,23 @@ func start_new_round() -> void:
 		if GameData.tutorial_combat_phase == 2:
 			_show_tutorial_callout(
 				"step1",
-				"TUTORIAL • PHASE 2",
-				"🎒 Using Items & Potions in Battle",
-				"You can use battle items from your Bag during your turn!\n\n• Tap [b]Bag 🎒[/b] below to view your inventory.\n• Select a [b]Potion[/b] to heal your active or benched Pokémon (+10 HP) without losing your attack action!\n• You can also use other battle items like Remedies or Ethers when needed.",
-				"Next ➡️",
+				GameData.tr_text("TUTORIAL • PHASE 2", "TUTORIAL • FASE 2"),
+				GameData.tr_text("🎒 Using Items & Potions in Battle", "🎒 Usar Objetos y Pociones en Batalla"),
+				GameData.tr_text(
+					"You can use battle items from your Bag during your turn!\n\n• Tap [b]Bag 🎒[/b] below to view your inventory.\n• Select a [b]Potion[/b] to heal your active or benched Pokémon (+10 HP) without losing your attack action!\n• You can also use other battle items like Remedies or Ethers when needed.",
+					"¡Puedes usar objetos de combate desde tu Mochila durante tu turno!\n\n• Toca [b]Mochila 🎒[/b] abajo para ver tu inventario.\n• ¡Selecciona una [b]Poción[/b] para curar a tu Pokémon activo o de la banca (+10 HP) sin perder tu acción de ataque!\n• También puedes usar otros objetos como Antídotos o Éteres cuando sea necesario."
+				),
+				GameData.tr_text("Next ➡️", "Siguiente ➡️"),
 				func():
 					_show_tutorial_callout(
 						"step2",
-						"TUTORIAL • PHASE 2",
-						"🔄 Bench Pokémon & Switching",
-						"You now have a teammate waiting on your [b]Bench[/b]!\n\n• Check the [b]Bench Row[/b] at the bottom.\n• If your active Pokémon takes heavy damage or you need a tactical switch, tap the benched Pokémon to swap them into the battle.\n• Benched Pokémon slowly recharge Energy while waiting!",
-						"Let's Fight! ⚔️",
+						GameData.tr_text("TUTORIAL • PHASE 2", "TUTORIAL • FASE 2"),
+						GameData.tr_text("🔄 Bench Pokémon & Switching", "🔄 Pokémon en Banca y Relevo"),
+						GameData.tr_text(
+							"You now have a teammate waiting on your [b]Bench[/b]!\n\n• Check the [b]Bench Row[/b] at the bottom.\n• If your active Pokémon takes heavy damage or you need a tactical switch, tap the benched Pokémon to swap them into the battle.\n• Benched Pokémon slowly recharge Energy while waiting!",
+							"¡Ahora tienes un compañero esperando en tu [b]Banca[/b]!\n\n• Revisa la [b]Fila de la Banca[/b] en la parte inferior.\n• Si tu Pokémon activo recibe mucho daño o necesitas un relevo táctico, toca al Pokémon en la banca para intercambiarlo al combate.\n• ¡Los Pokémon en la banca recargan Energía lentamente mientras esperan!"
+						),
+						GameData.tr_text("Let's Fight! ⚔️", "¡A Luchar! ⚔️"),
 						func():
 							var t_next = get_tree().create_timer(0.6)
 							t_next.timeout.connect(execute_round_turn)
@@ -1531,17 +1601,23 @@ func start_new_round() -> void:
 		else:
 			_show_tutorial_callout(
 				"step1",
-				"TUTORIAL • STEP 1 OF 5",
-				"🎓 Welcome to Pokémon Combat!",
-				"This is a tactical card battle arena.\n\n• [b]Active Pokémon[/b]: Your [color=coral]%s[/color] is at the bottom; rival [color=lightgreen]%s[/color] is at the top.\n• [b]HP Bar (Hit Points)[/b]: Displays remaining life. When a Pokémon's HP reaches 0, it is knocked out (KO)!\n• [b]⚡ Energy Bar[/b]: Required to power attacks and special moves." % [p.name, e.name],
-				"Next ➡️",
+				GameData.tr_text("TUTORIAL • STEP 1 OF 5", "TUTORIAL • PASO 1 DE 5"),
+				GameData.tr_text("🎓 Welcome to Pokémon Combat!", "🎓 ¡Bienvenido al Combate Pokémon!"),
+				GameData.tr_text(
+					"This is a tactical card battle arena.\n\n• [b]Active Pokémon[/b]: Your [color=coral]%s[/color] is at the bottom; rival [color=lightgreen]%s[/color] is at the top.\n• [b]HP Bar (Hit Points)[/b]: Displays remaining life. When a Pokémon's HP reaches 0, it is knocked out (KO)!\n• [b]⚡ Energy Bar[/b]: Required to power attacks and special moves." % [p.name, e.name],
+					"Esta es una arena táctica de combate con cartas.\n\n• [b]Pokémon Activo[/b]: Tu [color=coral]%s[/color] está abajo; el rival [color=lightgreen]%s[/color] está arriba.\n• [b]Barra de HP (Puntos de Salud)[/b]: Muestra la vida restante. ¡Cuando el HP llega a 0, queda fuera de combate (KO)!\n• [b]⚡ Barra de Energía[/b]: Necesaria para ejecutar ataques y movimientos especiales." % [p.name, e.name]
+				),
+				GameData.tr_text("Next ➡️", "Siguiente ➡️"),
 				func():
 					_show_tutorial_callout(
 						"step2",
-						"TUTORIAL • STEP 2 OF 5",
-						"⏩ Speed & Initiative Priority",
-						"Every round starts with an initiative check based on each Pokémon's [b]Speed (SPD)[/b].\n\n• The faster Pokémon acts first!\n• In a tie, a 🪙 [b]Coin Toss[/b] decides who gets the first turn.\n\nYour %s won the initiative and will attack first this round!" % p.name,
-						"Got It! ➡️",
+						GameData.tr_text("TUTORIAL • STEP 2 OF 5", "TUTORIAL • PASO 2 DE 5"),
+						GameData.tr_text("⏩ Speed & Initiative Priority", "⏩ Velocidad y Prioridad de Iniciativa"),
+						GameData.tr_text(
+							"Every round starts with an initiative check based on each Pokémon's [b]Speed (SPD)[/b].\n\n• The faster Pokémon acts first!\n• In a tie, a 🪙 [b]Coin Toss[/b] decides who gets the first turn.\n\nYour %s won the initiative and will attack first this round!" % p.name,
+							"Cada ronda comienza con una verificación de iniciativa basada en la [b]Velocidad (SPD)[/b] de cada Pokémon.\n\n• ¡El Pokémon más rápido actúa primero!\n• En caso de empate, una 🪙 [b]Moneda al Aire[/b] decide quién toma el primer turno.\n\n¡Tu %s ganó la iniciativa y atacará primero esta ronda!" % p.name
+						),
+						GameData.tr_text("Got It! ➡️", "¡Entendido! ➡️"),
 						func():
 							var t_next = get_tree().create_timer(0.6)
 							t_next.timeout.connect(execute_round_turn)
@@ -1631,7 +1707,8 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 	# 3. Must Rest (Hyper Beam / Giga Impact / Mind Bending)
 	if actor.rest_next_turn:
 		actor.rest_next_turn = false
-		var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
+		# Fatigue recharge: only +1 Energy during forced rest to prevent infinite 25 DMG cycling
+		var rec = min(1, actor.max_energy - actor.current_energy)
 		actor.current_energy += rec
 		log_action("😴 [b]%s[/b] [color=cyan]must rest this round and recharged +%d Energy (⚡ %d/%d).[/color]" % [actor.name, rec, actor.current_energy, actor.max_energy])
 		if rec > 0:
@@ -1784,10 +1861,13 @@ func start_player_turn() -> void:
 		if GameData.tutorial_combat_phase == 2:
 			_show_tutorial_callout(
 				"step3",
-				"TUTORIAL • PHASE 2",
-				"⚡ Stage 1 Attack & Energy",
-				"Your Stage 1 Pokémon boasts higher HP, improved Speed, and devastating new moves!\n\n• Check your available Energy (⚡) on the Energy Bar.\n• If you need more Energy, tap [b]⚡ Recharge (+2 ⚡)[/b] instead of attacking.\n• Tap a move below to strike the rival!",
-				"Attack! ⚔️",
+				GameData.tr_text("TUTORIAL • PHASE 2", "TUTORIAL • FASE 2"),
+				GameData.tr_text("⚡ Stage 1 Attack & Energy", "⚡ Ataques de Fase 1 y Energía"),
+				GameData.tr_text(
+					"Your Stage 1 Pokémon boasts higher HP, improved Speed, and devastating new moves!\n\n• Check your available Energy (⚡) on the Energy Bar.\n• If you need more Energy, tap [b]⚡ Recharge (+2 ⚡)[/b] instead of attacking.\n• Tap a move below to strike the rival!",
+					"¡Tu Pokémon de Fase 1 cuenta con mayor HP, mejor Velocidad y nuevos ataques devastadores!\n\n• Revisa tu Energía disponible (⚡) en la Barra de Energía.\n• Si necesitas más Energía, pulsa [b]⚡ Recargar (+2 ⚡)[/b] en vez de atacar.\n• ¡Toca un movimiento abajo para golpear al rival!"
+				),
+				GameData.tr_text("Attack! ⚔️", "¡Al Ataque! ⚔️"),
 				func():
 					can_player_act = true
 					update_ui()
@@ -1800,15 +1880,24 @@ func start_player_turn() -> void:
 				var m_name = str(m.name)
 				var m_dmg = int(m.base_damage)
 				var m_cost = int(m.cost)
-				move_lines.append("• [b]%s[/b]: Deals %d DMG. (Cost: %d ⚡)" % [m_name, m_dmg, m_cost])
+				if GameData.is_spanish():
+					move_lines.append("• [b]%s[/b]: Inflige %d DMG. (Coste: %d ⚡)" % [m_name, m_dmg, m_cost])
+				else:
+					move_lines.append("• [b]%s[/b]: Deals %d DMG. (Cost: %d ⚡)" % [m_name, m_dmg, m_cost])
 			var moves_desc = "\n".join(move_lines)
-			var type_hint = "⭐ [color=yellow][b]Type Weakness (+2 DMG):[/b][/color] %s is weak to %s attacks! Using your effective move triggers the Weakness bonus for [b]+2 EXTRA DAMAGE[/b]!" % [e.name, p.type]
+			var type_hint = GameData.tr_text(
+				"⭐ [color=yellow][b]Type Weakness (+2 DMG):[/b][/color] %s is weak to %s attacks! Using your effective move triggers the Weakness bonus for [b]+2 EXTRA DAMAGE[/b]!" % [e.name, p.type],
+				"⭐ [color=yellow][b]Debilidad de Tipo (+2 DMG):[/b][/color] ¡%s es débil a los ataques de tipo %s! ¡Usar tu ataque supereficaz activa la bonificación de [b]+2 DAÑO EXTRA[/b]!" % [e.name, p.type]
+			)
 			_show_tutorial_callout(
 				"step3",
-				"TUTORIAL • STEP 3 OF 5",
-				"🔥 Moves, Energy & Type Advantage",
-				"It is your turn! Inspect your available moves below:\n\n%s\n\n%s\n\n💡 [i]Recharge:[/i] If low on energy, tap [b]⚡ Recharge (+2 ⚡)[/b] instead of attacking.\n\nTap an attack below to strike %s!" % [moves_desc, type_hint, e.name],
-				"Let's Battle! ⚔️",
+				GameData.tr_text("TUTORIAL • STEP 3 OF 5", "TUTORIAL • PASO 3 DE 5"),
+				GameData.tr_text("🔥 Moves, Energy & Type Advantage", "🔥 Movimientos, Energía y Ventaja de Tipos"),
+				GameData.tr_text(
+					"It is your turn! Inspect your available moves below:\n\n%s\n\n%s\n\n💡 [i]Recharge:[/i] If low on energy, tap [b]⚡ Recharge (+2 ⚡)[/b] instead of attacking.\n\nTap an attack below to strike %s!" % [moves_desc, type_hint, e.name],
+					"¡Es tu turno! Revisa tus movimientos disponibles abajo:\n\n%s\n\n%s\n\n💡 [i]Recarga:[/i] Si tienes poca energía, pulsa [b]⚡ Recargar (+2 ⚡)[/b] en lugar de atacar.\n\n¡Toca un ataque abajo para golpear a %s!" % [moves_desc, type_hint, e.name]
+				),
+				GameData.tr_text("Let's Battle! ⚔️", "¡A Combatir! ⚔️"),
 				func():
 					can_player_act = true
 					update_ui()
@@ -1819,10 +1908,13 @@ func start_player_turn() -> void:
 		if e and e.current_hp <= 6:
 			_show_tutorial_callout(
 				"step5",
-				"TUTORIAL • STEP 5 OF 5",
-				"💥 Delivering the Knockout!",
-				"%s is critically weakened!\n\nDepleting its remaining HP to 0 will knock it out and secure victory.\n\nWin this battle to unlock your Stage 1 evolution!" % e.name,
-				"Finish It! 🏆",
+				GameData.tr_text("TUTORIAL • STEP 5 OF 5", "TUTORIAL • PASO 5 DE 5"),
+				GameData.tr_text("💥 Delivering the Knockout!", "💥 ¡El Golpe de Gracia!"),
+				GameData.tr_text(
+					"%s is critically weakened!\n\nDepleting its remaining HP to 0 will knock it out and secure victory.\n\nWin this battle to unlock your Stage 1 evolution!" % e.name,
+					"¡%s está en estado crítico!\n\nReducir sus PS restantes a 0 lo dejará fuera de combate y te asegurará la victoria.\n\n¡Gana esta batalla para desbloquear la evolución de Fase 1!" % e.name
+				),
+				GameData.tr_text("Finish It! 🏆", "¡El Remate! 🏆"),
 				func():
 					can_player_act = true
 					update_ui()
@@ -1908,10 +2000,13 @@ func start_enemy_turn() -> void:
 		if GameData.is_tutorial_mode and round_number == 1 and not tutorial_steps_shown.get("step4", false):
 			_show_tutorial_callout(
 				"step4",
-				"TUTORIAL • STEP 4 OF 5",
-				"🛡️ Rival Turn & Combat Log",
-				"Now it's %s's turn to counterattack!\n\nKeep an eye on the [b]Combat Log[/b] in the center of the arena. It tracks every move, damage calculations, type effectiveness, and coin tosses in real time." % e.name,
-				"Watch Rival Turn ➡️",
+				GameData.tr_text("TUTORIAL • STEP 4 OF 5", "TUTORIAL • PASO 4 DE 5"),
+				GameData.tr_text("🛡️ Rival Turn & Combat Log", "🛡️ Turno Rival y Registro de Combate"),
+				GameData.tr_text(
+					"Now it's %s's turn to counterattack!\n\nKeep an eye on the [b]Combat Log[/b] in the center of the arena. It tracks every move, damage calculations, type effectiveness, and coin tosses in real time." % e.name,
+					"¡Ahora es el turno de contraataque de %s!\n\nPresta atención al [b]Registro de Combate[/b] en el centro de la arena. Muestra cada movimiento, cálculos de daño, efectividad de tipos y lanzamientos de moneda en tiempo real." % e.name
+				),
+				GameData.tr_text("Watch Rival Turn ➡️", "Ver Turno Rival ➡️"),
 				func():
 					var t_ai = get_tree().create_timer(1.0)
 					t_ai.timeout.connect(execute_enemy_ai)
@@ -1964,11 +2059,11 @@ func _finish_round() -> void:
 	if sandstorm_turns > 0:
 		sandstorm_turns -= 1
 		log_action("🌪️ [color=yellow]Sandstorm rages! (%d rounds remaining)[/color]" % sandstorm_turns)
-		if active_p and active_p.type != "GROUND":
+		if active_p and active_p.type != "GROUND" and not (active_p.has_passive and active_p.passive_name == "Levitate"):
 			active_p.current_hp = max(0, active_p.current_hp - 2)
 			spawn_floating_combat_number(player_card_img, -2, false)
 			play_damage_hit(player_card_img, "GROUND", 2)
-		if active_e and active_e.type != "GROUND":
+		if active_e and active_e.type != "GROUND" and not (active_e.has_passive and active_e.passive_name == "Levitate"):
 			active_e.current_hp = max(0, active_e.current_hp - 2)
 			if active_e.name == "Crystal Onix":
 				register_boss_damage(2)
@@ -1982,6 +2077,12 @@ func _finish_round() -> void:
 		grassy_terrain_turns -= 1
 		if grassy_terrain_turns == 0:
 			log_action("🌿 [color=green]The Grassy Terrain faded away.[/color]")
+
+	# Trick Room countdown
+	if trick_room_turns > 0:
+		trick_room_turns -= 1
+		if trick_room_turns == 0:
+			log_action("🌀 [color=purple]The twisted dimensions returned to normal! Trick Room ended.[/color]")
 
 	# Constrict (Sand Tomb 2 DMG, Wrap 1 DMG - capped at constricted_turns)
 	for pkmn in [active_p, active_e]:
@@ -2039,7 +2140,10 @@ func _finish_round() -> void:
 				if pkmn.paralyze_turns <= 0:
 					pkmn.is_paralyzed = false
 					pkmn.paralyze_turns = 0
-					log_action("✨ [b]%s[/b] [color=green]recovered from paralysis![/color]" % pkmn.name)
+					pkmn.immune_paralyze_rounds = 1
+					log_action("✨ [b]%s[/b] [color=green]recovered from paralysis and gained 1 round Paralysis immunity![/color]" % pkmn.name)
+			if pkmn.immune_paralyze_rounds > 0 and not pkmn.is_paralyzed:
+				pkmn.immune_paralyze_rounds -= 1
 			if pkmn.immune_sleep_rounds > 0:
 				pkmn.immune_sleep_rounds -= 1
 		
@@ -2076,7 +2180,7 @@ func _is_status_move_redundant(move_data, target) -> bool:
 	if move_data.effect_type == "SLEEP":
 		return (target.is_asleep_turns > 0 or target.immune_sleep_rounds > 0)
 	if move_data.effect_type == "PARALYZE":
-		return (target.is_paralyzed or target.paralyze_turns > 0)
+		return (target.is_paralyzed or target.paralyze_turns > 0 or target.immune_paralyze_rounds > 0)
 	if move_data.effect_type == "BURN" or move_data.boost_applies_burn:
 		return (target.burn_turns > 0)
 	if move_data.effect_type == "POISON" or move_data.causes_poison:
@@ -2141,10 +2245,12 @@ func enemy_do_switch(target_idx: int) -> void:
 		current.foe_damage_debuff = 0
 		current.foe_damage_debuff_turns = 0
 		current.temp_speed_mod = 0
+		_cleanse_pokemon_status(current)
 		
 	active_enemy_idx = target_idx
 	reset_selected_energy()
 	last_enemy_switch_round = round_number
+	_trigger_entry_passives(target_pkmn, get_active_player(), false)
 	
 	var rival_title = "Rival" if not GameData.is_campaign_mode else ("Líder Giovanni" if (GameData.campaign_submode == "ADVENTURE" and GameData.adventure_current_episode == 7) else "Rival")
 	log_action("🔄 [b]%s[/b] withdrew [b]%s[/b] due to elemental disadvantage and sent out [b]%s[/b]!" % [rival_title, current.name, target_pkmn.name])
@@ -2409,7 +2515,9 @@ func _get_status_proc_chance(move, boosted: bool, requires_boost: bool) -> float
 		return 1.0 if boosted else 0.0
 	var desc_l = move.description.to_lower()
 	var chance_pct = -1.0
-	if "30% chance to " in desc_l or "has a 30%" in desc_l or (move.effect_type == "FLINCH" and "30%" in desc_l):
+	if "35% chance to " in desc_l or "has a 35%" in desc_l or "35%" in desc_l:
+		chance_pct = 0.35
+	elif "30% chance to " in desc_l or "has a 30%" in desc_l or (move.effect_type == "FLINCH" and "30%" in desc_l):
 		chance_pct = 0.30
 	elif "20% chance to " in desc_l or "has a 20%" in desc_l or (move.effect_type == "FLINCH" and "20%" in desc_l):
 		chance_pct = 0.20
@@ -2455,28 +2563,45 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 
 	# 3. Evasión / Mirage / Reflect
 	if defender.is_evasive:
-		defender.is_evasive = false
-		var ref = defender.evasive_reflects_dmg
-		defender.evasive_reflects_dmg = 0
-		if ref > 0:
-			attacker.current_hp = max(0, attacker.current_hp - ref)
-			note_text += " [color=cyan]Reflect evaded attack and dealt %d counter DMG![/color]" % ref
-			spawn_floating_combat_number(attacker_visual, -ref, false)
-			play_damage_hit(attacker_visual, "NORMAL", ref)
+		if move.effect_type == "CANNOT_MISS" or move.name in ["Shock Wave", "Magnet Bomb", "Vital Throw"]:
+			note_text += " [color=cyan]Cannot Miss (pierced evasion)![/color]"
 		else:
-			note_text += " [color=cyan]The attack was completely evaded![/color]"
-		log_action("[b]%s[/b] used [color=cyan]%s[/color], but %s%s" % [attacker.name, move.name, defender.name, note_text])
+			defender.is_evasive = false
+			var ref = defender.evasive_reflects_dmg
+			defender.evasive_reflects_dmg = 0
+			if ref > 0:
+				attacker.current_hp = max(0, attacker.current_hp - ref)
+				note_text += " [color=cyan]Reflect evaded attack and dealt %d counter DMG![/color]" % ref
+				spawn_floating_combat_number(attacker_visual, -ref, false)
+				play_damage_hit(attacker_visual, "NORMAL", ref)
+			else:
+				note_text += " [color=cyan]The attack was completely evaded![/color]"
+			log_action("[b]%s[/b] used [color=cyan]%s[/color], but %s%s" % [attacker.name, move.name, defender.name, note_text])
+			shake_node(defender_visual)
+			update_ui()
+			check_active_faint()
+			return
+
+	# Tipo dinámico (Weather Ball) e Inmunidad por Levitación (Levitate)
+	var attack_type = move.type
+	if (move.effect_type == "WEATHER_BALL" or move.name == "Weather Ball") and is_full_energy:
+		if sandstorm_turns > 0: attack_type = "GROUND"
+		elif grassy_terrain_turns > 0: attack_type = "GRASS"
+	if defender.has_passive and defender.passive_name == "Levitate" and (attack_type == "GROUND" or move.type == "GROUND"):
+		log_action("[b]%s[/b] used [color=cyan]%s[/color], but [b]%s[/b]'s [color=cyan]Levitate[/color] makes it completely immune to Ground moves!" % [attacker.name, move.name, defender.name])
 		shake_node(defender_visual)
 		update_ui()
-		check_active_faint()
 		return
 
-	# 4. Dig (subterráneo: inmune a ataques no tipo GROUND)
-	if defender.is_digging and move.type != "GROUND":
-		log_action("[b]%s[/b] used [color=cyan]%s[/color], but [b]%s[/b] is underground via Dig and avoided the hit!" % [attacker.name, move.name, defender.name])
-		shake_node(defender_visual)
-		update_ui()
-		return
+	# 4. Dig (subterráneo: inmune a ataques no tipo GROUND, pero Earthquake impacta por x2)
+	if defender.is_digging:
+		if move.name == "Earthquake":
+			note_text += " [color=orange]Earthquake hit underground foe for DOUBLE DMG! (x2)[/color]"
+		elif move.type != "GROUND":
+			log_action("[b]%s[/b] used [color=cyan]%s[/color], but [b]%s[/b] is underground via Dig and avoided the hit!" % [attacker.name, move.name, defender.name])
+			shake_node(defender_visual)
+			update_ui()
+			return
 
 	# 5. Spite (bloqueo de movimiento)
 	if defender.lock_foe_move != "" and move.name == defender.lock_foe_move:
@@ -2484,8 +2609,8 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		update_ui()
 		return
 
-	# 6. Movimientos con probabilidad de fallo (MISS e.g. Thunder)
-	if move.effect_type == "MISS" and randf() < 0.33:
+	# 6. Movimientos con probabilidad de fallo (MISS / THUNDER)
+	if (move.effect_type in ["MISS", "THUNDER"] or move.name == "Thunder") and randf() < 0.33:
 		var refund_energy = move.cost
 		attacker.current_energy = min(attacker.max_energy, attacker.current_energy + refund_energy)
 		log_action("[b]%s[/b] used [color=cyan]%s[/color], but it [color=red]missed completely![/color] (Refunded %d Energy⚡)" % [attacker.name, move.name, refund_energy])
@@ -2560,6 +2685,12 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		raw_damage += 3
 		note_text += " [color=crimson]Furia Desatada (+3 DMG)![/color]"
 		
+	# Guts / Agallas (+3 DMG si sufre un estado alterado)
+	if attacker.has_passive and attacker.passive_name == "Guts":
+		if attacker.burn_turns > 0 or attacker.is_poisoned or attacker.is_paralyzed or attacker.is_asleep_turns > 0 or attacker.is_frozen:
+			raw_damage += 3
+			note_text += " [color=crimson]Guts (+3 DMG from status condition)![/color]"
+		
 	# Flash Cannon bono cargado
 	if attacker.shield_breaker_bonus > 0 and move.effect_type != "SHIELD_BREAKER":
 		raw_damage += attacker.shield_breaker_bonus
@@ -2595,11 +2726,14 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				raw_damage += sb_bonus
 				note_text += " [color=cyan]Snowball Boost (+%d DMG)![/color]" % sb_bonus
 
-	# Revenge y Rage (daño recibido el turno anterior)
-	if move.effect_type == "REVENGE" and attacker.took_damage_last_turn:
-		var rev_bonus = 4 if "+4" in move.description else 3
-		raw_damage += rev_bonus
-		note_text += " [color=orange]Revenge (+%d DMG)![/color]" % rev_bonus
+	# Revenge y Rage (daño recibido el turno anterior o actuar después del rival con Payback)
+	if move.effect_type == "REVENGE":
+		var is_payback = (move.name == "Payback" or "+6" in move.description)
+		var acted_second = (att_spd < def_spd)
+		if attacker.took_damage_last_turn or (is_payback and acted_second):
+			var rev_bonus = 6 if is_payback else (4 if "+4" in move.description else 3)
+			raw_damage += rev_bonus
+			note_text += " [color=orange]Revenge (+%d DMG)![/color]" % rev_bonus
 	elif move.effect_type == "RAGE" and attacker.took_damage_last_turn:
 		raw_damage += 4
 		attacker.temp_speed_mod += 1
@@ -2610,16 +2744,33 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		raw_damage += 3
 		note_text += " [color=cyan]Speed Advantage (+3 DMG)![/color]"
 
-	# Flail / Desperation (Si este PKMN tiene menos del 50% de su HP, aumenta +2 DMG)
+	# Gyro Ball (BOOST_IF_SLOWER)
+	if (move.effect_type == "BOOST_IF_SLOWER" or move.name == "Gyro Ball") and is_full_energy and att_spd < def_spd:
+		raw_damage += 5
+		note_text += " [color=cyan]Gyro Ball Momentum (+5 DMG for lower Speed)![/color]"
+
+	# Brine / Execution (EXECUTE)
+	if (move.effect_type == "EXECUTE" or move.name == "Brine") and is_full_energy:
+		if float(defender.current_hp) < (float(defender.max_hp) * 0.50):
+			raw_damage += 6
+			note_text += " [color=cyan]Brine Execution (+6 DMG for foe HP < 50%)![/color]"
+
+	# Eruption / Water Spout (FULL_HP_POWER)
+	if (move.effect_type == "FULL_HP_POWER" or move.name in ["Eruption", "Water Spout"]) and is_full_energy:
+		var hp_ratio = float(attacker.current_hp) / float(attacker.max_hp)
+		if hp_ratio >= 0.80:
+			raw_damage += 4
+			note_text += " [color=cyan]Full HP Surge (+4 DMG for HP >= 80%)![/color]"
+		elif hp_ratio < 0.50:
+			raw_damage = max(1, raw_damage - 4)
+			note_text += " [color=orange]Low HP Exhaustion (-4 DMG for HP < 50%)![/color]"
+
+	# Flail / Desperation (Si este PKMN tiene menos del 50% de su HP)
 	if move.effect_type == "DESPERATION" or move.name == "Flail":
 		if float(attacker.current_hp) < (float(attacker.max_hp) * 0.50):
-			var bonus_dmg = 2
-			if "+4" in move.description:
-				bonus_dmg = 4
-			elif "+3" in move.description:
-				bonus_dmg = 3
+			var bonus_dmg = 6 if "+6" in move.description else (4 if "+4" in move.description else (3 if "+3" in move.description else 2))
 			raw_damage += bonus_dmg
-			note_text += " [color=orange]Flail (+%d DMG for HP < 50%%)![/color]" % bonus_dmg
+			note_text += " [color=orange]Desperation (+%d DMG for HP < 50%%)![/color]" % bonus_dmg
 
 	# Sinergias con estados negativos del rival
 	if move.effect_type == "BLAZE" and defender.burn_turns > 0:
@@ -2658,12 +2809,30 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			raw_damage += type_b
 			note_text += " [color=orange]Type Bonus (+%d DMG)![/color]" % type_b
 
+	# Weather Ball (WEATHER_BALL)
+	if (move.effect_type == "WEATHER_BALL" or move.name == "Weather Ball") and is_full_energy:
+		if sandstorm_turns > 0:
+			raw_damage += 6
+			attack_type = "GROUND"
+			note_text += " [color=orange]Sandstorm Weather Ball (+6 DMG & Ground Element)![/color]"
+		elif grassy_terrain_turns > 0:
+			raw_damage += 6
+			attack_type = "GRASS"
+			note_text += " [color=green]Grassy Terrain Weather Ball (+6 DMG & Grass Element)![/color]"
+
+	# Earthquake extra vs Dig
+	if defender.is_digging and move.name == "Earthquake":
+		raw_damage *= 2
+		defender.is_digging = false
+
 	# Golpe Crítico (CRITICAL)
-	if move.effect_type == "CRITICAL" and randf() < 0.25:
-		var crit_b = 4 if "+4" in move.description else 3
-		raw_damage += crit_b
-		single_hit_crit = true
-		note_text += " [color=yellow]Critical Hit! (+%d DMG)[/color]" % crit_b
+	if move.effect_type == "CRITICAL":
+		var crit_chance = 0.35 if ("35%" in move.description or move.name in ["Crabhammer", "Psycho Cut"]) else 0.25
+		if randf() < crit_chance:
+			var crit_b = 5 if ("+5" in move.description or move.name in ["Crabhammer", "Psycho Cut"]) else (4 if "+4" in move.description else 3)
+			raw_damage += crit_b
+			single_hit_crit = true
+			note_text += " [color=yellow]Critical Hit! (+%d DMG)[/color]" % crit_b
 
 	# Tirada de dado de Pichu Shock (Thunder Shock)
 	if move.is_pichu_shock:
@@ -2680,7 +2849,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		else:
 			note_text += " [color=gray](Partial Energy: no recoil/recharge)[/color]"
 
-	# Rompe-escudos antes del cálculo de mitigación (Earthquake / Shadow Punch)
+	# Rompe-escudos antes del cálculo de mitigación (Earthquake / Shadow Ball / Shadow Punch)
 	if move.effect_type == "SHIELD_BREAKER" and is_full_energy and not effect_annulled:
 		if "shatter" in move.description.to_lower() or "shield" in move.description.to_lower():
 			if defender.shield_reduction > 0 or defender.wall_hp > 0:
@@ -2694,8 +2863,11 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if raw_damage > 0:
 		final_damage = raw_damage
 		
+		# Daño Verdadero Fijo (Sonic Boom, Night Shade)
+		if move.effect_type == "FIXED_DMG" or move.name in ["Sonic Boom", "Night Shade"]:
+			note_text += " [color=cyan]Fixed True Damage (bypasses defense & resistance)![/color]"
 		# Movimientos Adaptativos / Punto Débil (WEAK_SPOT / ADAPT)
-		if move.effect_type in ["WEAK_SPOT", "ADAPT"]:
+		elif move.effect_type in ["WEAK_SPOT", "ADAPT"]:
 			final_damage += WEAKNESS_BONUS
 			note_text += " [color=yellow]Adapted to weakness! (+%d DMG)[/color]" % WEAKNESS_BONUS
 		# Movimientos de doble o triple tipo
@@ -2715,67 +2887,84 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				final_damage = max(MIN_DAMAGE_AFTER_RESIST, final_damage - RESISTANCE_REDUCTION)
 				note_text += " [color=gray]Resisted elemental combo (-%d DMG)[/color]" % RESISTANCE_REDUCTION
 		# Tipo estándar
-		elif GameData.types_match(defender.weakness, move.type):
+		elif GameData.types_match(defender.weakness, attack_type):
 			final_damage += WEAKNESS_BONUS
 			note_text += " [color=yellow]It's super effective! (+%d DMG)[/color]" % WEAKNESS_BONUS
 			if defender.has_passive and defender.passive_name == "Protect":
 				defender.weakness = "NONE"
 				note_text += " [color=cyan]%s's Protect removes its weakness for the rest of battle![/color]" % defender.name
-		elif GameData.is_attack_resisted(defender.type, defender.resistant, move.type):
+		elif GameData.is_attack_resisted(defender.type, defender.resistant, attack_type):
 			final_damage = max(MIN_DAMAGE_AFTER_RESIST, final_damage - RESISTANCE_REDUCTION)
-			var is_same_type_resist = (GameData.normalize_type_key(move.type) == GameData.normalize_type_key(defender.type)) and not GameData.types_match(defender.resistant, move.type)
+			var is_same_type_resist = (GameData.normalize_type_key(attack_type) == GameData.normalize_type_key(defender.type)) and not GameData.types_match(defender.resistant, attack_type)
 			if is_same_type_resist:
 				note_text += " [color=gray]It's not very effective... Same-type resistance (-%d DMG)[/color]" % RESISTANCE_REDUCTION
 			else:
 				note_text += " [color=gray]It's not very effective... (-%d DMG)[/color]" % RESISTANCE_REDUCTION
 
-		# 10. Reducciones y Pasivas defensivas
-		# Charm (Pichu)
-		if defender.has_passive and defender.passive_name == "Charm" and move.type == "NORMAL":
-			final_damage = max(1, final_damage - 1)
-			note_text += " [color=pink]Charm reduces 1 Normal DMG![/color]"
-			
-		# Envenenamiento del atacante
-		if attacker.is_poisoned:
-			final_damage = max(1, final_damage - 1)
-			note_text += " [color=purple](Poison: -1 DMG)[/color]"
-			
-		# Debilitamiento por Smokescreen/Sand Attack/Fissure
-		if attacker.foe_damage_debuff > 0:
-			final_damage = max(1, final_damage - attacker.foe_damage_debuff)
-			note_text += " [color=gray](Debuff: -%d DMG)[/color]" % attacker.foe_damage_debuff
-			
-		# Escudo / Velo / Bloqueo
-		if defender.shield_reduction > 0:
-			final_damage = max(0, final_damage - defender.shield_reduction)
-			note_text += " [color=blue](Shield absorbed %d DMG)[/color]" % defender.shield_reduction
-			if defender.shield_turns == -1:
-				defender.shield_reduction = 0
-				defender.shield_turns = 0
-			
-		# Slimy (Ditto)
-		if defender.has_passive and defender.passive_name == "Slimy":
-			final_damage = max(1, int(ceil(final_damage * 0.5)))
-			note_text += " [color=pink]Slimy takes 50% DMG![/color]"
-			
-		# Light Screen (Wall)
-		if defender.wall_hp > 0:
-			if final_damage <= defender.wall_hp:
-				defender.wall_hp -= final_damage
-				note_text += " [color=cyan]Light Screen absorbed %d DMG (%d HP left)![/color]" % [final_damage, defender.wall_hp]
-				final_damage = 0
-			else:
-				final_damage -= defender.wall_hp
-				defender.wall_hp = 0
-				attacker.current_hp = max(0, attacker.current_hp - 4)
-				note_text += " [color=cyan]Light Screen shattered and dealt 4 counter DMG![/color]"
-				spawn_floating_combat_number(attacker_visual, -4, false)
-				play_damage_hit(attacker_visual, "PSYCHIC", 4)
+		# 10. Reducciones y Pasivas defensivas (omitidas si es daño verdadero fijo)
+		if move.effect_type != "FIXED_DMG" and not (move.name in ["Sonic Boom", "Night Shade"]):
+			# Charm (Pichu)
+			if defender.has_passive and defender.passive_name == "Charm" and move.type == "NORMAL":
+				final_damage = max(1, final_damage - 1)
+				note_text += " [color=pink]Charm reduces 1 Normal DMG![/color]"
+				
+			# Envenenamiento del atacante
+			if attacker.is_poisoned:
+				if not (attacker.has_passive and attacker.passive_name == "Guts"):
+					final_damage = max(1, final_damage - 1)
+					note_text += " [color=purple](Poison: -1 DMG)[/color]"
+				else:
+					note_text += " [color=crimson](Guts ignores Poison penalty)[/color]"
+				
+			# Debilitamiento por Smokescreen/Sand Attack/Fissure
+			if attacker.foe_damage_debuff > 0:
+				final_damage = max(1, final_damage - attacker.foe_damage_debuff)
+				note_text += " [color=gray](Debuff: -%d DMG)[/color]" % attacker.foe_damage_debuff
+				
+			# Escudo / Velo / Bloqueo
+			if defender.shield_reduction > 0:
+				final_damage = max(0, final_damage - defender.shield_reduction)
+				note_text += " [color=blue](Shield absorbed %d DMG)[/color]" % defender.shield_reduction
+				if defender.shield_turns == -1:
+					defender.shield_reduction = 0
+					defender.shield_turns = 0
+				
+			# Slimy (Ditto)
+			if defender.has_passive and defender.passive_name == "Slimy":
+				final_damage = max(1, int(ceil(final_damage * 0.5)))
+				note_text += " [color=pink]Slimy takes 50% DMG![/color]"
+				
+			# Light Screen (Wall)
+			if defender.wall_hp > 0:
+				if final_damage <= defender.wall_hp:
+					defender.wall_hp -= final_damage
+					note_text += " [color=cyan]Light Screen absorbed %d DMG (%d HP left)![/color]" % [final_damage, defender.wall_hp]
+					final_damage = 0
+				else:
+					final_damage -= defender.wall_hp
+					defender.wall_hp = 0
+					attacker.current_hp = max(0, attacker.current_hp - 4)
+					note_text += " [color=cyan]Light Screen shattered and dealt 4 counter DMG![/color]"
+					spawn_floating_combat_number(attacker_visual, -4, false)
+					play_damage_hit(attacker_visual, "PSYCHIC", 4)
 
 	# 11. Aplicar daño y secuelas
 	var defender_prev_hp: int = defender.current_hp
-	defender.current_hp = max(0, defender.current_hp - final_damage)
-	effective_damage = max(0, defender_prev_hp - defender.current_hp)
+	if (move.effect_type == "FALSE_SWIPE" or move.name == "False Swipe") and final_damage >= defender_prev_hp:
+		defender.current_hp = 1
+		effective_damage = max(0, defender_prev_hp - 1)
+		note_text += " [color=yellow]False Swipe spared foe with 1 HP![/color]"
+		if GameData.is_campaign_mode and defender_prev_hp <= 5:
+			GameData.add_active_campaign_gold(2)
+			note_text += " [color=gold](+2 G restraint bonus!)[/color]"
+	elif defender.has_passive and defender.passive_name == "Sturdy" and defender_prev_hp == defender.max_hp and final_damage >= defender_prev_hp:
+		defender.current_hp = 1
+		effective_damage = max(0, defender_prev_hp - 1)
+		note_text += " [color=yellow]%s's Sturdy endured the lethal blow with 1 HP![/color]" % defender.name
+		spawn_floating_combat_text(defender_visual, "Sturdy!", Color("#facc15"))
+	else:
+		defender.current_hp = max(0, defender.current_hp - final_damage)
+		effective_damage = max(0, defender_prev_hp - defender.current_hp)
 	defender.took_damage_last_turn = (final_damage > 0)
 	if defender.name == "Crystal Onix" and final_damage > 0:
 		register_boss_damage(final_damage)
@@ -2789,7 +2978,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				target_team[b_idx].current_hp = max(0, target_team[b_idx].current_hp - 3)
 				splash_names.append(target_team[b_idx].name)
 		if not splash_names.is_empty():
-			note_text += " [color=cyan]Crystal Blast blasted the bench (-3 DMG to %s)![/color]" % [", ".join(splash_names)]
+			note_text += " [color=cyan]%s splashed the bench (-3 DMG to %s)![/color]" % [move.name, ", ".join(splash_names)]
 	
 	# Descongelación por daño de Fuego
 	if defender.is_frozen and (move.type == "FIRE" or move.effect_type == "BURN" or (boosted and move.boost_applies_burn)):
@@ -2819,7 +3008,10 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if move.effect_type == "RECOIL" and final_damage > 0:
 		var avoid_recoil = false
 		var recoil_pct = 0.25
-		if move.name == "Flare Blitz":
+		if attacker.has_passive and attacker.passive_name == "Rock Head":
+			avoid_recoil = true
+			note_text += " [color=cyan]%s's Rock Head absorbed all recoil damage![/color]" % attacker.name
+		elif move.name == "Flare Blitz":
 			recoil_pct = 0.30
 			avoid_recoil = (defender.burn_turns > 0)
 		else:
@@ -2854,6 +3046,35 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		attacker.shield_breaker_bonus = 4
 		note_text += " [color=yellow]Flash Cannon charged +4 DMG for next attack![/color]"
 
+	# Hurto de Energía (STEAL_ENERGY e.g. Covet / Thief)
+	if (move.effect_type == "STEAL_ENERGY" or move.name in ["Covet", "Thief"]) and not effect_annulled and is_full_energy:
+		var stolen = min(1, defender.current_energy)
+		if stolen > 0:
+			defender.current_energy = max(0, defender.current_energy - stolen)
+			attacker.current_energy = min(attacker.max_energy, attacker.current_energy + stolen)
+			note_text += " [color=cyan]Stole 1 Energy⚡ from %s![/color]" % defender.name
+		else:
+			note_text += " [color=gray](Foe had no energy to steal)[/color]"
+
+	# Forzar Cambio a Banca (FORCE_SWITCH e.g. Dragon Tail)
+	if (move.effect_type == "FORCE_SWITCH" or move.name == "Dragon Tail") and final_damage > 0 and not effect_annulled and is_full_energy:
+		var is_foe_enemy = (defender == get_active_enemy())
+		var benched_indices = get_benched_enemy_indices() if is_foe_enemy else get_benched_player_indices()
+		var target_team = enemy_team if is_foe_enemy else player_team
+		var valid_candidates: Array[int] = []
+		for b_idx in benched_indices:
+			if b_idx < target_team.size() and target_team[b_idx].current_hp > 0:
+				valid_candidates.append(b_idx)
+		if not valid_candidates.is_empty():
+			var swap_idx = valid_candidates.pick_random()
+			note_text += " [color=orange]Dragon Tail forced %s to switch to %s![/color]" % [defender.name, target_team[swap_idx].name]
+			if is_foe_enemy:
+				enemy_do_switch(swap_idx)
+			else:
+				var slot_idx = benched_indices.find(swap_idx)
+				if slot_idx != -1:
+					_on_switch_pressed(slot_idx)
+
 	# 12. Aplicación de Estados y Efectos Secundarios (si no fue anulado por Amnesia y con energía completa)
 	if not effect_annulled and is_full_energy:
 		var desc_l = move.description.to_lower()
@@ -2875,6 +3096,13 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				var def_overlay = player_status_overlay if defender == get_active_player() else enemy_status_overlay
 				if def_overlay:
 					def_overlay.trigger_burn_effect()
+				if defender.has_passive and defender.passive_name == "Synchronize" and attacker.burn_turns <= 0:
+					attacker.burn_turns = 2
+					attacker.burn_dmg = defender.burn_dmg
+					note_text += " [color=magenta]%s's Synchronize mirrored BURN back to %s![/color]" % [defender.name, attacker.name]
+					var att_overlay = player_status_overlay if attacker == get_active_player() else enemy_status_overlay
+					if att_overlay:
+						att_overlay.trigger_burn_effect()
 			
 		# Envenenamiento
 		if move.effect_type == "POISON" and _roll_status_proc(move, boosted, requires_boost_for_status):
@@ -2887,6 +3115,12 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				var def_overlay = player_status_overlay if defender == get_active_player() else enemy_status_overlay
 				if def_overlay:
 					def_overlay.trigger_poison_effect()
+				if defender.has_passive and defender.passive_name == "Synchronize" and not attacker.is_poisoned:
+					attacker.is_poisoned = true
+					note_text += " [color=magenta]%s's Synchronize mirrored POISON back to %s![/color]" % [defender.name, attacker.name]
+					var att_overlay = player_status_overlay if attacker == get_active_player() else enemy_status_overlay
+					if att_overlay:
+						att_overlay.trigger_poison_effect()
 		elif move.causes_poison or move.effect_type == "POISON_IF_FASTER":
 			if att_spd > def_spd:
 				if defender.is_poisoned:
@@ -2898,6 +3132,12 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 					var def_overlay = player_status_overlay if defender == get_active_player() else enemy_status_overlay
 					if def_overlay:
 						def_overlay.trigger_poison_effect()
+					if defender.has_passive and defender.passive_name == "Synchronize" and not attacker.is_poisoned:
+						attacker.is_poisoned = true
+						note_text += " [color=magenta]%s's Synchronize mirrored POISON back to %s![/color]" % [defender.name, attacker.name]
+						var att_overlay = player_status_overlay if attacker == get_active_player() else enemy_status_overlay
+						if att_overlay:
+							att_overlay.trigger_poison_effect()
 			else:
 				note_text += " [color=gray](No poison: foe is not slower, SPD %d vs %d)[/color]" % [def_spd, att_spd]
 				
@@ -2934,15 +3174,22 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				defender.is_asleep_turns = 2
 				note_text += " [color=lightblue]Put foe to SLEEP (2 rounds)![/color]"
 			
-		# Parálisis (PARALYZE)
-		if move.effect_type == "PARALYZE" and _roll_status_proc(move, boosted, requires_boost_for_status):
-			if defender.is_paralyzed or defender.paralyze_turns > 0:
+		# Parálisis (PARALYZE / THUNDER)
+		if (move.effect_type in ["PARALYZE", "THUNDER"] or move.name == "Thunder") and _roll_status_proc(move, boosted, requires_boost_for_status):
+			if defender.immune_paralyze_rounds > 0:
+				note_text += " [color=gray](Immune to Paralysis: recently recovered - move had no effect!)[/color]"
+				spawn_floating_combat_text(defender_visual, "Paralyze Immune!", Color("#94a3b8"))
+			elif defender.is_paralyzed or defender.paralyze_turns > 0:
 				note_text += " [color=gray](%s is already paralyzed - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Paralyzed!", Color("#facc15"))
 			else:
 				defender.is_paralyzed = true
 				defender.paralyze_turns = 2
 				note_text += " [color=yellow]Inflicted PARALYZE (25% chance cannot act, 2 rounds)![/color]"
+				if defender.has_passive and defender.passive_name == "Synchronize" and not attacker.is_paralyzed and attacker.immune_paralyze_rounds <= 0:
+					attacker.is_paralyzed = true
+					attacker.paralyze_turns = 2
+					note_text += " [color=magenta]%s's Synchronize mirrored PARALYZE back to %s![/color]" % [defender.name, attacker.name]
 			
 		# Confusión (CONFUSION)
 		if move.effect_type == "CONFUSION" and _roll_status_proc(move, boosted, requires_boost_for_status):
@@ -2953,6 +3200,10 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				defender.is_confused = true
 				defender.confused_turns = 0
 				note_text += " [color=magenta]Inflicted CONFUSION (35% snap out, max 3 rounds, 2 self-DMG)![/color]"
+				if defender.has_passive and defender.passive_name == "Synchronize" and not attacker.is_confused:
+					attacker.is_confused = true
+					attacker.confused_turns = 0
+					note_text += " [color=magenta]%s's Synchronize mirrored CONFUSION back to %s![/color]" % [defender.name, attacker.name]
 			
 		# Constricción (CONSTRICT e.g. Sand Tomb / Wrap)
 		if move.effect_type == "CONSTRICT":
@@ -2975,7 +3226,10 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			
 		# Flinch (FLINCH)
 		if move.effect_type == "FLINCH" and _roll_status_proc(move, boosted, false):
-			if not defender.was_flinched_last_round:
+			if defender.has_passive and defender.passive_name == "Inner Focus":
+				note_text += " [color=cyan]%s's Inner Focus prevented flinching![/color]" % defender.name
+				spawn_floating_combat_text(defender_visual, "Inner Focus!", Color("#38bdf8"))
+			elif not defender.was_flinched_last_round:
 				defender.is_flinched = true
 				defender.flinched_this_round = true
 				note_text += " [color=yellow]Inflicted FLINCH (loses turn this round)![/color]"
@@ -2992,10 +3246,45 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				note_text += " [color=lightblue]Reduced foe's Speed by %d next round![/color]" % spd_drop
 
 		# Debilitamiento al rival (WEAKEN)
-		if move.effect_type == "WEAKEN":
+		if move.effect_type == "WEAKEN" and _roll_status_proc(move, boosted, false):
 			defender.foe_damage_debuff = 2
 			defender.foe_damage_debuff_turns = 2
 			note_text += " [color=purple]Weakened foe: -2 DMG on next 2 rounds![/color]"
+
+		# Shell Smash (SHELL_SMASH)
+		if move.effect_type == "SHELL_SMASH" or move.name == "Shell Smash":
+			var recoil = 2
+			attacker.current_hp = max(1, attacker.current_hp - recoil)
+			play_damage_hit(attacker_visual, "NORMAL", recoil)
+			spawn_floating_combat_number(attacker_visual, -recoil, false)
+			attacker.damage_buff += 4
+			attacker.damage_buff_turns = 99
+			attacker.speed += 3
+			note_text += " [color=yellow]Shell Smash: took 2 self-DMG, gained +4 permanent DMG and +3 permanent Speed![/color]"
+
+		# Purga de Bufos y Escudos (BUFF_PURGE e.g. Knock Off)
+		if (move.effect_type == "BUFF_PURGE" or move.name == "Knock Off") and final_damage > 0:
+			var purged = false
+			if defender.damage_buff > 0:
+				defender.damage_buff = 0
+				defender.damage_buff_turns = 0
+				purged = true
+			if defender.shield_reduction > 0 or defender.shield_turns > 0:
+				defender.shield_reduction = 0
+				defender.shield_turns = 0
+				purged = true
+			if defender.wall_hp > 0:
+				defender.wall_hp = 0
+				purged = true
+			if purged:
+				note_text += " [color=orange]Knock Off purged all foe's buffs and barriers![/color]"
+
+		# Bono de Daño Probabilístico (DMG_BOOST_CHANCE e.g. Meteor Mash)
+		if (move.effect_type == "DMG_BOOST_CHANCE" or move.name == "Meteor Mash"):
+			if randf() < 0.35:
+				attacker.damage_buff = max(attacker.damage_buff, 3)
+				attacker.damage_buff_turns = 2
+				note_text += " [color=yellow]Meteor Mash boosted user: +3 DMG on next attacks (2 rounds)![/color]"
 
 		# Descanso forzado tras hiperataque (REST e.g. Hyper Beam / Giga Impact / Mind Bending)
 		if move.effect_type == "REST":
@@ -3004,8 +3293,12 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 
 		# Excavación (DIG)
 		if move.effect_type == "DIG":
-			attacker.is_digging = true
-			note_text += " [color=orange]%s dug underground! Cannot be attacked by non-ground moves.[/color]" % attacker.name
+			if attacker.last_move_used == move.name:
+				note_text += " [color=red]Dig failed! Cannot be used consecutively.[/color]"
+				spawn_floating_combat_text(attacker_visual, "Dig Failed!", Color("#ef4444"))
+			else:
+				attacker.is_digging = true
+				note_text += " [color=orange]%s dug underground! Cannot be attacked by non-ground moves.[/color]" % attacker.name
 
 		# Pantalla de Luz (WALL / Light Screen)
 		if move.effect_type == "WALL":
@@ -3014,9 +3307,13 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 
 		# Evasión / Reflejo (EVASIVE / MIRAGE e.g. Reflect / Teleport / Primal Coat)
 		if move.effect_type in ["EVASIVE", "MIRAGE"]:
-			attacker.is_evasive = true
-			attacker.evasive_reflects_dmg = 3 if move.effect_type == "EVASIVE" else 0
-			note_text += " [color=cyan]Active Evasion: next move against %s will fail![/color]" % attacker.name
+			if attacker.last_move_used == move.name:
+				note_text += " [color=red]Evasion failed! Cannot be used consecutively.[/color]"
+				spawn_floating_combat_text(attacker_visual, "Evasion Failed!", Color("#ef4444"))
+			else:
+				attacker.is_evasive = true
+				attacker.evasive_reflects_dmg = 3 if move.effect_type == "EVASIVE" else 0
+				note_text += " [color=cyan]Active Evasion: next move against %s will fail![/color]" % attacker.name
 
 		# Escudo defensivo (SHIELD / BLOCK / VEIL)
 		if move.effect_type in ["SHIELD", "BLOCK", "VEIL"]:
@@ -3036,23 +3333,28 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 
 		# Aumento de velocidad propio (RUSH / SPEED_UP e.g. Agility / Bullet Punch)
 		if move.effect_type == "RUSH":
-			attacker.speed += 2
-			note_text += " [color=cyan]+2 permanent Speed for the rest of combat![/color]"
+			attacker.speed += 3
+			note_text += " [color=cyan]+3 permanent Speed for the rest of combat![/color]"
 		elif move.effect_type == "SPEED_UP":
-			attacker.temp_speed_mod += 2
+			attacker.temp_speed_mod += 3
 			attacker.speed_mod_expires_round = round_number + 1
-			note_text += " [color=cyan]+2 Speed next round![/color]"
+			note_text += " [color=cyan]+3 Speed next round![/color]"
 
 		# Ralentización propia (SLOW_USER e.g. Hammer Arm)
 		if move.effect_type == "SLOW_USER":
-			attacker.temp_speed_mod -= 2
+			attacker.temp_speed_mod -= 3
 			attacker.speed_mod_expires_round = round_number + 1
-			note_text += " [color=red]-2 Speed next round![/color]"
+			note_text += " [color=red]-3 Speed next round![/color]"
 
 		# Campo de Hierba (TERRAIN_SET)
 		if move.effect_type == "TERRAIN_SET":
 			grassy_terrain_turns = 2
 			note_text += " [color=green]Grassy Terrain active (+4 GRASS DMG x 2 rounds)![/color]"
+
+		# Espacio Raro (TRICK_ROOM)
+		if move.effect_type == "TRICK_ROOM" or move.name == "Trick Room":
+			trick_room_turns = 2
+			note_text += " [color=purple]Trick Room active: slower Pokémon act first for 2 rounds![/color]"
 
 		# Tormenta de Arena (SANDSTORM)
 		if move.effect_type == "SANDSTORM":
@@ -3101,6 +3403,29 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		if move.effect_type == "RECYCLE" and GameData.is_campaign_mode:
 			GameData.add_campaign_item("potion", 1)
 			note_text += " [color=green]Recycled and recovered 1 Potion in bag![/color]"
+
+		# Curación Directa (HEAL e.g. Recover / Milk Drink / Soft-Boiled)
+		if move.effect_type == "HEAL":
+			var heal_amt = 8
+			if move.name == "Soft-Boiled":
+				heal_amt = 12
+			elif move.name == "Milk Drink":
+				heal_amt = 10
+			elif "12 HP" in move.description:
+				heal_amt = 12
+			elif "10 HP" in move.description:
+				heal_amt = 10
+			elif "8 HP" in move.description:
+				heal_amt = 8
+			
+			var actual_heal = min(heal_amt, attacker.max_hp - attacker.current_hp)
+			attacker.current_hp += actual_heal
+			note_text += " [color=green]Restored +%d HP! (HP %d/%d)[/color]" % [actual_heal, attacker.current_hp, attacker.max_hp]
+			if actual_heal > 0:
+				spawn_floating_combat_number(attacker_visual, actual_heal, true)
+				GameData.play_combat_sfx("heal")
+				if attacker == get_active_player() and GameData.is_campaign_mode:
+					GameData.add_daily_mission_progress("heal_hp", 1)
 
 		# Transformación (METAMORPHOSIS e.g. Transform)
 		if move.effect_type == "METAMORPHOSIS":
@@ -3252,6 +3577,8 @@ func process_defeated_enemies() -> void:
 		if e.current_hp <= 0 and not (i in defeated_enemy_indices):
 			defeated_enemy_indices.append(i)
 			GameData.add_daily_mission_progress("defeat_pokemon", 1)
+			if not GameData.is_tutorial_mode:
+				GameData.record_campaign_pkmn_defeated()
 			var drop = GameData.calculate_pkmn_defeat_reward(e.rarity, e.stage)
 			var g_drop = int(drop.get("gold", 0))
 			var d_drop = int(drop.get("diamonds", 0))
@@ -3320,12 +3647,14 @@ func _animate_faint_and_replacement(is_player: bool, fainted_pkmn, next_idx: int
 				log_action("[b]%s[/b] enters the field!" % new_p.name)
 				if new_p.has_passive and new_p.passive_name == "String Shot":
 					log_action("✨ Weedle's [color=cyan]String Shot[/color] passively reduces foe's Speed by 1.")
+				_trigger_entry_passives(new_p, get_active_enemy(), true)
 			else:
 				active_enemy_idx = next_idx
 				var new_e = get_active_enemy()
 				log_action("Rival sends out [b]%s[/b]!" % new_e.name)
 				if new_e.has_passive and new_e.passive_name == "String Shot":
 					log_action("✨ Weedle's [color=cyan]String Shot[/color] passively reduces foe's Speed by 1.")
+				_trigger_entry_passives(new_e, get_active_player(), false)
 			
 			# Actualiza la UI con los nuevos datos, textura y stats del Pokémon entrante
 			update_ui()
@@ -3405,19 +3734,36 @@ func check_team_defeat() -> bool:
 	# Procesar caídas pendientes de rivales para asegurar drops
 	process_defeated_enemies()
 		
-	var enemy_all_dead = true
-	for p in enemy_team:
-		if p.current_hp > 0:
-			enemy_all_dead = false
-			break
-			
 	var player_all_dead = true
 	for p in player_team:
 		if p.current_hp > 0:
 			player_all_dead = false
 			break
 			
-	if enemy_all_dead:
+	var enemy_all_dead = true
+	for p in enemy_team:
+		if p.current_hp > 0:
+			enemy_all_dead = false
+			break
+			
+	# Regla de desempate en Campaña / Combate: Si todos los Pokémon del jugador están debilitados,
+	# es Derrota para el jugador (Doble K.O. = Derrota, ya que un entrenador sin Pokémon conscientes no puede avanzar).
+	if player_all_dead:
+		is_battle_over = true
+		if enemy_all_dead:
+			log_action("[b][color=orange]⚔️ Double K.O.! Both teams have fainted simultaneously.[/color][/b]")
+		if GameData.is_campaign_mode:
+			var active_team = GameData.get_active_campaign_team_state()
+			for i in range(min(player_team.size(), active_team.size())):
+				active_team[i]["current_hp"] = player_team[i].current_hp
+				active_team[i]["current_exp"] = player_team[i].current_exp
+				active_team[i]["burn_turns"] = player_team[i].burn_turns
+				active_team[i]["is_poisoned"] = player_team[i].is_poisoned
+				active_team[i]["is_flinched"] = player_team[i].is_flinched
+				
+		_resolve_battle_defeat(enemy_all_dead)
+		return true
+	elif enemy_all_dead:
 		is_battle_over = true
 		if GameData.is_campaign_mode:
 			var active_team = GameData.get_active_campaign_team_state()
@@ -3430,19 +3776,6 @@ func check_team_defeat() -> bool:
 				
 		_resolve_battle_victory()
 		return true
-	elif player_all_dead:
-		is_battle_over = true
-		if GameData.is_campaign_mode:
-			var active_team = GameData.get_active_campaign_team_state()
-			for i in range(min(player_team.size(), active_team.size())):
-				active_team[i]["current_hp"] = player_team[i].current_hp
-				active_team[i]["current_exp"] = player_team[i].current_exp
-				active_team[i]["burn_turns"] = player_team[i].burn_turns
-				active_team[i]["is_poisoned"] = player_team[i].is_poisoned
-				active_team[i]["is_flinched"] = player_team[i].is_flinched
-				
-		_resolve_battle_defeat()
-		return true
 	return false
 
 func _resolve_battle_victory() -> void:
@@ -3452,8 +3785,8 @@ func _resolve_battle_victory() -> void:
 		if GameData.tutorial_completed:
 			GameData.is_tutorial_mode = false
 			show_game_over(
-				"🎉 PRACTICE VICTORY!",
-				"Excellent practice battle! You defeated the tutorial opponent."
+				GameData.tr_text("🎉 PRACTICE VICTORY!", "🎉 ¡VICTORIA DE PRÁCTICA!"),
+				GameData.tr_text("Excellent practice battle! You defeated the tutorial opponent.", "¡Excelente combate de práctica! Derrotaste al oponente de tutorial.")
 			)
 			return
 		if GameData.tutorial_combat_phase == 1:
@@ -3490,8 +3823,11 @@ func _resolve_battle_victory() -> void:
 			GameData.save_profile()
 			
 			show_game_over(
-				"🎓 COMBAT 1 COMPLETE!",
-				"Outstanding battle! Defeating rivals in Adventure Mode earns you Diamonds 💎 and Gold to buy booster packs and items.\n\n🎁 Milestone Reward: You unlocked your Stage 1 evolution: %s!\n\nNext: Learn how evolutions work in Camp!" % s1_name
+				GameData.tr_text("🎓 COMBAT 1 COMPLETE!", "🎓 ¡COMBATE 1 COMPLETADO!"),
+				GameData.tr_text(
+					"Outstanding battle! Defeating rivals in Adventure Mode earns you Diamonds 💎 and Gold to buy booster packs and items.\n\n🎁 Milestone Reward: You unlocked your Stage 1 evolution: %s!\n\nNext: Learn how evolutions work in Camp!" % s1_name,
+					"¡Batalla sobresaliente! Derrotar rivales en el Modo Aventura te otorga Diamantes 💎 y Oro para comprar sobres de cartas y objetos.\n\n🎁 Recompensa: ¡Has desbloqueado la evolución Fase 1: %s!\n\nSiguiente paso: ¡Aprende cómo funcionan las evoluciones en el Campamento!" % s1_name
+				)
 			)
 			return
 		else:
@@ -3507,7 +3843,7 @@ func _resolve_battle_victory() -> void:
 			GameData.save_profile()
 			var tut_win_msg = "¡Felicitaciones! Has completado el Entrenamiento de Combate.\n\n🎁 Recompensa Final: 💎 5 Diamantes y tu evolución Fase 1 asegurada en tu Colección.\n🔓 ¡El Modo Aventura, Torneo y el Lobby completo ya están desbloqueados!" if GameData.is_spanish() else "Congratulations! You completed the full Battle Training!\n\n🎁 Final Reward: 💎 5 Diamonds & your Stage 1 evolution in your Collection!\n🔓 Adventure Mode, Pokémon Stadium, and the Full Lobby are now completely unlocked!"
 			show_game_over(
-				"🎓 TUTORIAL COMPLETE!",
+				GameData.tr_text("🎓 TUTORIAL COMPLETE!", "🎓 ¡TUTORIAL COMPLETADO!"),
 				tut_win_msg
 			)
 			return
@@ -3545,8 +3881,9 @@ func _resolve_battle_victory() -> void:
 			var cur_stage = GameData.adventure_current_stage
 			var total_stages = GameData.get_adventure_total_stages(ep_id)
 			var stage_info = GameData.get_adventure_stage_info(ep_id, cur_stage)
-			var trainer_name = stage_info.get("trainer_name", "Trainer")
-			var outro_text = stage_info.get("outro", "")
+			var is_es = (GameData.settings_language == "es")
+			var trainer_name = str(stage_info.get("trainer_name_es" if is_es else "trainer_name", stage_info.get("trainer_name", "Trainer")))
+			var outro_text = str(stage_info.get("outro_es" if is_es else "outro", stage_info.get("outro", "")))
 			
 			var total_gold_won = combat_earned_gold
 			var total_diamonds_won = combat_earned_diamonds
@@ -3660,6 +3997,51 @@ func _resolve_battle_victory() -> void:
 							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n👑 ¡HAS CONQUISTADO TODAS LAS MEDALLAS DE JOHTO!\n🌊 ¡El evento especial 'El Lago de la Furia' ahora está disponible!" % [bonus_diamonds, badge_str]
 					else:
 						first_clear_text = "\n(Route already cleared - replay completed!)"
+				elif ep_id == 204:
+					var cur_route = GameData.adventure_ep204_selected_route
+					var r_info = GameData.get_adventure_route_info(204, cur_route)
+					ep_title_display = "Hoenn Ep. IV - %s" % str(r_info.get("name_es" if is_es else "name", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "jagged_pass":
+							victory_title = "🎉 DESFILADERO DEL MONTE CENIZO PACIFICADO!" if is_es else "🎉 JAGGED PASS & MT. CHIMNEY PACIFIED!"
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes!\n🔓 Gimnasio Lavacalda Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Lavaridge Gym Unlocked!") % bonus_diamonds
+						elif cur_route == "lavaridge_gym":
+							var b_name = stage_info.get("badge_name_es" if is_es else "badge_name", badge_str)
+							victory_title = ("🎉 ¡EPISODIO CONQUISTADO! ¡%s OBTENIDA!" if is_es else "🎉 EPISODE CONQUERED! %s WON!") % b_name.to_upper()
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes & 🏅 %s!\n🔓 Episodio V (Norman) Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n🔓 Episode V (Norman) Unlocked!") % [bonus_diamonds, b_name]
+					else:
+						first_clear_text = "\n(Ruta ya superada - ¡Rejugado completado!)" if is_es else "\n(Route already cleared - replay completed!)"
+				elif ep_id == 206:
+					var cur_route = GameData.adventure_ep206_selected_route
+					var r_info = GameData.get_adventure_route_info(206, cur_route)
+					ep_title_display = "Hoenn Ep. VI - %s" % str(r_info.get("name_es" if is_es else "name", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "weather_institute":
+							victory_title = "🎉 INSTITUTO METEOROLÓGICO RESCATADO!" if is_es else "🎉 WEATHER INSTITUTE RESCUED!"
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes!\n🔓 Gimnasio Arborada Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Fortree Gym Unlocked!") % bonus_diamonds
+						elif cur_route == "fortree_gym":
+							var b_name = stage_info.get("badge_name_es" if is_es else "badge_name", badge_str)
+							victory_title = ("🎉 ¡EPISODIO CONQUISTADO! ¡%s OBTENIDA!" if is_es else "🎉 EPISODE CONQUERED! %s WON!") % b_name.to_upper()
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes & 🏅 %s!\n🔓 Episodio VII (Vito y Leti) Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n🔓 Episode VII (Tate & Liza) Unlocked!") % [bonus_diamonds, b_name]
+					else:
+						first_clear_text = "\n(Ruta ya superada - ¡Rejugado completado!)" if is_es else "\n(Route already cleared - replay completed!)"
+				elif ep_id == 208:
+					var cur_route = GameData.adventure_ep208_selected_route
+					var r_info = GameData.get_adventure_route_info(208, cur_route)
+					ep_title_display = "Hoenn Ep. VIII - %s" % str(r_info.get("name_es" if is_es else "name", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "cave_of_origin":
+							victory_title = "🎉 TITANES PRIMIGENIOS APACIGUADOS!" if is_es else "🎉 PRIMAL TITANS PACIFIED!"
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes!\n🔓 Pilar Celeste Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Sky Pillar Unlocked!") % bonus_diamonds
+						elif cur_route == "sky_pillar":
+							victory_title = "🎉 PILAR CELESTE CONQUISTADO!" if is_es else "🎉 SKY PILLAR CONQUERED!"
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes!\n🔓 Gimnasio Arrecípolis Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Sootopolis Gym Unlocked!") % bonus_diamonds
+						elif cur_route == "sootopolis_gym":
+							var b_name = stage_info.get("badge_name_es" if is_es else "badge_name", badge_str)
+							victory_title = ("🏆 ¡CAMPAÑA HOENN CONQUISTADA! ¡%s OBTENIDA!" if is_es else "🏆 CAMPAIGN HOENN CONQUERED! %s WON!") % b_name.to_upper()
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes & 🏅 %s!\n👑 ¡HAS CONQUISTADO TODAS LAS MEDALLAS DE HOENN!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n👑 YOU HAVE CONQUERED ALL HOENN BADGES!") % [bonus_diamonds, b_name]
+					else:
+						first_clear_text = "\n(Ruta ya superada - ¡Rejugado completado!)" if is_es else "\n(Route already cleared - replay completed!)"
 				else:
 					if bonus_diamonds > 0:
 						first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Episode %d Unlocked!" % [bonus_diamonds, next_ep_id]
@@ -3789,6 +4171,7 @@ func _resolve_battle_victory() -> void:
 			
 			if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES:
 				GameData.stats_tournaments_won += 1
+				GameData.record_stadium_tournament_completed()
 				GameData.save_profile()
 				show_game_over(
 					"🎉 POKÉMON TOURNAMENT CHAMPION!",
@@ -3832,20 +4215,20 @@ func _resolve_battle_victory() -> void:
 			show_game_over("🏆 PLAYER 1 WINS!", "Player 1 has defeated all of Player 2's Pokémon!")
 		else:
 			show_game_over("VICTORY!", "You defeated the rival team!")
-func _resolve_battle_defeat() -> void:
+func _resolve_battle_defeat(is_double_ko: bool = false) -> void:
 	GameData.stats_battles_total += 1
 	if GameData.is_tutorial_mode:
 		if GameData.tutorial_completed:
 			GameData.is_tutorial_mode = false
 			show_game_over(
-				"💀 PRACTICE BATTLE OVER",
-				"Your Pokémon fainted during practice. You can try again anytime!"
+				GameData.tr_text("💀 PRACTICE BATTLE OVER", "💀 FIN DEL COMBATE DE PRÁCTICA"),
+				GameData.tr_text("Your Pokémon fainted during practice. You can try again anytime!", "¡Tu Pokémon se debilitó durante la práctica! Puedes intentarlo de nuevo cuando desees.")
 			)
 			return
 		if GameData.tutorial_combat_phase == 1:
 			show_game_over(
-				"💀 COMBAT 1 DEFEATED",
-				"Your Pokémon fainted! Tap Restart to try again and claim your Stage 1 evolution."
+				GameData.tr_text("💀 COMBAT 1 DEFEATED", "💀 DERROTA EN COMBATE 1"),
+				GameData.tr_text("Your Pokémon fainted! Tap Restart to try again and claim your Stage 1 evolution.", "¡Tu Pokémon se debilitó! Toca Reiniciar para intentarlo de nuevo y reclamar tu evolución Fase 1.")
 			)
 			return
 		else:
@@ -3858,8 +4241,11 @@ func _resolve_battle_defeat() -> void:
 			GameData.just_completed_tutorial = true
 			GameData.save_profile()
 			show_game_over(
-				"🎓 TUTORIAL COMPLETE!",
-				"Great effort in advanced combat! You have finished your training.\n\n🎁 Final Reward: 💎 5 Diamonds!\n🔓 Adventure Mode, Pokémon Stadium, and the Full Lobby are now completely unlocked!"
+				GameData.tr_text("🎓 TUTORIAL COMPLETE!", "🎓 ¡TUTORIAL COMPLETADO!"),
+				GameData.tr_text(
+					"Great effort in advanced combat! You have finished your training.\n\n🎁 Final Reward: 💎 5 Diamonds!\n🔓 Adventure Mode, Pokémon Stadium, and the Full Lobby are now completely unlocked!",
+					"¡Gran esfuerzo en el combate avanzado! Has finalizado tu entrenamiento.\n\n🎁 Recompensa Final: 💎 5 Diamantes.\n🔓 ¡El Modo Aventura, Pokémon Stadium y el Lobby completo ya están desbloqueados!"
+				)
 			)
 			return
 	if GameData.is_campaign_mode:
@@ -3890,9 +4276,15 @@ func _resolve_battle_defeat() -> void:
 			GameData.reset_adventure_episode(ep_id)
 			GameData.is_campaign_mode = false
 			GameData.save_profile()
+			var defeat_title = "⚔️ DOUBLE K.O. • DEFEAT!" if is_double_ko else "💀 DEFEATED IN ADVENTURE!"
+			var defeat_body = ""
+			if is_double_ko:
+				defeat_body = "Both sides fainted simultaneously in battle! A trainer cannot advance without conscious Pokémon.\nEpisode progress was reset, but your Gold (G) and Diamonds are safe!%s\nYou can embark again from the Campaign Hub!" % preserved_msg
+			else:
+				defeat_body = "All your Pokémon have fainted in battle.\nEpisode progress was reset, but your Gold (G) and Diamonds are safe!%s\nYou can embark again from the Campaign Hub!" % preserved_msg
 			show_game_over(
-				"💀 DEFEATED IN ADVENTURE!",
-				"All your Pokémon have fainted in battle.\nEpisode progress was reset, but your Gold (G) and Diamonds are safe!%s\nYou can embark again from the Campaign Hub!" % preserved_msg
+				defeat_title,
+				defeat_body
 			)
 		elif GameData.campaign_submode == "CHAOS":
 			var cur_match = GameData.chaos_match_number
@@ -4261,6 +4653,9 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 	# Bonos del atacante
 	if attacker.has_passive and attacker.passive_name == "Focus Energy" and att_spd > def_spd:
 		dmg += 1
+	if attacker.has_passive and attacker.passive_name == "Guts":
+		if attacker.burn_turns > 0 or attacker.is_poisoned or attacker.is_paralyzed or attacker.is_asleep_turns > 0 or attacker.is_frozen:
+			dmg += 3
 	if attacker.shield_breaker_bonus > 0 and move.effect_type != "SHIELD_BREAKER":
 		dmg += attacker.shield_breaker_bonus
 	if attacker.damage_buff != 0 and dmg > 0:
@@ -4279,9 +4674,12 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 			if is_full_energy or allows_partial:
 				dmg += _get_snowball_bonus(move)
 
-	# Venganza / Furia
-	if move.effect_type == "REVENGE" and attacker.took_damage_last_turn:
-		dmg += (4 if "+4" in move.description else 3)
+	# Venganza / Furia (o actuar segundo con Payback)
+	if move.effect_type == "REVENGE":
+		var is_payback = (move.name == "Payback" or "+6" in move.description)
+		var acted_second = (att_spd < def_spd)
+		if attacker.took_damage_last_turn or (is_payback and acted_second):
+			dmg += (6 if is_payback else (4 if "+4" in move.description else 3))
 	elif move.effect_type == "RAGE" and attacker.took_damage_last_turn:
 		dmg += 4
 
@@ -4289,10 +4687,27 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 	if move.effect_type == "BOOST_IF_FASTER" and move.name != "Quick Attack" and is_full_energy and att_spd > def_spd:
 		dmg += 3
 
+	# Gyro Ball (slower than foe)
+	if (move.effect_type == "BOOST_IF_SLOWER" or move.name == "Gyro Ball") and is_full_energy and att_spd < def_spd:
+		dmg += 5
+
+	# Brine / Execution (HP < 50%)
+	if (move.effect_type == "EXECUTE" or move.name == "Brine") and is_full_energy:
+		if float(defender.current_hp) < (float(defender.max_hp) * 0.50):
+			dmg += 6
+
+	# Eruption / Water Spout (FULL_HP_POWER)
+	if (move.effect_type == "FULL_HP_POWER" or move.name in ["Eruption", "Water Spout"]) and is_full_energy:
+		var hp_ratio = float(attacker.current_hp) / float(attacker.max_hp)
+		if hp_ratio >= 0.80:
+			dmg += 4
+		elif hp_ratio < 0.50:
+			dmg = max(1, dmg - 4)
+
 	# Flail / Desperation (HP < 50%)
 	if move.effect_type == "DESPERATION" or move.name == "Flail":
 		if float(attacker.current_hp) < (float(attacker.max_hp) * 0.50):
-			dmg += (4 if "+4" in move.description else (3 if "+3" in move.description else 2))
+			dmg += (6 if "+6" in move.description else (4 if "+4" in move.description else (3 if "+3" in move.description else 2)))
 
 	# Sinergias de estado
 	if move.effect_type == "BLAZE" and defender.burn_turns > 0:
@@ -4314,13 +4729,33 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 	if defender.is_asleep_turns > 0 and move.name == "Dream Eater":
 		dmg += 4
 
+	# Weather Ball
+	var attack_type = move.type
+	if (move.effect_type == "WEATHER_BALL" or move.name == "Weather Ball") and is_full_energy:
+		if sandstorm_turns > 0:
+			dmg += 6
+			attack_type = "GROUND"
+		elif grassy_terrain_turns > 0:
+			dmg += 6
+			attack_type = "GRASS"
+
+	# Inmunidad por Levitate a daño de Tierra
+	if defender.has_passive and defender.passive_name == "Levitate" and (attack_type == "GROUND" or move.type == "GROUND"):
+		return 0
+
+	# Earthquake vs Dig
+	if defender.is_digging and move.name == "Earthquake":
+		dmg *= 2
+
 	# Bono de daño por tipo objetivo
 	if move.effect_type == "BOOST_DMG_TYPE" and is_full_energy:
 		dmg += _get_boost_dmg_type_bonus(move, defender)
 
 	# Debilidad / Resistencia
 	if dmg > 0:
-		if move.effect_type in ["WEAK_SPOT", "ADAPT"]:
+		if move.effect_type == "FIXED_DMG" or move.name in ["Sonic Boom", "Night Shade"]:
+			return dmg
+		elif move.effect_type in ["WEAK_SPOT", "ADAPT"]:
 			dmg += WEAKNESS_BONUS
 		elif move.effect_type in ["DOUBLE_TYPE", "TRIPLE_TYPE"]:
 			var combo_types = ["WATER", "FIRE", "ELECTRIC"] if move.effect_type == "TRIPLE_TYPE" else (["FIGHTING", "PSYCHIC"] if move.name == "Aura Sphere" else ["FIGHTING", "WATER"])
@@ -4335,16 +4770,17 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 				dmg += WEAKNESS_BONUS
 			elif all_res:
 				dmg = max(MIN_DAMAGE_AFTER_RESIST, dmg - RESISTANCE_REDUCTION)
-		elif GameData.types_match(defender.weakness, move.type):
+		elif GameData.types_match(defender.weakness, attack_type):
 			dmg += WEAKNESS_BONUS
-		elif GameData.is_attack_resisted(defender.type, defender.resistant, move.type):
+		elif GameData.is_attack_resisted(defender.type, defender.resistant, attack_type):
 			dmg = max(MIN_DAMAGE_AFTER_RESIST, dmg - RESISTANCE_REDUCTION)
 
 		# Reducciones defensivas
 		if defender.has_passive and defender.passive_name == "Charm" and move.type == "NORMAL":
 			dmg = max(1, dmg - 1)
 		if attacker.is_poisoned:
-			dmg = max(1, dmg - 1)
+			if not (attacker.has_passive and attacker.passive_name == "Guts"):
+				dmg = max(1, dmg - 1)
 		if attacker.foe_damage_debuff > 0:
 			dmg = max(1, dmg - attacker.foe_damage_debuff)
 		var ignore_shield = (move.effect_type == "SHIELD_BREAKER" and is_full_energy and ("shatter" in move.description.to_lower() or "shield" in move.description.to_lower()))
@@ -4676,10 +5112,12 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 		current.foe_damage_debuff = 0
 		current.foe_damage_debuff_turns = 0
 		current.temp_speed_mod = 0
+		_cleanse_pokemon_status(current)
 	if is_p2:
 		current = get_active_enemy()
 		active_enemy_idx = target_idx
 		reset_selected_energy()
+		_trigger_entry_passives(target_pkmn, get_active_player(), false)
 		log_action("🔵 Player 2 called back [b]%s[/b] and sent out [b]%s[/b]!" % [current.name, target_pkmn.name])
 		
 		var orig_e_pos = enemy_card_img.position
@@ -4711,6 +5149,7 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 		current = get_active_player()
 		active_player_idx = target_idx
 		reset_selected_energy()
+		_trigger_entry_passives(target_pkmn, get_active_enemy(), true)
 		log_action("[b]Tactical switch![/b] %s withdraws, [b]%s[/b] enters!" % [current.name, target_pkmn.name])
 		
 		var orig_p_pos = player_card_img.position
@@ -5540,7 +5979,25 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 	elif eff == "ROLLING":
 		return "x2 DMG consecutive"
 	elif eff in ["REVENGE", "RAGE"]:
-		return "Bonus DMG if took hit"
+		return "+6 DMG if moved 2nd" if move.name == "Payback" else "Bonus DMG if took hit"
+	elif eff == "CRITICAL":
+		return "+5 DMG on Crit (35%)" if ("35%" in desc or move.name in ["Crabhammer", "Psycho Cut"]) else "+4 DMG on Crit"
+	elif eff == "FULL_HP_POWER":
+		return "+4 DMG if HP >= 80%"
+	elif eff == "SHELL_SMASH":
+		return "+4 DMG & +2 Spd (-2 HP)"
+	elif eff == "BUFF_PURGE":
+		return "Purges shields & buffs"
+	elif eff == "WEATHER_BALL":
+		return "+6 DMG in Weather"
+	elif eff == "CANNOT_MISS":
+		return "Never misses evasion"
+	elif eff == "THUNDER":
+		return "33% Miss / 35% Paralyze"
+	elif eff == "BENCH_DAMAGE":
+		return "3 splash DMG to bench"
+	elif eff == "DMG_BOOST_CHANCE":
+		return "35% chance +3 DMG"
 	elif eff == "BOOST_IF_FASTER":
 		return "-1⚡ cost if faster" if move.name == "Quick Attack" else "+3 DMG if faster"
 	elif eff == "BLAZE":
@@ -5607,6 +6064,22 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 		return "Annuls foe's next effect"
 	elif eff == "PICHU_SHOCK":
 		return "50% Recoil/Recharge"
+	elif eff == "EXECUTE":
+		return "+6 DMG if foe < 50% HP"
+	elif eff == "BOOST_IF_SLOWER":
+		return "+5 DMG if slower"
+	elif eff == "STEAL_ENERGY":
+		return "Steals 1⚡ Energy"
+	elif eff == "FORCE_SWITCH":
+		return "Forces foe switch"
+	elif eff == "FIXED_DMG":
+		return "Fixed true DMG (pierces)"
+	elif eff == "TRICK_ROOM":
+		return "Inverts Speed (2 rds)"
+	elif eff == "FALSE_SWIPE":
+		return "Spares 1 HP (+2 G)"
+	elif eff == "DESPERATION":
+		return "+6 DMG if HP < 50%"
 	elif eff == "BOOST_DMG":
 		return "+%d extra DMG" % move.boost_damage
 	elif desc != "":
@@ -5836,6 +6309,36 @@ func update_move_button_labels() -> void:
 		elif actor.passive_name in ["Furia Desatada", "Unbridled Rage"]:
 			btn_passive.text = "🔥 Furia Desatada\n[ACTIVE: +3 DMG]"
 			btn_passive.disabled = true
+		elif actor.passive_name == "Rock Head":
+			btn_passive.text = "🪨 Rock Head\n[No Recoil]"
+			btn_passive.disabled = true
+		elif actor.passive_name == "Sturdy":
+			var is_full = (actor.current_hp == actor.max_hp)
+			btn_passive.text = "🛡️ Sturdy\n[%s: Endure 1 HP]" % ("ACTIVE" if is_full else "SPENT")
+			btn_passive.disabled = true
+		elif actor.passive_name == "Intimidate":
+			btn_passive.text = "🦁 Intimidate\n[Entry: -2 DMG foe]"
+			btn_passive.disabled = true
+		elif actor.passive_name == "Levitate":
+			btn_passive.text = "🌪️ Levitate\n[Ground & Sand Immune]"
+			btn_passive.disabled = true
+		elif actor.passive_name == "Synchronize":
+			btn_passive.text = "🔮 Synchronize\n[Mirrors Status]"
+			btn_passive.disabled = true
+		elif actor.passive_name == "Guts":
+			var has_status = (actor.burn_turns > 0 or actor.is_poisoned or actor.is_paralyzed or actor.is_frozen or actor.is_asleep_turns > 0)
+			btn_passive.text = "💪 Guts\n[%s: +3 DMG]" % ("ACTIVE" if has_status else "INACTIVE")
+			btn_passive.disabled = true
+		elif actor.passive_name == "Inner Focus":
+			btn_passive.text = "🧘 Inner Focus\n[Flinch Immune]"
+			btn_passive.disabled = true
+		elif actor.passive_name == "Natural Cure":
+			btn_passive.text = "🌿 Natural Cure\n[Cures on Bench]"
+			btn_passive.disabled = true
+		elif actor.passive_name in ["Chlorophyll", "Swift Swim", "Weather Rush", "Sand Rush"]:
+			var weather_active = (sandstorm_turns > 0 or grassy_terrain_turns > 0)
+			btn_passive.text = "⚡ %s\n[%s: +2 SPD]" % [actor.passive_name, "ACTIVE" if weather_active else "INACTIVE"]
+			btn_passive.disabled = true
 		else:
 			btn_passive.text = "✨ %s\n[Passive]" % actor.passive_name
 			btn_passive.disabled = true
@@ -5970,11 +6473,11 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 	if GameData.is_tutorial_mode or GameData.just_completed_tutorial_combat1 or GameData.just_completed_tutorial:
 		btn_restart.visible = (is_battle_over and not is_victory and (not GameData.tutorial_completed or GameData.tutorial_combat_phase == 1))
 		if not GameData.tutorial_completed and (GameData.just_completed_tutorial_combat1 or GameData.tutorial_step == 4):
-			btn_game_over_menu.text = "⛺ Go to Camp / Evolution"
+			btn_game_over_menu.text = GameData.tr_text("⛺ Go to Camp / Evolution", "⛺ Ir al Campamento / Evolución")
 		elif GameData.just_completed_tutorial or GameData.tutorial_step >= 6 or GameData.tutorial_completed:
-			btn_game_over_menu.text = "🏛️ Enter Main Lobby"
+			btn_game_over_menu.text = GameData.tr_text("🏛️ Enter Main Lobby", "🏛️ Entrar al Lobby Principal")
 		else:
-			btn_game_over_menu.text = "🏛️ Return to Main Menu"
+			btn_game_over_menu.text = GameData.tr_text("🏛️ Return to Main Menu", "🏛️ Volver al Menú Principal")
 	elif GameData.is_online_pvp:
 		btn_restart.visible = false
 		btn_game_over_menu.text = "⬅ Main Menu"
@@ -6824,6 +7327,8 @@ func apply_item_in_battle(item_id: String, target_idx: int) -> void:
 	GameData.play_combat_sfx("use")
 	if GameData.is_campaign_mode:
 		GameData.add_daily_mission_progress("use_camp_items", 1)
+		if not GameData.is_tutorial_mode:
+			GameData.record_campaign_item_used()
 	var heal_node: Control = player_card_img if target_idx == active_player_idx else (btn_switch_1 if target_idx == 1 else btn_switch_2)
 	if healed > 0:
 		spawn_floating_combat_number(heal_node, healed, true)

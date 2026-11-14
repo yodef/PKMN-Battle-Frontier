@@ -2525,13 +2525,13 @@ text = "Booster Pack (Kanto)"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 14
-text = "Price: 💎 5 Diamonds"
+text = "Price: 💎 10 Diamonds"
 
 [node name="PackDesc" type="Label" parent="ShopModal/Box/PackPanel/VBox/PackHeaderRow/PackHeaderInfo"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
 theme_override_font_sizes/font_size = 11
-text = "Contains 3 random cards based on Rarity. Expand your collection and unlock powerful Pokémon!"
+text = "Contains 6 random cards based on Rarity. Expand your collection and unlock powerful Pokémon!"
 autowrap_mode = 2
 
 [node name="PackEarnHint" type="Label" parent="ShopModal/Box/PackPanel/VBox/PackHeaderRow/PackHeaderInfo"]
@@ -2582,7 +2582,7 @@ custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 1, 0.4, 1)
 theme_override_font_sizes/font_size = 15
-text = "✨ OPEN BOOSTER PACK (💎 5 Diamonds)"
+text = "✨ OPEN BOOSTER PACK (💎 10 Diamonds)"
 
 [node name="ShopFeedbackLbl" type="Label" parent="ShopModal/Box"]
 visible = false
@@ -3380,7 +3380,7 @@ autowrap_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 12
-text = "• Open up to 5 Booster Packs in the Shop (5 💎 each) to build your roster!\n• Use your 50 Rare Candies to unlock a Stage 1 evolution!\n• Progress and records are saved automatically."
+text = "• Open Booster Packs in the Shop (10 💎 each) to build your roster!\n• Use your 50 Rare Candies to unlock a Stage 1 evolution!\n• Progress and records are saved automatically."
 autowrap_mode = 2
 
 [node name="WelcomeActions" type="VBoxContainer" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox"]
@@ -3686,17 +3686,19 @@ grow_vertical = 2
 color = Color(0.04, 0.06, 0.1, 0.95)
 
 [node name="DailyBox" type="VBoxContainer" parent="DailyModal"]
+custom_minimum_size = Vector2(490, 0)
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = 36.0
-offset_right = -16.0
-offset_bottom = -20.0
+offset_left = -245.0
+offset_top = 28.0
+offset_right = 245.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="DailyHeaderRow" type="HBoxContainer" parent="DailyModal/DailyBox"]
 layout_mode = 2
@@ -3705,7 +3707,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 18
 text = "🎁 DAILY MISSIONS & REWARDS"
 
 [node name="DailyStreakBadge" type="Label" parent="DailyModal/DailyBox/DailyHeaderRow"]
@@ -3719,10 +3721,10 @@ layout_mode = 2
 
 [node name="DailyCalendarMargin" type="MarginContainer" parent="DailyModal/DailyBox/DailyCalendarPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
 
 [node name="DailyCalendarVBox" type="VBoxContainer" parent="DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin"]
 layout_mode = 2
@@ -3746,7 +3748,7 @@ text = "Available!"
 
 [node name="CalendarGrid" type="HBoxContainer" parent="DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin/DailyCalendarVBox"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 3
 alignment = 1
 
 [node name="BtnClaimLoginReward" type="Button" parent="DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin/DailyCalendarVBox"]
@@ -3797,18 +3799,18 @@ layout_mode = 2
 
 [node name="ChestMargin" type="MarginContainer" parent="DailyModal/DailyBox/ChestPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 6
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 6
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 5
 
 [node name="ChestHBox" type="HBoxContainer" parent="DailyModal/DailyBox/ChestPanel/ChestMargin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="ChestIcon" type="Label" parent="DailyModal/DailyBox/ChestPanel/ChestMargin/ChestHBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 24
 text = "🏆"
 
 [node name="ChestTextVBox" type="VBoxContainer" parent="DailyModal/DailyBox/ChestPanel/ChestMargin/ChestHBox"]
@@ -3819,28 +3821,28 @@ theme_override_constants/separation = 2
 [node name="ChestTitle" type="Label" parent="DailyModal/DailyBox/ChestPanel/ChestMargin/ChestHBox/ChestTextVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "Daily Completion Bonus (+10 💎)"
 
 [node name="ChestDesc" type="Label" parent="DailyModal/DailyBox/ChestPanel/ChestMargin/ChestHBox/ChestTextVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.85, 0.95, 1)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 10
 text = "Complete all 3 daily missions to claim!"
 
 [node name="BtnClaimChest" type="Button" parent="DailyModal/DailyBox/ChestPanel/ChestMargin/ChestHBox"]
-custom_minimum_size = Vector2(100, 36)
+custom_minimum_size = Vector2(92, 34)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 text = "Claim +10 💎"
 
 [node name="BtnCloseDaily" type="Button" parent="DailyModal/DailyBox"]
-custom_minimum_size = Vector2(160, 42)
+custom_minimum_size = Vector2(160, 38)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 13
 text = "⬅ Back to Lobby"
 
 [node name="FriendsModal" type="Control" parent="."]
@@ -4004,7 +4006,7 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
-placeholder_text = "Search by Alias, Google Email or ID..."
+placeholder_text = "Search by Alias or Google Email..."
 
 [node name="BtnSearchFriend" type="Button" parent="FriendsModal/FriendsBox/SearchCard/SearchMargin/SearchHBox"]
 custom_minimum_size = Vector2(85, 36)

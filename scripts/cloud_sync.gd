@@ -742,6 +742,7 @@ func fetch_incoming_friend_additions(callback: Callable) -> void:
 				var my_id = GameData.profile_id.strip_edges().to_lower() if GameData else ""
 				var my_alias = GameData.profile_name.strip_edges().to_lower() if GameData else ""
 				
+				var updated_friends_activity = false
 				for doc in docs:
 					if typeof(doc) != TYPE_DICTIONARY or not doc.has("fields"):
 						continue
@@ -749,6 +750,21 @@ func fetch_incoming_friend_additions(callback: Callable) -> void:
 					var t_email = str(f.get("email", {}).get("stringValue", "")).strip_edges()
 					var t_alias = str(f.get("trainer_alias", f.get("trainer_name", {})).get("stringValue", "")).strip_edges()
 					var t_id = str(f.get("profile_id", {}).get("stringValue", "")).strip_edges()
+					var t_updated = str(f.get("last_activity_at", f.get("updated_at", {})).get("stringValue", "")).strip_edges()
+					
+					# Actualizar actividad de amigos existentes en GameData
+					if GameData and not t_updated.is_empty():
+						for fr in GameData.player_friends:
+							if typeof(fr) == TYPE_DICTIONARY:
+								var fe = str(fr.get("email", "")).strip_edges().to_lower()
+								var fi = str(fr.get("id", "")).strip_edges().to_lower()
+								var fa = str(fr.get("alias", "")).strip_edges().to_lower()
+								if (not t_email.is_empty() and fe == t_email.to_lower()) \
+								   or (not t_id.is_empty() and fi == t_id.to_lower()) \
+								   or (not t_alias.is_empty() and fa != "trainer" and fa == t_alias.to_lower()):
+									if fr.get("last_activity_at", "") != t_updated:
+										fr["last_activity_at"] = t_updated
+										updated_friends_activity = true
 					
 					var is_self = false
 					if not my_email.is_empty() and t_email.to_lower() == my_email:
@@ -789,13 +805,15 @@ func fetch_incoming_friend_additions(callback: Callable) -> void:
 												has_added_me = true
 												break
 					if has_added_me:
-						var t_updated = str(f.get("last_activity_at", f.get("updated_at", {})).get("stringValue", "")).strip_edges()
 						incoming.append({
 							"alias": t_alias if not t_alias.is_empty() else "Trainer",
 							"email": t_email,
 							"id": t_id,
 							"last_activity_at": t_updated
 						})
+				if updated_friends_activity:
+					GameData.save_profile()
+					GameData.friends_updated.emit()
 			if callback.is_valid():
 				callback.call(true, incoming, "Success")
 		else:

@@ -1,4 +1,4 @@
-id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,description,sfx
+﻿id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,description,sfx
 70,Absorb,GRASS,4,1,1,0,0,LIFE_DRAIN,This PKMN recovers HP equal to 50% of the DMG dealt by this Move.,Absorb.mp3
 38,Acid,DARK,6,2,1,1,3,POISON,Causes POISON to foes PKMN (-1 DMG for rest of combat). Use 1 extra energy to increase +3 DMG.,Acid.mp3
 18,Aerial Ace,NORMAL,8,2,1,0,0,BOOST_IF_FASTER,"If this PKMN is faster than its foe, increase +3 DMG to this Move.",Aerial Ace.mp3
@@ -7,24 +7,24 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 33,Air Slash,NORMAL,8,2,1,0,0,FLINCH,"Has a 30% to cause FLINCH. (foes PKMN cannot use any Move this round, if PKMN was flinched in the previous round, it cannot be flinched again)",
 73,Amnesia,PSYCHIC,0,1,1,0,0,MEMORY_FADE,The next Move's effect used by foes PKMN is annulled.,Amnesia.mp3
 74,Ancient Power,GROUND,6,2,1,0,0,SNOWBALL,"This Move's effect applies even if not used at full energy. If you used this Move in the previous turn, it deals +4 DMG.",Ancient Power.mp3
-75,Aqua Jet,WATER,3,1,1,1,3,BOOST_DMG,Use 1 extra energy to increase +3 DMG to this Move.,
+75,Aqua Jet,WATER,4,1,1,0,0,BOOST_IF_FASTER,Strikes with high priority speed. Deals +3 DMG if faster than the foe.,
 76,Aqua Ring,WATER,0,2,2,0,0,VEIL,"Activate VEIL for the next 3 rounds, while active this PKMN receives -2 DMG.",
 77,Aqua Tail,WATER,12,3,1,1,4,BOOST_DMG,Use 1 extra energy to increase +4 DMG to this Move.,
 78,Assurance,DARK,12,3,1,0,0,SNOWBALL,"This Move's effect applies even if not used at full energy. If you used this Move in the previous turn, it deals +3 DMG.",
 79,Aura Sphere,PSYCHIC,12,3,1,0,0,DOUBLE_TYPE,This Move deals DMG as FIGHTING and PSYCHIC type.,
-80,Aurora Beam,WATER,8,2,1,1,4,BOOST_DMG,Use 1 extra energy to increase +4 DMG to this Move.,Aurora Beam.mp3
+80,Aurora Beam,WATER,8,2,1,1,3,WEAKEN,Fires a rainbow-colored ray. 35% chance to weaken foe's attack (-2 DMG for 2 rounds).,Aurora Beam.mp3
 81,Belch,DARK,16,4,1,0,0,POISON,Causes POISON to foes PKMN (-1 DMG for rest of combat).,
 235,Belly Drum,NORMAL,0,2,2,0,0,DMG_BOOST,Increase this PKMN's next Move +8 DMG.,Belly Drum.mp3
-82,Bind,NORMAL,8,2,1,0,0,NONE,,Bind.mp3
+82,Bind,NORMAL,4,2,1,0,0,CONSTRICT,Deals 4 DMG and traps foe for 2 rounds (takes 2 DMG/round and cannot switch).,Bind.mp3
 9,Bite,DARK,4,1,1,1,0,FLINCH,"Use 1 extra energy to cause FLINCH. (foes PKMN cannot use any Move this round, if PKMN was flinched in the previous round, it cannot be flinched again)",Bite.mp3
 83,Blizzard,WATER,16,4,1,0,0,FREEZE,"Cause FREEZE on foes PKMN (wont be able to Move, thaws with Fire attack or after 2 rounds).",Blizzard.mp3
 84,Bone Rush,GROUND,4,2,2,0,0,MULTI_ATTACK,The energy used for this Move will be the amount of hits it will do. Every hit does 3-4 DMG with a 25% chance of Critical Hit (+3 DMG).,Bone Rush 2hits.mp3
 85,Bonemerang,GROUND,8,2,1,0,0,EXTRA_HIT,This Move has a 35% chance of being used in the same turn twice.,Bonemerang 2hits.mp3
-86,Brine,WATER,16,4,4,0,0,NONE,,
+86,Brine,WATER,10,3,1,0,0,EXECUTE,Deals 10 DMG. Deals +6 extra DMG (total 16 DMG) if target has less than 50% HP.,Bubble Beam.mp3
 5,Bubble,WATER,3,1,1,0,0,SLOW_FOE,Reduce foes PKMN Speed by -1 next round.,Bubble.mp3
 87,Bubble Beam,WATER,4,1,1,1,2,SLOW_FOE,Use 1 extra energy to increase +2 DMG to this Move and reduce foes PKMN Speed by -1 next round.,Bubble Beam.mp3
 24,Bug Bite,DARK,6,2,1,1,0,FLINCH,"Use 1 extra energy to cause FLINCH. (foes PKMN cannot use any Move this round, if PKMN was flinched in the previous round, it cannot be flinched again)",Bite.mp3
-25,Bug Buzz,GRASS,16,4,1,0,0,NONE,,
+25,Bug Buzz,GRASS,12,3,1,0,0,SHIELD_BREAKER,Vibrates sound waves: deals 12 DMG and shatters any defensive Shield or Wall.,Signal Beam.mp3
 88,Bulk Up,NORMAL,2,1,1,0,0,BLOCK,Deals 2 DMG and strengthens defense: receives -2 DMG next time it takes a hit.,Bulk Up.mp3
 44,Bulldoze,GROUND,8,2,2,0,0,SLOW_FOE,Reduce foes PKMN -3 Speed next round.,
 89,Bullet Punch,GROUND,8,2,1,0,0,SPEED_UP,"In the next round, increase +2 Speed to this PKMN.",
@@ -36,15 +36,15 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 95,Close Combat,FIGHTING,20,4,1,0,0,MINIMIZE,"For each energy not used for this Move, reduce -6 DMG to it.",
 96,Confuse Ray,PSYCHIC,0,1,1,0,0,CONFUSION,"Cause CONFUSION on foes PKMN (35% chance to snap out each round, max 3 rounds, otherwise self-inflicts 2 DMG).",Confuse Ray.mp3
 97,Confusion,PSYCHIC,12,3,1,0,0,CONFUSION,"Has a 30% chance to cause CONFUSION on foes PKMN (35% chance to snap out each round, max 3 rounds, otherwise self-inflicts 2 DMG).",Confusion.mp3
-98,Cosmic Power,PSYCHIC,8,2,2,0,0,NONE,,Cosmic Power.mp3
+98,Cosmic Power,PSYCHIC,0,2,2,0,0,SHIELD,Absorbs cosmic energy: creates a protective Shield that absorbs 2 incoming DMG for 3 rounds.,Cosmic Power.mp3
 99,Counter-Cut,NORMAL,4,1,1,0,0,WEAK_SPOT,This Move causes DMG as if is the Weakness element for foes PKMN.,Counter.mp3
-100,Covet,NORMAL,3,1,1,0,0,NONE,,Covet.mp3
-101,Crabhammer,WATER,16,4,4,0,0,NONE,,Crabhammer.mp3
+100,Covet,NORMAL,4,1,1,0,0,STEAL_ENERGY,Strikes cutely: deals 4 DMG and steals 1 Energy from foe to recharge user.,Covet.mp3
+101,Crabhammer,WATER,12,3,1,0,0,CRITICAL,High critical hit ratio: deals 12 DMG with a 35% chance to land a Critical Hit (+5 DMG).,Crabhammer.mp3
 102,Cross Chop,FIGHTING,8,2,1,1,3,CRITICAL,"You have 25% to deal a critical hit with this Move, increasing +3 DMG. Use 1 extra energy to increase +3 DMG.",Cross Chop.mp3
 103,Cross Poison,DARK,12,3,1,0,0,POISON,Causes POISON to foes PKMN (-1 DMG for rest of combat).,
 34,Crunch,DARK,10,3,1,1,4,WEAKEN,"Next 2 rounds, foes PKMN deals reduced -2 DMG. Use 1 extra energy to increase +4 DMG.",Crunch.mp3
 65,Defense Curl,NORMAL,0,1,1,0,0,SHIELD,"Next 2 rounds, this PKMN receives reduced -1 DMG. (Excluding negative status effects)",Defense Curl.mp3
-104,Dig,GROUND,6,2,2,0,0,DIG,Activate DIG until the start of the next round. While active this PKMN can't be attacked by non-GROUND type Moves. Once DIG's effect ends cause 6 DMG.,Dig.mp3
+104,Dig,GROUND,6,2,2,0,0,DIG,"Activate DIG until the start of the next round. While active this PKMN can't be attacked by non-GROUND type Moves. Once DIG ends cause 6 DMG. Cannot be used consecutively.",Dig.mp3
 59,Disarming Voice,NORMAL,6,2,1,0,0,SNOWBALL,"This Move's effect applies even if not used at full energy. If you used this Move in the previous turn, it deals +4 DMG.",
 40,Discharge,ELECTRIC,8,2,1,0,0,BOOST_IF_PARALYZED,This Move causes +4 DMG if foes PKMN is PARALYZED.,
 45,Double Edge,NORMAL,15,3,1,1,0,RECOIL,"This effect applies whenever this PKMN uses this Move: This PKMN receives as recoil 25% of DMG dealt, minimum 1. Use 1 extra energy to avoid recoil.",Double Edge.mp3
@@ -52,21 +52,21 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 106,Double Kick,FIGHTING,6,2,2,0,0,DOUBLE_HIT,This Move has a 50% chance of being used in the same turn twice.,Double Kick 2hits.mp3
 58,Double Slap,NORMAL,4,1,1,0,0,DOUBLE_HIT,This Move has a 50% chance of being used in the same turn twice.,Double Slap 2hits.mp3
 107,Dragon Breath,NORMAL,6,2,1,0,0,PARALYZE,"Has a 30% chance to cause PARALYZE to foes PKMN for 2 rounds (-2 SPD and 25% chance of being unable to Move for 2 rounds).",Dragon Breath.mp3
-108,Dragon Pulse,NORMAL,8,2,1,0,0,NONE,,
+108,Dragon Pulse,NORMAL,10,2,1,0,0,BOOST_DMG_TYPE,Concentrated dragon shockwave: deals 10 DMG (+3 extra DMG vs non-Normal foes).,Dragon Pulse.mp3
 109,Dragon Rush,NORMAL,16,4,1,0,0,FLINCH,"Cause FLINCH. (foes PKMN cannot use any Move this round, if PKMN was flinched in the previous round, it cannot be flinched again)",
-110,Dragon Tail,NORMAL,8,2,1,0,0,NONE,,
+110,Dragon Tail,NORMAL,8,2,1,0,0,FORCE_SWITCH,Strikes with a massive tail: deals 8 DMG and forces the foe to switch to a benched Pokémon.,Slam.mp3
 111,Drain Punch,FIGHTING,8,2,1,1,5,LIFE_DRAIN,This PKMN recovers HP equal to 50% of the DMG dealt by this Move. Use 1 extra energy to increase +5 DMG.,
 112,Dream Eater,DARK,16,4,1,0,0,LIFE_DRAIN,If foes PKMN has SLEEP increase +4 DMG to this Move and this PKMN recovers HP equal to 50% of the DMG dealt.,Dream Eater.mp3
 36,Drill Peck,NORMAL,8,2,1,0,0,BOOST_DMG_TYPE,Cause +5 DMG to GRASS and FIGHTING type PKMN.,Drill Peck.mp3
 113,Drill Run,GROUND,12,3,1,0,0,CRITICAL,"You have 25% to deal a critical hit with this Move, increasing +3 DMG.",
 114,Dynamic Punch,FIGHTING,8,2,1,1,0,CONFUSION,"Use 1 extra energy to cause CONFUSION on foes PKMN (35% chance to snap out each round, max 3 rounds, otherwise self-inflicts 2 DMG).",Dynamic Punch.mp3
-48,Earth Power,GROUND,8,2,1,0,0,NONE,,
-55,Earthquake,GROUND,16,4,4,1,4,SHIELD_BREAKER,Shatters foes PKMN's Shield or Wall completely. Use 1 extra energy to increase +4 DMG.,Earthquake.mp3
+48,Earth Power,GROUND,8,2,1,0,0,WEAKEN,Erupts the ground beneath foe: deals 8 DMG and weakens foe (-2 DMG on attacks for 2 rounds).,Earthquake.mp3
+55,Earthquake,GROUND,16,4,4,1,4,SHIELD_BREAKER,Shatters foe's shields completely. If foe is underground via Dig: deals x2 DMG!,Earthquake.mp3
 66,Echoed Voice,NORMAL,4,1,1,0,0,SNOWBALL,"If you used this Move in the previous turn, it deals +2 DMG.",
 115,Electro Ball,ELECTRIC,13,4,1,0,0,BOOST_IF_FASTER,"If this PKMN is faster than its foe, increase +3 DMG to this Move.",
 4,Ember,FIRE,4,1,1,1,0,BURN,Use 1 extra energy to cause BURN for 2 rounds (1 DMG per round).,Ember.mp3
-116,Extrasensory,PSYCHIC,16,4,1,0,0,NONE,,Extrasensory.mp3
-117,False Swipe,NORMAL,4,1,1,0,0,NONE,,False Swipe.mp3
+116,Extrasensory,PSYCHIC,12,3,1,0,0,FLINCH,Attacks with psychic power: deals 12 DMG with a 30% chance to Flinch the foe.,Extrasensory.mp3
+117,False Swipe,NORMAL,5,1,1,0,0,FALSE_SWIPE,Controlled restrained strike: deals 5 DMG (cannot KO) and earns +2 G when used against weakened foes.,False Swipe.mp3
 118,Fire Blast,FIRE,16,4,1,1,4,BURN,Cause BURN for 2 rounds (2 DMG per round). Use 1 extra energy to increase +4 DMG.,Fire Blast.mp3
 17,Fire Fang,FIRE,8,2,1,1,0,BURN,Use 1 extra energy to cause BURN for 2 rounds (2 DMG per round).,
 119,Fire Punch,FIRE,6,2,1,1,3,BLAZE,"If foes PKMN has BURN, increase +3 DMG to this Move. Use 1 extra energy to increase +3 DMG.",Fire Punch.mp3
@@ -82,14 +82,14 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 125,Fury Cutter,NORMAL,6,2,1,0,0,SNOWBALL,"If you used this Move in the previous turn, it deals +4 DMG.",Fury Cutter.mp3
 46,Fury Swipes,NORMAL,4,2,2,0,0,MULTI_ATTACK,The energy used for this Move will be the amount of hits it will do. Every hit does 3-4 DMG with a 25% chance of Critical Hit (+2 DMG).,Fury Swipes 2hits.mp3
 14,Giga Drain,GRASS,6,2,1,1,2,LIFE_DRAIN,This PKMN recovers HP equal to 50% of the DMG dealt by this Move. Use 1 extra energy to increase +2 DMG and HP recovery to 100% instead.,Giga Drain.mp3
-126,Giga Impact,NORMAL,25,5,5,0,0,REST,In the next round this PKMN can only use Rest.,
+126,Giga Impact,NORMAL,25,5,5,0,0,REST,In the next round this PKMN must rest (only recovers +1⚡ fatigue).,Giga Impact.mp3
 233,Grand Thunder,ELECTRIC,12,4,4,0,0,PARALYZE,"Causes PARALYZE to foes PKMN for 2 rounds (-2 SPD and 25% chance of being unable to Move for 2 rounds).",
 127,Grassy Terrain,GRASS,0,2,2,0,0,TERRAIN_SET," If TERRAIN is already active, this Move can't be used. Activate TERRAIN until the end of the next 2 rounds; while active increase +4 DMG to all GRASS type Moves.",
 128,Growl,NORMAL,2,1,1,0,0,SHIELD,"Deals 2 DMG. Next 2 rounds, this PKMN receives reduced -1 DMG.",Growl.mp3
 129,Growth,GRASS,2,1,1,0,0,GROWING,Deals 2 DMG and boosts attack power: +2 DMG on its next Move.,Growth.mp3
 130,Guillotine,NORMAL,12,2,2,0,0,MISS,"This Move has a 33% chance to Miss this attack, if so recover 1 energy.",Guillotine.mp3
 8,Gust,NORMAL,3,1,1,0,0,BOOST_DMG_TYPE,Cause +2 DMG to GRASS and FIGHTING type PKMN.,Gust.mp3
-131,Gyro Ball,NORMAL,8,2,1,0,0,NONE,,
+131,Gyro Ball,NORMAL,8,2,1,0,0,BOOST_IF_SLOWER,High-speed spin: deals 8 DMG. Deals +5 extra DMG (total 13 DMG) if user is slower than foe.,Rollout.mp3
 132,Hammer Arm,NORMAL,14,3,2,0,0,SLOW_USER,In the next round this PKMN will have decreased -2 SPD.,
 26,Harden,NORMAL,0,1,1,0,0,SHIELD,"Next 3 rounds, this PKMN receives reduced -1 DMG. (Excluding negative status effects)",Harden.mp3
 133,Headbutt,NORMAL,9,3,1,0,0,FLINCH,"Cause FLINCH. (foes PKMN cannot use any Move this round, if PKMN was flinched in the previous round, it cannot be flinched again)",Headbutt.mp3
@@ -99,9 +99,9 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 137,High Jump Kick,FIGHTING,20,4,1,1,0,RECOIL,"This effect applies whenever this PKMN uses this Move: This PKMN receives as recoil 25% of DMG dealt, minimum 1. Use 1 extra energy to avoid recoil.",High Jump Kick.mp3
 52,Horn Attack,NORMAL,8,2,1,0,0,SHIELD_BREAKER,"Strikes with a sharp horn, shattering foe's Shield or Wall.",Horn Attack.mp3
 32,Hurricane,NORMAL,16,4,1,1,0,CONFUSION,"Use 1 extra energy to cause CONFUSION on foes PKMN (35% chance to snap out each round, max 3 rounds, otherwise self-inflicts 2 DMG).",
-23,Hydro Pump,WATER,12,3,3,1,4,BOOST_DMG,Use 1 extra energy to increase +4 DMG to this Move.,Hydro Pump.mp3
-138,Hyper Beam,NORMAL,25,5,5,1,5,REST,In the next round this PKMN can only use Rest. Use 1 extra energy to increase +5 DMG.,Hyper Beam.mp3
-35,Hyper Fang,NORMAL,8,2,2,0,0,NONE,,Hyper Fang.mp3
+23,Hydro Pump,WATER,18,4,3,0,0,NONE,Fires a massive high-pressure torrent of water dealing enormous raw damage.,Hydro Pump.mp3
+138,Hyper Beam,NORMAL,25,5,5,1,5,REST,"In the next round this PKMN must rest (only recovers +1⚡ fatigue). Use 1 extra energy to increase +5 DMG.",Hyper Beam.mp3
+35,Hyper Fang,NORMAL,8,2,2,0,0,FLINCH,Bites hard with sharp incisors: deals 8 DMG with a 30% chance to Flinch the foe.,Hyper Fang.mp3
 68,Hyper Voice,NORMAL,6,2,2,0,0,SNOWBALL,"If you used this Move in the previous turn, it deals +4 DMG.",Hyper Voice.mp3
 139,Hypnosis,PSYCHIC,0,2,2,0,0,SLEEP,Cause SLEEP on foes PKMN during 2 rounds (it wont be able to Move).,Hypnosis.mp3
 140,Ice Beam,WATER,12,3,1,1,4,FREEZE,"Cause FREEZE on foes PKMN (wont be able to Move, thaws with Fire attack or after 2 rounds). Use 1 extra energy to increase +4 DMG.",Ice Beam.mp3
@@ -112,7 +112,7 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 19,Inferno,FIRE,16,4,1,2,0,BURN,Use 2 extra energy to cause BURN for 2 rounds (3 DMG per round).,
 144,Iron Head,GROUND,8,2,1,0,0,FLINCH,"Cause FLINCH. (foes PKMN cannot use any Move this round, if PKMN was flinched in the previous round, it cannot be flinched again)",
 145,Kinetic Beam,NORMAL,7,2,1,0,0,ADAPT,This Move deals DMG as foes PKMN type Weakness.,
-146,Last Resort,NORMAL,16,4,1,0,0,NONE,,
+146,Last Resort,NORMAL,16,4,1,0,0,DESPERATION,High-risk ultimate move: deals 16 DMG. Deals +6 extra DMG (total 22 DMG) if user has less than 50% HP.,Giga Impact.mp3
 147,Lava Plume,FIRE,12,3,1,1,0,BURN,Use 1 extra energy to cause BURN for 2 rounds (2 DMG per round).,
 148,Leaf Blade,GRASS,8,2,1,0,0,CRITICAL,"You have 25% to deal a critical hit with this Move, increasing +4 DMG.",Leaf Blade.mp3
 149,Leaf Tornado,GRASS,16,4,4,0,0,SLOW_FOE,Reduce foes PKMN -2 Speed next round.,
@@ -120,15 +120,15 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 151,Leech Seed,GRASS,0,1,1,0,0,SEEDED,"Activate SEEDED on foes PKMN, during the next 3 rounds, while active at the start of the round deal 2 DMG and this PKMN recovers HP equal to the DMG dealt.",Leech Seed.mp3
 152,Lick,DARK,3,1,1,0,0,PARALYZE,"Has a 30% chance to cause PARALYZE to foes PKMN for 2 rounds (-2 SPD and 25% chance of being unable to Move for 2 rounds).",Lick.mp3
 232,Light Screen,PSYCHIC,0,2,2,0,0,WALL,"Activates a WALL, while active it will absorb 4 DMG that would be dealt to this PKMN. Once it receives 4 DMG it breaks and causes 4 DMG to foes PKMN.",Light Screen.mp3
-153,Liquidation,WATER,16,4,1,0,0,NONE,,
+153,Liquidation,WATER,14,3,1,0,0,SHIELD_BREAKER,Slams into foe with a torrent of water: deals 14 DMG and shatters any defensive Shield.,Hydro Pump.mp3
 154,Low Kick,FIGHTING,8,2,1,0,0,FLINCH,"Has a 30% to cause FLINCH. (foes PKMN cannot use any Move this round, if PKMN was flinched in the previous round, it cannot be flinched again)",Low Kick.mp3
 155,Low Sweep,FIGHTING,4,1,1,0,0,SLOW_FOE,Reduce foes PKMN -1 Speed next round.,
 156,Mega Drain,GRASS,8,2,1,1,3,LIFE_DRAIN,This PKMN recovers HP equal to 50% of the DMG dealt by this Move. Use 1 extra energy to increase +3 DMG and HP recovery to 100% instead.,Mega Drain.mp3
-54,Mega Punch,GROUND,12,3,1,0,0,NONE,,Mega Punch.mp3
-157,Megahorn,NORMAL,12,3,3,0,0,NONE,,Megahorn.mp3
+54,Mega Punch,GROUND,12,3,1,0,0,CRITICAL,Delivers a muscle-packed punch: deals 12 DMG with a 30% chance to land a Critical Hit (+4 DMG).,Mega Punch.mp3
+157,Megahorn,NORMAL,14,3,3,0,0,SHIELD_BREAKER,Charges with a gigantic horn: deals 14 DMG and shatters any defensive Shield or Wall.,Megahorn.mp3
 61,Metronome,NORMAL,16,4,1,0,0,ADAPT,This Move deals DMG as foes PKMN type Weakness.,Metronome.mp3
-158,Might Sphere,PSYCHIC,16,4,1,0,0,NONE,,
-159,Mind Bending,PSYCHIC,25,5,5,0,0,REST,In the next round this PKMN can only use Rest.,
+158,Might Sphere,PSYCHIC,14,3,1,0,0,WEAK_SPOT,Aura of immense power: deals 14 DMG as if hitting the foe's elemental Weakness.,Aura Sphere.mp3
+159,Mind Bending,PSYCHIC,25,5,5,0,0,REST,In the next round this PKMN must rest (only recovers +1⚡ fatigue).,
 160,Mist,WATER,0,1,1,0,0,COVER,Removes any negative effect caused to this PKMN and the next Move this PKMN uses has increased +2 DMG.,Mist.mp3
 60,Moonblast,NORMAL,12,3,1,0,0,BOOST_DMG_TYPE,"If foes PKMN is non-NORMAL type, this Move deals +4.",
 161,Mud Shot,GROUND,4,1,1,0,0,SLOW_FOE,Reduce foes PKMN -1 Speed next round.,Mud Shot.mp3
@@ -136,8 +136,8 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 51,Mud-Slap,GROUND,3,1,1,0,0,SLOW_FOE,Reduce foes PKMN -1 Speed next round.,Mud Slap.mp3
 163,Outrage,NORMAL,0,2,2,0,0,RAGE,"If this PKMN has received any DMG during this combat, increase +1 Speed and +4 DMG on its next Move.",Outrage.mp3
 164,Pay Day,NORMAL,8,2,2,0,0,EARNINGS,"Once per combat, if this Move is used in Campaign, earn 3 G.",Pay Day.mp3
-165,Payback,DARK,6,2,2,0,0,FLINCH,"Cause FLINCH. (foes PKMN cannot use any Move this round, if PKMN was flinched in the previous round, it cannot be flinched again)",
-10,Peck,NORMAL,3,1,1,0,0,BOOST_DMG_TYPE,Cause +2 DMG to GRASS and NORMAL type PKMN.,Peck.mp3
+165,Payback,DARK,6,2,2,1,2,REVENGE,"Deals 6 DMG. If user took damage or moves after the foe: deals +6 extra DMG (12 DMG).",
+10,Peck,NORMAL,3,0,1,0,0,NONE,"No energy cost, but requires at least 1 energy available.",Peck.mp3
 166,Petal Dance,GRASS,16,4,1,0,0,SNOWBALL,"If you used this Move in the previous turn, it deals +4 DMG.",Petal Dance.mp3
 69,Play Rough,NORMAL,12,3,1,0,0,REVENGE,"If this PKMN received DMG, this Move deals +3 DMG.",
 167,Pluck,NORMAL,3,1,1,0,0,BOOST_DMG_TYPE,Cause +2 DMG to GRASS and FIGHTING type PKMN.,
@@ -147,27 +147,27 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 28,Poison Jab,NORMAL,8,2,1,0,0,POISON,Causes POISON to foes PKMN (-1 DMG for rest of combat).,
 12,Poison Powder,DARK,0,1,1,0,0,POISON,Causes POISON to foes PKMN (-1 DMG for rest of combat).,Poison Powder.mp3
 7,Poison Sting,DARK,2,1,1,0,0,POISON_IF_FASTER,"If foes PKMN is slower than user, cause POISON.  (-1 DMG for rest of combat).",Poison Sting.mp3
-56,Pound,NORMAL,4,1,0,0,0,NONE,,Pound.mp3
+56,Pound,NORMAL,3,0,1,0,0,NONE,"No energy cost, but requires at least 1 energy available.",Pound.mp3
 171,Powder Snow,WATER,4,1,1,1,0,FREEZE,"Use 1 extra energy to cause FREEZE on foes PKMN (wont be able to Move, thaws with Fire attack or after 2 rounds).",Powder Snow.mp3
 172,Power Whip,GRASS,16,4,1,1,4,BOOST_DMG,Use 1 extra energy to increase +4 DMG to this Move.,
 173,Primal Coat,PSYCHIC,0,3,3,0,0,MIRAGE,"If this PKMN would receive DMG from foes PKMN Move, DMG is set to 0 and effect is annulled.",
 174,Protect,NORMAL,0,2,2,0,0,SHIELD,"Next 4 rounds, this PKMN receives reduced -1 DMG. (Excluding negative status effects)",Protect.mp3
 175,Psybeam,PSYCHIC,9,3,1,1,3,CONFUSION,"Cause CONFUSION on foes PKMN (35% chance to snap out each round, max 3 rounds, otherwise self-inflicts 2 DMG). Use 1 extra energy to increase +3 DMG.",Psybeam.mp3
 176,Psychic,PSYCHIC,8,2,1,1,4,BOOST_DMG,Use 1 extra energy to increase +4 DMG to this Move.,Psychic.mp3
-177,Psycho Cut,PSYCHIC,8,2,1,1,6,BOOST_DMG,Use 1 extra energy to increase +6 DMG to this Move.,
+177,Psycho Cut,PSYCHIC,8,2,1,1,3,CRITICAL,Tears foe with psychic blades. High critical hit ratio (deals +5 critical DMG).,
 30,Quick Attack,NORMAL,6,2,1,0,0,BOOST_IF_FASTER,"If this PKMN is faster than its foe, this Move costs -1 energy.",Quick Attack.mp3
 20,Rapid Spin,NORMAL,8,2,1,0,0,SUPPORT_BOOST,Removes any negative effect caused to this PKMN.,Rapid Spin.mp3
 3,Razor Leaf,GRASS,4,1,1,1,2,BOOST_DMG,Use 1 extra energy to increase +2 DMG.,Razor Leaf.mp3
-178,Razor Shell,WATER,8,2,1,0,0,NONE,,
+178,Razor Shell,WATER,8,2,1,0,0,SHIELD_BREAKER,Slashes with sharp shells: deals 8 DMG and shatters any defensive Shield on the foe.,Slash.mp3
 179,Recycle,NORMAL,0,2,2,0,0,RECYCLE,Use any item that has been already used during this combat.,Recycle.mp3
 180,Reflect,NORMAL,0,2,2,0,0,EVASIVE,The next Move used on this PKMN will fail and cause 3 DMG to the user.,Reflect.mp3
 181,Revenge,NORMAL,12,3,1,0,0,REVENGE,"If this PKMN received DMG, this Move deals +4 DMG.",Revenge.mp3
 182,Rock Blast,GROUND,2,1,1,0,0,SNOWBALL,"If you used this Move in the previous turn, it deals +4 DMG.",Rock Blast 2hits.mp3
 183,Rock Polish,GROUND,0,2,2,0,0,BOOST_GROUND_TYPE,"During the next 2 rounds, if this PKMN uses a GROUND type MOVE, increase +4 DMG.",
-184,Rock Slide,GROUND,16,4,4,1,4,BOOST_DMG,Use 1 extra energy to increase +4 DMG to this Move.,Rock Slide.mp3
+184,Rock Slide,GROUND,14,3,2,1,4,FLINCH,Hurls large boulders at the foe with 30% chance to cause FLINCH. Boost deals +4 DMG.,Rock Slide.mp3
 185,Rock Throw,GROUND,8,2,1,1,3,BOOST_DMG,Use 1 extra energy to increase +3 DMG to this Move.,Rock Throw.mp3
 53,Rock Tomb,GROUND,12,3,1,0,0,SLOW_FOE,Reduce foes PKMN -2 Speed next round.,Rock Tomb.mp3
-186,Rock Wrecker,GROUND,16,4,1,0,0,NONE,,
+186,Rock Wrecker,GROUND,20,4,1,0,0,REST,"Launches colossal boulders: deals 20 devastating DMG, but user must rest next round (only +1⚡ fatigue).",Rock Slide.mp3
 187,Rollout,GROUND,3,1,1,0,0,ROLLING,"If you used this Move in the previous turn, it deals X2 DMG.",Rollout.mp3
 42,Sand Attack,GROUND,2,1,1,0,0,BLIND,Deals 2 DMG and reduces foes PKMN Speed by 1 next round.,Sand Attack.mp3
 188,Sand Tomb,GROUND,4,2,2,0,0,CONSTRICT,Deals 4 DMG on strike and traps foes PKMN: can't swap and takes 2 DMG/round for 2 rounds.,Sand Tomb.mp3
@@ -176,10 +176,10 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 189,Seed Bomb,GRASS,12,3,1,1,3,SLOW_FOE,Reduce foes PKMN -1 Speed next round. Use 1 extra energy to increase +3 DMG.,
 190,Seismic Toss,FIGHTING,0,3,3,0,0,ANTI_TANK,This Move's DMG is equal to a 50% of foes PKMN's HP.,Seismic Toss.mp3
 191,Shadow Punch,DARK,12,3,1,1,4,SHIELD_BREAKER,Shatters foes PKMN's Shield or Wall completely. Use 1 extra energy to increase +4 DMG.,Shadow Punch.mp3
-192,Shell Smash,NORMAL,3,1,1,0,0,SLOW_FOE,Reduce foes PKMN -1 Speed next round.,
-193,Shock Wave,ELECTRIC,8,2,1,1,3,BOOST_DMG,Use 1 extra energy to increase +3 DMG to this Move.,Shock Wave.mp3
+192,Shell Smash,NORMAL,0,1,1,0,0,SHELL_SMASH,Breaks shell taking 2 self-DMG: permanently gains +4 attack DMG and +2 Speed.,
+193,Shock Wave,ELECTRIC,8,2,1,1,3,CANNOT_MISS,Rapid jolt of electricity that cannot miss: bypasses all evasion and mirage.,Shock Wave.mp3
 67,Sing,PSYCHIC,0,2,2,0,0,SLEEP,Cause SLEEP on foes PKMN during 2 rounds (it wont be able to Move).,Sing.mp3
-234,Slam,NORMAL,12,3,1,0,0,NONE,,Slam.mp3
+234,Slam,NORMAL,12,3,1,0,0,FLINCH,Slams the foe with a long tail or body: deals 12 DMG with a 25% chance to Flinch the foe.,Slam.mp3
 16,Slash,NORMAL,4,1,1,1,3,CRITICAL,"You have 25% to deal a critical hit with this Move, increasing +3 DMG. Use 1 extra energy to increase +3 DMG.",Slash.mp3
 194,Sleep Powder,GRASS,0,2,2,0,0,SLEEP,Cause SLEEP on foes PKMN during 2 rounds (it wont be able to Move).,Sleep Powder.mp3
 195,Sludge,DARK,6,2,1,0,0,DROWN,If foes PKMN as POISON increase +4 DMG to this Move.,Sludge.mp3
@@ -187,8 +187,8 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 197,Smack Down,GROUND,12,3,1,0,0,BOOST_DMG_TYPE,Cause +3 DMG to NORMAL type PKMN.,
 198,Smog,DARK,6,2,1,0,0,POISON,Causes POISON to foes PKMN (-1 DMG for rest of combat).,Smog.mp3
 199,Smokescreen,DARK,2,1,1,0,0,WEAKEN,Deals 2 DMG and weakens foes PKMN: -2 DMG on its next attack.,Smokescreen.mp3
-15,Solar Beam,GRASS,20,4,4,0,0,REST,In the next round this PKMN can only use Rest.,Solar Beam.mp3
-200,Sonic Boom,NORMAL,3,1,1,0,0,NONE,,Sonic Boom.mp3
+15,Solar Beam,GRASS,20,4,4,0,0,REST,In the next round this PKMN must rest (only recovers +1⚡ fatigue).,Solar Beam.mp3
+200,Sonic Boom,NORMAL,4,1,1,0,0,FIXED_DMG,Destructive shockwave: deals 4 fixed true DMG, bypassing defenses, shields, and resistance.,Sonic Boom.mp3
 201,Spark,ELECTRIC,8,2,1,1,0,PARALYZE,"Use 1 extra energy to cause PARALYZE to foes PKMN for 2 rounds (-2 SPD and 25% chance of being unable to Move for 2 rounds).",Spark.mp3
 202,Special Punch,FIGHTING,12,3,1,0,0,TRIPLE_TYPE,"This Move deals DMG as WATER, FIRE and ELECTRIC types.",
 203,Spite,DARK,3,1,1,0,0,LOCK,Deals 3 DMG and curses foes PKMN: locks its last used Move so it cannot be used next turn.,Spite.mp3
@@ -198,16 +198,16 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 206,Struggle Bug,PSYCHIC,8,2,1,0,0,BOOST_CONFUSED,"If foes PKMN has CONFUSION, this Move has +4 DMG.",
 207,Stun Spore,GRASS,0,1,1,0,0,PARALYZE,"Causes PARALYZE to foes PKMN for 2 rounds (-2 SPD and 25% chance of being unable to Move for 2 rounds).",Stun Spore.mp3
 208,Supersonic,NORMAL,0,2,1,0,0,CONFUSION,"Cause CONFUSION on foes PKMN (35% chance to snap out each round, max 3 rounds, otherwise self-inflicts 2 DMG).",Supersonic.mp3
-209,Surf,WATER,16,4,1,0,0,SNOWBALL,"This Move's effect applies even if not used at full energy. If you used this Move in the previous turn, it deals +4 DMG.",Surf.mp3
+209,Surf,WATER,12,3,2,1,3,BENCH_DAMAGE,Deals 12 DMG to active foe and 3 splash DMG to all benched foes. Boost deals +3 DMG.,Surf.mp3
 57,Sweet Kiss,PSYCHIC,0,1,0,0,0,CONFUSION,"Cause CONFUSION on foes PKMN (35% chance to snap out each round, max 3 rounds, otherwise self-inflicts 2 DMG).",Sweet Kiss.mp3
 43,Swift,NORMAL,4,1,1,1,3,CRITICAL,"You have 25% to deal a critical hit with this Move, increasing +3 DMG. Use 1 extra energy to increase +3 DMG.",Swift.mp3
 1,Tackle,NORMAL,3,0,1,0,0,NONE,"No energy cost, but requires at least 1 energy available.",Tackle.mp3
 210,Tail Whip,NORMAL,3,1,1,0,0,GROWING,Deals 3 DMG and lowers foes defense: +2 DMG to your next attack.,Tail Whip.mp3
 211,Zen Headbutt,PSYCHIC,3,1,1,0,0,FLINCH,"Has a 15% to cause FLINCH. (foes PKMN cannot use any Move this round, if PKMN was flinched in the previous round, it cannot be flinched again)",
 37,Take Down,NORMAL,20,4,4,1,0,RECOIL,"This effect applies whenever this PKMN uses this Move: This PKMN receives as recoil 25% of DMG dealt, minimum 1. Use 1 extra energy to avoid recoil.",Take Down.mp3
-212,Teleport,PSYCHIC,0,1,1,0,0,EVASIVE,The next Move used on this PKMN will fail.,Teleport.mp3
+212,Teleport,PSYCHIC,0,1,1,0,0,EVASIVE,"The next Move used on this PKMN will fail. Cannot be used consecutively.",Teleport.mp3
 213,Thrash,NORMAL,16,4,1,0,0,SNOWBALL,"This Move's effect applies even if not used at full energy. If you used this Move in the previous turn, it deals +3 DMG.",Thrash.mp3
-39,Thunder,ELECTRIC,13,2,2,0,0,MISS,"This Move has a 33% chance to Miss this attack, if so refund all energy.",Thunder.mp3
+39,Thunder,ELECTRIC,16,3,2,1,4,THUNDER,33% chance to miss (refunds energy). When it hits: deals 16 DMG and 35% chance to paralyze.,Thunder.mp3
 214,Thunder Fang,ELECTRIC,12,3,1,0,0,PARALYZE,"Has a 30% chance to cause PARALYZE to foes PKMN for 2 rounds (-2 SPD and 25% chance of being unable to Move for 2 rounds).",
 41,Thunder Punch,ELECTRIC,9,3,3,0,0,PARALYZE,"Causes PARALYZE to foes PKMN for 2 rounds (-2 SPD and 25% chance of being unable to Move for 2 rounds).",Thunder Punch.mp3
 6,Thunder Shock,ELECTRIC,4,1,1,0,0,PICHU_SHOCK,"Roll a 6-sided die: on 1 self-inflicts 1 DMG and recharges 1 energy, otherwise deals normal DMG.",Thunder Shock.mp3
@@ -217,12 +217,12 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 27,Toxic Spikes,DARK,8,2,1,0,0,POISON,Causes POISON to foes PKMN (-1 DMG for rest of combat).,
 218,Transform,NORMAL,0,3,3,0,0,METAMORPHOSIS,"This PKMN transforms into foes PKMN, for the rest of the combat, but any used Move will have decreased -2 DMG.",Transform.mp3
 219,Tri Attack,NORMAL,12,3,1,1,4,TRIPLE_TYPE,"This Move deals DMG as WATER, FIRE and ELECTRIC types. Use 1 extra energy to increase +4 DMG.",Tri Attack.mp3
-231,Trick Room,PSYCHIC,8,2,1,0,0,NONE,,
-220,Twister,NORMAL,8,2,2,0,0,NONE,,Twister.mp3
+231,Trick Room,PSYCHIC,0,2,2,0,0,TRICK_ROOM,Bizarre spatial dimension: for 2 rounds, Pokémon with lower Speed take their turn first!,Teleport.mp3
+220,Twister,NORMAL,8,2,2,0,0,FLINCH,Vicious dragon whirlwind: deals 8 DMG with a 25% chance to Flinch the target.,Twister.mp3
 221,Venom Drench,DARK,0,1,1,0,0,WEAKEN,Drenches foe in venom and lowers its attack power by -2 DMG for 2 rounds.,
 29,Venoshock,DARK,9,3,1,0,0,SHOCK,"If foes PKMN has POISON status, this Move deals X2 DMG.",
 13,Vine Whip,GRASS,8,2,1,1,3,SLOW_FOE,Use 1 extra energy to increase +3 DMG and reduce foes PKMN Speed by -1 next round.,Vine Whip.mp3
-222,Vital Throw,FIGHTING,8,2,1,1,3,BOOST_DMG,Use 1 extra energy to increase +3 DMG to this Move.,Vital Throw.mp3
+222,Vital Throw,FIGHTING,9,2,1,1,3,CANNOT_MISS,A concentrated judo throw that cannot miss: bypasses all evasion and mirage.,
 223,Water Gun,WATER,4,1,1,1,3,BOOST_DMG,Use 1 extra energy to increase +3 DMG to this Move.,Water Gun.mp3
 21,Water Pulse,WATER,6,2,1,1,0,CONFUSION,"Use 1 extra energy to cause CONFUSION on foes PKMN (35% chance to snap out each round, max 3 rounds, otherwise self-inflicts 2 DMG).",Water Pulse.mp3
 62,Will-O-Wisp,FIRE,0,1,1,0,0,BURN,Cause BURN for 2 rounds (2 DMG per round).,Will O Wisp.mp3
@@ -247,19 +247,19 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 248,Ice Fang,WATER,6,2,1,1,3,FREEZE,Use 1 extra energy to cause +3 DMG and freeze the foe for 2 rounds.,Bite.mp3
 249,Magical Leaf,GRASS,8,2,1,0,0,BOOST_IF_FASTER,"Never misses. If faster than foe, deals +3 DMG.",Razor Leaf.mp3
 250,Metal Claw,GROUND,6,2,1,0,0,SPEED_UP,Deals 6 DMG and increases this PKMN's Speed by +1 next round.,Slash.mp3
-251,Milk Drink,NORMAL,0,2,2,0,0,REST,Recovers 10 HP to this PKMN.,Softboiled.mp3
-252,Night Shade,DARK,6,2,1,0,0,NONE,Deals 6 damage ignoring defense.,Spite.mp3
+251,Milk Drink,NORMAL,0,3,3,0,0,HEAL,Recovers 10 HP to this PKMN.,Softboiled.mp3
+252,Night Shade,DARK,6,2,1,0,0,FIXED_DMG,Manifests a terrifying mirage: deals 6 fixed true DMG, bypassing defenses, shields, and resistance.,Spite.mp3
 253,Octazooka,WATER,10,3,1,0,0,BLIND,Blasts ink reducing foe's Speed by 2 next round.,Bubble Beam.mp3
-254,Petal Blizzard,GRASS,14,3,1,1,4,BOOST_DMG,Use 1 extra energy to increase +4 DMG to this Move.,Petal Dance.mp3
+254,Petal Blizzard,GRASS,11,3,2,1,3,BENCH_DAMAGE,Stirs up a violent petal whirlwind: deals 11 DMG to active foe and 3 splash DMG to benched foes.,Petal Dance.mp3
 255,Present,NORMAL,6,2,1,0,0,EXTRA_HIT,A surprise attack that has a 35% chance to hit twice.,Metronome.mp3
 256,Psywave,PSYCHIC,4,1,1,1,3,BOOST_DMG,Use 1 extra energy to increase +3 DMG.,Psybeam.mp3
-257,Recover,NORMAL,0,2,2,0,0,REST,Restores up to 8 HP to this PKMN.,Softboiled.mp3
+257,Recover,NORMAL,0,3,3,0,0,HEAL,Restores up to 8 HP to this PKMN.,Softboiled.mp3
 258,Sacred Fire,FIRE,18,4,1,1,0,BURN,Deals 18 DMG and guarantees BURN (2 DMG/round) for 2 rounds. Boost for +4 DMG.,Fire Blast.mp3
 259,Self-Destruct,NORMAL,16,3,1,0,0,RECOIL,Inflicts 16 DMG but user receives 6 recoil DMG.,Self-Destruct.mp3
-260,Shadow Ball,DARK,12,3,1,1,3,BOOST_DMG,Hurls a dark shadowy blob. Use 1 extra energy for +3 DMG.,Shadow Punch.mp3
+260,Shadow Ball,DARK,12,3,2,1,4,SHIELD_BREAKER,Hurls a dark shadowy blob. Shatters foe's shields and barriers completely.,Shadow Punch.mp3
 261,Signal Beam,GRASS,8,2,1,0,0,CONFUSION,Has a 30% chance to inflict CONFUSION on the foe.,Psybeam.mp3
 262,Sketch,NORMAL,4,1,1,0,0,METAMORPHOSIS,Copies foe's techniques and deals 4 basic damage.,Mimic.mp3
-263,Soft-Boiled,NORMAL,0,2,2,0,0,REST,Recovers 12 HP to this PKMN.,Softboiled.mp3
+263,Soft-Boiled,NORMAL,0,3,3,0,0,HEAL,Recovers 12 HP to this PKMN.,Softboiled.mp3
 264,Spikes,GROUND,0,1,1,0,0,BLOCK,Scatters spikes that deal 3 damage whenever foe switches or attacks next round.,Spikes.mp3
 265,Steel Wing,GROUND,10,2,1,0,0,SHIELD,Deals 10 DMG and grants user -1 damage received for 2 rounds.,Wing Attack.mp3
 266,Triple Kick,FIGHTING,3,2,2,0,0,MULTI_ATTACK,Hits 3 times sequentially with rising power.,Triple Kick 2hits.mp3
@@ -267,13 +267,13 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 268,Blaze Kick,FIRE,10,2,1,1,3,CRITICAL,Launches a fiery kick with high critical hit ratio. Use 1 extra energy for +3 DMG.,Blaze Kick.mp3
 269,Sky Uppercut,FIGHTING,8,2,1,1,3,BOOST_IF_FASTER,"If this PKMN is faster than its foe, deals +3 DMG to this Move.",Sky Uppercut.mp3
 270,Dragon Claw,NORMAL,8,2,1,1,3,CRITICAL,Slashes the foe with sharp dragon claws. 25% Critical Hit.,Dragon Claw.mp3
-271,Meteor Mash,GROUND,12,3,2,1,4,BOOST_DMG,Punches with the hard impact of a meteor. Boost increases damage by +4.,Meteor Mash.mp3
+271,Meteor Mash,GROUND,12,3,2,1,4,DMG_BOOST_CHANCE,Hard meteor punch. 35% chance to gain +3 DMG on next attacks for 2 rounds.,Meteor Mash.mp3
 272,Doom Desire,GROUND,14,3,2,1,4,SHIELD_BREAKER,Concentrates celestial energy into a devastating strike that ignores shields.,Doom Desire.mp3
 273,Psycho Boost,PSYCHIC,14,3,2,1,4,RECOIL,Unleashes a maximum power psychic beam. Deals massive damage with recoil.,Psycho Boost.mp3
 274,Luster Purge,PSYCHIC,10,2,1,1,3,BOOST_DMG,Unleashes a brilliant burst of light. Boost increases damage by +3.,Luster Purge.mp3
 275,Mist Ball,PSYCHIC,10,2,1,1,3,BOOST_DMG,Strikes with a misty orb of telekinetic feathers. Boost increases damage by +3.,Mist Ball.mp3
-276,Water Spout,WATER,12,3,2,1,4,BOOST_DMG,Spouts a giant pillar of water at high pressure. Boost deals +4 DMG.,Water Spout part 1.mp3
-277,Eruption,FIRE,12,3,2,1,4,BOOST_DMG,Explodes with catastrophic volcanic fire. Boost deals +4 DMG.,Eruption.mp3
+276,Water Spout,WATER,16,3,2,1,3,FULL_HP_POWER,Massive water pillar. Deals +4 DMG if user HP >= 80% but loses 4 DMG if user HP < 50%.,Water Spout part 1.mp3
+277,Eruption,FIRE,16,3,2,1,3,FULL_HP_POWER,Explodes with volcanic fire. Deals +4 DMG if user HP >= 80% but loses 4 DMG if user HP < 50%.,Eruption.mp3
 278,Overheat,FIRE,12,3,2,1,4,RECOIL,Attacks the foe with scorching all-out fire. High recoil strain.,Overheat.mp3
 279,Needle Arm,GRASS,6,2,1,1,2,FLINCH,Strikes with thorny cactus arms. Causes FLINCH on foe.,Needle Arm.mp3
 280,Crush Claw,NORMAL,8,2,1,1,3,CRITICAL,Tears at the target with giant crushing claws. 25% Critical Hit.,Crush Claw.mp3
@@ -283,10 +283,10 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 284,Draco Meteor,NORMAL,14,3,2,1,4,RECOIL,Summons celestial dragon comets onto the target with immense power.,Meteor Mash.mp3
 285,Arm Thrust,FIGHTING,3,1,1,1,0,MULTI_ATTACK,Attacks with consecutive thrusting arms (2-5 hits).,Arm Thrust 1hit.mp3
 286,Fake Out,NORMAL,4,1,1,1,2,FLINCH,"An unexpected slap that catches the foe off guard, causing FLINCH.",Fake Out.mp3
-287,Knock Off,DARK,6,2,1,1,3,BOOST_DMG,Knocks down the opponent with a swift hit. Boost deals +3 DMG.,Knock Off.mp3
+287,Knock Off,DARK,8,2,1,1,3,BUFF_PURGE,Strikes foe and knocks off their advantage: strips all shields barriers and damage buffs.,Knock Off.mp3
 288,Night Slash,DARK,8,2,1,1,3,CRITICAL,Slashes the foe as fast as shadows fall. 25% Critical Hit.,Night Shade.mp3
 289,Silver Wind,GRASS,6,2,1,1,3,BOOST_IF_FASTER,Attacks with a wind of shimmering powdery scales. Deals +3 DMG if faster.,Silver Wind.mp3
-290,Weather Ball,NORMAL,6,2,1,1,4,BOOST_DMG,Gathers natural energy from the weather. Boost increases damage by +4.,Weather Ball.mp3
+290,Weather Ball,NORMAL,8,2,1,1,3,WEATHER_BALL,Natural energy orb. If Sandstorm or Grassy Terrain is active: +6 DMG and adopts that element.,Weather Ball.mp3
 291,Astonish,DARK,4,1,1,1,2,FLINCH,"Shocks the foe with an unexpected ghostly fright, causing FLINCH.",Astonish.mp3
 292,Bounce,WATER,8,2,1,1,3,PARALYZE,"Bounces high into the air and crashes down, inflicting PARALYZE (-2 SPD and 25% chance of being unable to Move).",Bounce.mp3
 293,Spore,GRASS,0,2,1,0,0,SLEEP,Releases a cloud of hypnotic fungal spores that induce SLEEP.,Spore.mp3
@@ -308,5 +308,5 @@ id,name,type,base_dmg,cost,min_energy_req,boost_cost,boost_dmg,effect_type,descr
 309,Energy Ball,GRASS,8,2,1,1,3,BOOST_DMG,Draws pure energy from nature and launches it at the foe. Boost deals +3 DMG.,Giga Drain part 1.mp3
 310,Ominous Wind,DARK,6,2,1,1,3,BOOST_IF_FASTER,Blasts the target with a gust of spectral wind. Deals +3 DMG if faster.,Silver Wind.mp3
 311,Vacuum Wave,FIGHTING,4,1,1,1,2,BOOST_IF_FASTER,Whirrs its fists to send a wave of pure vacuum. Deals +2 DMG if faster.,Sonic Boom.mp3
-312,Magnet Bomb,GROUND,6,2,1,1,3,BOOST_DMG,Launches magnetized metal orbs that home in on the target.,Swift.mp3
+312,Magnet Bomb,GROUND,7,2,1,1,3,CANNOT_MISS,Launches magnetized homing metal orbs: bypasses all evasion and mirage.,Swift.mp3
 313,Crystal Blast,NORMAL,10,2,2,0,0,BENCH_DAMAGE,"Inflicts 10 DMG. If this Move deals DMG, inflicts 3 DMG to all benched foes.",Rock Slide.mp3

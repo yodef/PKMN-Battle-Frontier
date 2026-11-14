@@ -98,6 +98,20 @@ var johto_routes_title_lbl: Label = null
 var johto_routes_subtitle_lbl: Label = null
 var johto_routes_scroll_vbox: VBoxContainer = null
 
+# --- MODAL HOENN CAMPAIGN & ROUTES ---
+var hoenn_episodes_modal: Control = null
+var hoenn_routes_modal: Control = null
+var hoenn_episode_cards: Dictionary = {}
+var hoenn_routes_cards: Dictionary = {}
+var hoenn_current_routes_ep: int = 204
+var hoenn_routes_title_lbl: Label = null
+var hoenn_routes_subtitle_lbl: Label = null
+var hoenn_routes_scroll_vbox: VBoxContainer = null
+var hoenn_episodes_title_lbl: Label = null
+var hoenn_episodes_subtitle_lbl: Label = null
+var hoenn_episodes_btn_close: Button = null
+var hoenn_routes_btn_close: Button = null
+
 # --- MODALES DE ACHIEVEMENTS / LOGROS ---
 var achievements_modal: Control = null
 var achievements_panel: PanelContainer = null
@@ -262,10 +276,28 @@ var _is_camp_evo_active: bool = false
 @onready var showcase_header: Label = $ShopModal/Box/PackPanel/VBox/ShowcaseVBox/ShowcaseHeader
 
 var pack_reveal_box: VBoxContainer = null
-var reveal_cards_row: HBoxContainer = null
+var reveal_cards_row: Container = null
 var btn_reveal_another: Button = null
-const BOOSTER_PACK_COST: int = 5
+const BOOSTER_PACK_COST: int = 10
 const SHOWCASE_POKEMON_NAMES: Array[String] = ["Zapdos", "Articuno", "Moltres"]
+
+# --- SHOWOFF DE CARTAS OBTENIDAS EN SOBRES ---
+var pack_showoff_box: Control = null
+var showoff_card_container: PanelContainer = null
+var showoff_count_lbl: Label = null
+var showoff_banner_lbl: Label = null
+var showoff_status_badge: Label = null
+var showoff_thumb: TextureRect = null
+var showoff_name_lbl: Label = null
+var showoff_type_lbl: Label = null
+var showoff_stats_lbl: Label = null
+var btn_showoff_skip: Button = null
+var btn_showoff_next: Button = null
+var showoff_auto_timer: SceneTreeTimer = null
+var showoff_timer_token: int = 0
+var current_showoff_cards: Array = []
+var current_showoff_index: int = 0
+var showoff_active_tween: Tween = null
 
 # --- SHOP SHOWCASE ROTATION (EPIC & LEGENDARY FOILS ONLY) ---
 const SHOWCASE_ROTATION_INTERVAL: float = 6.0
@@ -539,6 +571,18 @@ var current_sorted_team_pool: Array = []
 var card_buttons_map: Dictionary = {} # id -> Button (compatibilidad)
 var team_card_views_map: Dictionary = {} # id -> Dictionary de vistas del grid
 
+# Pestañas por región + buscador (Selección de equipo y Colección)
+const REGION_TAB_IDS: Array = ["KANTO", "JOHTO", "HOENN", "SINNOH", "ALL"]
+const REGION_TAB_LABELS: Dictionary = {"KANTO": "Kanto", "JOHTO": "Johto", "HOENN": "Hoenn", "SINNOH": "Sinnoh", "ALL": "All"}
+var team_filter_region: String = "ALL"
+var team_search_query: String = ""
+var team_filters_box: VBoxContainer = null
+var team_region_buttons: Dictionary = {}
+var team_search_edit: LineEdit = null
+var team_region_pool_cache: Array = [] # pool antes de filtrar región/búsqueda (para contadores)
+var col_search_query: String = ""
+var col_search_edit: LineEdit = null
+
 func _ready() -> void:
 	refresh_cards_data_from_catalog()
 	
@@ -565,6 +609,7 @@ func _ready() -> void:
 	btn_team_sort_rarity.pressed.connect(func(): _on_team_sort_pressed("RARITY"))
 	btn_team_sort_evo.pressed.connect(func(): _on_team_sort_pressed("EVO"))
 	update_team_sort_buttons_ui()
+	_setup_team_select_filters()
 	
 	# Modal Campaign Hub
 	btn_hub_tutorial.pressed.connect(_on_hub_tutorial_pressed)
@@ -597,6 +642,17 @@ func _ready() -> void:
 			GameData.adventure_selected_region = "JOHTO"
 			adventure_regions_modal.visible = false
 			_open_johto_episodes_modal()
+		)
+	if btn_enter_hoenn:
+		btn_enter_hoenn.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			if not GameData.is_tutorial_completed():
+				_show_tutorial_prompt_for_locked_episode()
+				return
+			GameData.adventure_selected_region = "HOENN"
+			adventure_regions_modal.visible = false
+			_open_hoenn_episodes_modal()
 		)
 	if btn_close_adventure_regions:
 		btn_close_adventure_regions.pressed.connect(func():
@@ -697,6 +753,8 @@ func _ready() -> void:
 		elif GameData.campaign_submode == "ADVENTURE":
 			if GameData.adventure_selected_region == "JOHTO":
 				_open_johto_episodes_modal()
+			elif GameData.adventure_selected_region == "HOENN":
+				_open_hoenn_episodes_modal()
 			else:
 				update_adventure_episodes_ui()
 				adventure_episodes_modal.visible = true
@@ -736,7 +794,7 @@ func _ready() -> void:
 	btn_close_shop.pressed.connect(func():
 		if not GameData.tutorial_completed and (GameData.tutorial_step == 1 or GameData.tutorial_step == 2):
 			if shop_feedback_lbl:
-				shop_feedback_lbl.text = "⚠️ ¡Debes abrir tu primer sobre para continuar el tutorial!"
+				shop_feedback_lbl.text = GameData.tr_text("⚠️ You must open your first pack to continue the tutorial!", "⚠️ ¡Debes abrir tu primer sobre para continuar el tutorial!")
 				shop_feedback_lbl.visible = true
 			return
 		_stop_showcase_timer()
@@ -1065,6 +1123,8 @@ func _ready() -> void:
 		GameData.last_adventure_episode_conquered = false
 		if GameData.adventure_selected_region == "JOHTO":
 			_open_johto_episodes_modal()
+		elif GameData.adventure_selected_region == "HOENN":
+			_open_hoenn_episodes_modal()
 		else:
 			update_adventure_episodes_ui()
 			adventure_episodes_modal.visible = true
@@ -1272,17 +1332,17 @@ func update_campaign_hub_ui() -> void:
 		
 	# 1. Estado del Tutorial
 	if GameData.is_tutorial_completed():
-		tutorial_status_lbl.text = "Status: ✅ Completed (💎 5 Diamonds Claimed) • Replayable"
+		tutorial_status_lbl.text = GameData.tr_text("Status: ✅ Completed (💎 5 Diamonds Claimed) • Replayable", "Estado: ✅ Completado (💎 5 Diamantes Reclamados) • Repetible")
 		tutorial_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-		btn_hub_tutorial.text = "🔄 Replay Tutorial (Practice)"
+		btn_hub_tutorial.text = GameData.tr_text("🔄 Replay Tutorial (Practice)", "🔄 Repetir Tutorial (Práctica)")
 	else:
-		tutorial_status_lbl.text = "Status: ⏳ Not completed • First Clear: 💎 5 Diamonds & Unlocks Adventure"
+		tutorial_status_lbl.text = GameData.tr_text("Status: ⏳ Not completed • First Clear: 💎 5 Diamonds & Unlocks Adventure", "Estado: ⏳ No completado • Primera Victoria: 💎 5 Diamantes y Desbloquea Aventura")
 		tutorial_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
-		btn_hub_tutorial.text = "🎓 Start Tutorial"
+		btn_hub_tutorial.text = GameData.tr_text("🎓 Start Tutorial", "🎓 Iniciar Tutorial")
 
 	# 2. Estado de Adventure Mode
 	if not GameData.is_tutorial_completed():
-		adv_status_lbl.text = "Status: 🔒 Locked (Complete Battle Tutorial to unlock!)"
+		adv_status_lbl.text = GameData.tr_text("Status: 🔒 Locked (Complete Battle Tutorial to unlock!)", "Estado: 🔒 Bloqueado (¡Completa el Tutorial de Combate para desbloquear!)")
 		adv_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
 		btn_hub_adventure.text = "🔒 Locked (Complete Tutorial)"
 	else:
@@ -1662,6 +1722,19 @@ func update_adventure_regions_ui() -> void:
 		btn_enter_johto.disabled = false
 		btn_enter_johto.text = "🍂 Enter Johto ➜"
 		_apply_retro_button_style(btn_enter_johto, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+	var card_hoenn = get_node_or_null("AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn")
+	if card_hoenn:
+		card_hoenn.modulate = Color(1, 1, 1, 1)
+	var hoenn_status_lbl = get_node_or_null("AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn/Margin/HoennVBox/HoennStatus") as Label
+	var hoenn_badges = GameData.get_hoenn_gym_badges_count()
+	if hoenn_status_lbl:
+		hoenn_status_lbl.text = "Status: 🔓 Unlocked • 🏅 Gym Badges: %d/8 Conquered" % hoenn_badges
+		hoenn_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+	if btn_enter_hoenn:
+		btn_enter_hoenn.disabled = false
+		btn_enter_hoenn.text = "🌊 Enter Hoenn ➜"
+		_apply_retro_button_style(btn_enter_hoenn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 		
 	if league_status_lbl:
 		var kanto_badges = GameData.get_earned_gym_badges_count()
@@ -3174,6 +3247,636 @@ func _on_select_johto_route_pressed(ep_id: int, route_id: String) -> void:
 		GameData.adventure_current_episode = ep_id
 		open_team_select_for_campaign()
 
+# --- HOENN CAMPAIGN MODAL & BRANCHING ROUTES ---
+
+func _open_hoenn_episodes_modal() -> void:
+	_setup_hoenn_episodes_modal()
+	_refresh_hoenn_episodes_ui()
+	hoenn_episodes_modal.visible = true
+
+func _setup_hoenn_episodes_modal() -> void:
+	if hoenn_episodes_modal != null:
+		return
+	hoenn_episodes_modal = Control.new()
+	hoenn_episodes_modal.name = "HoennEpisodesModal"
+	hoenn_episodes_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hoenn_episodes_modal.visible = false
+	hoenn_episodes_modal.z_index = 45
+	add_child(hoenn_episodes_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.06, 0.08, 0.12, 1.0)
+	hoenn_episodes_modal.add_child(bg)
+	
+	var vbox = VBoxContainer.new()
+	vbox.name = "HoennEpisodesBox"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 20.0
+	vbox.offset_top = 28.0
+	vbox.offset_right = -20.0
+	vbox.offset_bottom = -20.0
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
+	vbox.add_theme_constant_override("separation", 8)
+	hoenn_episodes_modal.add_child(vbox)
+	
+	hoenn_episodes_title_lbl = Label.new()
+	hoenn_episodes_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hoenn_episodes_title_lbl.text = "🌊 HOENN CAMPAIGN: EPISODES & GYMS"
+	hoenn_episodes_title_lbl.add_theme_font_size_override("font_size", 16)
+	hoenn_episodes_title_lbl.add_theme_color_override("font_color", Color(0.35, 0.75, 1.0))
+	vbox.add_child(hoenn_episodes_title_lbl)
+	
+	hoenn_episodes_subtitle_lbl = Label.new()
+	hoenn_episodes_subtitle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hoenn_episodes_subtitle_lbl.text = "Embark on the 8 Gym Challenges of Hoenn & thwart the villainous plans of Team Aqua & Magma!"
+	hoenn_episodes_subtitle_lbl.add_theme_font_size_override("font_size", 11)
+	hoenn_episodes_subtitle_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+	vbox.add_child(hoenn_episodes_subtitle_lbl)
+	
+	var wallet_lbl = Label.new()
+	wallet_lbl.name = "HoennWalletBadge"
+	wallet_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	wallet_lbl.text = "💰 Campaign Gold: %d G  |  💎 %d Diamonds" % [GameData.campaign_gold, GameData.player_diamonds]
+	wallet_lbl.add_theme_font_size_override("font_size", 12)
+	wallet_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+	vbox.add_child(wallet_lbl)
+	
+	var scroll = ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+	
+	var ep_vbox = VBoxContainer.new()
+	ep_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ep_vbox.add_theme_constant_override("separation", 8)
+	scroll.add_child(ep_vbox)
+	
+	var ep_ids = [201, 202, 203, 204, 205, 206, 207, 208]
+	for ep_id in ep_ids:
+		var is_branching = (ep_id in [204, 206, 208])
+		var c_panel = PanelContainer.new()
+		c_panel.name = "CardHoennEp%d" % ep_id
+		var c_sb = StyleBoxFlat.new()
+		c_sb.bg_color = Color(0.10, 0.16, 0.22, 0.95)
+		c_sb.border_color = Color(0.25, 0.45, 0.65, 0.8)
+		c_sb.set_border_width_all(1)
+		c_sb.set_corner_radius_all(6)
+		c_sb.content_margin_left = 12
+		c_sb.content_margin_right = 12
+		c_sb.content_margin_top = 8
+		c_sb.content_margin_bottom = 8
+		c_panel.add_theme_stylebox_override("panel", c_sb)
+		ep_vbox.add_child(c_panel)
+		
+		var cvbox = VBoxContainer.new()
+		cvbox.add_theme_constant_override("separation", 3)
+		c_panel.add_child(cvbox)
+		
+		var ep_title = Label.new()
+		ep_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_title.add_theme_font_size_override("font_size", 13)
+		ep_title.add_theme_color_override("font_color", Color(1, 1, 1))
+		cvbox.add_child(ep_title)
+		
+		var ep_desc = Label.new()
+		ep_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_desc.add_theme_font_size_override("font_size", 11)
+		ep_desc.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		cvbox.add_child(ep_desc)
+		
+		var ep_rew = Label.new()
+		ep_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_rew.add_theme_font_size_override("font_size", 11)
+		ep_rew.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		cvbox.add_child(ep_rew)
+		
+		var ep_status = Label.new()
+		ep_status.text = "Status: Ready"
+		ep_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_status.add_theme_font_size_override("font_size", 11)
+		ep_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		cvbox.add_child(ep_status)
+		
+		var ep_btn = Button.new()
+		ep_btn.custom_minimum_size = Vector2(0, 34)
+		ep_btn.add_theme_font_size_override("font_size", 12)
+		ep_btn.text = "Embark"
+		_apply_retro_button_style(ep_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		if is_branching:
+			ep_btn.pressed.connect(func():
+				if GameData.is_drag_scrolling():
+					return
+				_open_hoenn_branching_routes_modal(ep_id)
+			)
+		else:
+			ep_btn.pressed.connect(func():
+				if GameData.is_drag_scrolling():
+					return
+				_on_select_hoenn_episode_pressed(ep_id)
+			)
+		cvbox.add_child(ep_btn)
+		
+		hoenn_episode_cards[ep_id] = {
+			"panel": c_panel,
+			"title": ep_title,
+			"desc": ep_desc,
+			"rewards": ep_rew,
+			"status": ep_status,
+			"btn": ep_btn,
+			"is_branching": is_branching
+		}
+	
+	hoenn_episodes_btn_close = Button.new()
+	hoenn_episodes_btn_close.name = "BtnCloseHoennEpisodes"
+	hoenn_episodes_btn_close.custom_minimum_size = Vector2(0, 36)
+	hoenn_episodes_btn_close.text = "⬅ Return to Regions"
+	hoenn_episodes_btn_close.add_theme_font_size_override("font_size", 12)
+	_apply_retro_button_style(hoenn_episodes_btn_close, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+	hoenn_episodes_btn_close.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		hoenn_episodes_modal.visible = false
+		update_adventure_regions_ui()
+		adventure_regions_modal.visible = true
+	)
+	vbox.add_child(hoenn_episodes_btn_close)
+
+func _refresh_hoenn_episodes_ui() -> void:
+	if hoenn_episodes_modal == null:
+		return
+	var is_es = GameData.is_spanish()
+	
+	if hoenn_episodes_title_lbl:
+		hoenn_episodes_title_lbl.text = "🌊 CAMPAÑA HOENN: EPISODIOS Y GIMNASIOS" if is_es else "🌊 HOENN CAMPAIGN: EPISODES & GYMS"
+	if hoenn_episodes_subtitle_lbl:
+		hoenn_episodes_subtitle_lbl.text = "¡Embárcate en los 8 Desafíos de Gimnasio de Hoenn y detén al Team Aqua y Magma!" if is_es else "Embark on the 8 Gym Challenges of Hoenn & thwart the villainous plans of Team Aqua & Magma!"
+	if hoenn_episodes_btn_close:
+		hoenn_episodes_btn_close.text = "⬅ Volver a Regiones" if is_es else "⬅ Return to Regions"
+	
+	var wallet_lbl = hoenn_episodes_modal.find_child("HoennWalletBadge", true, false) as Label
+	if wallet_lbl:
+		wallet_lbl.text = ("💰 Oro de Campaña: %d G  |  💎 %d Diamantes" if is_es else "💰 Campaign Gold: %d G  |  💎 %d Diamonds") % [GameData.campaign_gold, GameData.player_diamonds]
+		
+	var episode_meta = {
+		201: {
+			"title_en": "Episode I: Roxanne & the Stone Badge",
+			"title_es": "Episodio I: Petra y la Medalla Piedra",
+			"desc_en": "Cross Route 104 and Petalburg Woods before challenging Gym Leader Roxanne and her rock-solid defense in Rustboro City.",
+			"desc_es": "Cruza la Ruta 104 y el Bosque Petalia antes de desafiar a la Líder Petra y a sus rocas defensivas en Ciudad Férrica.",
+			"badge_en": "Stone Badge",
+			"badge_es": "Medalla Piedra",
+			"prev_en": "the Tutorial",
+			"prev_es": "el Tutorial"
+		},
+		202: {
+			"title_en": "Episode II: Brawly & the Knuckle Badge",
+			"title_es": "Episodio II: Marcial y la Medalla Puño",
+			"desc_en": "Sail to Dewford Town with Mr. Briney, explore Granite Cave and ride the fighting waves of Gym Leader Brawly.",
+			"desc_es": "Navega hacia Pueblo Azuliza junto al Sr. Arenque, explora la Cueva Granito y enfrenta las olas de combate del Líder Marcial.",
+			"badge_en": "Knuckle Badge",
+			"badge_es": "Medalla Puño",
+			"prev_en": "Episode I",
+			"prev_es": "el Episodio I"
+		},
+		203: {
+			"title_en": "Episode III: Wattson & the Dynamo Badge",
+			"title_es": "Episodio III: Erico y la Medalla Dinamo",
+			"desc_en": "Ride the Seaside Cycling Road to Mauville City and overcome the high-voltage traps of Gym Leader Wattson.",
+			"desc_es": "Recorre la ciclovía costera hasta Ciudad Malvalona y desafía las trampas electromagnéticas del Líder Erico.",
+			"badge_en": "Dynamo Badge",
+			"badge_es": "Medalla Dinamo",
+			"prev_en": "Episode II",
+			"prev_es": "el Episodio II"
+		},
+		204: {
+			"title_en": "Episode IV: Flannery & the Heat Badge",
+			"title_es": "Episodio IV: Candela y la Medalla Calor",
+			"desc_en": "Operation Routes: Ascend Mt. Chimney through Jagged Pass to thwart Team Magma and conquer the hot springs of Lavaridge Gym.",
+			"desc_es": "Rutas de Operación: Sube al Monte Cenizo en el Desfiladero para detener al Team Magma y conquista las aguas termales de Lavacalda.",
+			"badge_en": "Heat Badge",
+			"badge_es": "Medalla Calor",
+			"prev_en": "Episode III",
+			"prev_es": "el Episodio III"
+		},
+		205: {
+			"title_en": "Episode V: Norman & the Balance Badge",
+			"title_es": "Episodio V: Norman y la Medalla Equilibrio",
+			"desc_en": "Return home to Petalburg City for the fateful duel against your father, Gym Leader Norman, and the colossal might of Slaking.",
+			"desc_es": "Regresa a Ciudad Petalia para el combate definitivo contra tu padre, el Líder Norman, y la inmensa fuerza de Slaking.",
+			"badge_en": "Balance Badge",
+			"badge_es": "Medalla Equilibrio",
+			"prev_en": "Episode IV",
+			"prev_es": "el Episodio IV"
+		},
+		206: {
+			"title_en": "Episode VI: Winona & the Feather Badge",
+			"title_es": "Episodio VI: Alana y la Medalla Pluma",
+			"desc_en": "Operation Routes: Rescue Weather Institute scientists on Route 119 and duel Winona's aerial squadron in the Fortree treetops.",
+			"desc_es": "Rutas de Operación: Rescata a los científicos del Instituto Meteorológico en la Ruta 119 y enfrenta a Alana en las copas de Arborada.",
+			"badge_en": "Feather Badge",
+			"badge_es": "Medalla Pluma",
+			"prev_en": "Episode V",
+			"prev_es": "el Episodio V"
+		},
+		207: {
+			"title_en": "Episode VII: Tate & Liza & the Mind Badge",
+			"title_es": "Episodio VII: Vito y Leti y la Medalla Mente",
+			"desc_en": "Reach Mossdeep City, investigate Shoal Cave and triumph over the twin telepathic synergy of Solrock and Lunatone.",
+			"desc_es": "Llega a Ciudad Algaria, investiga la Caverna Cardumen y supera el combate sincronizado de Solrock y Lunatone.",
+			"badge_en": "Mind Badge",
+			"badge_es": "Medalla Mente",
+			"prev_en": "Episode VI",
+			"prev_es": "el Episodio VI"
+		},
+		208: {
+			"title_en": "Episode VIII: Wallace & the Primal Awakening",
+			"title_es": "Episodio VIII: Plubio y el Despertar Primigenio",
+			"desc_en": "Operation Routes: Avert the clash of titans in the Cave of Origin, scale Sky Pillar and master the Sootopolis Gym.",
+			"desc_es": "Rutas de Operación: Apacigua el choque titánico en la Cueva del Origen, escala el Pilar Celeste y conquista el Gimnasio Arrecípolis.",
+			"badge_en": "Rain Badge",
+			"badge_es": "Medalla Lluvia",
+			"prev_en": "Episode VII",
+			"prev_es": "el Episodio VII"
+		}
+	}
+	
+	for ep_id in hoenn_episode_cards.keys():
+		var card = hoenn_episode_cards[ep_id]
+		var is_unlocked = GameData.is_adventure_episode_unlocked(ep_id)
+		var is_completed = GameData.is_adventure_episode_completed(ep_id)
+		var is_branching = bool(card.get("is_branching", false))
+		var is_in_progress = (GameData.adventure_current_episode == ep_id and not GameData.adventure_player_team_state.is_empty())
+		
+		var lbl_title = card["title"] as Label
+		var lbl_desc = card["desc"] as Label
+		var lbl_rewards = card["rewards"] as Label
+		var lbl_status = card["status"] as Label
+		var btn = card["btn"] as Button
+		var panel = card["panel"] as PanelContainer
+		var meta = episode_meta.get(ep_id, {})
+		
+		lbl_title.text = meta.get("title_es" if is_es else "title_en", "Episode %d" % ep_id)
+		lbl_desc.text = meta.get("desc_es" if is_es else "desc_en", "")
+		var badge_name = meta.get("badge_es" if is_es else "badge_en", "Badge")
+		var total_st = GameData.get_adventure_episode_total_stages_all_routes(ep_id)
+		var total_dia = GameData.get_adventure_episode_total_diamonds(ep_id)
+		if is_branching:
+			var route_count = 3 if ep_id == 208 else 2
+			if is_es:
+				lbl_rewards.text = "%d Rutas (%d Combates)  |  Recompensas: 💎 %d Diamantes & 🏅 %s" % [route_count, total_st, total_dia, badge_name]
+			else:
+				lbl_rewards.text = "%d Routes (%d Battles)  |  Rewards: 💎 %d Diamonds & 🏅 %s" % [route_count, total_st, total_dia, badge_name]
+		else:
+			if is_es:
+				lbl_rewards.text = "%d Combates  |  Recompensas: 💎 %d Diamantes & 🏅 %s" % [total_st, total_dia, badge_name]
+			else:
+				lbl_rewards.text = "%d Battles  |  Rewards: 💎 %d Diamonds & 🏅 %s" % [total_st, total_dia, badge_name]
+		
+		if not is_unlocked:
+			panel.modulate = Color(0.7, 0.7, 0.75, 0.8)
+			lbl_title.add_theme_color_override("font_color", Color(0.5, 0.6, 0.7))
+			var prev_txt = meta.get("prev_es" if is_es else "prev_en", "previous episode")
+			lbl_status.text = ("Status: 🔒 Bloqueado (Completa %s)" if is_es else "Status: 🔒 Locked (Complete %s)") % prev_txt
+			lbl_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			btn.text = "🔒 Bloqueado" if is_es else "🔒 Locked"
+			btn.disabled = true
+			_apply_retro_button_style(btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+		elif is_in_progress:
+			panel.modulate = Color(1, 1, 1, 1)
+			lbl_title.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			var total = GameData.get_adventure_total_stages(ep_id)
+			lbl_status.text = ("Status: En Progreso (Combate %d/%d)" if is_es else "Status: In Progress (Battle %d/%d)") % [GameData.adventure_current_stage, total]
+			lbl_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			if is_branching:
+				btn.text = "🗺️ Ver Rutas (En Progreso)" if is_es else "🗺️ View Routes (In Progress)"
+			else:
+				btn.text = "⛺ Continuar Desafío (Campamento)" if is_es else "⛺ Continue Episode (Camp)"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		elif is_completed:
+			panel.modulate = Color(1, 1, 1, 1)
+			lbl_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			lbl_status.text = "Status: 🏅 Conquistado • Rejugable" if is_es else "Status: 🏅 Conquered • Replayable"
+			lbl_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			if is_branching:
+				btn.text = "🗺️ Ver Rutas (Completadas)" if is_es else "🗺️ View Routes (Cleared)"
+			else:
+				btn.text = "🗺️ Rejugar Episodio" if is_es else "🗺️ Replay Episode"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		else:
+			panel.modulate = Color(1, 1, 1, 1)
+			lbl_title.add_theme_color_override("font_color", Color(1, 1, 1))
+			lbl_status.text = "Status: ⚡ Disponible • ¡Listo para desafiar!" if is_es else "Status: ⚡ Available • Ready to challenge!"
+			lbl_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			if is_branching:
+				btn.text = "🗺️ Explorar Rutas ➜" if is_es else "🗺️ Explore Routes ➜"
+			else:
+				btn.text = "⚔️ Iniciar Episodio ➜" if is_es else "⚔️ Launch Episode ➜"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+func _on_select_hoenn_episode_pressed(episode_id: int) -> void:
+	if GameData.is_drag_scrolling():
+		return
+	if not GameData.is_tutorial_completed():
+		_show_tutorial_prompt_for_locked_episode()
+		return
+	if not GameData.is_adventure_episode_unlocked(episode_id):
+		return
+	if hoenn_episodes_modal:
+		hoenn_episodes_modal.visible = false
+	GameData.campaign_submode = "ADVENTURE"
+	GameData.adventure_selected_region = "HOENN"
+	if GameData.adventure_current_episode != episode_id:
+		GameData.reset_adventure_episode(episode_id)
+	GameData.adventure_current_episode = episode_id
+	if GameData.adventure_player_team_state.is_empty():
+		open_team_select_for_campaign()
+	else:
+		update_campaign_ui()
+		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
+
+func _open_hoenn_branching_routes_modal(ep_id: int) -> void:
+	hoenn_current_routes_ep = ep_id
+	_setup_hoenn_routes_modal()
+	_refresh_hoenn_routes_ui(ep_id)
+	if hoenn_episodes_modal:
+		hoenn_episodes_modal.visible = false
+	hoenn_routes_modal.visible = true
+
+func _setup_hoenn_routes_modal() -> void:
+	if hoenn_routes_modal != null:
+		return
+	hoenn_routes_modal = Control.new()
+	hoenn_routes_modal.name = "HoennRoutesModal"
+	hoenn_routes_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hoenn_routes_modal.visible = false
+	hoenn_routes_modal.z_index = 50
+	add_child(hoenn_routes_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.06, 0.08, 0.12, 1.0)
+	hoenn_routes_modal.add_child(bg)
+	
+	var vbox = VBoxContainer.new()
+	vbox.name = "HoennRoutesBox"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 20.0
+	vbox.offset_top = 28.0
+	vbox.offset_right = -20.0
+	vbox.offset_bottom = -20.0
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
+	vbox.add_theme_constant_override("separation", 8)
+	hoenn_routes_modal.add_child(vbox)
+	
+	hoenn_routes_title_lbl = Label.new()
+	hoenn_routes_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hoenn_routes_title_lbl.text = "🗺️ HOENN ROUTES"
+	hoenn_routes_title_lbl.add_theme_font_size_override("font_size", 16)
+	hoenn_routes_title_lbl.add_theme_color_override("font_color", Color(0.35, 0.75, 1.0))
+	vbox.add_child(hoenn_routes_title_lbl)
+	
+	hoenn_routes_subtitle_lbl = Label.new()
+	hoenn_routes_subtitle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hoenn_routes_subtitle_lbl.text = "Select an operational sector to deploy your team:"
+	hoenn_routes_subtitle_lbl.add_theme_font_size_override("font_size", 11)
+	hoenn_routes_subtitle_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+	vbox.add_child(hoenn_routes_subtitle_lbl)
+	
+	var scroll = ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+	
+	hoenn_routes_scroll_vbox = VBoxContainer.new()
+	hoenn_routes_scroll_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hoenn_routes_scroll_vbox.add_theme_constant_override("separation", 8)
+	scroll.add_child(hoenn_routes_scroll_vbox)
+	
+	hoenn_routes_btn_close = Button.new()
+	hoenn_routes_btn_close.name = "BtnCloseHoennRoutes"
+	hoenn_routes_btn_close.custom_minimum_size = Vector2(0, 40)
+	hoenn_routes_btn_close.text = "⬅ Return to Hoenn Episodes"
+	hoenn_routes_btn_close.add_theme_font_size_override("font_size", 12)
+	_apply_retro_button_style(hoenn_routes_btn_close, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+	hoenn_routes_btn_close.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		hoenn_routes_modal.visible = false
+		_open_hoenn_episodes_modal()
+	)
+	vbox.add_child(hoenn_routes_btn_close)
+
+func _refresh_hoenn_routes_ui(ep_id: int) -> void:
+	if hoenn_routes_scroll_vbox == null:
+		return
+	for child in hoenn_routes_scroll_vbox.get_children():
+		hoenn_routes_scroll_vbox.remove_child(child)
+		child.queue_free()
+	hoenn_routes_cards.clear()
+	
+	var is_es = GameData.is_spanish()
+	var _fmt_combates := func(n: int) -> String:
+		if is_es:
+			return "1 Combate" if n == 1 else "%d Combates" % n
+		return "1 Battle" if n == 1 else "%d Battles" % n
+	
+	if hoenn_routes_btn_close:
+		hoenn_routes_btn_close.text = "⬅ Volver a Episodios de Hoenn" if is_es else "⬅ Return to Hoenn Episodes"
+	
+	var routes_def = []
+	if ep_id == 204:
+		hoenn_routes_title_lbl.text = "🌋 EPISODIO IV: OPERACIONES DEL MONTE CENIZO" if is_es else "🌋 EPISODE IV: MT. CHIMNEY OPERATIONS"
+		hoenn_routes_subtitle_lbl.text = "Detén la ofensiva volcánica del Team Magma y conquista el Gimnasio Lavacalda:" if is_es else "Halt Team Magma's volcanic assault and conquer Lavaridge Gym:"
+		var c_jag = GameData.get_adventure_route_stage_count(204, "jagged_pass")
+		var c_lav = GameData.get_adventure_route_stage_count(204, "lavaridge_gym")
+		routes_def = [
+			{
+				"id": "jagged_pass",
+				"name": ("Desfiladero y Monte Cenizo (%s)" if is_es else "Jagged Pass & Mt. Chimney (%s)") % _fmt_combates.call(c_jag),
+				"desc": "Enfrenta a los reclutas y al Comandante Tabitha del Team Magma para impedir que desestabilicen el cráter volcánico." if is_es else "Confront Team Magma operatives sabotaging the volcanic crater over boiling magma springs.",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes • Desbloquea el Gimnasio Lavacalda" if is_es else "%s  |  Reward: 💎 %d Diamonds • Unlocks Lavaridge Gym") % [_fmt_combates.call(c_jag), GameData.get_adventure_route_diamonds(204, "jagged_pass")]
+			},
+			{
+				"id": "lavaridge_gym",
+				"name": ("Gimnasio Lavacalda de Candela (%s)" if is_es else "Lavaridge Hot Springs Gym (%s)") % _fmt_combates.call(c_lav),
+				"desc": "Atraviesa las chimeneas de vapor caliente y desafía la ardiente pasión de la Líder Candela y su Torkoal." if is_es else "Navigate steam geysers and defeat Gym Leader Flannery to earn the Heat Badge.",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes & 🏅 Medalla Calor (¡Victoria Final!)" if is_es else "%s  |  Reward: 💎 %d Diamonds & 🏅 Heat Badge (Final Clear!)") % [_fmt_combates.call(c_lav), GameData.get_adventure_route_diamonds(204, "lavaridge_gym")]
+			}
+		]
+	elif ep_id == 206:
+		hoenn_routes_title_lbl.text = "🌿 EPISODIO VI: OPERACIONES DE ARBORADA" if is_es else "🌿 EPISODE VI: FORTREE OPERATIONS"
+		hoenn_routes_subtitle_lbl.text = "Rescata el Instituto Meteorológico y vuela alto en el Gimnasio Arborada:" if is_es else "Rescue the Weather Institute and soar high in Fortree Gym:"
+		var c_wea = GameData.get_adventure_route_stage_count(206, "weather_institute")
+		var c_for = GameData.get_adventure_route_stage_count(206, "fortree_gym")
+		routes_def = [
+			{
+				"id": "weather_institute",
+				"name": ("Instituto Meteorológico y Ruta 119 (%s)" if is_es else "Weather Institute & Route 119 (%s)") % _fmt_combates.call(c_wea),
+				"desc": "Rescata a los investigadores del clima y revela los camuflajes con el Detector Devon en los puentes colgantes." if is_es else "Rescue researchers studying extreme weather anomalies from villainous infiltrators.",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes • Desbloquea el Gimnasio Arborada" if is_es else "%s  |  Reward: 💎 %d Diamonds • Unlocks Fortree Gym") % [_fmt_combates.call(c_wea), GameData.get_adventure_route_diamonds(206, "weather_institute")]
+			},
+			{
+				"id": "fortree_gym",
+				"name": ("Gimnasio Arborada de Alana (%s)" if is_es else "Fortree Treetop Gym (%s)") % _fmt_combates.call(c_for),
+				"desc": "Asciende a las copas de los árboles y combate contra el escuadrón aéreo de la Líder Alana y su majestuoso Altaria." if is_es else "Ascend the rope bridges to challenge Gym Leader Winona and her aerial squadron.",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes & 🏅 Medalla Pluma (¡Victoria Final!)" if is_es else "%s  |  Reward: 💎 %d Diamonds & 🏅 Feather Badge (Final Clear!)") % [_fmt_combates.call(c_for), GameData.get_adventure_route_diamonds(206, "fortree_gym")]
+			}
+		]
+	elif ep_id == 208:
+		hoenn_routes_title_lbl.text = "🌧️ EPISODIO VIII: CRISIS PRIMIGENIA Y ARRECÍPOLIS" if is_es else "🌧️ EPISODE VIII: PRIMAL CRISIS & SOOTOPOLIS"
+		hoenn_routes_subtitle_lbl.text = "Detén el cataclismo de tierra y mar y conquista la última medalla de Hoenn:" if is_es else "Avert the cataclysm of land and sea and conquer Hoenn's final Gym:"
+		var c_cav = GameData.get_adventure_route_stage_count(208, "cave_of_origin")
+		var c_sky = GameData.get_adventure_route_stage_count(208, "sky_pillar")
+		var c_soo = GameData.get_adventure_route_stage_count(208, "sootopolis_gym")
+		routes_def = [
+			{
+				"id": "cave_of_origin",
+				"name": ("Cueva del Origen (Choque de Titanes) (%s)" if is_es else "Cave of Origin (Primal Crisis) (%s)") % _fmt_combates.call(c_cav),
+				"desc": "Penetra en la cámara subterránea más profunda para apaciguar las apariciones de Groudon y Kyogre." if is_es else "Confront the titans of land and sea whose primordial clash threatens to engulf Hoenn.",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes • Desbloquea el Pilar Celeste" if is_es else "%s  |  Reward: 💎 %d Diamonds • Unlocks Sky Pillar") % [_fmt_combates.call(c_cav), GameData.get_adventure_route_diamonds(208, "cave_of_origin")]
+			},
+			{
+				"id": "sky_pillar",
+				"name": ("Cima del Pilar Celeste (%s)" if is_es else "Sky Pillar Apex (%s)") % _fmt_combates.call(c_sky),
+				"desc": "Escala la milenaria torre sobre las nubes para invocar la mediación del legendario Rayquaza." if is_es else "Ascend the crumbling ancient tower above the clouds to witness the dragon mediator.",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes • Desbloquea el Gimnasio Arrecípolis" if is_es else "%s  |  Reward: 💎 %d Diamonds • Unlocks Sootopolis Gym") % [_fmt_combates.call(c_sky), GameData.get_adventure_route_diamonds(208, "sky_pillar")]
+			},
+			{
+				"id": "sootopolis_gym",
+				"name": ("Gimnasio Arrecípolis de Plubio (%s)" if is_es else "Sootopolis Water Gym (%s)") % _fmt_combates.call(c_soo),
+				"desc": "Supera las baldosas de hielo resbaladizo y desafía la elegancia acuática de Milotic y el Líder Plubio." if is_es else "Walk across delicate ice tiles and conquer Gym Leader Wallace to claim the Rain Badge!",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes & 🏅 Medalla Lluvia (¡Campaña Conquistada!)" if is_es else "%s  |  Reward: 💎 %d Diamonds & 🏅 Rain Badge (Campaign Conquered!)") % [_fmt_combates.call(c_soo), GameData.get_adventure_route_diamonds(208, "sootopolis_gym")]
+			}
+		]
+		
+	for r in routes_def:
+		var r_id: String = str(r["id"])
+		var c_panel = PanelContainer.new()
+		c_panel.name = "CardHoennRoute_%s" % r_id
+		var c_sb = StyleBoxFlat.new()
+		c_sb.bg_color = Color(0.10, 0.16, 0.22, 0.95)
+		c_sb.border_color = Color(0.25, 0.45, 0.65, 0.8)
+		c_sb.set_border_width_all(1)
+		c_sb.set_corner_radius_all(6)
+		c_sb.content_margin_left = 12
+		c_sb.content_margin_right = 12
+		c_sb.content_margin_top = 8
+		c_sb.content_margin_bottom = 8
+		c_panel.add_theme_stylebox_override("panel", c_sb)
+		hoenn_routes_scroll_vbox.add_child(c_panel)
+		
+		var cvbox = VBoxContainer.new()
+		cvbox.add_theme_constant_override("separation", 3)
+		c_panel.add_child(cvbox)
+		
+		var r_title = Label.new()
+		r_title.text = r["name"]
+		r_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_title.add_theme_font_size_override("font_size", 13)
+		r_title.add_theme_color_override("font_color", Color(1, 1, 1))
+		cvbox.add_child(r_title)
+		
+		var r_desc = Label.new()
+		r_desc.text = r["desc"]
+		r_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_desc.add_theme_font_size_override("font_size", 11)
+		r_desc.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		cvbox.add_child(r_desc)
+		
+		var r_rew = Label.new()
+		r_rew.text = r["rewards"]
+		r_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_rew.add_theme_font_size_override("font_size", 11)
+		r_rew.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		cvbox.add_child(r_rew)
+		
+		var r_status = Label.new()
+		r_status.text = "Status: Ready"
+		r_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_status.add_theme_font_size_override("font_size", 11)
+		r_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		cvbox.add_child(r_status)
+		
+		var r_btn = Button.new()
+		r_btn.custom_minimum_size = Vector2(0, 34)
+		r_btn.add_theme_font_size_override("font_size", 12)
+		r_btn.text = "Select Route"
+		_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		r_btn.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			_on_select_hoenn_route_pressed(ep_id, r_id)
+		)
+		cvbox.add_child(r_btn)
+		
+		var is_unlocked = GameData.is_adventure_route_unlocked(ep_id, r_id)
+		var is_cleared = GameData.is_adventure_route_completed(ep_id, r_id)
+		var is_in_progress = (GameData.adventure_current_episode == ep_id and GameData.get_adventure_selected_route(ep_id) == r_id and not GameData.adventure_player_team_state.is_empty())
+		
+		if not is_unlocked:
+			c_panel.modulate = Color(0.7, 0.7, 0.75, 0.8)
+			r_title.add_theme_color_override("font_color", Color(0.5, 0.6, 0.7))
+			r_status.text = "Status: 🔒 Bloqueado (Completa la operación previa)" if is_es else "Status: 🔒 Locked (Clear previous sector first)"
+			r_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			r_btn.text = "🔒 Bloqueado" if is_es else "🔒 Locked"
+			r_btn.disabled = true
+			_apply_retro_button_style(r_btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+		elif is_in_progress:
+			c_panel.modulate = Color(1, 1, 1, 1)
+			r_title.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			var total = GameData.get_adventure_total_stages(ep_id)
+			r_status.text = ("Status: En Progreso (Combate %d/%d)" if is_es else "Status: In Progress (Battle %d/%d)") % [GameData.adventure_current_stage, total]
+			r_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			r_btn.text = "⛺ Continuar Ruta (Campamento)" if is_es else "⛺ Continue Route (Camp)"
+			r_btn.disabled = false
+			_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		elif is_cleared:
+			c_panel.modulate = Color(1, 1, 1, 1)
+			r_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			r_status.text = "Status: 🏅 Ruta Despejada • Rejugable" if is_es else "Status: 🏅 Route Cleared • Replayable"
+			r_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			r_btn.text = "🗺️ Rejugar Ruta" if is_es else "🗺️ Replay Route"
+			r_btn.disabled = false
+			_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		else:
+			c_panel.modulate = Color(1, 1, 1, 1)
+			r_title.add_theme_color_override("font_color", Color(1, 1, 1))
+			r_status.text = "Status: ⚡ Disponible • ¡Lista para desplegar!" if is_es else "Status: ⚡ Available • Ready to deploy!"
+			r_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			r_btn.text = "⚔️ Iniciar Operación ➜" if is_es else "⚔️ Launch Operation ➜"
+			r_btn.disabled = false
+			_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+func _on_select_hoenn_route_pressed(ep_id: int, route_id: String) -> void:
+	if not GameData.is_adventure_route_unlocked(ep_id, route_id):
+		return
+	if hoenn_routes_modal:
+		hoenn_routes_modal.visible = false
+	if hoenn_episodes_modal:
+		hoenn_episodes_modal.visible = false
+	GameData.campaign_submode = "ADVENTURE"
+	GameData.adventure_selected_region = "HOENN"
+	
+	var is_same_route = (GameData.adventure_current_episode == ep_id and GameData.get_adventure_selected_route(ep_id) == route_id)
+	if is_same_route and not GameData.adventure_player_team_state.is_empty():
+		update_campaign_ui()
+		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
+	else:
+		GameData.set_adventure_selected_route(ep_id, route_id)
+		GameData.reset_adventure_episode(ep_id)
+		GameData.adventure_current_episode = ep_id
+		open_team_select_for_campaign()
+
 
 func _on_hub_tutorial_pressed() -> void:
 	if GameData.is_drag_scrolling():
@@ -3270,22 +3973,33 @@ func _show_tutorial_prompt_modal(title: String, msg_bbcode: String, btn_text: St
 func _show_tutorial_confirmation_modal() -> void:
 	_setup_tutorial_confirmation_modal()
 	if GameData.tutorial_completed:
-		tutorial_confirm_title_lbl.text = "🎓 Replay Combat Tutorial?"
-		tutorial_confirm_msg_lbl.text = "You will enter a practice battle to review the fundamentals of Pokémon combat.\n\nDo you want to start now?"
-		btn_confirm_tutorial.text = "⚔️ Start Practice"
+		tutorial_confirm_title_lbl.text = GameData.tr_text("🎓 Replay Combat Tutorial?", "🎓 ¿Repetir Tutorial de Combate?")
+		tutorial_confirm_msg_lbl.text = GameData.tr_text(
+			"You will enter a practice battle to review the fundamentals of Pokémon combat.\n\nDo you want to start now?",
+			"Entrarás en una batalla de práctica para repasar los fundamentos del combate Pokémon.\n\n¿Deseas comenzar ahora?"
+		)
+		btn_confirm_tutorial.text = GameData.tr_text("⚔️ Start Practice", "⚔️ Iniciar Práctica")
 	else:
-		tutorial_confirm_title_lbl.text = "🎓 Start Combat Tutorial?"
-		tutorial_confirm_msg_lbl.text = "You will enter a guided battle to learn the fundamentals of Pokémon combat.\n\nFirst completion reward: 💎 5 Diamonds & unlocks Episode I!\n\nDo you want to start now?"
-		btn_confirm_tutorial.text = "⚔️ Start Tutorial"
+		tutorial_confirm_title_lbl.text = GameData.tr_text("🎓 Start Combat Tutorial?", "🎓 ¿Iniciar Tutorial de Combate?")
+		tutorial_confirm_msg_lbl.text = GameData.tr_text(
+			"You will enter a guided battle to learn the fundamentals of Pokémon combat.\n\nFirst completion reward: 💎 5 Diamonds & unlocks Episode I!\n\nDo you want to start now?",
+			"Entrarás en una batalla guiada para aprender los fundamentos del combate Pokémon.\n\nRecompensa de primera vez: 💎 5 Diamantes ¡y desbloquea el Episodio I!\n\n¿Deseas comenzar ahora?"
+		)
+		btn_confirm_tutorial.text = GameData.tr_text("⚔️ Start Tutorial", "⚔️ Iniciar Tutorial")
+	btn_cancel_tutorial.text = GameData.tr_text("Cancel", "Cancelar")
 	btn_cancel_tutorial.visible = true
 	tutorial_prompt_callback = Callable()
 	tutorial_confirm_modal.visible = true
 
 func _show_tutorial_prompt_for_locked_episode() -> void:
 	_setup_tutorial_confirmation_modal()
-	tutorial_confirm_title_lbl.text = "🔒 Adventure Mode is Locked!"
-	tutorial_confirm_msg_lbl.text = "You must complete the Battle Tutorial first before entering Adventure Mode!\n\nWould you like to start the Tutorial now?"
-	btn_confirm_tutorial.text = "🎓 Start Tutorial"
+	tutorial_confirm_title_lbl.text = GameData.tr_text("🔒 Adventure Mode is Locked!", "🔒 ¡Modo Aventura Bloqueado!")
+	tutorial_confirm_msg_lbl.text = GameData.tr_text(
+		"You must complete the Battle Tutorial first before entering Adventure Mode!\n\nWould you like to start the Tutorial now?",
+		"¡Debes completar el Tutorial de Combate primero antes de entrar al Modo Aventura!\n\n¿Deseas iniciar el Tutorial ahora?"
+	)
+	btn_confirm_tutorial.text = GameData.tr_text("🎓 Start Tutorial", "🎓 Iniciar Tutorial")
+	btn_cancel_tutorial.text = GameData.tr_text("Cancel", "Cancelar")
 	btn_cancel_tutorial.visible = true
 	tutorial_prompt_callback = Callable()
 	tutorial_confirm_modal.visible = true
@@ -3340,25 +4054,38 @@ func _show_tutorial_step1_intro_guidance() -> void:
 		GameData.diamonds_changed.emit(GameData.player_diamonds)
 		GameData.save_profile()
 	_show_tutorial_prompt_modal(
-		"🎓 ¡Bienvenido a Pokémon Battle Frontier!",
-		"¡Hola, Entrenador! Para comenzar tus batallas necesitarás cartas de Pokémon. Las cartas se consiguen en la Tienda abriendo Sobres de Expansión con Diamantes 💎.\n\n🎁 ¡Has recibido [color=gold][b]💎 25 Diamantes[/b][/color] de bienvenida para comprar tu primer sobre!\n\nToca el botón a continuación para ir a la Tienda a abrir tu sobre.",
-		"🛒 Ir a la Tienda ➡️",
+		GameData.tr_text("🎓 Welcome to Pokémon Battle Frontier!", "🎓 ¡Bienvenido a Pokémon Battle Frontier!"),
+		GameData.tr_text(
+			"Hello, Trainer! To start battling you will need Pokémon cards. Cards are obtained in the Shop by opening Booster Packs with Diamonds 💎.\n\n🎁 You have received [color=gold][b]💎 25 Welcome Diamonds[/b][/color] to buy your first pack!\n\nTap the button below to visit the Shop and open your pack.",
+			"¡Hola, Entrenador! Para comenzar tus batallas necesitarás cartas de Pokémon. Las cartas se consiguen en la Tienda abriendo Sobres de Expansión con Diamantes 💎.\n\n🎁 ¡Has recibido [color=gold][b]💎 25 Diamantes[/b][/color] de bienvenida para comprar tu primer sobre!\n\nToca el botón a continuación para ir a la Tienda a abrir tu sobre."
+		),
+		GameData.tr_text("🛒 Go to Shop ➡️", "🛒 Ir a la Tienda ➡️"),
 		func():
 			_on_shop_pressed()
 	)
 
 func _show_card_anatomy_and_starter_modal() -> void:
 	_show_tutorial_prompt_modal(
-		"🃏 Anatomía de una Carta Pokémon",
-		"¡Felicidades por abrir tu primer Sobre de Expansión!\n\n" +
-		"Cada carta de Pokémon cuenta con estadísticas clave para el combate:\n" +
-		"• [b]❤️ HP (Puntos de Salud):[/b] La vida del Pokémon. Si llega a 0, queda fuera de combate (KO).\n" +
-		"• [b]⚔️ ATK & 🛡️ DEF:[/b] Poder ofensivo y resistencia al daño recibido.\n" +
-		"• [b]⏩ SPD (Velocidad):[/b] Define el orden de iniciativa en cada ronda.\n" +
-		"• [b]🌿🔥💧 Tipos y Debilidades:[/b] Golpear con ventaja elemental otorga daño crítico adicional (+2 DMG).\n" +
-		"• [b]⚡ Energía y Movimientos:[/b] Los movimientos consumen Energía. Si necesitas más, puedes usar 'Recargar Energía' (+2⚡).\n\n" +
-		"¡Ahora selecciona a tu [color=gold][b]Pokémon Inicial[/b][/color] de entre las 4 regiones para liderar tu aventura!",
-		"🌟 Elegir Pokémon Inicial ➡️",
+		GameData.tr_text("🃏 Pokémon Card Anatomy", "🃏 Anatomía de una Carta Pokémon"),
+		GameData.tr_text(
+			"Congratulations on opening your first Booster Pack!\n\n" +
+			"Every Pokémon card has key stats for battle:\n" +
+			"• [b]❤️ HP (Hit Points):[/b] The Pokémon's life. If it reaches 0, it is knocked out (KO).\n" +
+			"• [b]⚔️ ATK & 🛡️ DEF:[/b] Offensive power and resistance to incoming damage.\n" +
+			"• [b]⏩ SPD (Speed):[/b] Determines initiative turn order in each round.\n" +
+			"• [b]🌿🔥💧 Types & Weaknesses:[/b] Striking with type advantage grants bonus critical damage (+2 DMG).\n" +
+			"• [b]⚡ Energy & Moves:[/b] Moves cost Energy. If you need more, you can use 'Recharge Energy' (+2⚡).\n\n" +
+			"Now choose your [color=gold][b]Starter Pokémon[/b][/color] from across the 4 regions to lead your adventure!",
+			"¡Felicidades por abrir tu primer Sobre de Expansión!\n\n" +
+			"Cada carta de Pokémon cuenta con estadísticas clave para el combate:\n" +
+			"• [b]❤️ HP (Puntos de Salud):[/b] La vida del Pokémon. Si llega a 0, queda fuera de combate (KO).\n" +
+			"• [b]⚔️ ATK & 🛡️ DEF:[/b] Poder ofensivo y resistencia al daño recibido.\n" +
+			"• [b]⏩ SPD (Velocidad):[/b] Define el orden de iniciativa en cada ronda.\n" +
+			"• [b]🌿🔥💧 Tipos y Debilidades:[/b] Golpear con ventaja elemental otorga daño crítico adicional (+2 DMG).\n" +
+			"• [b]⚡ Energía y Movimientos:[/b] Los movimientos consumen Energía. Si necesitas más, puedes usar 'Recargar Energía' (+2⚡).\n\n" +
+			"¡Ahora selecciona a tu [color=gold][b]Pokémon Inicial[/b][/color] de entre las 4 regiones para liderar tu aventura!"
+		),
+		GameData.tr_text("🌟 Choose Starter Pokémon ➡️", "🌟 Elegir Pokémon Inicial ➡️"),
 		func():
 			_open_starter_selection_modal()
 	)
@@ -3370,6 +4097,9 @@ func _open_starter_selection_modal() -> void:
 		shop_modal.visible = false
 	if pack_reveal_box:
 		pack_reveal_box.visible = false
+	if pack_showoff_box:
+		pack_showoff_box.visible = false
+		showoff_timer_token += 1
 	_setup_starter_selection_modal()
 	starter_select_modal.z_index = 100
 	starter_region_active = "Kanto"
@@ -3417,14 +4147,14 @@ func _setup_starter_selection_modal() -> void:
 	panel.add_child(vbox)
 	
 	var title = Label.new()
-	title.text = "🌟 ELIGE TU POKÉMON INICIAL"
+	title.text = GameData.tr_text("🌟 CHOOSE YOUR STARTER POKÉMON", "🌟 ELIGE TU POKÉMON INICIAL")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 18)
 	title.add_theme_color_override("font_color", Color("#FFD700"))
 	vbox.add_child(title)
 	
 	var subtitle = Label.new()
-	subtitle.text = "Selecciona una región y elige al compañero que te acompañará en tu aventura:"
+	subtitle.text = GameData.tr_text("Select a region and choose the companion who will join you on your adventure:", "Selecciona una región y elige al compañero que te acompañará en tu aventura:")
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	subtitle.add_theme_font_size_override("font_size", 11)
@@ -3552,7 +4282,8 @@ func _refresh_starter_cards_display() -> void:
 		name_row.add_child(name_lbl)
 		
 		var stats_lbl = Label.new()
-		stats_lbl.text = "❤️ HP: %d  |  ⏩ SPD: %d  |  Tipo: %s" % [int(d.get("hp", 10)), int(d.get("speed", 1)), str(d.get("type", ""))]
+		var type_title = GameData.tr_text("Type", "Tipo")
+		stats_lbl.text = "❤️ HP: %d  |  ⏩ SPD: %d  |  %s: %s" % [int(d.get("hp", 10)), int(d.get("speed", 1)), type_title, str(d.get("type", ""))]
 		stats_lbl.add_theme_font_size_override("font_size", 10)
 		stats_lbl.add_theme_color_override("font_color", Color("#B0BEC5"))
 		info_vbox.add_child(stats_lbl)
@@ -3560,7 +4291,7 @@ func _refresh_starter_cards_display() -> void:
 		var m1 = str(d.get("move1_name", "Tackle"))
 		var m2 = str(d.get("move2_name", "Attack"))
 		var moves_lbl = Label.new()
-		moves_lbl.text = "⚔️ Movimientos: %s, %s" % [m1, m2]
+		moves_lbl.text = "%s: %s, %s" % [GameData.tr_text("⚔️ Moves", "⚔️ Movimientos"), m1, m2]
 		moves_lbl.add_theme_font_size_override("font_size", 10)
 		moves_lbl.add_theme_color_override("font_color", Color("#81D4FA"))
 		info_vbox.add_child(moves_lbl)
@@ -3568,7 +4299,7 @@ func _refresh_starter_cards_display() -> void:
 		var select_btn = Button.new()
 		select_btn.custom_minimum_size = Vector2(110, 36)
 		select_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		select_btn.text = "⭐ Elegir ⭐"
+		select_btn.text = GameData.tr_text("⭐ Choose ⭐", "⭐ Elegir ⭐")
 		select_btn.add_theme_font_size_override("font_size", 11)
 		_apply_retro_button_style(select_btn, type_color.darkened(0.4), type_color, false)
 		var chosen_id = pid
@@ -3591,6 +4322,9 @@ func _on_starter_selected(starter_id: int) -> void:
 		shop_modal.visible = false
 	if pack_reveal_box:
 		pack_reveal_box.visible = false
+	if pack_showoff_box:
+		pack_showoff_box.visible = false
+		showoff_timer_token += 1
 		
 	if bgm_player and bgm_player.playing:
 		bgm_player.stop()
@@ -3616,16 +4350,22 @@ func _show_camp_evolution_tutorial_guidance() -> void:
 		
 	if owned_stones <= 0:
 		_show_tutorial_prompt_modal(
-			"⛺ Campamento y Evolución",
-			"¡Bienvenido al Campamento de Aventura!\n\nAquí tus Pokémon ganan experiencia y evolucionan. Tu [b]%s[/b] ya tiene su experiencia al máximo (EXP: MAX), pero necesita una Piedra Evolutiva para evolucionar.\n\n🛒 Abre la Tienda de Suministros del Campamento para comprar 1x [b]%s[/b] por 10 G." % [st_name, stone_name],
-			"🛒 Abrir Tienda del Campamento ➡️",
-			func(): _on_camp_shop_pressed()
+			GameData.tr_text("⛺ Camp & Evolution", "⛺ Campamento y Evolución"),
+			GameData.tr_text(
+				"Welcome to the Adventure Camp!\n\nHere your Pokémon gain experience and evolve. Your [b]%s[/b] has maxed out its experience (EXP: MAX), but needs an Evolution Stone to evolve.\n\n✨ Open your Pokémon's Evolution and tap the button with the [b]%s[/b] to purchase it for %d G." % [st_name, stone_name, GameData.ITEM_COST_STONE],
+				"¡Bienvenido al Campamento de Aventura!\n\nAquí tus Pokémon ganan experiencia y evolucionan. Tu [b]%s[/b] ya tiene su experiencia al máximo (EXP: MAX), pero necesita una Piedra Evolutiva para evolucionar.\n\n✨ Abre la Evolución de tu Pokémon y pulsa el botón con la [b]%s[/b] para comprarla por %d G." % [st_name, stone_name, GameData.ITEM_COST_STONE]
+			),
+			GameData.tr_text("✨ Open Evolution ➡️", "✨ Abrir Evolución ➡️"),
+			func(): _open_camp_evolution_selector(0)
 		)
 	else:
 		_show_tutorial_prompt_modal(
-			"✨ ¡Listo para Evolucionar!",
-			"¡Ya tienes la [b]%s[/b] en tu mochila!\n\nAhora pulsa el botón [b]'✨ Evolve!'[/b] en la tarjeta de tu [b]%s[/b] en el Campamento para iniciar su evolución." % [stone_name, st_name],
-			"Entendido ➡️",
+			GameData.tr_text("✨ Ready to Evolve!", "✨ ¡Listo para Evolucionar!"),
+			GameData.tr_text(
+				"You now have the [b]%s[/b] in your bag!\n\nNow tap the [b]'✨ Evolve!'[/b] button on your [b]%s[/b]'s card in Camp to begin its evolution." % [stone_name, st_name],
+				"¡Ya tienes la [b]%s[/b] en tu mochila!\n\nAhora pulsa el botón [b]'✨ Evolve!'[/b] en la tarjeta de tu [b]%s[/b] en el Campamento para iniciar su evolución." % [stone_name, st_name]
+			),
+			GameData.tr_text("Understood ➡️", "Entendido ➡️"),
 			func(): pass
 		)
 
@@ -3638,9 +4378,12 @@ func _show_camp_combat2_prompt() -> void:
 		s1_name = str(GameData.pokemon_catalog[s1_id].get("name", "Stage 1"))
 		
 	_show_tutorial_prompt_modal(
-		"🌟 ¡Evolución Completada!",
-		"¡Tu inicial ha evolucionado exitosamente a [b]%s[/b]!\n\nHa aumentado notablemente sus Puntos de Salud, su Velocidad y ha aprendido ataques más poderosos.\n\n⚔️ ¡Es momento de poner a prueba su poder en el Combate Avanzado contra otro Pokémon de Fase 1 y su banca rival!" % s1_name,
-		"⚔️ Iniciar Combate Avanzado ➡️",
+		GameData.tr_text("🌟 Evolution Complete!", "🌟 ¡Evolución Completada!"),
+		GameData.tr_text(
+			"Your starter has successfully evolved into [b]%s[/b]!\n\nIt has significantly higher Hit Points, faster Speed, and learned more powerful attacks.\n\n⚔️ Time to test its might in Advanced Combat against another Stage 1 Pokémon and their benched ally!" % s1_name,
+			"¡Tu inicial ha evolucionado exitosamente a [b]%s[/b]!\n\nHa aumentado notablemente sus Puntos de Salud, su Velocidad y ha aprendido ataques más poderosos.\n\n⚔️ ¡Es momento de poner a prueba su poder en el Combate Avanzado contra otro Pokémon de Fase 1 y su banca rival!" % s1_name
+		),
+		GameData.tr_text("⚔️ Start Advanced Battle ➡️", "⚔️ Iniciar Combate Avanzado ➡️"),
 		func():
 			GameData.tutorial_combat_phase = 2
 			GameData.is_tutorial_mode = true
@@ -3664,7 +4407,9 @@ func open_team_select_for_campaign() -> void:
 		var ep_roman = {
 			1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII",
 			101: "Johto I", 102: "Johto II", 103: "Johto III", 104: "Johto IV",
-			105: "Johto V", 106: "Johto VI", 107: "Johto VII", 108: "Johto VIII"
+			105: "Johto V", 106: "Johto VI", 107: "Johto VII", 108: "Johto VIII",
+			201: "Hoenn I", 202: "Hoenn II", 203: "Hoenn III", 204: "Hoenn IV",
+			205: "Hoenn V", 206: "Hoenn VI", 207: "Hoenn VII", 208: "Hoenn VIII"
 		}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
 		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
 	elif GameData.campaign_submode == "LAKE_OF_RAGE":
@@ -3743,6 +4488,11 @@ func update_campaign_ui() -> void:
 		var poke_flute_row = btn_buy_poke_flute.get_parent()
 		if poke_flute_row:
 			poke_flute_row.visible = false
+	# Hiper Poción retirada de la tienda del campamento (solo se obtiene por recompensas)
+	if btn_buy_hyper_potion:
+		var hyper_potion_row = btn_buy_hyper_potion.get_parent()
+		if hyper_potion_row:
+			hyper_potion_row.visible = false
 	
 	# Botones de compra respetan el límite de 10 consumibles
 	if is_consumable_full:
@@ -4505,25 +5255,9 @@ func _setup_camp_modals() -> void:
 		var empty_sb = StyleBoxEmpty.new()
 		shop_section.add_theme_stylebox_override("panel", empty_sb)
 		
-	var stones_sep = HSeparator.new()
-	shop_vbox.add_child(stones_sep)
-	
-	var stones_hdr = Label.new()
-	stones_hdr.text = "💎 EVOLUTION STONES (%d G each • 1x S1 / 2x S2)" % GameData.ITEM_COST_STONE
-	stones_hdr.add_theme_font_size_override("font_size", 12)
-	stones_hdr.add_theme_color_override("font_color", Color("#FFE082"))
-	shop_vbox.add_child(stones_hdr)
-	
-	var stones_scroll = ScrollContainer.new()
-	stones_scroll.custom_minimum_size = Vector2(0, 175)
-	stones_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	shop_vbox.add_child(stones_scroll)
-	
-	camp_shop_stones_list = VBoxContainer.new()
-	camp_shop_stones_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	camp_shop_stones_list.add_theme_constant_override("separation", 5)
-	stones_scroll.add_child(camp_shop_stones_list)
-	_refresh_camp_shop_stones_ui()
+	# Las Piedras Evolutivas ya NO se venden en la Tienda del Campamento:
+	# solo se compran desde el selector de Evolución de cada Pokémon (botón con la textura de la piedra).
+	camp_shop_stones_list = null
 		
 	var shop_bot_sep = HSeparator.new()
 	shop_vbox.add_child(shop_bot_sep)
@@ -4798,9 +5532,12 @@ func _refresh_camp_shop_stones_ui() -> void:
 				if is_tutorial_stage4 and target_stone == st_req_type:
 					var st_name = str(GameData.get_tutorial_starter_info(GameData.tutorial_starter_id).get("name", "Starter"))
 					_show_tutorial_prompt_modal(
-						"💎 ¡Piedra Comprada!",
-						"¡Has adquirido la Piedra requerida!\n\nAhora cierra la Tienda de Suministros y pulsa [b]'✨ Evolve!'[/b] en tu [b]%s[/b] para realizar la evolución." % st_name,
-						"¡A Evolucionar! ✨",
+						GameData.tr_text("💎 Stone Purchased!", "💎 ¡Piedra Comprada!"),
+						GameData.tr_text(
+							"You have acquired the required Evolution Stone!\n\nNow close the Supply Shop and tap [b]'✨ Evolve!'[/b] on your [b]%s[/b] to perform the evolution." % st_name,
+							"¡Has adquirido la Piedra requerida!\n\nAhora cierra la Tienda de Suministros y pulsa [b]'✨ Evolve!'[/b] en tu [b]%s[/b] para realizar la evolución." % st_name
+						),
+						GameData.tr_text("Evolve Now! ✨", "¡A Evolucionar! ✨"),
 						func():
 							camp_shop_modal.visible = false
 					)
@@ -5253,6 +5990,7 @@ func _show_camp_bag_targets(item_id: String) -> void:
 				if success:
 					GameData.play_combat_sfx("use")
 					GameData.add_daily_mission_progress("use_camp_items", 1)
+					GameData.record_campaign_item_used()
 					if cur_it in ["potion", "super_potion", "hyper_potion"]:
 						GameData.add_daily_mission_progress("heal_hp", 1)
 					update_campaign_ui()
@@ -5828,14 +6566,21 @@ func _open_camp_evolution_selector(team_idx: int) -> void:
 		
 		if stone_owned < stone_req:
 			var btn_buy_st = Button.new()
-			btn_buy_st.custom_minimum_size = Vector2(104, 28)
+			btn_buy_st.name = "BtnBuyStone"
+			btn_buy_st.custom_minimum_size = Vector2(56, 56)
 			btn_buy_st.add_theme_font_size_override("font_size", 10)
-			btn_buy_st.text = "🛒 Buy (%d G)" % GameData.ITEM_COST_STONE
+			btn_buy_st.icon = GameData.get_item_texture(stone_type)
+			btn_buy_st.expand_icon = true
+			btn_buy_st.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			btn_buy_st.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+			btn_buy_st.text = "%d G" % GameData.ITEM_COST_STONE
+			btn_buy_st.tooltip_text = "Buy 1x %s (%d G)" % [stone_name, GameData.ITEM_COST_STONE]
 			btn_buy_st.disabled = (cur_gold < GameData.ITEM_COST_STONE)
 			if cur_gold >= GameData.ITEM_COST_STONE:
 				_apply_retro_button_style(btn_buy_st, Color(0.18, 0.52, 0.65), Color(0.32, 0.78, 0.95), false)
 			else:
 				_apply_retro_button_style(btn_buy_st, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
+				btn_buy_st.modulate = Color(1, 1, 1, 0.6)
 			var buy_st_type = stone_type
 			var reopen_idx = team_idx
 			btn_buy_st.pressed.connect(func():
@@ -6145,6 +6890,8 @@ func _on_close_team_select_pressed() -> void:
 		elif GameData.campaign_submode == "ADVENTURE":
 			if GameData.adventure_selected_region == "JOHTO":
 				_open_johto_episodes_modal()
+			elif GameData.adventure_selected_region == "HOENN":
+				_open_hoenn_episodes_modal()
 			else:
 				update_adventure_episodes_ui()
 				adventure_episodes_modal.visible = true
@@ -6235,7 +6982,30 @@ func build_team_select_cards_grid() -> void:
 				if st == "basic" and not is_legendary:
 					allowed_pool.append(c)
 		pool = allowed_pool
+	# Pestañas por región + buscador por nombre / Nº Pokédex
+	team_region_pool_cache = pool
+	var filtered_pool: Array = []
+	for c in pool:
+		if team_filter_region != "ALL" and _get_card_region_key(c) != team_filter_region:
+			continue
+		if not _card_matches_search(c, team_search_query):
+			continue
+		filtered_pool.append(c)
+	pool = filtered_pool
+	_update_team_region_buttons_ui()
 	current_sorted_team_pool = get_sorted_cards(pool, team_sort_mode)
+	
+	if current_sorted_team_pool.is_empty() and (team_filter_region != "ALL" or team_search_query.strip_edges() != ""):
+		var empty_lbl = Label.new()
+		empty_lbl.name = "TeamEmptyFilterLbl"
+		empty_lbl.text = "🔍 No Pokémon match this region / search."
+		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_lbl.custom_minimum_size = Vector2(0, 120)
+		empty_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		empty_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		empty_lbl.add_theme_font_size_override("font_size", 13)
+		empty_lbl.add_theme_color_override("font_color", Color(0.65, 0.75, 0.85))
+		team_grid_cards.add_child(empty_lbl)
 	
 	const CARDS_PER_ROW = 4
 	var row_hbox: HBoxContainer = null
@@ -6377,6 +7147,108 @@ func build_team_select_cards_grid() -> void:
 			"stats_lbl": stats_lbl
 		}
 
+# --- PESTAÑAS POR REGIÓN + BUSCADOR (compartido por Selección de Equipo y PokéDex) ---
+func _get_card_region_key(card: Dictionary) -> String:
+	var r = str(card.get("region", "Kanto")).strip_edges().to_upper()
+	return "KANTO" if r == "" else r
+
+func _card_matches_search(card: Dictionary, query: String) -> bool:
+	var q = query.strip_edges().to_lower().trim_prefix("#").strip_edges()
+	if q == "":
+		return true
+	if q.is_valid_int():
+		var dex = int(card.get("pokedex_num", -1))
+		if dex == int(q):
+			return true
+		return str(dex).pad_zeros(3).begins_with(q)
+	var n1 = str(card.get("name", "")).to_lower()
+	var n2 = str(card.get("short_name", "")).to_lower()
+	return n1.contains(q) or n2.contains(q)
+
+func _make_search_line_edit(node_name: String, placeholder: String) -> LineEdit:
+	var le = LineEdit.new()
+	le.name = node_name
+	le.placeholder_text = placeholder
+	le.clear_button_enabled = true
+	le.custom_minimum_size = Vector2(0, 32)
+	le.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	le.add_theme_font_size_override("font_size", 13)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.11, 0.16, 0.95)
+	sb.border_color = Color(0.24, 0.36, 0.48, 0.85)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(6)
+	sb.content_margin_left = 10
+	sb.content_margin_right = 6
+	var sb_focus = sb.duplicate()
+	sb_focus.border_color = Color(0.45, 0.75, 1.0, 1.0)
+	le.add_theme_stylebox_override("normal", sb)
+	le.add_theme_stylebox_override("focus", sb_focus)
+	return le
+
+func _setup_team_select_filters() -> void:
+	if team_filters_box != null:
+		return
+	var box = team_select_modal.get_node_or_null("Box")
+	var sort_bar = team_select_modal.get_node_or_null("Box/SortBar")
+	if box == null or sort_bar == null:
+		return
+	team_filters_box = VBoxContainer.new()
+	team_filters_box.name = "TeamFiltersBox"
+	team_filters_box.add_theme_constant_override("separation", 4)
+	team_filters_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	var reg_row = HBoxContainer.new()
+	reg_row.name = "TeamRegionTabsRow"
+	reg_row.add_theme_constant_override("separation", 4)
+	reg_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	team_region_buttons.clear()
+	for rid in REGION_TAB_IDS:
+		var b = Button.new()
+		b.name = "BtnTeamRegion_" + rid
+		b.text = REGION_TAB_LABELS[rid]
+		b.focus_mode = Control.FOCUS_NONE
+		b.custom_minimum_size = Vector2(0, 30)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.add_theme_font_size_override("font_size", 11)
+		var r_id = rid
+		b.pressed.connect(func(): _on_team_region_pressed(r_id))
+		reg_row.add_child(b)
+		team_region_buttons[rid] = b
+	team_filters_box.add_child(reg_row)
+	
+	team_search_edit = _make_search_line_edit("TeamSearchEdit", "🔍 Search by name or Pokédex #")
+	team_search_edit.text_changed.connect(_on_team_search_changed)
+	team_filters_box.add_child(team_search_edit)
+	
+	box.add_child(team_filters_box)
+	box.move_child(team_filters_box, sort_bar.get_index() + 1)
+	_update_team_region_buttons_ui()
+
+func _on_team_region_pressed(reg_id: String) -> void:
+	team_filter_region = reg_id
+	build_team_select_cards_grid()
+	update_team_select_ui()
+
+func _on_team_search_changed(new_text: String) -> void:
+	team_search_query = new_text
+	build_team_select_cards_grid()
+	update_team_select_ui()
+
+func _update_team_region_buttons_ui() -> void:
+	if team_region_buttons.is_empty():
+		return
+	var counts = {"KANTO": 0, "JOHTO": 0, "HOENN": 0, "SINNOH": 0, "ALL": team_region_pool_cache.size()}
+	for c in team_region_pool_cache:
+		var rk = _get_card_region_key(c)
+		if counts.has(rk):
+			counts[rk] += 1
+	for rk in team_region_buttons:
+		var b: Button = team_region_buttons[rk]
+		b.text = "%s (%d)" % [REGION_TAB_LABELS.get(rk, rk), counts.get(rk, 0)]
+		b.disabled = (rk != "ALL" and counts.get(rk, 0) == 0 and rk != team_filter_region)
+		b.modulate = Color(1.3, 1.25, 0.45) if rk == team_filter_region else Color(0.85, 0.85, 0.85)
+
 # --- LÓGICA DE SELECCIÓN DE EQUIPO (MÍNIMO 1, MÁXIMO 3 POKÉMON) ---
 func toggle_pokemon_selection(pkmn_id: int) -> void:
 	if team_select_mode == "CAMPAIGN":
@@ -6425,7 +7297,13 @@ func update_team_select_ui() -> void:
 			qb_mode_row.visible = false
 		if GameData.campaign_submode == "ADVENTURE":
 			team_select_title.text = "🗺️ ADVENTURE TEAM"
-			var ep_roman = {1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII"}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
+			var ep_roman = {
+				1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII",
+				101: "Johto I", 102: "Johto II", 103: "Johto III", 104: "Johto IV",
+				105: "Johto V", 106: "Johto VI", 107: "Johto VII", 108: "Johto VIII",
+				201: "Hoenn I", 202: "Hoenn II", 203: "Hoenn III", 204: "Hoenn IV",
+				205: "Hoenn V", 206: "Hoenn VI", 207: "Hoenn VII", 208: "Hoenn VIII"
+			}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
 			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
 		elif GameData.campaign_submode == "CHAOS":
 			team_select_title.text = "🌌 CHAOS ODYSSEY TEAM"
@@ -7901,6 +8779,7 @@ func _switch_shop_tab(tab_name: String) -> void:
 			_update_shop_showcase_and_rates()
 		else:
 			if packs_catalog_view:
+				_refresh_packs_catalog()
 				packs_catalog_view.visible = true
 			if pack_panel:
 				pack_panel.visible = false
@@ -8427,17 +9306,38 @@ func _setup_packs_catalog_view() -> void:
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	
 	var list_vbox = VBoxContainer.new()
+	list_vbox.name = "PacksListVBox"
 	list_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	list_vbox.add_theme_constant_override("separation", 10)
 	
-	for pid in ["kanto", "johto", "hoenn", "sinnoh"]:
-		var p_info = GameData.BOOSTER_PACKS[pid]
-		var pack_entry = _create_catalog_pack_card(pid, p_info)
-		list_vbox.add_child(pack_entry)
+	for pid in ["kanto", "johto", "hoenn", "sinnoh", "overall"]:
+		if GameData.BOOSTER_PACKS.has(pid):
+			var p_info = GameData.BOOSTER_PACKS[pid]
+			var pack_entry = _create_catalog_pack_card(pid, p_info)
+			list_vbox.add_child(pack_entry)
 		
 	scroll.add_child(list_vbox)
 	packs_catalog_view.add_child(scroll)
 	packs_container.add_child(packs_catalog_view)
+
+func _refresh_packs_catalog() -> void:
+	if not packs_catalog_view:
+		return
+	var scroll = packs_catalog_view.find_child("ScrollContainer", true, false) as ScrollContainer
+	if not scroll:
+		return
+	var list_vbox = scroll.get_node_or_null("PacksListVBox") as VBoxContainer
+	if not list_vbox:
+		return
+	for child in list_vbox.get_children():
+		child.queue_free()
+	for pid in ["kanto", "johto", "hoenn", "sinnoh", "overall"]:
+		if GameData.BOOSTER_PACKS.has(pid):
+			var p_info = GameData.BOOSTER_PACKS[pid]
+			var pack_entry = _create_catalog_pack_card(pid, p_info)
+			list_vbox.add_child(pack_entry)
+	if is_inside_tree():
+		GameLocalizationScript.translate_node_tree(packs_catalog_view, GameData.get_current_language())
 
 func _setup_pack_detail_panel(pack_panel: Control) -> void:
 	var p_vbox = pack_panel.get_node_or_null("VBox")
@@ -8499,7 +9399,7 @@ func _setup_pack_detail_panel(pack_panel: Control) -> void:
 			header_info.move_child(pack_detail_region_lbl, 1)
 			
 			btn_small_cost_pack = Button.new()
-			btn_small_cost_pack.text = "Cost: 5 💎"
+			btn_small_cost_pack.text = "Cost: 10 💎"
 			btn_small_cost_pack.custom_minimum_size = Vector2(130, 36)
 			btn_small_cost_pack.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 			btn_small_cost_pack.add_theme_font_size_override("font_size", 13)
@@ -8668,8 +9568,9 @@ func _create_catalog_pack_card(pid: String, p_info: Dictionary) -> Control:
 	title_lbl.add_theme_color_override("font_color", accent)
 	info_vbox.add_child(title_lbl)
 	
+	var owned_count = _get_region_owned_card_count(reg_name)
 	var reg_lbl = Label.new()
-	reg_lbl.text = "📍 %s • %d Cards" % [reg_name, count]
+	reg_lbl.text = "%s = %d owned of %d cards." % [reg_name, owned_count, count]
 	reg_lbl.add_theme_font_size_override("font_size", 11)
 	reg_lbl.add_theme_color_override("font_color", Color("#90A4AE"))
 	info_vbox.add_child(reg_lbl)
@@ -8688,7 +9589,7 @@ func _create_catalog_pack_card(pid: String, p_info: Dictionary) -> Control:
 	info_vbox.add_child(act_row)
 	
 	var cost_lbl = Label.new()
-	cost_lbl.text = "Cost: %d 💎" % p_info.get("cost", 5)
+	cost_lbl.text = "Cost: %d 💎" % p_info.get("cost", 10)
 	cost_lbl.add_theme_font_size_override("font_size", 11)
 	cost_lbl.add_theme_color_override("font_color", Color("#33FF77"))
 	act_row.add_child(cost_lbl)
@@ -8751,7 +9652,7 @@ func _open_booster_pack_detail(pid: String) -> void:
 func _back_to_packs_catalog() -> void:
 	if not GameData.tutorial_completed and GameData.tutorial_step == 1:
 		if shop_feedback_lbl:
-			shop_feedback_lbl.text = "⚠️ ¡Debes abrir el sobre de Kanto para continuar con el tutorial!"
+			shop_feedback_lbl.text = GameData.tr_text("⚠️ You must open the Kanto pack to continue the tutorial!", "⚠️ ¡Debes abrir el sobre de Kanto para continuar con el tutorial!")
 			shop_feedback_lbl.visible = true
 		return
 	var pack_panel = packs_container.get_node_or_null("PackPanel") if packs_container else null
@@ -8760,6 +9661,7 @@ func _back_to_packs_catalog() -> void:
 	if btn_open_pack:
 		btn_open_pack.visible = false
 	if packs_catalog_view:
+		_refresh_packs_catalog()
 		packs_catalog_view.visible = true
 	_stop_showcase_timer()
 	if is_inside_tree() and packs_catalog_view:
@@ -8770,6 +9672,7 @@ func _update_selected_pack_detail_ui() -> void:
 	var reg_name = str(p_info.get("region", "Kanto"))
 	var accent: Color = p_info.get("accent_color", Color("#FFD700"))
 	var count = _get_region_card_count(reg_name)
+	var owned_count = _get_region_owned_card_count(reg_name)
 	
 	var pack_panel = packs_container.get_node_or_null("PackPanel") if packs_container else null
 	if not pack_panel:
@@ -8781,7 +9684,7 @@ func _update_selected_pack_detail_ui() -> void:
 		pack_title.add_theme_color_override("font_color", accent)
 		
 	if pack_detail_region_lbl:
-		pack_detail_region_lbl.text = "📍 Region: %s • %d Pokémon Available" % [reg_name, count]
+		pack_detail_region_lbl.text = "%s = %d owned of %d cards." % [reg_name, owned_count, count]
 		pack_detail_region_lbl.add_theme_color_override("font_color", accent.lerp(Color.WHITE, 0.4))
 		
 	var pack_desc = pack_panel.find_child("PackDesc", true, false) as Label
@@ -8789,7 +9692,7 @@ func _update_selected_pack_detail_ui() -> void:
 		pack_desc.text = p_info.get("desc", "")
 		
 	if btn_small_cost_pack:
-		var cost = int(p_info.get("cost", 5))
+		var cost = int(p_info.get("cost", 10))
 		btn_small_cost_pack.text = "Cost: %d 💎" % cost
 		btn_small_cost_pack.disabled = (GameData.player_diamonds < cost)
 		
@@ -8801,13 +9704,30 @@ func _update_selected_pack_detail_ui() -> void:
 		pack_detail_art_container.add_child(visual)
 
 func _get_region_card_count(region_name: String) -> int:
-	var count = 0
 	var reg_lower = region_name.strip_edges().to_lower()
+	if reg_lower in ["overall", "all", "todas"]:
+		return GameData.all_pokemon_ids.size()
+	var count = 0
 	for pid in GameData.all_pokemon_ids:
 		var d = GameData.pokemon_catalog.get(pid, {})
 		if str(d.get("region", "")).strip_edges().to_lower() == reg_lower:
 			count += 1
 	return count
+
+func _get_region_owned_card_count(region_name: String) -> int:
+	var reg_lower = region_name.strip_edges().to_lower()
+	var owned = 0
+	if reg_lower in ["overall", "all", "todas"]:
+		for pid in GameData.all_pokemon_ids:
+			if GameData.is_pokemon_unlocked(pid):
+				owned += 1
+		return owned
+	for pid in GameData.all_pokemon_ids:
+		var d = GameData.pokemon_catalog.get(pid, {})
+		if str(d.get("region", "")).strip_edges().to_lower() == reg_lower:
+			if GameData.is_pokemon_unlocked(pid):
+				owned += 1
+	return owned
 
 func _on_open_selected_pack_pressed() -> void:
 	var p_info = GameData.BOOSTER_PACKS.get(selected_booster_pack_id, {})
@@ -8839,13 +9759,16 @@ func _on_shop_pressed() -> void:
 	
 	if pack_reveal_box:
 		pack_reveal_box.visible = false
+	if pack_showoff_box:
+		pack_showoff_box.visible = false
+		showoff_timer_token += 1
 	shop_box.visible = true
 	shop_modal.visible = true
 	if not GameData.tutorial_completed and GameData.tutorial_step == 1:
 		_switch_shop_tab("PACKS")
 		_open_booster_pack_detail("kanto")
 		if shop_feedback_lbl:
-			shop_feedback_lbl.text = "🎁 ¡Toca 'Cost: 5 💎' abajo para abrir tu primer sobre con tus 25 Diamantes!"
+			shop_feedback_lbl.text = "🎁 ¡Toca 'Cost: 10 💎' abajo para abrir tu primer sobre con tus 25 Diamantes!"
 			shop_feedback_lbl.visible = true
 	else:
 		_switch_shop_tab(shop_active_tab)
@@ -8911,7 +9834,7 @@ func _stop_showcase_timer() -> void:
 		showcase_timer.stop()
 
 func _on_showcase_timer_timeout() -> void:
-	if not shop_modal or not shop_modal.visible or shop_active_tab != "PACKS" or (pack_reveal_box and pack_reveal_box.visible):
+	if not shop_modal or not shop_modal.visible or shop_active_tab != "PACKS" or (pack_reveal_box and pack_reveal_box.visible) or (pack_showoff_box and pack_showoff_box.visible):
 		_stop_showcase_timer()
 		return
 	if showcase_is_animating:
@@ -8959,7 +9882,7 @@ func _refill_showcase_queues_if_needed() -> void:
 		var l_ids: Array[int] = []
 		for pid in GameData.all_pokemon_ids:
 			var d = GameData.pokemon_catalog.get(pid, {})
-			if str(d.get("region", "")).strip_edges().to_lower() == reg_name:
+			if reg_name in ["all", "overall", "todas"] or str(d.get("region", "")).strip_edges().to_lower() == reg_name:
 				var r = str(d.get("rarity", "")).strip_edges().to_lower()
 				if r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
 					l_ids.append(pid)
@@ -8976,7 +9899,7 @@ func _refill_showcase_queues_if_needed() -> void:
 		var e_ids: Array[int] = []
 		for pid in GameData.all_pokemon_ids:
 			var d = GameData.pokemon_catalog.get(pid, {})
-			if str(d.get("region", "")).strip_edges().to_lower() == reg_name:
+			if reg_name in ["all", "overall", "todas"] or str(d.get("region", "")).strip_edges().to_lower() == reg_name:
 				var r = str(d.get("rarity", "")).strip_edges().to_lower()
 				if r in ["epic", "epica", "epico", "sr", "super rare"]:
 					e_ids.append(pid)
@@ -9085,21 +10008,322 @@ func _on_open_pack_pressed() -> void:
 
 func _show_pack_reveal_ui(cards: Array) -> void:
 	_stop_showcase_timer()
+	current_showoff_cards = cards
+	_start_pack_showoff(cards)
+
+func _start_pack_showoff(cards: Array) -> void:
+	if not pack_showoff_box:
+		_create_pack_showoff_container()
+		
+	if shop_modal:
+		shop_modal.visible = true
+	if pack_reveal_box:
+		pack_reveal_box.visible = false
+	shop_box.visible = false
+	pack_showoff_box.visible = true
+	
+	_display_showoff_card(0)
+
+func _create_pack_showoff_container() -> void:
+	pack_showoff_box = Control.new()
+	pack_showoff_box.name = "PackShowoffBox"
+	pack_showoff_box.layout_mode = 1
+	pack_showoff_box.anchors_preset = Control.PRESET_FULL_RECT
+	pack_showoff_box.offset_left = 12
+	pack_showoff_box.offset_top = 20
+	pack_showoff_box.offset_right = -12
+	pack_showoff_box.offset_bottom = -16
+	shop_modal.add_child(pack_showoff_box)
+	
+	# Background transparent clickable area to advance
+	var bg_tap_btn = Button.new()
+	bg_tap_btn.layout_mode = 1
+	bg_tap_btn.anchors_preset = Control.PRESET_FULL_RECT
+	bg_tap_btn.flat = true
+	var sb_empty = StyleBoxEmpty.new()
+	bg_tap_btn.add_theme_stylebox_override("normal", sb_empty)
+	bg_tap_btn.add_theme_stylebox_override("pressed", sb_empty)
+	bg_tap_btn.add_theme_stylebox_override("hover", sb_empty)
+	bg_tap_btn.add_theme_stylebox_override("focus", sb_empty)
+	bg_tap_btn.pressed.connect(_on_showoff_next_pressed)
+	pack_showoff_box.add_child(bg_tap_btn)
+	
+	var main_vbox = VBoxContainer.new()
+	main_vbox.layout_mode = 1
+	main_vbox.anchors_preset = Control.PRESET_FULL_RECT
+	main_vbox.mouse_filter = Control.MOUSE_FILTER_PASS
+	main_vbox.add_theme_constant_override("separation", 10)
+	main_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	pack_showoff_box.add_child(main_vbox)
+	
+	# Top bar: Pack title / Card counter & SKIP button
+	var top_bar = HBoxContainer.new()
+	top_bar.custom_minimum_size = Vector2(0, 36)
+	top_bar.mouse_filter = Control.MOUSE_FILTER_PASS
+	top_bar.alignment = BoxContainer.ALIGNMENT_CENTER
+	main_vbox.add_child(top_bar)
+	
+	showoff_count_lbl = Label.new()
+	showoff_count_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	showoff_count_lbl.text = "Card 1 of 6"
+	showoff_count_lbl.add_theme_font_size_override("font_size", 14)
+	showoff_count_lbl.add_theme_color_override("font_color", Color("#B0BEC5"))
+	top_bar.add_child(showoff_count_lbl)
+	
+	btn_showoff_skip = Button.new()
+	btn_showoff_skip.text = "⏭ SKIP"
+	btn_showoff_skip.custom_minimum_size = Vector2(90, 32)
+	btn_showoff_skip.add_theme_font_size_override("font_size", 12)
+	_apply_retro_button_style(btn_showoff_skip, Color(0.20, 0.25, 0.35), Color(0.40, 0.50, 0.65), false)
+	btn_showoff_skip.pressed.connect(_on_showoff_skip_pressed)
+	top_bar.add_child(btn_showoff_skip)
+	
+	# Banner superior dinámico según rareza
+	showoff_banner_lbl = Label.new()
+	showoff_banner_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	showoff_banner_lbl.add_theme_font_size_override("font_size", 18)
+	showoff_banner_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+	showoff_banner_lbl.custom_minimum_size = Vector2(0, 28)
+	main_vbox.add_child(showoff_banner_lbl)
+	
+	# Contenedor central de la carta destacada
+	var card_center_box = CenterContainer.new()
+	card_center_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	card_center_box.mouse_filter = Control.MOUSE_FILTER_PASS
+	main_vbox.add_child(card_center_box)
+	
+	showoff_card_container = PanelContainer.new()
+	showoff_card_container.custom_minimum_size = Vector2(230, 350)
+	showoff_card_container.pivot_offset = Vector2(115, 175) # Centrado para tweens de escala
+	card_center_box.add_child(showoff_card_container)
+	
+	# Contenido de la carta
+	var card_vbox = VBoxContainer.new()
+	card_vbox.add_theme_constant_override("separation", 5)
+	card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	showoff_card_container.add_child(card_vbox)
+	
+	showoff_status_badge = Label.new()
+	showoff_status_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	showoff_status_badge.add_theme_font_size_override("font_size", 12)
+	card_vbox.add_child(showoff_status_badge)
+	
+	showoff_thumb = TextureRect.new()
+	showoff_thumb.custom_minimum_size = Vector2(190, 160)
+	showoff_thumb.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	showoff_thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	showoff_thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	card_vbox.add_child(showoff_thumb)
+	
+	showoff_name_lbl = Label.new()
+	showoff_name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	showoff_name_lbl.add_theme_font_size_override("font_size", 16)
+	showoff_name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	card_vbox.add_child(showoff_name_lbl)
+	
+	showoff_type_lbl = Label.new()
+	showoff_type_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	showoff_type_lbl.add_theme_font_size_override("font_size", 12)
+	card_vbox.add_child(showoff_type_lbl)
+	
+	showoff_stats_lbl = Label.new()
+	showoff_stats_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	showoff_stats_lbl.add_theme_font_size_override("font_size", 11)
+	showoff_stats_lbl.add_theme_color_override("font_color", Color("#B0BEC5"))
+	card_vbox.add_child(showoff_stats_lbl)
+	
+	# Barra inferior: Botón "Next Card ➡️"
+	btn_showoff_next = Button.new()
+	btn_showoff_next.text = "Next Card ➡️"
+	btn_showoff_next.custom_minimum_size = Vector2(0, 44)
+	btn_showoff_next.add_theme_font_size_override("font_size", 14)
+	_apply_retro_button_style(btn_showoff_next, Color(0.12, 0.40, 0.22), Color(0.20, 0.70, 0.35), false)
+	btn_showoff_next.pressed.connect(_on_showoff_next_pressed)
+	main_vbox.add_child(btn_showoff_next)
+
+func _display_showoff_card(index: int) -> void:
+	if index >= current_showoff_cards.size():
+		_finish_pack_showoff()
+		return
+		
+	current_showoff_index = index
+	var card = current_showoff_cards[index]
+	var r_str = str(card.get("rarity", "Common"))
+	var r_info = GameData.get_rarity_display_info(r_str)
+	var r_name = str(r_info.get("name", "Common")).to_lower()
+	var is_new = card.get("is_new", false)
+	var stock = card.get("stock", GameData.get_card_stock(int(card.get("id", 0))))
+	
+	var border_color = Color("#78909C")
+	var border_width = 2
+	var bg_color = Color("#0b0f17")
+	var banner_text = "Common Card"
+	var banner_color = Color("#90A4AE")
+	var banner_font_size = 13
+	var auto_delay = 2.0
+	
+	if r_name in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
+		border_color = Color("#FFD700")
+		border_width = 5
+		bg_color = Color(0.14, 0.11, 0.04, 0.98)
+		banner_text = "👑✨ LEGENDARY PULL! ✨👑"
+		banner_color = Color("#FFD700")
+		banner_font_size = 20
+		auto_delay = 4.0
+	elif r_name in ["epic", "epica", "epico", "sr", "super rare"]:
+		border_color = Color("#E040FB")
+		border_width = 4
+		bg_color = Color(0.13, 0.05, 0.18, 0.98)
+		banner_text = "🌟 EPIC DISCOVERY! 🌟"
+		banner_color = Color("#E040FB")
+		banner_font_size = 18
+		auto_delay = 3.2
+	elif r_name in ["rare", "rara", "raro", "r"]:
+		border_color = Color("#00E5FF")
+		border_width = 3
+		bg_color = Color(0.05, 0.11, 0.18, 0.98)
+		banner_text = "✨ RARE POKÉMON! ✨"
+		banner_color = Color("#00E5FF")
+		banner_font_size = 16
+		auto_delay = 2.6
+	elif r_name in ["uncommon", "poco comun", "poco común"]:
+		border_color = Color("#81D4FA")
+		border_width = 2
+		bg_color = Color(0.08, 0.10, 0.15, 0.98)
+		banner_text = "⭐ Uncommon Card"
+		banner_color = Color("#81D4FA")
+		banner_font_size = 14
+		auto_delay = 2.2
+		
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = bg_color
+	sb.border_color = border_color
+	sb.set_border_width_all(border_width)
+	sb.set_corner_radius_all(12)
+	sb.set_content_margin_all(8)
+	showoff_card_container.add_theme_stylebox_override("panel", sb)
+	
+	if is_new:
+		showoff_status_badge.text = "⭐ NEW POKÉMON! (x%d)" % stock
+		showoff_status_badge.add_theme_color_override("font_color", Color("#FFD700"))
+	else:
+		showoff_status_badge.text = "📦 Copy (x%d)" % stock
+		showoff_status_badge.add_theme_color_override("font_color", Color("#90A4AE"))
+		
+	showoff_thumb.texture = GameData.get_pokemon_texture(str(card.get("texture_path", "")))
+	var p_num = str(card.get("pokedex_num", "1")).pad_zeros(3)
+	showoff_name_lbl.text = "#%s %s" % [p_num, card.get("name", "PKMN")]
+	showoff_name_lbl.add_theme_color_override("font_color", border_color.lerp(Color.WHITE, 0.5))
+	
+	var type_str = str(card.get("type", "NORMAL"))
+	showoff_type_lbl.text = "%s • %s • %s" % [type_str, card.get("stage", "Basic"), r_info.get("name", "Common")]
+	showoff_type_lbl.add_theme_color_override("font_color", GameData.get_type_primary_color(type_str))
+	
+	var hp = int(card.get("hp", 10))
+	var spd = int(card.get("speed", 3))
+	var energy = int(card.get("energy", 3))
+	showoff_stats_lbl.text = "HP: %d  •  SPD: %d  •  ⚡: %d" % [hp, spd, energy]
+	
+	showoff_count_lbl.text = "Card %d of %d" % [index + 1, current_showoff_cards.size()]
+	if selected_booster_pack_id == "special" and index == current_showoff_cards.size() - 1:
+		if r_name in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
+			banner_text = "👑✨ GUARANTEED LEGENDARY PULL! ✨👑"
+		elif r_name in ["epic", "epica", "epico", "sr", "super rare"]:
+			banner_text = "🌟✨ GUARANTEED EPIC PULL! ✨🌟"
+	showoff_banner_lbl.text = banner_text
+	showoff_banner_lbl.add_theme_color_override("font_color", banner_color)
+	showoff_banner_lbl.add_theme_font_size_override("font_size", banner_font_size)
+	
+	if index == current_showoff_cards.size() - 1:
+		btn_showoff_next.text = "View All Cards (%d) ➡️" % current_showoff_cards.size()
+	else:
+		btn_showoff_next.text = "Next Card ➡️"
+		
+	GameData.apply_foil_overlay(showoff_card_container, r_str)
+	
+	# Animación dinámica (impacto mayor en épicas y legendarias)
+	if showoff_active_tween and showoff_active_tween.is_valid():
+		showoff_active_tween.kill()
+	showoff_active_tween = create_tween()
+	showoff_card_container.scale = Vector2(0.3, 0.3)
+	showoff_card_container.modulate.a = 0.0
+	showoff_active_tween.set_parallel(true)
+	showoff_active_tween.tween_property(showoff_card_container, "scale", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	showoff_active_tween.tween_property(showoff_card_container, "modulate:a", 1.0, 0.2)
+	
+	if r_name in ["epic", "epica", "epico", "sr", "super rare", "legendary", "legendaria", "legendario", "ur", "ultra rare"]:
+		showoff_active_tween.chain().tween_property(showoff_card_container, "scale", Vector2(1.08, 1.08), 0.15)
+		showoff_active_tween.tween_property(showoff_card_container, "scale", Vector2(1.0, 1.0), 0.15)
+		
+	if is_inside_tree():
+		GameLocalizationScript.translate_node_tree(pack_showoff_box, GameData.get_current_language())
+		
+	# Auto-avance programado
+	showoff_timer_token += 1
+	var token = showoff_timer_token
+	showoff_auto_timer = get_tree().create_timer(auto_delay)
+	showoff_auto_timer.timeout.connect(func():
+		if showoff_timer_token == token and pack_showoff_box and pack_showoff_box.visible:
+			_on_showoff_next_pressed()
+	)
+
+func _on_showoff_next_pressed() -> void:
+	showoff_timer_token += 1
+	if showoff_active_tween and showoff_active_tween.is_valid():
+		showoff_active_tween.kill()
+	_display_showoff_card(current_showoff_index + 1)
+
+func _on_showoff_skip_pressed() -> void:
+	showoff_timer_token += 1
+	if showoff_active_tween and showoff_active_tween.is_valid():
+		showoff_active_tween.kill()
+	_finish_pack_showoff()
+
+func _finish_pack_showoff() -> void:
+	showoff_timer_token += 1
+	if showoff_active_tween and showoff_active_tween.is_valid():
+		showoff_active_tween.kill()
+	if pack_showoff_box:
+		pack_showoff_box.visible = false
+	_show_pack_summary_ui(current_showoff_cards)
+
+func _show_pack_summary_ui(cards: Array) -> void:
+	_stop_showcase_timer()
 	if not pack_reveal_box:
 		_create_pack_reveal_container()
 		
 	shop_box.visible = false
 	pack_reveal_box.visible = true
 	
+	var title_lbl = pack_reveal_box.find_child("PackRevealTitle", true, false) as Label
+	if not title_lbl and pack_reveal_box.get_child_count() > 0:
+		title_lbl = pack_reveal_box.get_child(0) as Label
+	if title_lbl:
+		if selected_booster_pack_id == "special":
+			title_lbl.text = "🎉 SPECIAL BOOSTER PACK OPENED!"
+		else:
+			title_lbl.text = "🎉 BOOSTER PACK OPENED!"
+
 	var rem_lbl = pack_reveal_box.find_child("RemainingDiamondsLbl", true, false) as Label
 	if rem_lbl:
 		rem_lbl.text = "💎 Remaining Diamonds: %d" % GameData.player_diamonds
 	
 	if btn_reveal_another:
-		var p_info = GameData.BOOSTER_PACKS.get(selected_booster_pack_id, {})
-		var cost = int(p_info.get("cost", BOOSTER_PACK_COST))
-		btn_reveal_another.text = "✨ OPEN ANOTHER PACK (💎 %d Diamonds)" % cost
-		btn_reveal_another.disabled = (GameData.player_diamonds < cost)
+		if selected_booster_pack_id == "special":
+			btn_reveal_another.visible = false
+		else:
+			btn_reveal_another.visible = true
+			var p_info = GameData.BOOSTER_PACKS.get(selected_booster_pack_id, {})
+			var cost = int(p_info.get("cost", BOOSTER_PACK_COST))
+			btn_reveal_another.text = "✨ OPEN ANOTHER PACK (💎 %d Diamonds)" % cost
+			btn_reveal_another.disabled = (GameData.player_diamonds < cost)
+			
+	var btn_back_shop_node = pack_reveal_box.find_child("BtnBackShop", true, false) as Button
+	if btn_back_shop_node:
+		if selected_booster_pack_id == "special":
+			btn_back_shop_node.text = "✖ Close"
+		else:
+			btn_back_shop_node.text = "🛒 Back to Shop"
 	
 	for child in reveal_cards_row.get_children():
 		reveal_cards_row.remove_child(child)
@@ -9128,7 +10352,7 @@ func _show_pack_reveal_ui(cards: Array) -> void:
 			btn_tutorial_starter = Button.new()
 			btn_tutorial_starter.name = "BtnTutorialStarter"
 			btn_tutorial_starter.custom_minimum_size = Vector2(0, 48)
-			btn_tutorial_starter.text = "🌟 Aprender Estadísticas y Elegir Inicial ➡️"
+			btn_tutorial_starter.text = GameData.tr_text("🌟 Learn Card Anatomy & Pick Starter ➡️", "🌟 Aprender Estadísticas y Elegir Inicial ➡️")
 			btn_tutorial_starter.add_theme_font_size_override("font_size", 14)
 			_apply_retro_button_style(btn_tutorial_starter, Color(0.20, 0.65, 0.35), Color(0.35, 0.85, 0.50), false)
 			btn_tutorial_starter.pressed.connect(_show_card_anatomy_and_starter_modal)
@@ -9152,6 +10376,7 @@ func _create_pack_reveal_container() -> void:
 	
 	# Cabecera
 	var title_lbl = Label.new()
+	title_lbl.name = "PackRevealTitle"
 	title_lbl.text = "🎉 BOOSTER PACK OPENED!"
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_lbl.add_theme_font_size_override("font_size", 22)
@@ -9167,19 +10392,28 @@ func _create_pack_reveal_container() -> void:
 	pack_reveal_box.add_child(remaining_dia_lbl)
 	
 	var sub_lbl = Label.new()
-	sub_lbl.text = "You obtained 3 cards based on Rarity probability:"
+	sub_lbl.text = "You obtained 6 cards based on Rarity probability:"
 	sub_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub_lbl.add_theme_font_size_override("font_size", 12)
 	sub_lbl.add_theme_color_override("font_color", Color("#B0BEC5"))
 	pack_reveal_box.add_child(sub_lbl)
 	
-	# Fila de 3 cartas
-	reveal_cards_row = HBoxContainer.new()
-	reveal_cards_row.layout_mode = 2
+	# Cuadrícula / Scroll de 6 cartas
+	var cards_scroll = ScrollContainer.new()
+	cards_scroll.layout_mode = 2
+	cards_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	cards_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cards_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	cards_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	pack_reveal_box.add_child(cards_scroll)
+	
+	reveal_cards_row = GridContainer.new()
+	reveal_cards_row.columns = 3
+	reveal_cards_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	reveal_cards_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	reveal_cards_row.add_theme_constant_override("separation", 8)
-	reveal_cards_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	pack_reveal_box.add_child(reveal_cards_row)
+	reveal_cards_row.add_theme_constant_override("h_separation", 6)
+	reveal_cards_row.add_theme_constant_override("v_separation", 8)
+	cards_scroll.add_child(reveal_cards_row)
 	
 	# Acciones inferiores
 	var actions_box = VBoxContainer.new()
@@ -9216,12 +10450,16 @@ func _create_pack_reveal_container() -> void:
 	btn_back_shop.add_theme_font_size_override("font_size", 13)
 	btn_back_shop.pressed.connect(func():
 		pack_reveal_box.visible = false
-		shop_box.visible = true
+		if selected_booster_pack_id == "special":
+			shop_modal.visible = false
+			selected_booster_pack_id = "kanto"
+		else:
+			shop_box.visible = true
+			if shop_active_tab == "PACKS":
+				var pack_panel = packs_container.get_node_or_null("PackPanel") if packs_container else null
+				if pack_panel and pack_panel.visible:
+					_start_showcase_timer()
 		_update_lobby_header_badge()
-		if shop_active_tab == "PACKS":
-			var pack_panel = packs_container.get_node_or_null("PackPanel") if packs_container else null
-			if pack_panel and pack_panel.visible:
-				_start_showcase_timer()
 	)
 	actions_box.add_child(btn_back_shop)
 
@@ -9230,7 +10468,7 @@ func _create_reveal_card_item(card_dict: Dictionary) -> PanelContainer:
 	var r_info = GameData.get_rarity_display_info(str(card_dict.get("rarity", "Common")))
 	
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(154, 245)
+	panel.custom_minimum_size = Vector2(150, 225)
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	
@@ -9272,7 +10510,7 @@ func _create_reveal_card_item(card_dict: Dictionary) -> PanelContainer:
 	
 	# Arte de la Carta con proporción adecuada
 	var thumb = TextureRect.new()
-	thumb.custom_minimum_size = Vector2(140, 130)
+	thumb.custom_minimum_size = Vector2(130, 115)
 	thumb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -9351,6 +10589,17 @@ func _setup_collection_filters() -> void:
 	var stats_node = collection_grid_view.get_node_or_null("StatsLbl")
 	if stats_node:
 		collection_grid_view.move_child(col_region_tabs_row, stats_node.get_index() + 1)
+	
+	# Buscador por nombre o Nº Pokédex (debajo de las pestañas de región)
+	col_search_edit = _make_search_line_edit("ColSearchEdit", "🔍 Search by name or Pokédex #")
+	col_search_edit.text_changed.connect(func(t: String):
+		col_search_query = t
+		col_current_page = 0
+		_update_filter_button_visuals()
+		populate_collection_grid()
+	)
+	collection_grid_view.add_child(col_search_edit)
+	collection_grid_view.move_child(col_search_edit, col_region_tabs_row.get_index() + 1)
 		
 	collection_filter_panel = PanelContainer.new()
 	collection_filter_panel.name = "CollectionFilterPanel"
@@ -9572,7 +10821,7 @@ func _update_filter_button_visuals() -> void:
 	if opt_col_tier:
 		opt_col_tier.modulate = Color(1.3, 1.25, 0.45) if col_filter_tier != "ALL" else Color.WHITE
 	if btn_col_reset_filters:
-		var any_active = (col_filter_owned != "ALL" or col_filter_type != "ALL" or col_filter_stage != "ALL" or col_filter_rarity != "ALL" or col_filter_tier != "ALL")
+		var any_active = (col_search_query.strip_edges() != "" or col_filter_owned != "ALL" or col_filter_type != "ALL" or col_filter_stage != "ALL" or col_filter_rarity != "ALL" or col_filter_tier != "ALL")
 		btn_col_reset_filters.modulate = Color(1.3, 1.0, 1.0) if any_active else Color(0.75, 0.75, 0.75)
 
 func _on_reset_collection_filters_pressed() -> void:
@@ -9582,6 +10831,8 @@ func _on_reset_collection_filters_pressed() -> void:
 	col_filter_stage = "ALL"
 	col_filter_rarity = "ALL"
 	col_filter_tier = "ALL"
+	col_search_query = ""
+	if col_search_edit: col_search_edit.text = ""
 	if opt_col_owned: opt_col_owned.select(0)
 	if opt_col_type: opt_col_type.select(0)
 	if opt_col_stage: opt_col_stage.select(0)
@@ -9603,6 +10854,8 @@ func get_filtered_collection_cards() -> Array:
 				c_region = "KANTO"
 			if c_region != col_filter_region:
 				continue
+		if not _card_matches_search(card, col_search_query):
+			continue
 				
 		# 1. Filtro Owned (Estado de posesión y Favoritos)
 		if col_filter_owned == "OWNED" and not is_unlocked:
@@ -9672,7 +10925,7 @@ func populate_collection_grid() -> void:
 	current_sorted_collection = get_sorted_cards(filtered_cards, collection_sort_mode)
 	_update_col_region_buttons_ui()
 
-	var is_filtered = (col_filter_region != "ALL" or col_filter_owned != "ALL" or col_filter_type != "ALL" or col_filter_stage != "ALL" or col_filter_rarity != "ALL" or col_filter_tier != "ALL")
+	var is_filtered = (col_filter_region != "ALL" or col_search_query.strip_edges() != "" or col_filter_owned != "ALL" or col_filter_type != "ALL" or col_filter_stage != "ALL" or col_filter_rarity != "ALL" or col_filter_tier != "ALL")
 	if collection_stats_lbl:
 		if is_filtered:
 			collection_stats_lbl.text = "Showing: %d / %d cards  |  Collected: %d / %d" % [
@@ -12019,16 +13272,20 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	
 	var rel_act = GameData.format_relative_activity_time(act_val)
 	var sub_lbl = Label.new()
-	var sub_text = ("ID: " + p_id) if not p_id.is_empty() else "ID: ---"
-	sub_text += "  •  🕒 " + rel_act
-	sub_lbl.text = sub_text
-	sub_lbl.add_theme_font_size_override("font_size", 11)
-	sub_lbl.add_theme_color_override("font_color", Color(0.45, 0.75, 0.95))
-	info_vbox.add_child(sub_lbl)
-	
+	var sub_text = ""
 	var f_email_clean = email.strip_edges().to_lower()
 	var has_room = active_friend_rooms_map.has(f_email_clean)
 	var is_active = (has_room or GameData.is_trainer_active(act_val))
+	if is_active:
+		sub_text = "🟢 " + GameData.tr_text("Online now", "En línea ahora")
+	elif not rel_act.is_empty() and rel_act != "Desconocido" and rel_act != "Unknown":
+		sub_text = "🕒 " + rel_act
+	else:
+		sub_text = "🕒 " + GameData.tr_text("No recent activity", "Sin actividad reciente")
+	sub_lbl.text = sub_text
+	sub_lbl.add_theme_font_size_override("font_size", 11)
+	sub_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.45) if is_active else Color(0.45, 0.75, 0.95))
+	info_vbox.add_child(sub_lbl)
 	
 	var act_row = HBoxContainer.new()
 	act_row.add_theme_constant_override("separation", 8)
@@ -12249,13 +13506,36 @@ func _refresh_achievements_ui() -> void:
 		
 	var ach_list = GameData.get_achievements_list()
 	var completed_count = 0
-	
+	for a in ach_list:
+		if GameData.is_achievement_unlocked(str(a.get("id", ""))):
+			completed_count += 1
+
+	# Agrupar por cadena para mostrar exclusivamente el objetivo dinámico activo (siguiente hito no desbloqueado)
+	var chains: Dictionary = {}
 	for ach in ach_list:
+		var c_id = str(ach.get("chain_id", ach.get("id", "")))
+		if not chains.has(c_id):
+			chains[c_id] = []
+		chains[c_id].append(ach)
+		
+	var visible_achievements: Array[Dictionary] = []
+	for c_id in chains.keys():
+		var tier_list: Array = chains[c_id]
+		var found_next: bool = false
+		for ach in tier_list:
+			var a_id = str(ach.get("id", ""))
+			if not GameData.is_achievement_unlocked(a_id):
+				visible_achievements.append(ach)
+				found_next = true
+				break
+		# Si ya completó todos los tiers de la cadena, mostrar el último completado (Tier 100) como condecoración
+		if not found_next and not tier_list.is_empty():
+			visible_achievements.append(tier_list[-1])
+			
+	for ach in visible_achievements:
 		var ach_id = str(ach.get("id", ""))
 		var prog = GameData.get_achievement_progress(ach_id)
 		var is_done = bool(prog.get("is_completed", false))
-		if is_done:
-			completed_count += 1
 			
 		var card = PanelContainer.new()
 		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -12282,17 +13562,29 @@ func _refresh_achievements_ui() -> void:
 		hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		m.add_child(hbox)
 		
-		# Icono del Reward
-		var icon_rect = TextureRect.new()
-		icon_rect.custom_minimum_size = Vector2(44, 44)
-		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		
+		# Icono del Reward o Insignia
 		var rew_id = str(ach.get("reward_id", ""))
 		var tex = GameData.get_item_texture(rew_id)
 		if tex:
+			var icon_rect = TextureRect.new()
+			icon_rect.custom_minimum_size = Vector2(44, 44)
+			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			icon_rect.texture = tex
-		hbox.add_child(icon_rect)
+			hbox.add_child(icon_rect)
+		else:
+			var emoji_lbl = Label.new()
+			emoji_lbl.custom_minimum_size = Vector2(44, 44)
+			emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			emoji_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			emoji_lbl.add_theme_font_size_override("font_size", 22)
+			if rew_id == "gold":
+				emoji_lbl.text = "🪙"
+			elif rew_id == "diamonds":
+				emoji_lbl.text = "💎"
+			else:
+				emoji_lbl.text = "🏆"
+			hbox.add_child(emoji_lbl)
 		
 		# VBox con Información
 		var info_vbox = VBoxContainer.new()
@@ -12317,13 +13609,13 @@ func _refresh_achievements_ui() -> void:
 		
 		var badge_lbl = Label.new()
 		if is_done:
-			badge_lbl.text = "✅ " + GameData.tr_text("COMPLETED", "COMPLETADO")
+			badge_lbl.text = "🏆 " + GameData.tr_text("MASTERED", "CONQUISTADO")
 			badge_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 		else:
-			badge_lbl.text = "🔒 " + GameData.tr_text("IN PROGRESS", "EN PROGRESO")
+			badge_lbl.text = "🎯 " + GameData.tr_text("NEXT OBJECTIVE", "SIGUIENTE META")
 			badge_lbl.add_theme_color_override("font_color", Color(0.6, 0.75, 0.9))
 		badge_lbl.add_theme_font_size_override("font_size", 11)
-		badge_lbl.custom_minimum_size = Vector2(105, 0)
+		badge_lbl.custom_minimum_size = Vector2(115, 0)
 		badge_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		badge_lbl.size_flags_horizontal = Control.SIZE_SHRINK_END
 		title_row.add_child(badge_lbl)
@@ -12537,6 +13829,8 @@ func _show_achievement_notification_modal(ach: Dictionary) -> void:
 	var tex = GameData.get_item_texture(rew_id)
 	if tex:
 		achievement_notif_icon_rect.texture = tex
+	elif rew_id in ["gold", "diamonds"]:
+		achievement_notif_icon_rect.texture = null
 		
 	achievement_notif_modal.visible = true
 
@@ -12554,9 +13848,48 @@ func _update_daily_ui() -> void:
 		return
 	GameData.check_and_update_daily_system()
 	
-	# 1. Streak badge
+	# 1. Streak badge & Panel Styling
 	if daily_streak_badge:
 		daily_streak_badge.text = "🔥 Streak: Day %d/7" % GameData.daily_login_streak
+		
+	var cal_panel = daily_modal.find_child("DailyCalendarPanel", true, false) as PanelContainer
+	if cal_panel:
+		var cal_sb = StyleBoxFlat.new()
+		cal_sb.bg_color = Color(0.08, 0.12, 0.18, 0.95)
+		cal_sb.border_color = Color(0.2, 0.35, 0.5, 0.8)
+		cal_sb.set_border_width_all(1)
+		cal_sb.set_corner_radius_all(8)
+		cal_sb.content_margin_left = 6
+		cal_sb.content_margin_right = 6
+		cal_sb.content_margin_top = 6
+		cal_sb.content_margin_bottom = 6
+		cal_panel.add_theme_stylebox_override("panel", cal_sb)
+		
+	var missions_panel = daily_modal.find_child("DailyMissionsPanel", true, false) as PanelContainer
+	if missions_panel:
+		var mis_sb = StyleBoxFlat.new()
+		mis_sb.bg_color = Color(0.06, 0.09, 0.14, 0.95)
+		mis_sb.border_color = Color(0.2, 0.3, 0.45, 0.8)
+		mis_sb.set_border_width_all(1)
+		mis_sb.set_corner_radius_all(8)
+		mis_sb.content_margin_left = 6
+		mis_sb.content_margin_right = 6
+		mis_sb.content_margin_top = 6
+		mis_sb.content_margin_bottom = 6
+		missions_panel.add_theme_stylebox_override("panel", mis_sb)
+		
+	var chest_panel = daily_modal.find_child("ChestPanel", true, false) as PanelContainer
+	if chest_panel:
+		var ch_sb = StyleBoxFlat.new()
+		ch_sb.bg_color = Color(0.12, 0.10, 0.05, 0.95)
+		ch_sb.border_color = Color(0.6, 0.5, 0.2, 0.8)
+		ch_sb.set_border_width_all(1)
+		ch_sb.set_corner_radius_all(8)
+		ch_sb.content_margin_left = 6
+		ch_sb.content_margin_right = 6
+		ch_sb.content_margin_top = 6
+		ch_sb.content_margin_bottom = 6
+		chest_panel.add_theme_stylebox_override("panel", ch_sb)
 		
 	# 2. Calendario de 7 Días
 	if calendar_grid:
@@ -12569,9 +13902,11 @@ func _update_daily_ui() -> void:
 		for entry in GameData.DAILY_LOGIN_CALENDAR:
 			var d_num = int(entry.get("day", 1))
 			var d_lbl = str(entry.get("label", ""))
+			if entry.get("pack", "") == "special":
+				d_lbl = GameData.tr_text("Special\nPack 🎁", "Sobre\nEsp. 🎁")
 			
 			var card = PanelContainer.new()
-			card.custom_minimum_size = Vector2(66, 74)
+			card.custom_minimum_size = Vector2(0, 72)
 			card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			
 			var card_sb = StyleBoxFlat.new()
@@ -12609,12 +13944,16 @@ func _update_daily_ui() -> void:
 				status_text = "🔒 Day %d" % d_num
 				status_color = Color(0.5, 0.6, 0.7)
 				
+			if d_num == 7 and not (d_num < cur_day or (d_num == cur_day and claimed_today)):
+				card_sb.border_color = Color("#FFD700")
+				card_sb.set_border_width_all(2)
+				
 			card.add_theme_stylebox_override("panel", card_sb)
 			
 			var m = MarginContainer.new()
-			m.add_theme_constant_override("margin_left", 4)
+			m.add_theme_constant_override("margin_left", 2)
 			m.add_theme_constant_override("margin_top", 4)
-			m.add_theme_constant_override("margin_right", 4)
+			m.add_theme_constant_override("margin_right", 2)
 			m.add_theme_constant_override("margin_bottom", 4)
 			card.add_child(m)
 			
@@ -12624,23 +13963,24 @@ func _update_daily_ui() -> void:
 			m.add_child(vb)
 			
 			var day_title = Label.new()
-			day_title.text = "DAY %d%s" % [d_num, " ⭐" if d_num == 7 else ""]
+			day_title.text = "DAY %d%s" % [d_num, "⭐" if d_num == 7 else ""]
 			day_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			day_title.add_theme_font_size_override("font_size", 10)
+			day_title.add_theme_font_size_override("font_size", 9)
 			day_title.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0) if d_num != 7 else Color(1.0, 0.85, 0.3))
 			vb.add_child(day_title)
 			
 			var rew_lbl = Label.new()
 			rew_lbl.text = d_lbl
 			rew_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			rew_lbl.add_theme_font_size_override("font_size", 10)
+			rew_lbl.add_theme_font_size_override("font_size", 9)
 			rew_lbl.add_theme_color_override("font_color", Color.WHITE)
+			rew_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			vb.add_child(rew_lbl)
 			
 			var st_lbl = Label.new()
 			st_lbl.text = status_text
 			st_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			st_lbl.add_theme_font_size_override("font_size", 9)
+			st_lbl.add_theme_font_size_override("font_size", 8)
 			st_lbl.add_theme_color_override("font_color", status_color)
 			vb.add_child(st_lbl)
 			
@@ -12659,7 +13999,13 @@ func _update_daily_ui() -> void:
 			btn_claim_login_reward.disabled = false
 			var idx = clampi(GameData.daily_login_streak - 1, 0, GameData.DAILY_LOGIN_CALENDAR.size() - 1)
 			var r = GameData.DAILY_LOGIN_CALENDAR[idx]
-			btn_claim_login_reward.text = "🎁 Claim Day %d Reward (%s)" % [GameData.daily_login_streak, r.get("label", "")]
+			var label_text = r.get("label", "")
+			if r.get("pack", "") == "special":
+				label_text = GameData.tr_text("Special Pack 🎁", "Sobre Especial 🎁")
+			btn_claim_login_reward.text = GameData.tr_text(
+				"🎁 Claim Day %d Reward (%s)",
+				"🎁 Reclamar Recompensa Día %d (%s)"
+			) % [GameData.daily_login_streak, label_text]
 			btn_claim_login_reward.add_theme_color_override("font_color", Color(0.2, 1.0, 0.5))
 			if calendar_status_lbl:
 				calendar_status_lbl.text = "🎁 Ready to claim now!"
@@ -12818,6 +14164,14 @@ func _on_claim_login_reward_pressed() -> void:
 	var res = GameData.claim_daily_login_reward()
 	if res.get("success", false):
 		_update_daily_ui()
+		var cards = res.get("opened_cards", [])
+		if cards.size() > 0:
+			if daily_modal:
+				daily_modal.visible = false
+			selected_booster_pack_id = "special"
+			if shop_modal:
+				shop_modal.visible = true
+			_show_pack_reveal_ui(cards)
 
 func _on_claim_chest_pressed() -> void:
 	var res = GameData.claim_daily_bonus_chest()
@@ -12830,6 +14184,8 @@ func _on_claim_chest_pressed() -> void:
 
 func _open_friends_modal() -> void:
 	friends_modal.visible = true
+	if friend_search_input:
+		friend_search_input.placeholder_text = GameData.tr_text("Search by Alias or Google Email...", "Buscar por Alias o Correo Google...")
 	_show_my_friends_tab()
 	_refresh_friends_and_rooms()
 
@@ -12892,6 +14248,7 @@ func _refresh_friends_and_rooms() -> void:
 	CloudSync.fetch_incoming_friend_additions(func(success: bool, incoming: Array, _msg: String):
 		if success:
 			_process_incoming_friend_notifications(incoming)
+			_update_friends_ui()
 	)
 
 func _process_incoming_friend_notifications(incoming: Array) -> void:
@@ -12926,8 +14283,9 @@ func _on_add_back_notice_pressed() -> void:
 	var alias = str(cur.get("alias", "Trainer"))
 	var email = str(cur.get("email", ""))
 	var p_id = str(cur.get("id", ""))
+	var act_val = str(cur.get("last_activity_at", ""))
 	
-	GameData.add_friend(alias, email, p_id)
+	GameData.add_friend(alias, email, p_id, act_val)
 	friends_feedback_lbl.text = "✨ " + (GameData.tr_text("'%s' added back to your friends list!", "¡Agregaste a '%s' de vuelta a tus amigos!") % alias)
 	_update_friends_ui()
 	_update_friend_notice_banner()
@@ -13046,7 +14404,6 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 	
 	var alias = str(f_data.get("alias", "Trainer"))
 	var email = str(f_data.get("email", ""))
-	var p_id = str(f_data.get("id", ""))
 	var act_val = f_data.get("last_activity_at", f_data.get("updated_at", ""))
 	
 	var name_lbl = Label.new()
@@ -13056,32 +14413,29 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 	name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	info_vbox.add_child(name_lbl)
 	
-	var rel_act = GameData.format_relative_activity_time(act_val)
-	var sub_lbl = Label.new()
-	var sub_text = ("ID: " + p_id) if not p_id.is_empty() else "ID: ---"
-	if not rel_act.is_empty() and rel_act != "Desconocido" and rel_act != "Unknown":
-		sub_text += " • 🕒 " + rel_act
-	sub_lbl.text = sub_text
-	sub_lbl.add_theme_font_size_override("font_size", 10)
-	sub_lbl.add_theme_color_override("font_color", Color(0.45, 0.75, 0.95))
-	sub_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	info_vbox.add_child(sub_lbl)
-	
 	# ¿Tiene este amigo una sala esperando?
 	var f_email_clean = email.strip_edges().to_lower()
 	var has_room = active_friend_rooms_map.has(f_email_clean)
 	var active_room = active_friend_rooms_map.get(f_email_clean, {}) if has_room else {}
-	
-	if has_room:
-		var room_code_str = str(active_room.get("room_code", ""))
-		var status_lbl = Label.new()
-		status_lbl.text = "🟢 Room: %s" % room_code_str
-		status_lbl.add_theme_font_size_override("font_size", 10)
-		status_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.45))
-		status_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-		info_vbox.add_child(status_lbl)
-		
 	var is_active = (has_room or GameData.is_trainer_active(act_val))
+	
+	var rel_act = GameData.format_relative_activity_time(act_val)
+	var sub_lbl = Label.new()
+	var sub_text = ""
+	if has_room:
+		sub_text = "🟢 " + (GameData.tr_text("In Battle Room: %s", "En Sala de Combate: %s") % str(active_room.get("room_code", "")))
+	elif is_active:
+		sub_text = "🟢 " + GameData.tr_text("Online now", "En línea ahora")
+	elif not rel_act.is_empty() and rel_act != "Desconocido" and rel_act != "Unknown":
+		sub_text = "🕒 " + rel_act
+	else:
+		sub_text = "🕒 " + GameData.tr_text("No recent activity", "Sin actividad reciente")
+	sub_lbl.text = sub_text
+	sub_lbl.add_theme_font_size_override("font_size", 10)
+	sub_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.45) if (has_room or is_active) else Color(0.5, 0.75, 0.95))
+	sub_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	info_vbox.add_child(sub_lbl)
+	
 	var status_btn = _create_activity_status_button(is_active)
 	status_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hbox.add_child(status_btn)
@@ -13236,6 +14590,7 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	var is_active = is_self or GameData.is_trainer_active(act_val)
 	
 	var name_row = HBoxContainer.new()
+	name_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_row.add_theme_constant_override("separation", 6)
 	info_vbox.add_child(name_row)
 	
@@ -13247,6 +14602,7 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 		name_lbl.text = alias
 		name_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 1))
 	name_lbl.add_theme_font_size_override("font_size", 13)
+	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name_row.add_child(name_lbl)
 	
@@ -13266,12 +14622,16 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 	
 	var rel_act = GameData.format_relative_activity_time(act_val)
 	var sub_lbl = Label.new()
-	var sub_text = ("ID: " + p_id) if not p_id.is_empty() else "ID: ---"
-	if not rel_act.is_empty() and rel_act != "Desconocido" and rel_act != "Unknown":
-		sub_text += " • 🕒 " + rel_act
+	var sub_text = ""
+	if is_active:
+		sub_text = "🟢 " + GameData.tr_text("Online now", "En línea ahora")
+	elif not rel_act.is_empty() and rel_act != "Desconocido" and rel_act != "Unknown":
+		sub_text = "🕒 " + rel_act
+	else:
+		sub_text = "🕒 " + GameData.tr_text("No recent activity", "Sin actividad reciente")
 	sub_lbl.text = sub_text
 	sub_lbl.add_theme_font_size_override("font_size", 10)
-	sub_lbl.add_theme_color_override("font_color", Color(0.6, 0.7, 0.8))
+	sub_lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.45) if is_active else Color(0.6, 0.7, 0.8))
 	sub_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	info_vbox.add_child(sub_lbl)
 	
@@ -13320,7 +14680,7 @@ func _create_search_result_card(res_data: Dictionary) -> Control:
 			add_btn.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 			_apply_retro_button_style(add_btn, Color(0.2, 0.5, 0.7), Color(0.4, 0.8, 1.0))
 		add_btn.pressed.connect(func():
-			GameData.add_friend(alias, email, p_id)
+			GameData.add_friend(alias, email, p_id, act_val)
 			add_btn.text = "✓"
 			add_btn.tooltip_text = GameData.tr_text("Friends", "Amigos")
 			add_btn.disabled = true

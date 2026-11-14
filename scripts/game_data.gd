@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.6.84"
+const GAME_VERSION: String = "v0.6.9"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -95,6 +95,7 @@ class PokemonData:
 	var took_damage_last_turn: bool = false
 	var is_paralyzed: bool = false
 	var paralyze_turns: int = 0
+	var immune_paralyze_rounds: int = 0
 	var is_asleep_turns: int = 0
 	var immune_sleep_rounds: int = 0
 	var is_frozen: bool = false
@@ -159,7 +160,7 @@ class PokemonData:
 	func get_effective_speed() -> int:
 		var spd = max(1, speed + temp_speed_mod)
 		if is_paralyzed or paralyze_turns > 0:
-			spd = max(1, spd - 2)
+			spd = max(1, spd - 3)
 		return spd
 
 # Base de datos de movimientos cargada desde poke_moves.csv
@@ -301,7 +302,7 @@ func is_friend(identifier: String) -> bool:
 			return true
 	return false
 
-func add_friend(alias: String, email: String, p_id: String) -> bool:
+func add_friend(alias: String, email: String, p_id: String = "", last_activity_at: String = "") -> bool:
 	var clean_email = email.strip_edges()
 	var clean_alias = alias.strip_edges()
 	var clean_id = p_id.strip_edges()
@@ -311,21 +312,32 @@ func add_friend(alias: String, email: String, p_id: String) -> bool:
 		
 	# Verificar si ya existe en la lista de amigos
 	for f in player_friends:
+		var match_found = false
 		if not clean_email.is_empty() and f.get("email", "").to_lower() == clean_email.to_lower():
-			return false
-		if not clean_id.is_empty() and f.get("id", "").to_lower() == clean_id.to_lower():
+			match_found = true
+		elif not clean_id.is_empty() and f.get("id", "").to_lower() == clean_id.to_lower():
+			match_found = true
+		elif clean_alias.to_lower() != "trainer" and f.get("alias", "").to_lower() == clean_alias.to_lower():
+			match_found = true
+			
+		if match_found:
+			if not last_activity_at.is_empty() and f.get("last_activity_at", "") != last_activity_at:
+				f["last_activity_at"] = last_activity_at
+				save_profile()
+				friends_updated.emit()
 			return false
 			
 	var new_friend = {
 		"alias": clean_alias,
 		"email": clean_email,
 		"id": clean_id,
+		"last_activity_at": last_activity_at,
 		"added_at": Time.get_datetime_string_from_system()
 	}
 	player_friends.append(new_friend)
 	save_profile()
 	friends_updated.emit()
-	print("[GameData] 👥 Friend added: %s (%s - %s). Total friends: %d" % [clean_alias, clean_email, clean_id, player_friends.size()])
+	print("[GameData] 👥 Friend added: %s (%s). Total friends: %d" % [clean_alias, clean_email, player_friends.size()])
 	return true
 
 func remove_friend(identifier: String) -> bool:
@@ -352,6 +364,10 @@ var stats_tournaments_won: int = 0
 var stats_battles_won: int = 0
 var stats_battles_total: int = 0
 var stats_packs_opened: int = 0
+var stats_campaign_battles: int = 0
+var stats_campaign_faints: int = 0
+var stats_campaign_items_used: int = 0
+var stats_stadium_tournaments_completed: int = 0
 
 # Ajustes de configuración
 const GameLocalizationScript = preload("res://scripts/localization.gd")
@@ -510,6 +526,9 @@ const DEFAULT_INVENTORY: Dictionary = {
 const ACHIEVEMENTS_DEF: Array[Dictionary] = [
 	{
 		"id": "collect_50_cards",
+		"category": "collection",
+		"chain_id": "collect_distinct_cards",
+		"tier": 1,
 		"title": "Conseguir 50 cartas de PKMN distintas",
 		"title_en": "Collect 50 Distinct Pokémon Cards",
 		"desc": "Colecciona al menos 50 cartas de Pokémon diferentes en tu colección.",
@@ -518,10 +537,555 @@ const ACHIEVEMENTS_DEF: Array[Dictionary] = [
 		"target": 50,
 		"reward_type": "item",
 		"reward_id": "exp_share",
+		"reward_amount": 1,
 		"reward_name": "Repartir Experiencia (Exp Share)",
 		"reward_name_en": "Exp Share",
 		"reward_desc": "Objeto permanente no consumible. Comparte el 20% de la EXP ganada en combate con el primer Pokémon de tu banca.",
 		"reward_desc_en": "Permanent non-consumable item. Shares 20% of battle EXP earned with the first Pokémon on your bench."
+	},
+
+	# CADENA A: VETERANO DE CAMPAÑA (Participa en X combates de Campaña)
+	# Recompensas: Alternando Oro reducido (20%) y Diamantes
+	{
+		"id": "camp_battles_1",
+		"category": "campaign_battles",
+		"chain_id": "campaign_battles",
+		"tier": 1,
+		"title": "Veterano de Campaña I",
+		"title_en": "Campaign Veteran I",
+		"desc": "Participa en 1 combate durante cualquier Campaña.",
+		"desc_en": "Participate in 1 battle during any Campaign.",
+		"type": "campaign_battles",
+		"target": 1,
+		"reward_type": "gold",
+		"reward_id": "gold",
+		"reward_amount": 20,
+		"reward_name": "20 Monedas de Oro",
+		"reward_name_en": "20 Gold Coins",
+		"reward_desc": "Oro para compras en Campaña.",
+		"reward_desc_en": "Gold for Campaign supplies."
+	},
+	{
+		"id": "camp_battles_3",
+		"category": "campaign_battles",
+		"chain_id": "campaign_battles",
+		"tier": 2,
+		"title": "Veterano de Campaña II",
+		"title_en": "Campaign Veteran II",
+		"desc": "Participa en 3 combates durante cualquier Campaña.",
+		"desc_en": "Participate in 3 battles during any Campaign.",
+		"type": "campaign_battles",
+		"target": 3,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 2,
+		"reward_name": "2 Diamantes",
+		"reward_name_en": "2 Diamonds",
+		"reward_desc": "Gemas para la tienda de sobres.",
+		"reward_desc_en": "Gems for the booster shop."
+	},
+	{
+		"id": "camp_battles_5",
+		"category": "campaign_battles",
+		"chain_id": "campaign_battles",
+		"tier": 3,
+		"title": "Veterano de Campaña III",
+		"title_en": "Campaign Veteran III",
+		"desc": "Participa en 5 combates durante cualquier Campaña.",
+		"desc_en": "Participate in 5 battles during any Campaign.",
+		"type": "campaign_battles",
+		"target": 5,
+		"reward_type": "gold",
+		"reward_id": "gold",
+		"reward_amount": 50,
+		"reward_name": "50 Monedas de Oro",
+		"reward_name_en": "50 Gold Coins",
+		"reward_desc": "Oro para compras en Campaña.",
+		"reward_desc_en": "Gold for Campaign supplies."
+	},
+	{
+		"id": "camp_battles_10",
+		"category": "campaign_battles",
+		"chain_id": "campaign_battles",
+		"tier": 4,
+		"title": "Veterano de Campaña IV",
+		"title_en": "Campaign Veteran IV",
+		"desc": "Participa en 10 combates durante cualquier Campaña.",
+		"desc_en": "Participate in 10 battles during any Campaign.",
+		"type": "campaign_battles",
+		"target": 10,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 5,
+		"reward_name": "5 Diamantes",
+		"reward_name_en": "5 Diamonds",
+		"reward_desc": "Gemas para la tienda de sobres.",
+		"reward_desc_en": "Gems for the booster shop."
+	},
+	{
+		"id": "camp_battles_30",
+		"category": "campaign_battles",
+		"chain_id": "campaign_battles",
+		"tier": 5,
+		"title": "Veterano de Campaña V",
+		"title_en": "Campaign Veteran V",
+		"desc": "Participa en 30 combates durante cualquier Campaña.",
+		"desc_en": "Participate in 30 battles during any Campaign.",
+		"type": "campaign_battles",
+		"target": 30,
+		"reward_type": "gold",
+		"reward_id": "gold",
+		"reward_amount": 150,
+		"reward_name": "150 Monedas de Oro",
+		"reward_name_en": "150 Gold Coins",
+		"reward_desc": "Oro para compras en Campaña.",
+		"reward_desc_en": "Gold for Campaign supplies."
+	},
+	{
+		"id": "camp_battles_50",
+		"category": "campaign_battles",
+		"chain_id": "campaign_battles",
+		"tier": 6,
+		"title": "Veterano de Campaña VI",
+		"title_en": "Campaign Veteran VI",
+		"desc": "Participa en 50 combates durante cualquier Campaña.",
+		"desc_en": "Participate in 50 battles during any Campaign.",
+		"type": "campaign_battles",
+		"target": 50,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 10,
+		"reward_name": "10 Diamantes",
+		"reward_name_en": "10 Diamonds",
+		"reward_desc": "Gemas para la tienda de sobres.",
+		"reward_desc_en": "Gems for the booster shop."
+	},
+	{
+		"id": "camp_battles_100",
+		"category": "campaign_battles",
+		"chain_id": "campaign_battles",
+		"tier": 7,
+		"title": "Veterano de Campaña VII",
+		"title_en": "Campaign Veteran VII",
+		"desc": "Participa en 100 combates durante cualquier Campaña.",
+		"desc_en": "Participate in 100 battles during any Campaign.",
+		"type": "campaign_battles",
+		"target": 100,
+		"reward_type": "gold",
+		"reward_id": "gold",
+		"reward_amount": 400,
+		"reward_name": "400 Monedas de Oro",
+		"reward_name_en": "400 Gold Coins",
+		"reward_desc": "Oro legendario para tus campañas.",
+		"reward_desc_en": "Legendary gold for Campaign supplies."
+	},
+
+	# CADENA B: CAZA-RIVALES (Derrota a X PKMN rivales en Campaña)
+	# Recompensas: Diamantes moderados
+	{
+		"id": "camp_faints_1",
+		"category": "campaign_faints",
+		"chain_id": "campaign_faints",
+		"tier": 1,
+		"title": "Caza-Rivales I",
+		"title_en": "Rival Hunter I",
+		"desc": "Derrota a 1 Pokémon rival durante cualquier Campaña.",
+		"desc_en": "Defeat 1 opposing Pokémon during any Campaign.",
+		"type": "campaign_faints",
+		"target": 1,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 2,
+		"reward_name": "2 Diamantes",
+		"reward_name_en": "2 Diamonds",
+		"reward_desc": "Gemas para la tienda de sobres.",
+		"reward_desc_en": "Gems for the booster shop."
+	},
+	{
+		"id": "camp_faints_3",
+		"category": "campaign_faints",
+		"chain_id": "campaign_faints",
+		"tier": 2,
+		"title": "Caza-Rivales II",
+		"title_en": "Rival Hunter II",
+		"desc": "Derrota a 3 Pokémon rivales durante cualquier Campaña.",
+		"desc_en": "Defeat 3 opposing Pokémon during any Campaign.",
+		"type": "campaign_faints",
+		"target": 3,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 3,
+		"reward_name": "3 Diamantes",
+		"reward_name_en": "3 Diamonds",
+		"reward_desc": "Gemas para la tienda de sobres.",
+		"reward_desc_en": "Gems for the booster shop."
+	},
+	{
+		"id": "camp_faints_5",
+		"category": "campaign_faints",
+		"chain_id": "campaign_faints",
+		"tier": 3,
+		"title": "Caza-Rivales III",
+		"title_en": "Rival Hunter III",
+		"desc": "Derrota a 5 Pokémon rivales durante cualquier Campaña.",
+		"desc_en": "Defeat 5 opposing Pokémon during any Campaign.",
+		"type": "campaign_faints",
+		"target": 5,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 5,
+		"reward_name": "5 Diamantes",
+		"reward_name_en": "5 Diamonds",
+		"reward_desc": "Gemas para la tienda de sobres.",
+		"reward_desc_en": "Gems for the booster shop."
+	},
+	{
+		"id": "camp_faints_10",
+		"category": "campaign_faints",
+		"chain_id": "campaign_faints",
+		"tier": 4,
+		"title": "Caza-Rivales IV",
+		"title_en": "Rival Hunter IV",
+		"desc": "Derrota a 10 Pokémon rivales durante cualquier Campaña.",
+		"desc_en": "Defeat 10 opposing Pokémon during any Campaign.",
+		"type": "campaign_faints",
+		"target": 10,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 8,
+		"reward_name": "8 Diamantes",
+		"reward_name_en": "8 Diamonds",
+		"reward_desc": "Gemas para la tienda de sobres.",
+		"reward_desc_en": "Gems for the booster shop."
+	},
+	{
+		"id": "camp_faints_30",
+		"category": "campaign_faints",
+		"chain_id": "campaign_faints",
+		"tier": 5,
+		"title": "Caza-Rivales V",
+		"title_en": "Rival Hunter V",
+		"desc": "Derrota a 30 Pokémon rivales durante cualquier Campaña.",
+		"desc_en": "Defeat 30 opposing Pokémon during any Campaign.",
+		"type": "campaign_faints",
+		"target": 30,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 15,
+		"reward_name": "15 Diamantes",
+		"reward_name_en": "15 Diamonds",
+		"reward_desc": "Gemas para la tienda de sobres.",
+		"reward_desc_en": "Gems for the booster shop."
+	},
+	{
+		"id": "camp_faints_50",
+		"category": "campaign_faints",
+		"chain_id": "campaign_faints",
+		"tier": 6,
+		"title": "Caza-Rivales VI",
+		"title_en": "Rival Hunter VI",
+		"desc": "Derrota a 50 Pokémon rivales durante cualquier Campaña.",
+		"desc_en": "Defeat 50 opposing Pokémon during any Campaign.",
+		"type": "campaign_faints",
+		"target": 50,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 25,
+		"reward_name": "25 Diamantes",
+		"reward_name_en": "25 Diamonds",
+		"reward_desc": "Gemas para la tienda de sobres.",
+		"reward_desc_en": "Gems for the booster shop."
+	},
+	{
+		"id": "camp_faints_100",
+		"category": "campaign_faints",
+		"chain_id": "campaign_faints",
+		"tier": 7,
+		"title": "Caza-Rivales VII",
+		"title_en": "Rival Hunter VII",
+		"desc": "Derrota a 100 Pokémon rivales durante cualquier Campaña.",
+		"desc_en": "Defeat 100 opposing Pokémon during any Campaign.",
+		"type": "campaign_faints",
+		"target": 100,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 50,
+		"reward_name": "50 Diamantes",
+		"reward_name_en": "50 Diamonds",
+		"reward_desc": "Cofre legendario de gemas para sobres.",
+		"reward_desc_en": "Legendary chest of gems for booster packs."
+	},
+
+	# CADENA C: ESPECIALISTA TÁCTICO (Utiliza X objetos durante una Campaña)
+	# Recompensas: Oro moderado (20% del valor inicial)
+	{
+		"id": "camp_items_1",
+		"category": "campaign_items",
+		"chain_id": "campaign_items",
+		"tier": 1,
+		"title": "Especialista Táctico I",
+		"title_en": "Tactical Specialist I",
+		"desc": "Utiliza 1 objeto durante una Campaña.",
+		"desc_en": "Use 1 item during any Campaign.",
+		"type": "campaign_items_used",
+		"target": 1,
+		"reward_type": "gold",
+		"reward_id": "gold",
+		"reward_amount": 30,
+		"reward_name": "30 Monedas de Oro",
+		"reward_name_en": "30 Gold Coins",
+		"reward_desc": "Oro para reabastecer tu mochila.",
+		"reward_desc_en": "Gold to restock your bag."
+	},
+	{
+		"id": "camp_items_3",
+		"category": "campaign_items",
+		"chain_id": "campaign_items",
+		"tier": 2,
+		"title": "Especialista Táctico II",
+		"title_en": "Tactical Specialist II",
+		"desc": "Utiliza 3 objetos durante una Campaña.",
+		"desc_en": "Use 3 items during any Campaign.",
+		"type": "campaign_items_used",
+		"target": 3,
+		"reward_type": "gold",
+		"reward_id": "gold",
+		"reward_amount": 60,
+		"reward_name": "60 Monedas de Oro",
+		"reward_name_en": "60 Gold Coins",
+		"reward_desc": "Oro para reabastecer tu mochila.",
+		"reward_desc_en": "Gold to restock your bag."
+	},
+	{
+		"id": "camp_items_5",
+		"category": "campaign_items",
+		"chain_id": "campaign_items",
+		"tier": 3,
+		"title": "Especialista Táctico III",
+		"title_en": "Tactical Specialist III",
+		"desc": "Utiliza 5 objetos durante una Campaña.",
+		"desc_en": "Use 5 items during any Campaign.",
+		"type": "campaign_items_used",
+		"target": 5,
+		"reward_type": "gold",
+		"reward_id": "gold",
+		"reward_amount": 100,
+		"reward_name": "100 Monedas de Oro",
+		"reward_name_en": "100 Gold Coins",
+		"reward_desc": "Oro para reabastecer tu mochila.",
+		"reward_desc_en": "Gold to restock your bag."
+	},
+	{
+		"id": "camp_items_10",
+		"category": "campaign_items",
+		"chain_id": "campaign_items",
+		"tier": 4,
+		"title": "Especialista Táctico IV",
+		"title_en": "Tactical Specialist IV",
+		"desc": "Utiliza 10 objetos durante una Campaña.",
+		"desc_en": "Use 10 items during any Campaign.",
+		"type": "campaign_items_used",
+		"target": 10,
+		"reward_type": "gold",
+		"reward_id": "gold",
+		"reward_amount": 160,
+		"reward_name": "160 Monedas de Oro",
+		"reward_name_en": "160 Gold Coins",
+		"reward_desc": "Oro para reabastecer tu mochila.",
+		"reward_desc_en": "Gold to restock your bag."
+	},
+	{
+		"id": "camp_items_30",
+		"category": "campaign_items",
+		"chain_id": "campaign_items",
+		"tier": 5,
+		"title": "Especialista Táctico V",
+		"title_en": "Tactical Specialist V",
+		"desc": "Utiliza 30 objetos durante una Campaña.",
+		"desc_en": "Use 30 items during any Campaign.",
+		"type": "campaign_items_used",
+		"target": 30,
+		"reward_type": "gold",
+		"reward_id": "gold",
+		"reward_amount": 300,
+		"reward_name": "300 Monedas de Oro",
+		"reward_name_en": "300 Gold Coins",
+		"reward_desc": "Oro para reabastecer tu mochila.",
+		"reward_desc_en": "Gold to restock your bag."
+	},
+	{
+		"id": "camp_items_50",
+		"category": "campaign_items",
+		"chain_id": "campaign_items",
+		"tier": 6,
+		"title": "Especialista Táctico VI",
+		"title_en": "Tactical Specialist VI",
+		"desc": "Utiliza 50 objetos durante una Campaña.",
+		"desc_en": "Use 50 items during any Campaign.",
+		"type": "campaign_items_used",
+		"target": 50,
+		"reward_type": "gold",
+		"reward_id": "gold",
+		"reward_amount": 500,
+		"reward_name": "500 Monedas de Oro",
+		"reward_name_en": "500 Gold Coins",
+		"reward_desc": "Oro para reabastecer tu mochila.",
+		"reward_desc_en": "Gold to restock your bag."
+	},
+	{
+		"id": "camp_items_100",
+		"category": "campaign_items",
+		"chain_id": "campaign_items",
+		"tier": 7,
+		"title": "Especialista Táctico VII",
+		"title_en": "Tactical Specialist VII",
+		"desc": "Utiliza 100 objetos durante una Campaña.",
+		"desc_en": "Use 100 items during any Campaign.",
+		"type": "campaign_items_used",
+		"target": 100,
+		"reward_type": "gold",
+		"reward_id": "gold",
+		"reward_amount": 1000,
+		"reward_name": "1,000 Monedas de Oro",
+		"reward_name_en": "1,000 Gold Coins",
+		"reward_desc": "Bolsa legendaria de oro para suministros.",
+		"reward_desc_en": "Legendary bag of gold for campaign items."
+	},
+
+	# CADENA D: CAMPEÓN DEL STADIUM (Completa X torneos de Pokemon Stadium)
+	# Recompensas: Generosa cantidad de diamantes
+	{
+		"id": "stadium_tournaments_1",
+		"category": "stadium_tournaments",
+		"chain_id": "stadium_tournaments",
+		"tier": 1,
+		"title": "Campeón del Stadium I",
+		"title_en": "Stadium Champion I",
+		"desc": "Gana 1 Torneo completo de Pokémon Stadium (9 victorias).",
+		"desc_en": "Win 1 full Pokémon Stadium Tournament (9 victories).",
+		"type": "stadium_tournaments",
+		"target": 1,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 15,
+		"reward_name": "15 Diamantes",
+		"reward_name_en": "15 Diamonds",
+		"reward_desc": "Premio de Diamantes para sobres.",
+		"reward_desc_en": "Diamond prize for booster packs."
+	},
+	{
+		"id": "stadium_tournaments_3",
+		"category": "stadium_tournaments",
+		"chain_id": "stadium_tournaments",
+		"tier": 2,
+		"title": "Campeón del Stadium II",
+		"title_en": "Stadium Champion II",
+		"desc": "Gana 3 Torneos completos de Pokémon Stadium.",
+		"desc_en": "Win 3 full Pokémon Stadium Tournaments.",
+		"type": "stadium_tournaments",
+		"target": 3,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 30,
+		"reward_name": "30 Diamantes",
+		"reward_name_en": "30 Diamonds",
+		"reward_desc": "Premio de Diamantes para sobres.",
+		"reward_desc_en": "Diamond prize for booster packs."
+	},
+	{
+		"id": "stadium_tournaments_5",
+		"category": "stadium_tournaments",
+		"chain_id": "stadium_tournaments",
+		"tier": 3,
+		"title": "Campeón del Stadium III",
+		"title_en": "Stadium Champion III",
+		"desc": "Gana 5 Torneos completos de Pokémon Stadium.",
+		"desc_en": "Win 5 full Pokémon Stadium Tournaments.",
+		"type": "stadium_tournaments",
+		"target": 5,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 50,
+		"reward_name": "50 Diamantes",
+		"reward_name_en": "50 Diamonds",
+		"reward_desc": "Premio de Diamantes para sobres.",
+		"reward_desc_en": "Diamond prize for booster packs."
+	},
+	{
+		"id": "stadium_tournaments_10",
+		"category": "stadium_tournaments",
+		"chain_id": "stadium_tournaments",
+		"tier": 4,
+		"title": "Campeón del Stadium IV",
+		"title_en": "Stadium Champion IV",
+		"desc": "Gana 10 Torneos completos de Pokémon Stadium.",
+		"desc_en": "Win 10 full Pokémon Stadium Tournaments.",
+		"type": "stadium_tournaments",
+		"target": 10,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 80,
+		"reward_name": "80 Diamantes",
+		"reward_name_en": "80 Diamonds",
+		"reward_desc": "Premio de Diamantes para sobres.",
+		"reward_desc_en": "Diamond prize for booster packs."
+	},
+	{
+		"id": "stadium_tournaments_30",
+		"category": "stadium_tournaments",
+		"chain_id": "stadium_tournaments",
+		"tier": 5,
+		"title": "Campeón del Stadium V",
+		"title_en": "Stadium Champion V",
+		"desc": "Gana 30 Torneos completos de Pokémon Stadium.",
+		"desc_en": "Win 30 full Pokémon Stadium Tournaments.",
+		"type": "stadium_tournaments",
+		"target": 30,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 150,
+		"reward_name": "150 Diamantes",
+		"reward_name_en": "150 Diamonds",
+		"reward_desc": "Premio de Diamantes para sobres.",
+		"reward_desc_en": "Diamond prize for booster packs."
+	},
+	{
+		"id": "stadium_tournaments_50",
+		"category": "stadium_tournaments",
+		"chain_id": "stadium_tournaments",
+		"tier": 6,
+		"title": "Campeón del Stadium VI",
+		"title_en": "Stadium Champion VI",
+		"desc": "Gana 50 Torneos completos de Pokémon Stadium.",
+		"desc_en": "Win 50 full Pokémon Stadium Tournaments.",
+		"type": "stadium_tournaments",
+		"target": 50,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 250,
+		"reward_name": "250 Diamantes",
+		"reward_name_en": "250 Diamonds",
+		"reward_desc": "Premio de Diamantes para sobres.",
+		"reward_desc_en": "Diamond prize for booster packs."
+	},
+	{
+		"id": "stadium_tournaments_100",
+		"category": "stadium_tournaments",
+		"chain_id": "stadium_tournaments",
+		"tier": 7,
+		"title": "Campeón del Stadium VII",
+		"title_en": "Stadium Champion VII",
+		"desc": "Gana 100 Torneos completos de Pokémon Stadium.",
+		"desc_en": "Win 100 full Pokémon Stadium Tournaments.",
+		"type": "stadium_tournaments",
+		"target": 100,
+		"reward_type": "diamonds",
+		"reward_id": "diamonds",
+		"reward_amount": 500,
+		"reward_name": "500 Diamantes",
+		"reward_name_en": "500 Diamonds",
+		"reward_desc": "El tesoro supremo del Campeón de la Frontera.",
+		"reward_desc_en": "The supreme treasure of the Frontier Champion."
 	}
 ]
 
@@ -561,6 +1125,12 @@ var adventure_ep107_selected_route: String = "rocket_hideout"
 var adventure_ep107_cleared_routes: Array[String] = []
 var adventure_ep108_selected_route: String = "ice_path"
 var adventure_ep108_cleared_routes: Array[String] = []
+var adventure_ep204_selected_route: String = "jagged_pass"
+var adventure_ep204_cleared_routes: Array[String] = []
+var adventure_ep206_selected_route: String = "weather_institute"
+var adventure_ep206_cleared_routes: Array[String] = []
+var adventure_ep208_selected_route: String = "cave_of_origin"
+var adventure_ep208_cleared_routes: Array[String] = []
 var lake_of_rage_completed: bool = false
 const LAKE_OF_RAGE_BOSS_ID: int = 495
 const RED_GYARADOS_BOSS_ID: int = 495
@@ -1734,6 +2304,587 @@ const ADVENTURE_EPISODES: Dictionary = {
 				]
 			}
 		}
+	},
+	201: {
+		"id": 201,
+		"region": "Hoenn",
+		"title": "Episode I: Stone Badge (Rustboro City)",
+		"title_es": "Episodio I: Medalla Piedra (Ciudad Férrica)",
+		"subtitle": "Journey through Route 104, Petalburg Woods & challenge Gym Leader Roxanne!",
+		"subtitle_es": "¡Cruza la Ruta 104, el Bosque Petalia y desafía a la Líder Petra!",
+		"reward_diamonds_first_clear": 15,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Hoenn Youngster",
+				"trainer_title_es": "Joven de Hoenn",
+				"trainer_name": "Youngster Calvin",
+				"trainer_name_es": "Joven Calvin",
+				"intro": "I just began my journey across Hoenn! Poochyena and Zigzagoon, Quick Attack!",
+				"intro_es": "¡Acabo de empezar mi viaje en Hoenn! ¡Poochyena y Zigzagoon, ataque rápido!",
+				"outro": "Incredible strength! Hoenn truly has remarkable trainers.",
+				"outro_es": "¡Vaya fuerza! Hoenn tiene entrenadores increíbles.",
+				"team_pokemon_names": ["Poochyena", "Zigzagoon"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Bug Catcher",
+				"trainer_title_es": "Cazabichos",
+				"trainer_name": "Bug Catcher Jose",
+				"trainer_name_es": "Cazabichos Jose",
+				"intro": "The bugs of Petalburg Woods are fascinating! Wurmple and Silcoon, String Shot!",
+				"intro_es": "¡Los bichos del Bosque Petalia son fascinantes! ¡Wurmple y Silcoon, Disparo Demora!",
+				"outro": "My silk cocoons couldn't hold you back...",
+				"outro_es": "Mis capullos de seda no pudieron contenerte...",
+				"team_pokemon_names": ["Wurmple", "Silcoon"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Team Aqua Grunt",
+				"trainer_title_es": "Recluta Team Aqua",
+				"trainer_name": "Aqua Grunt",
+				"trainer_name_es": "Recluta Aqua",
+				"intro": "Hand over the Devon Goods if you know what's good for you! Poochyena, bite!",
+				"intro_es": "¡Entrégame las piezas Devon si no quieres problemas! ¡Poochyena, muerde!",
+				"outro": "Leader Archie won't be pleased with this failure!",
+				"outro_es": "¡El Jefe Archie no estará contento con esto!",
+				"team_pokemon_names": ["Poochyena", "Poochyena"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Gym Leader Roxanne",
+				"trainer_title_es": "Líder Petra",
+				"trainer_name": "Gym Leader Roxanne",
+				"trainer_name_es": "Líder Petra",
+				"is_boss": true,
+				"badge_name": "Stone Badge",
+				"badge_name_es": "Medalla Piedra",
+				"intro": "I am Roxanne, top graduate of the Rustboro Trainers' School! My Rock-type Pokémon possess unbreakable defense. Show me your tactical knowledge!",
+				"intro_es": "¡Soy Petra, graduada con honores de la Academia de Entrenadores! Mis Pokémon de roca tienen una defensa inquebrantable. ¡Demuéstrame tus conocimientos!",
+				"outro": "A brilliant strategy! You have mastered both theory and practice. I proudly award you the Stone Badge!",
+				"outro_es": "¡Una estrategia brillante! Veo que has dominado la teoría y la práctica. ¡Te entrego con honor la Medalla Piedra!",
+				"team_pokemon_names": ["Geodude", "Nosepass"]
+			}
+		]
+	},
+	202: {
+		"id": 202,
+		"region": "Hoenn",
+		"title": "Episode II: Knuckle Badge (Dewford Town)",
+		"title_es": "Episodio II: Medalla Puño (Pueblo Azuliza)",
+		"subtitle": "Cross the ocean with Mr. Briney, enter Granite Cave & face Gym Leader Brawly!",
+		"subtitle_es": "¡Navega junto al Sr. Arenque, explora la Cueva Granito y enfrenta al Líder Marcial!",
+		"reward_diamonds_first_clear": 18,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Coastal Fisherman",
+				"trainer_title_es": "Pescador Costero",
+				"trainer_name": "Fisherman Ned",
+				"trainer_name_es": "Pescador Ned",
+				"intro": "The waters of Dewford are bursting with ocean life! Tentacool, Poison Sting!",
+				"intro_es": "¡Las aguas de Azuliza están llenas de vida marina! ¡Tentacool, picotazo venenoso!",
+				"outro": "I reeled in a formidable trainer!",
+				"outro_es": "¡Pesqué a un entrenador formidable!",
+				"team_pokemon_names": ["Tentacool", "Tentacool"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Sailor",
+				"trainer_title_es": "Marinero",
+				"trainer_name": "Sailor Huey",
+				"trainer_name_es": "Marinero Huey",
+				"intro": "I've sailed the seven seas of Hoenn! Wingull and Machop, prepare to board!",
+				"intro_es": "¡He surcado los siete mares de Hoenn! ¡Wingull y Machop, al abordaje!",
+				"outro": "Got seasick right here on dry land!",
+				"outro_es": "¡Me mareé en tierra firme!",
+				"team_pokemon_names": ["Wingull", "Machop"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Black Belt Fighter",
+				"trainer_title_es": "Luchador Cinturón Negro",
+				"trainer_name": "Black Belt Nob",
+				"trainer_name_es": "Cinturón Negro Nob",
+				"intro": "Training in the pitch-black Granite Cave forges muscles of steel! Makuhita, Arm Thrust!",
+				"intro_es": "¡Entrenar en la oscuridad de la Cueva Granito forja músculos de acero! ¡Makuhita, empuje!",
+				"outro": "Your balance and stance are flawless!",
+				"outro_es": "¡Tu balance es impecable!",
+				"team_pokemon_names": ["Meditite", "Makuhita"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Gym Leader Brawly",
+				"trainer_title_es": "Líder Marcial",
+				"trainer_name": "Gym Leader Brawly",
+				"trainer_name_es": "Líder Marcial",
+				"is_boss": true,
+				"badge_name": "Knuckle Badge",
+				"badge_name_es": "Medalla Puño",
+				"intro": "I ride the giant waves of Dewford and temper my spirit through fighting! Feel the crashing tide of my Makuhita!",
+				"intro_es": "¡Surfeo las olas gigantes de Azuliza y entreno el espíritu del combate! ¡Siente la marea de mis puños con Makuhita!",
+				"outro": "What a tidal wave of power! You wiped me completely out. You have earned the Knuckle Badge!",
+				"outro_es": "¡Vaya ola de poder! Me has dejado boquiabierto. ¡Eres digno de la Medalla Puño!",
+				"team_pokemon_names": ["Machop", "Meditite", "Makuhita"]
+			}
+		]
+	},
+	203: {
+		"id": 203,
+		"region": "Hoenn",
+		"title": "Episode III: Dynamo Badge (Mauville City)",
+		"title_es": "Episodio III: Medalla Dinamo (Ciudad Malvalona)",
+		"subtitle": "Cycle along Seaside Cycling Road & challenge the electric traps of Gym Leader Wattson!",
+		"subtitle_es": "¡Recorre la ciclovía marina y supera las trampas eléctricas del Líder Erico!",
+		"reward_diamonds_first_clear": 20,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Guitarist",
+				"trainer_title_es": "Guitarrista Rockero",
+				"trainer_name": "Guitarist Kirk",
+				"trainer_name_es": "Guitarrista Kirk",
+				"intro": "The voltage of my guitar riffs will electrify your whole deck! Electrike, rock spark!",
+				"intro_es": "¡El voltaje de mi música electrizará todo tu mazo! ¡Electrike, chispa rockera!",
+				"outro": "Snapped my high-E string during the solo!",
+				"outro_es": "¡Se me rompió la cuerda del solo!",
+				"team_pokemon_names": ["Electrike", "Magnemite"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Triathlete Cyclist",
+				"trainer_title_es": "Triatleta Ciclista",
+				"trainer_name": "Triathlete Dylan",
+				"trainer_name_es": "Triatleta Dylan",
+				"intro": "Full speed down Seaside Cycling Road! Magnemite and Voltorb, overdrive!",
+				"intro_es": "¡A toda velocidad por la ciclovía! ¡Magnemite y Voltorb, aceleración máxima!",
+				"outro": "Popped a tire right on your counter-strategy!",
+				"outro_es": "¡Pinché neumático con tu estrategia!",
+				"team_pokemon_names": ["Magnemite", "Voltorb"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Mauville Scientist",
+				"trainer_title_es": "Científico de Malvalona",
+				"trainer_name": "Scientist Ted",
+				"trainer_name_es": "Científico Ted",
+				"intro": "Mauville's electromagnetic grid generates limitless energy! Manectric, overload!",
+				"intro_es": "¡La energía electromagnética de Malvalona es infinita! ¡Manectric, sobrecarga!",
+				"outro": "Blew a fuse in my calculations!",
+				"outro_es": "¡Circuito quemado!",
+				"team_pokemon_names": ["Electrike", "Manectric"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Gym Leader Wattson",
+				"trainer_title_es": "Líder Erico",
+				"trainer_name": "Gym Leader Wattson",
+				"trainer_name_es": "Líder Erico",
+				"is_boss": true,
+				"badge_name": "Dynamo Badge",
+				"badge_name_es": "Medalla Dinamo",
+				"intro": "Wahahaha! Laughter and electricity spark vitality! Prepare to be shocked by my Magneton and Manectric!",
+				"intro_es": "¡Jajaja! ¡La risa y los rayos dan salud! ¡Prepárate para quedar electrificado ante mi Magneton y Manectric!",
+				"outro": "Wahahaha! Brilliant! You've left sparks in my mustache! Take the Dynamo Badge with pride!",
+				"outro_es": "¡Jajaja! ¡Brillante! ¡Me has dejado chispas en el bigote! ¡Toma la Medalla Dinamo!",
+				"team_pokemon_names": ["Voltorb", "Electrike", "Magneton"]
+			}
+		]
+	},
+	204: {
+		"id": 204,
+		"region": "Hoenn",
+		"is_branching": true,
+		"title": "Episode IV: Heat Badge (Lavaridge Town)",
+		"title_es": "Episodio IV: Medalla Calor (Pueblo Lavacalda)",
+		"subtitle": "Ascend Mt. Chimney, thwart Team Magma & challenge Gym Leader Flannery!",
+		"subtitle_es": "¡Asciende al Monte Cenizo, detiene al Team Magma y enfrenta a la Líder Candela!",
+		"reward_diamonds_first_clear": 25,
+		"routes": {
+			"jagged_pass": {
+				"id": "jagged_pass",
+				"name": "Jagged Pass & Mt. Chimney",
+				"name_es": "Desfiladero y Monte Cenizo",
+				"desc": "Confront Team Magma operatives sabotaging the volcanic crater over boiling magma springs.",
+				"desc_es": "Enfrenta a los reclutas del Team Magma que intentan despertar el volcán con el meteorito.",
+				"reward_diamonds_first_clear": 10,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Team Magma Grunt",
+						"trainer_title_es": "Recluta Team Magma",
+						"trainer_name": "Magma Grunt",
+						"trainer_name_es": "Recluta Magma",
+						"intro": "We shall expand the landmass to create a better world! Numel, Mud-Slap!",
+						"intro_es": "¡Expandiremos la tierra firme para crear un nuevo mundo! ¡Numel, bofetón lodo!",
+						"outro": "Curse it, our volcanic heat wasn't enough!",
+						"outro_es": "¡Maldición, el calor no fue suficiente!",
+						"team_pokemon_names": ["Numel", "Poochyena"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Magma Admin",
+						"trainer_title_es": "Comandante Magma",
+						"trainer_name": "Admin Tabitha",
+						"trainer_name_es": "Comandante Tabitha",
+						"intro": "I cannot allow you to tamper with Leader Maxie's grand design! Camerupt and Koffing, volcanic haze!",
+						"intro_es": "¡No permitiré que interfieras en los planes del Líder Maxie! ¡Camerupt y Koffing, niebla volcánica!",
+						"outro": "The volcano's pressure... it has stabilized! Fall back to Lavaridge!",
+						"outro_es": "¡El volcán... se ha estabilizado! ¡Nos retiramos a Lavacalda!",
+						"team_pokemon_names": ["Koffing", "Numel"]
+					}
+				]
+			},
+			"lavaridge_gym": {
+				"id": "lavaridge_gym",
+				"name": "Lavaridge Hot Springs Gym",
+				"name_es": "Gimnasio de Aguas Termales de Lavacalda",
+				"desc": "Navigate steam geysers and defeat Gym Leader Flannery to earn the Heat Badge.",
+				"desc_es": "Atraviesa las chimeneas de vapor caliente y vence a la Líder Candela para obtener la Medalla Calor.",
+				"reward_diamonds_first_clear": 15,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Kindler",
+						"trainer_title_es": "Chica Fuego",
+						"trainer_name": "Kindler Sadie",
+						"trainer_name_es": "Chica Caliente Sadie",
+						"intro": "The hot springs crank up the combat temperature! Slugma, Ember!",
+						"intro_es": "¡Las aguas termales aumentan la temperatura de combate! ¡Slugma, ascuas!",
+						"outro": "You completely stifled my flames!",
+						"outro_es": "¡Me sofocaste por completo!",
+						"team_pokemon_names": ["Slugma", "Slugma"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Gym Leader Flannery",
+						"trainer_title_es": "Líder Candela",
+						"trainer_name": "Gym Leader Flannery",
+						"trainer_name_es": "Líder Candela",
+						"is_boss": true,
+						"badge_name": "Heat Badge",
+						"badge_name_es": "Medalla Calor",
+						"intro": "I only recently became Gym Leader, but my burning passion blazes hotter than Mt. Chimney's magma! Torkoal, Overheat!",
+						"intro_es": "¡Apenas asumí el liderazgo del gimnasio, pero mi pasión arde como el magma del Monte Cenizo! ¡Torkoal, Sofoco!",
+						"outro": "Phew... deep breaths...! What a fiery clash! You have rightfully earned the Heat Badge!",
+						"outro_es": "¡Uff... respirar hondo...! ¡Qué batalla tan encendida! Te has ganado con creces la Medalla Calor.",
+						"team_pokemon_names": ["Slugma", "Numel", "Torkoal"]
+					}
+				]
+			}
+		}
+	},
+	205: {
+		"id": 205,
+		"region": "Hoenn",
+		"title": "Episode V: Balance Badge (Petalburg City)",
+		"title_es": "Episodio V: Medalla Equilibrio (Ciudad Petalia)",
+		"subtitle": "Return home to challenge your father, Gym Leader Norman, and his formidable Slaking!",
+		"subtitle_es": "¡Regresa a casa para desafiar a tu padre, el Líder Norman, y a su colosal Slaking!",
+		"reward_diamonds_first_clear": 25,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Precision Trainer",
+				"trainer_title_es": "Entrenador de Precisión",
+				"trainer_name": "Cooltrainer Randall",
+				"trainer_name_es": "Chico Guay Randall",
+				"intro": "In this room we hone pinpoint critical accuracy! Spinda, Teeter Dance!",
+				"intro_es": "¡En esta sala del gimnasio entrenamos el golpe crítico certero! ¡Spinda, danza confusa!",
+				"outro": "Your focus outmatched mine!",
+				"outro_es": "¡Tu puntería superó la mía!",
+				"team_pokemon_names": ["Spinda", "Spinda"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Speed Trainer",
+				"trainer_title_es": "Entrenadora de Velocidad",
+				"trainer_name": "Cooltrainer Mary",
+				"trainer_name_es": "Chica Guay Mary",
+				"intro": "Pace and agility dictate the rhythm of battle! Delcatty, elegant Feint Attack!",
+				"intro_es": "¡La velocidad y el estilo son la clave de la victoria! ¡Delcatty, finta elegante!",
+				"outro": "Breathtaking agility!",
+				"outro_es": "¡Impresionante agilidad!",
+				"team_pokemon_names": ["Delcatty"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Gym Ace",
+				"trainer_title_es": "As del Gimnasio",
+				"trainer_name": "Ace Trainer Berke",
+				"trainer_name_es": "Veterano Berke",
+				"intro": "Norman taught us that patience and restraint are the deadliest weapons! Zangoose and Vigoroth, Fury Swipes!",
+				"intro_es": "¡Norman nos enseñó que la paciencia es el arma definitiva! ¡Zangoose y Vigoroth, garras furiosas!",
+				"outro": "You are ready to stand before your father!",
+				"outro_es": "¡Estás listo para enfrentar a tu padre!",
+				"team_pokemon_names": ["Zangoose", "Vigoroth"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Gym Leader Norman",
+				"trainer_title_es": "Líder Norman",
+				"trainer_name": "Gym Leader Norman",
+				"trainer_name_es": "Líder Norman",
+				"is_boss": true,
+				"badge_name": "Balance Badge",
+				"badge_name_es": "Medalla Equilibrio",
+				"intro": "You have grown remarkably since leaving Littleroot Town... But as a Gym Leader, I will hold nothing back. Vigoroth, Slaking, let us show the true essence of balance!",
+				"intro_es": "Has crecido enormemente desde que saliste de Villa Raíz... Pero como Líder de Gimnasio, no contendré ningún golpe. ¡Vigoroth, Slaking, demostremos el verdadero poder del equilibrio!",
+				"outro": "I can scarcely believe this day has come... You have surpassed your own father! Wear the Balance Badge with pride.",
+				"outro_es": "No puedo creer que este día haya llegado... ¡Has superado a tu propio padre! Lleva con orgullo la Medalla Equilibrio.",
+				"team_pokemon_names": ["Spinda", "Vigoroth", "Slaking"]
+			}
+		]
+	},
+	206: {
+		"id": 206,
+		"region": "Hoenn",
+		"is_branching": true,
+		"title": "Episode VI: Feather Badge (Fortree City)",
+		"title_es": "Episodio VI: Medalla Pluma (Ciudad Arborada)",
+		"subtitle": "Uncover hidden Kecleon with the Devon Scope & battle Gym Leader Winona in the treetops!",
+		"subtitle_es": "¡Revela a los Kecleon con el Detector Devon y desafía a la Líder Alana en las copas de los árboles!",
+		"reward_diamonds_first_clear": 30,
+		"routes": {
+			"weather_institute": {
+				"id": "weather_institute",
+				"name": "Weather Institute & Route 119",
+				"name_es": "Instituto Meteorológico y Ruta 119",
+				"desc": "Rescue researchers studying extreme weather anomalies from villainous infiltrators.",
+				"desc_es": "Rescata a los científicos del clima en la Ruta 119 y enfrenta a los guardias camuflados.",
+				"reward_diamonds_first_clear": 12,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Infiltrator Grunt",
+						"trainer_title_es": "Recluta Hostil",
+						"trainer_name": "Infiltration Grunt",
+						"trainer_name_es": "Recluta de Asalto",
+						"intro": "The Weather Institute belongs to us! Castform and Poochyena, Weather Ball!",
+						"intro_es": "¡El Instituto Meteorológico nos pertenece! ¡Castform y Poochyena, golpe meteorológico!",
+						"outro": "The forecast definitely turned against us!",
+						"outro_es": "¡El clima no jugó a nuestro favor!",
+						"team_pokemon_names": ["Castform", "Poochyena"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Hoenn Ranger",
+						"trainer_title_es": "Ranger de Hoenn",
+						"trainer_name": "Ranger Catherine",
+						"trainer_name_es": "Ranger Catherine",
+						"intro": "The Devon Scope revealed an invisible Kecleon on the suspension bridge! Tropius, Razor Leaf!",
+						"intro_es": "¡El Detector Devon reveló un Kecleon invisible en el puente colgante! ¡Tropius, hoja afilada!",
+						"outro": "The canopy path to Fortree is clear!",
+						"outro_es": "¡El camino hacia Arborada está despejado!",
+						"team_pokemon_names": ["Kecleon", "Tropius"]
+					}
+				]
+			},
+			"fortree_gym": {
+				"id": "fortree_gym",
+				"name": "Fortree Treetop Gym",
+				"name_es": "Gimnasio Arborada en las Copas",
+				"desc": "Ascend the rope bridges to challenge Gym Leader Winona and her aerial squadron.",
+				"desc_es": "Asciende por los puentes de cuerda para enfrentar a la Líder Alana y su escuadrón aéreo.",
+				"reward_diamonds_first_clear": 18,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Bird Keeper",
+						"trainer_title_es": "Ornitólogo de Élite",
+						"trainer_name": "Bird Keeper Jared",
+						"trainer_name_es": "Ornitólogo Jared",
+						"intro": "My birds harness every current in the sky! Swellow, Wing Attack!",
+						"intro_es": "¡Mis aves dominan las corrientes de viento! ¡Swellow, ataque ala!",
+						"outro": "Lost the wind beneath my wings!",
+						"outro_es": "¡Perdí el viento bajo las alas!",
+						"team_pokemon_names": ["Swellow", "Skarmory"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Gym Leader Winona",
+						"trainer_title_es": "Líder Alana",
+						"trainer_name": "Gym Leader Winona",
+						"trainer_name_es": "Líder Alana",
+						"is_boss": true,
+						"badge_name": "Feather Badge",
+						"badge_name_es": "Medalla Pluma",
+						"intro": "I have become one with the bird Pokémon of the sky and the gentle breezes of Fortree. My wings shall never be grounded! Altaria, Dragon Dance!",
+						"intro_es": "He sentido la elegancia del viento y la libertad de los cielos. ¡Mis alas jamás serán derribadas! ¡Altaria, Danza Dragón!",
+						"outro": "Though my flight has ceased, your passion soared far higher. I present to you the Feather Badge!",
+						"outro_es": "Aunque mi vuelo terminó, tu pasión voló aún más alto. ¡Te confiero la Medalla Pluma!",
+						"team_pokemon_names": ["Swellow", "Skarmory", "Altaria"]
+					}
+				]
+			}
+		}
+	},
+	207: {
+		"id": 207,
+		"region": "Hoenn",
+		"title": "Episode VII: Mind Badge (Mossdeep City)",
+		"title_es": "Episodio VII: Medalla Mente (Ciudad Algaria)",
+		"subtitle": "Visit the Space Center, delve into Shoal Cave & challenge psychic twins Tate & Liza!",
+		"subtitle_es": "¡Visita el Centro Espacial, cruza la Cueva Cardumen y desafía a los gemelos Vito y Leti!",
+		"reward_diamonds_first_clear": 30,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Astral Psychic",
+				"trainer_title_es": "Médium Astral",
+				"trainer_name": "Psychic Preston",
+				"trainer_name_es": "Médium Preston",
+				"intro": "I foresaw your arrival through the cosmic alignment! Ralts and Kirlia, Confusion beam!",
+				"intro_es": "¡Percibí tu llegada a través de las estrellas! ¡Ralts y Kirlia, rayo de confusión!",
+				"outro": "Your mind is fortified with an impenetrable barrier!",
+				"outro_es": "¡Tu mente posee una barrera inquebrantable!",
+				"team_pokemon_names": ["Ralts", "Kirlia"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Shoal Explorer",
+				"trainer_title_es": "Explorador Polar",
+				"trainer_name": "Hiker Trent",
+				"trainer_name_es": "Montañero Trent",
+				"intro": "Low tide in Shoal Cave unveiled frozen secrets! Snorunt and Spheal, Aurora Beam!",
+				"intro_es": "¡La marea baja en la Cueva Cardumen reveló secretos árticos! ¡Snorunt y Spheal, rayo aurora!",
+				"outro": "The arctic freeze couldn't halt your momentum!",
+				"outro_es": "¡El frío no pudo congelar tu avance!",
+				"team_pokemon_names": ["Snorunt", "Spheal"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Bay Sailor",
+				"trainer_title_es": "Marinero de la Bahía",
+				"trainer_name": "Sailor Ernest",
+				"trainer_name_es": "Marinero Ernest",
+				"intro": "The ocean waters embracing Mossdeep run deep and mysterious! Sealeo, Body Slam!",
+				"intro_es": "¡Las aguas que rodean Algaria son profundas y misteriosas! ¡Sealeo, golpe cuerpo!",
+				"outro": "Knocked straight down to the ocean floor!",
+				"outro_es": "¡Directo al fondo marino!",
+				"team_pokemon_names": ["Sealeo"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Gym Leaders Tate & Liza",
+				"trainer_title_es": "Líderes Gemelos Vito y Leti",
+				"trainer_name": "Tate & Liza",
+				"trainer_name_es": "Vito y Leti",
+				"is_boss": true,
+				"badge_name": "Mind Badge",
+				"badge_name_es": "Medalla Mente",
+				"intro": "Our minds communicate in telepathic harmony! Sun and Moon, light and gravity... Solrock and Lunatone, twin psychic pulse!",
+				"intro_es": "¡Nuestras mentes están conectadas en una sola sincronía perfecta! Sol y Luna, luz y gravedad... ¡Solrock y Lunatone, telequinesis combinada!",
+				"outro": "Our twin synchronization... was surpassed by your bond with your team! Receive the Mind Badge!",
+				"outro_es": "¡Nuestra sincronía... ha sido superada por tu lazo con tu equipo! ¡Recibe la Medalla Mente!",
+				"team_pokemon_names": ["Lunatone", "Solrock"]
+			}
+		]
+	},
+	208: {
+		"id": 208,
+		"region": "Hoenn",
+		"is_branching": true,
+		"title": "Episode VIII: Rain Badge & Primal Awakening (Sootopolis City)",
+		"title_es": "Episodio VIII: Medalla Lluvia y el Despertar Primigenio (Arrecípolis)",
+		"subtitle": "Halt the cataclysm inside the Cave of Origin and conquer the final Gym of Hoenn!",
+		"subtitle_es": "¡Detén la catástrofe en la Cueva del Origen y conquista el último Gimnasio de Hoenn!",
+		"reward_diamonds_first_clear": 35,
+		"routes": {
+			"cave_of_origin": {
+				"id": "cave_of_origin",
+				"name": "Cave of Origin (Primal Crisis)",
+				"name_es": "Cueva del Origen (Crisis Primigenia)",
+				"desc": "Confront the titans of land and sea whose primordial clash threatens to engulf Hoenn.",
+				"desc_es": "Enfrenta a los titanes primigenios de tierra y mar cuyo choque sacude a toda Hoenn.",
+				"reward_diamonds_first_clear": 15,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Guardian of the Earth",
+						"trainer_title_es": "Guardián de la Tierra",
+						"trainer_name": "Apparition of Groudon",
+						"trainer_name_es": "Aparición de Groudon",
+						"intro": "The earth fractures as scorching magma surges through the cavern! The continent titan roars!",
+						"intro_es": "¡La tierra se quiebra y un calor abrasador invade la caverna! ¡El titán de los continentes ruge!",
+						"outro": "The suffocating heat begins to recede!",
+						"outro_es": "¡El calor sofocante comienza a menguar!",
+						"team_pokemon_names": ["Camerupt", "Groudon"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Guardian of the Deep",
+						"trainer_title_es": "Guardián del Océano",
+						"trainer_name": "Apparition of Kyogre",
+						"trainer_name_es": "Aparición de Kyogre",
+						"intro": "Colossal torrents submerge the sacred chamber! The ocean titan awakens!",
+						"intro_es": "¡Torrentes gigantescos inundan la cámara sagrada! ¡El titán de los océanos despierta!",
+						"outro": "The raging tempest calms before your courage!",
+						"outro_es": "¡La tormenta marina se calma ante tu valor!",
+						"team_pokemon_names": ["Walrein", "Kyogre"]
+					}
+				]
+			},
+			"sky_pillar": {
+				"id": "sky_pillar",
+				"name": "Sky Pillar Apex",
+				"name_es": "Cima del Pilar Celeste",
+				"desc": "Ascend the crumbling ancient tower above the clouds to witness the dragon mediator.",
+				"desc_es": "Asciende la milenaria torre sobre las nubes para presenciar al dragón mediador de los cielos.",
+				"reward_diamonds_first_clear": 15,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Ancient Sky Guardian",
+						"trainer_title_es": "Guardián Ancestral",
+						"trainer_name": "Elder of Sky Pillar",
+						"trainer_name_es": "Venerable del Pilar",
+						"intro": "Only one of pure spirit may witness the flight of the emerald dragon! Altaria, Dragon Breath!",
+						"intro_es": "¡Solo quien posea un espíritu puro puede contemplar el vuelo del dragón esmeralda! ¡Altaria, aliento dragón!",
+						"outro": "Rayquaza has heard your resolve across the stratosphere!",
+						"outro_es": "¡Rayquaza ha escuchado tu llamada desde la estratosfera!",
+						"team_pokemon_names": ["Altaria", "Rayquaza"]
+					}
+				]
+			},
+			"sootopolis_gym": {
+				"id": "sootopolis_gym",
+				"name": "Sootopolis Water Gym",
+				"name_es": "Gimnasio Arrecípolis de Plubio",
+				"desc": "Walk across delicate ice tiles and conquer Gym Leader Wallace to claim the Rain Badge!",
+				"desc_es": "Camina sobre frágiles baldosas de hielo y vence al Líder Plubio para reclamar la Medalla Lluvia.",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Artistic Swimmer",
+						"trainer_title_es": "Nadador Artístico",
+						"trainer_name": "Swimmer Tony",
+						"trainer_name_es": "Nadador Tony",
+						"intro": "Swimming within Sootopolis crater is an art form! Luvdisc and Sealeo, Water Pulse!",
+						"intro_es": "¡Nadar en el cráter de Arrecípolis es un arte! ¡Luvdisc y Sealeo, hidropulso!",
+						"outro": "Your technique was utterly immaculate!",
+						"outro_es": "¡Tu técnica fue impecable!",
+						"team_pokemon_names": ["Luvdisc", "Sealeo"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Gym Leader Wallace",
+						"trainer_title_es": "Líder Plubio",
+						"trainer_name": "Gym Leader Wallace",
+						"trainer_name_es": "Líder Plubio",
+						"is_boss": true,
+						"badge_name": "Rain Badge",
+						"badge_name_es": "Medalla Lluvia",
+						"intro": "Welcome to the most magnificent aquatic stage in Hoenn! The beauty, power, and grace of water will flow as one. Milotic, Rain Dance!",
+						"intro_es": "¡Bienvenido al escenario acuático más sublime de Hoenn! La elegancia y el poder del agua fluirán en perfecta armonía. ¡Milotic, Danza Lluvia!",
+						"outro": "A performance of pure elegance and dazzling prowess! You have conquered every trial across Hoenn. With highest respect, I award you the Rain Badge!",
+						"outro_es": "¡Qué espectáculo tan deslumbrante y conmovedor! Has conquistado todos los desafíos de Hoenn. ¡Te entrego con el más profundo respeto la Medalla Lluvia!",
+						"team_pokemon_names": ["Luvdisc", "Whiscash", "Milotic"]
+					}
+				]
+			}
+		}
 	}
 }
 
@@ -2409,6 +3560,14 @@ func get_achievement_progress(ach_id: String) -> Dictionary:
 	var a_type = ach.get("type", "")
 	if a_type == "distinct_cards":
 		current = get_distinct_cards_count()
+	elif a_type == "campaign_battles":
+		current = stats_campaign_battles
+	elif a_type == "campaign_faints":
+		current = stats_campaign_faints
+	elif a_type == "campaign_items_used":
+		current = stats_campaign_items_used
+	elif a_type == "stadium_tournaments":
+		current = stats_stadium_tournaments_completed
 	var completed = is_achievement_unlocked(ach_id) or (current >= target)
 	var pct = clampf(float(current) / float(max(1, target)), 0.0, 1.0)
 	return {
@@ -2430,11 +3589,18 @@ func unlock_achievement(ach_id: String) -> bool:
 	
 	var rew_type = ach.get("reward_type", "")
 	var rew_id = ach.get("reward_id", "")
+	var rew_amount = int(ach.get("reward_amount", 1))
+	
 	if rew_type == "item" and rew_id == "exp_share":
 		has_unlocked_exp_share = true
 		campaign_inventory["exp_share"] = 1
 		adventure_inventory["exp_share"] = 1
 		chaos_inventory["exp_share"] = 1
+	elif rew_type == "gold":
+		add_active_campaign_gold(rew_amount)
+	elif rew_type == "diamonds":
+		player_diamonds += rew_amount
+		diamonds_changed.emit(player_diamonds)
 		
 	save_profile()
 	return true
@@ -2450,10 +3616,47 @@ func check_all_achievements() -> Array[String]:
 		var is_met = false
 		if a_type == "distinct_cards":
 			is_met = (get_distinct_cards_count() >= target)
+		elif a_type == "campaign_battles":
+			is_met = (stats_campaign_battles >= target)
+		elif a_type == "campaign_faints":
+			is_met = (stats_campaign_faints >= target)
+		elif a_type == "campaign_items_used":
+			is_met = (stats_campaign_items_used >= target)
+		elif a_type == "stadium_tournaments":
+			is_met = (stats_stadium_tournaments_completed >= target)
+			
 		if is_met:
 			if unlock_achievement(ach_id):
 				newly_unlocked.append(ach_id)
 	return newly_unlocked
+
+func record_campaign_battle_participation() -> void:
+	if is_tutorial_mode:
+		return
+	stats_campaign_battles += 1
+	save_profile()
+	check_all_achievements()
+
+func record_campaign_pkmn_defeated() -> void:
+	if is_tutorial_mode:
+		return
+	stats_campaign_faints += 1
+	save_profile()
+	check_all_achievements()
+
+func record_campaign_item_used() -> void:
+	if is_tutorial_mode:
+		return
+	stats_campaign_items_used += 1
+	save_profile()
+	check_all_achievements()
+
+func record_stadium_tournament_completed() -> void:
+	if is_tutorial_mode:
+		return
+	stats_stadium_tournaments_completed += 1
+	save_profile()
+	check_all_achievements()
 
 func has_pending_achievement_notifications() -> bool:
 	return not pending_achievement_notifications.is_empty()
@@ -2802,7 +4005,7 @@ const BOOSTER_PACKS: Dictionary = {
 		"id": "kanto",
 		"name": "Kanto Booster Pack",
 		"region": "Kanto",
-		"cost": 5,
+		"cost": 10,
 		"accent_color": Color("#FFD700"),
 		"texture_path": "res://assets/Kanto Booster Pack.PNG",
 		"fallback_texture": "res://assets/kanto_booster_pack.png",
@@ -2812,7 +4015,7 @@ const BOOSTER_PACKS: Dictionary = {
 		"id": "johto",
 		"name": "Johto Booster Pack",
 		"region": "Johto",
-		"cost": 5,
+		"cost": 10,
 		"accent_color": Color("#4FC3F7"),
 		"texture_path": "res://assets/Johto Booster Pack.jpg",
 		"fallback_texture": "res://assets/Johto Booster Pack.jpg",
@@ -2822,7 +4025,7 @@ const BOOSTER_PACKS: Dictionary = {
 		"id": "hoenn",
 		"name": "Hoenn Booster Pack",
 		"region": "Hoenn",
-		"cost": 5,
+		"cost": 10,
 		"accent_color": Color("#FF7043"),
 		"texture_path": "res://assets/Hoenn Booster Pack.jpg",
 		"fallback_texture": "res://assets/Hoenn Booster Pack.jpg",
@@ -2832,11 +4035,31 @@ const BOOSTER_PACKS: Dictionary = {
 		"id": "sinnoh",
 		"name": "Sinnoh Booster Pack",
 		"region": "Sinnoh",
-		"cost": 5,
+		"cost": 10,
 		"accent_color": Color("#BA68C8"),
 		"texture_path": "res://assets/Sinnoh Booster Pack.jpg",
 		"fallback_texture": "res://assets/Sinnoh Booster Pack.jpg",
 		"desc": "Explore the Sinnoh region! Master cross-generational evolutions and mythic space-time Pokémon."
+	},
+	"overall": {
+		"id": "overall",
+		"name": "Overall Booster Pack",
+		"region": "Overall",
+		"cost": 10,
+		"accent_color": Color("#00E5FF"),
+		"texture_path": "res://assets/Overall Booster Pack.jpg",
+		"fallback_texture": "res://assets/Overall Booster Pack.jpg",
+		"desc": "The ultimate booster pack! Features Pokémon across all eras and regions: Kanto, Johto, Hoenn, and Sinnoh."
+	},
+	"special": {
+		"id": "special",
+		"name": "Special Booster Pack",
+		"region": "Special",
+		"cost": 0,
+		"accent_color": Color("#FFD700"),
+		"texture_path": "res://assets/Special Booster Pack.jpg",
+		"fallback_texture": "res://assets/Special Booster Pack.jpg",
+		"desc": "Exclusive 7-Day Login reward! Contains 5 cards across all regions with a guaranteed Epic or Legendary on the final card."
 	}
 }
 
@@ -3051,7 +4274,7 @@ const DAILY_LOGIN_CALENDAR: Array[Dictionary] = [
 	{ "day": 4, "diamonds": 0,  "candies": 25, "label": "25 🍬" },
 	{ "day": 5, "diamonds": 15, "candies": 0,  "label": "15 💎" },
 	{ "day": 6, "diamonds": 0,  "candies": 40, "label": "40 🍬" },
-	{ "day": 7, "diamonds": 25, "candies": 50, "label": "25 💎 + 50 🍬" }
+	{ "day": 7, "diamonds": 0,  "candies": 0,  "pack": "special", "label": "Special Pack 🎁" }
 ]
 
 const DAILY_MISSION_POOL: Array[Dictionary] = [
@@ -3286,11 +4509,18 @@ func claim_daily_login_reward() -> Dictionary:
 	var reward = DAILY_LOGIN_CALENDAR[idx]
 	var d_earned = int(reward.get("diamonds", 0))
 	var c_earned = int(reward.get("candies", 0))
+	var pack_type = str(reward.get("pack", ""))
+	var opened_cards: Array[Dictionary] = []
 	
 	if d_earned > 0:
 		player_diamonds += d_earned
 	if c_earned > 0:
 		player_rare_candies += c_earned
+	if pack_type != "":
+		if pack_type.to_lower() == "special":
+			opened_cards = open_special_booster_pack()
+		else:
+			opened_cards = open_booster_pack(pack_type, 0)
 		
 	daily_login_claimed_today = true
 	save_profile()
@@ -3300,6 +4530,8 @@ func claim_daily_login_reward() -> Dictionary:
 		"success": true,
 		"diamonds": d_earned,
 		"candies": c_earned,
+		"pack": pack_type,
+		"opened_cards": opened_cards,
 		"streak": daily_login_streak
 	}
 
@@ -3825,9 +5057,17 @@ func play_custom_sfx(stream: AudioStream) -> void:
 	sfx_player_node.volume_db = get_sfx_db()
 	sfx_player_node.play()
 
+const BOOSTER_PACK_CARD_COUNT: int = 6
+const SPECIAL_BOOSTER_PACK_CARD_COUNT: int = 5
+
 func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> Array[Dictionary]:
 	if player_diamonds < cost_diamonds:
 		return []
+		
+	var key = pack_type.to_lower().strip_edges()
+	if key == "special":
+		player_diamonds -= cost_diamonds
+		return open_special_booster_pack()
 		
 	player_diamonds -= cost_diamonds
 	var result: Array[Dictionary] = []
@@ -3835,7 +5075,6 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 		return result
 		
 	var target_region = ""
-	var key = pack_type.to_lower().strip_edges()
 	if BOOSTER_PACKS.has(key):
 		target_region = BOOSTER_PACKS[key].get("region", "")
 	else:
@@ -3847,7 +5086,15 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 			target_region = pack_type
 
 	var candidate_ids: Array[int] = []
-	if target_region != "":
+	if target_region.to_lower() in ["all", "overall", "todas"]:
+		for id in all_pokemon_ids:
+			if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
+				continue
+			var d = pokemon_catalog.get(id, {})
+			var r = str(d.get("rarity", "")).to_lower()
+			if not (r in ["boss", "special"]):
+				candidate_ids.append(id)
+	elif target_region != "":
 		for id in all_pokemon_ids:
 			if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
 				continue
@@ -3855,7 +5102,7 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 			if str(d.get("region", "")).to_lower() == target_region.to_lower():
 				candidate_ids.append(id)
 				
-	if candidate_ids.size() < 3:
+	if candidate_ids.size() < BOOSTER_PACK_CARD_COUNT:
 		candidate_ids = []
 		for id in all_pokemon_ids:
 			if not (id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]):
@@ -3867,7 +5114,7 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 	candidate_ids.shuffle()
 	
 	var picked_ids: Array[int] = []
-	for step in range(min(3, candidate_ids.size())):
+	for step in range(min(BOOSTER_PACK_CARD_COUNT, candidate_ids.size())):
 		var total_weight = 0
 		var weights: Array[int] = []
 		for id in candidate_ids:
@@ -3887,6 +5134,98 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 		var chosen_id = candidate_ids[chosen_idx]
 		picked_ids.append(chosen_id)
 		candidate_ids.remove_at(chosen_idx)
+		
+	for id in picked_ids:
+		var d = pokemon_catalog.get(id, {}).duplicate()
+		var was_new = not is_pokemon_unlocked(id)
+		var new_stock = add_card_copy(id)
+		d["is_new"] = was_new
+		d["stock"] = new_stock
+		result.append(d)
+		
+	stats_packs_opened += 1
+	add_daily_mission_progress("open_packs", 1)
+	save_profile()
+	return result
+
+func open_special_booster_pack() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if all_pokemon_ids.is_empty():
+		return result
+		
+	# Pool general de candidatos (todas las regiones, excluyendo jefes/eventos)
+	var pool_all: Array[int] = []
+	var pool_epic_legendary: Array[int] = []
+	
+	for id in all_pokemon_ids:
+		if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
+			continue
+		var d = pokemon_catalog.get(id, {})
+		var r = str(d.get("rarity", "")).strip_edges().to_lower()
+		if r in ["boss", "special", "jefe"]:
+			continue
+		pool_all.append(id)
+		if r in ["epic", "epica", "epico", "sr", "super rare", "legendary", "legendaria", "legendario", "ur", "ultra rare"]:
+			pool_epic_legendary.append(id)
+			
+	if pool_all.is_empty():
+		return result
+		
+	var picked_ids: Array[int] = []
+	
+	# Cartas 1 a 4: selección aleatoria ponderada de cualquier región
+	var available_pool = pool_all.duplicate()
+	for step in range(SPECIAL_BOOSTER_PACK_CARD_COUNT - 1): # 4 cartas
+		if available_pool.is_empty():
+			break
+		var total_weight = 0
+		var weights: Array[int] = []
+		for id in available_pool:
+			var d = pokemon_catalog.get(id, {})
+			var r = str(d.get("rarity", "Common"))
+			var w = get_card_rarity_weight(r)
+			total_weight += w
+			weights.append(total_weight)
+			
+		var roll = randi_range(1, max(1, total_weight))
+		var chosen_idx = 0
+		for i in range(weights.size()):
+			if roll <= weights[i]:
+				chosen_idx = i
+				break
+				
+		var chosen_id = available_pool[chosen_idx]
+		picked_ids.append(chosen_id)
+		available_pool.remove_at(chosen_idx)
+		
+	# Carta 5 (última): GARANTIZADA Épica o Legendaria de cualquier región!
+	var available_high_tier: Array[int] = []
+	for id in pool_epic_legendary:
+		if not (id in picked_ids):
+			available_high_tier.append(id)
+			
+	if available_high_tier.is_empty():
+		available_high_tier = pool_epic_legendary.duplicate()
+		
+	if not available_high_tier.is_empty():
+		var total_high_weight = 0
+		var high_weights: Array[int] = []
+		for id in available_high_tier:
+			var d = pokemon_catalog.get(id, {})
+			var r = str(d.get("rarity", "Epic"))
+			var w = get_card_rarity_weight(r)
+			total_high_weight += w
+			high_weights.append(total_high_weight)
+			
+		var roll = randi_range(1, max(1, total_high_weight))
+		var chosen_high_idx = 0
+		for i in range(high_weights.size()):
+			if roll <= high_weights[i]:
+				chosen_high_idx = i
+				break
+		picked_ids.append(available_high_tier[chosen_high_idx])
+	elif not available_pool.is_empty():
+		picked_ids.append(available_pool[0])
 		
 	for id in picked_ids:
 		var d = pokemon_catalog.get(id, {}).duplicate()
@@ -3945,7 +5284,10 @@ func create_pokemon_instance(pkmn_id: int) -> PokemonData:
 	p.burn_dmg = 1
 	p.shield_breaker_bonus = 0
 	p.is_paralyzed = false
+	p.paralyze_turns = 0
+	p.immune_paralyze_rounds = 0
 	p.is_asleep_turns = 0
+	p.immune_sleep_rounds = 0
 	p.is_frozen = false
 	p.is_confused = false
 	p.is_seeded_turns = 0
@@ -4327,6 +5669,44 @@ func is_adventure_ep108_route_unlocked(route_id: String) -> bool:
 func is_adventure_ep108_route_completed(route_id: String) -> bool:
 	return route_id in adventure_ep108_cleared_routes
 
+func is_adventure_ep204_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(204):
+		return false
+	if route_id == "jagged_pass":
+		return true
+	if route_id == "lavaridge_gym":
+		return "jagged_pass" in adventure_ep204_cleared_routes
+	return false
+
+func is_adventure_ep204_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep204_cleared_routes
+
+func is_adventure_ep206_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(206):
+		return false
+	if route_id == "weather_institute":
+		return true
+	if route_id == "fortree_gym":
+		return "weather_institute" in adventure_ep206_cleared_routes
+	return false
+
+func is_adventure_ep206_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep206_cleared_routes
+
+func is_adventure_ep208_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(208):
+		return false
+	if route_id == "cave_of_origin":
+		return true
+	if route_id == "sky_pillar":
+		return "cave_of_origin" in adventure_ep208_cleared_routes
+	if route_id == "sootopolis_gym":
+		return ("cave_of_origin" in adventure_ep208_cleared_routes) and ("sky_pillar" in adventure_ep208_cleared_routes)
+	return false
+
+func is_adventure_ep208_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep208_cleared_routes
+
 func get_adventure_selected_route(episode_id: int) -> String:
 	if episode_id == 5:
 		return adventure_ep5_selected_route
@@ -4340,6 +5720,12 @@ func get_adventure_selected_route(episode_id: int) -> String:
 		return adventure_ep107_selected_route
 	elif episode_id == 108:
 		return adventure_ep108_selected_route
+	elif episode_id == 204:
+		return adventure_ep204_selected_route
+	elif episode_id == 206:
+		return adventure_ep206_selected_route
+	elif episode_id == 208:
+		return adventure_ep208_selected_route
 	return ""
 
 func set_adventure_selected_route(episode_id: int, route_id: String) -> void:
@@ -4355,6 +5741,12 @@ func set_adventure_selected_route(episode_id: int, route_id: String) -> void:
 		adventure_ep107_selected_route = route_id
 	elif episode_id == 108:
 		adventure_ep108_selected_route = route_id
+	elif episode_id == 204:
+		adventure_ep204_selected_route = route_id
+	elif episode_id == 206:
+		adventure_ep206_selected_route = route_id
+	elif episode_id == 208:
+		adventure_ep208_selected_route = route_id
 
 func is_adventure_route_unlocked(episode_id: int, route_id: String) -> bool:
 	if episode_id == 5: return is_adventure_ep5_route_unlocked(route_id)
@@ -4363,6 +5755,9 @@ func is_adventure_route_unlocked(episode_id: int, route_id: String) -> bool:
 	elif episode_id == 106: return is_adventure_ep106_route_unlocked(route_id)
 	elif episode_id == 107: return is_adventure_ep107_route_unlocked(route_id)
 	elif episode_id == 108: return is_adventure_ep108_route_unlocked(route_id)
+	elif episode_id == 204: return is_adventure_ep204_route_unlocked(route_id)
+	elif episode_id == 206: return is_adventure_ep206_route_unlocked(route_id)
+	elif episode_id == 208: return is_adventure_ep208_route_unlocked(route_id)
 	return false
 
 func is_adventure_route_completed(episode_id: int, route_id: String) -> bool:
@@ -4372,6 +5767,9 @@ func is_adventure_route_completed(episode_id: int, route_id: String) -> bool:
 	elif episode_id == 106: return is_adventure_ep106_route_completed(route_id)
 	elif episode_id == 107: return is_adventure_ep107_route_completed(route_id)
 	elif episode_id == 108: return is_adventure_ep108_route_completed(route_id)
+	elif episode_id == 204: return is_adventure_ep204_route_completed(route_id)
+	elif episode_id == 206: return is_adventure_ep206_route_completed(route_id)
+	elif episode_id == 208: return is_adventure_ep208_route_completed(route_id)
 	return false
 
 func get_adventure_total_stages(episode_id: int) -> int:
@@ -4503,8 +5901,21 @@ func has_all_gym_badges() -> bool:
 	return get_earned_gym_badges_count() >= 8
 
 func has_all_regions_gym_badges() -> bool:
-	# La Liga Pokémon requiere las medallas de todas las regiones (Kanto [8], Johto [8], Hoenn, Sinnoh).
-	return get_earned_gym_badges_count() >= 8 and get_johto_gym_badges_count() >= 8
+	# La Liga Pokémon requiere las medallas de todas las regiones (Kanto [8], Johto [8], Hoenn [8], Sinnoh).
+	return get_earned_gym_badges_count() >= 8 and get_johto_gym_badges_count() >= 8 and get_hoenn_gym_badges_count() >= 8
+
+func get_hoenn_gym_badges_count() -> int:
+	# Episodios de Hoenn que otorgan medallas de gimnasio:
+	# Ep 201: Stone, Ep 202: Knuckle, Ep 203: Dynamo, Ep 204: Heat,
+	# Ep 205: Balance, Ep 206: Feather, Ep 207: Mind, Ep 208: Rain
+	var count = 0
+	for ep in [201, 202, 203, 204, 205, 206, 207, 208]:
+		if ep in adventure_completed_episodes:
+			count += 1
+	return count
+
+func has_all_hoenn_gym_badges() -> bool:
+	return get_hoenn_gym_badges_count() >= 8
 
 func _complete_adventure_branch_route(episode_id: int, cur_route: String, cleared_routes: Array[String], final_route: String, next_episode_id: int = -1) -> int:
 	"""Grants standardized route diamonds from ADVENTURE_EPISODES and advances branching progression."""
@@ -4591,6 +6002,16 @@ func complete_adventure_episode(episode_id: int) -> int:
 
 	if episode_id == 108:
 		return _complete_adventure_branch_route(108, adventure_ep108_selected_route, adventure_ep108_cleared_routes, "dragon_den", -1)
+
+	# Hoenn Ramificados (leen recompensas estandarizadas directamente de ADVENTURE_EPISODES):
+	if episode_id == 204:
+		return _complete_adventure_branch_route(204, adventure_ep204_selected_route, adventure_ep204_cleared_routes, "lavaridge_gym", 205)
+
+	if episode_id == 206:
+		return _complete_adventure_branch_route(206, adventure_ep206_selected_route, adventure_ep206_cleared_routes, "fortree_gym", 207)
+
+	if episode_id == 208:
+		return _complete_adventure_branch_route(208, adventure_ep208_selected_route, adventure_ep208_cleared_routes, "sootopolis_gym", -1)
 
 	if not (episode_id in adventure_completed_episodes):
 		adventure_completed_episodes.append(episode_id)
@@ -5619,10 +7040,11 @@ func get_booster_rarity_rates(region: String = "") -> Array[Dictionary]:
 	var weighted = {}
 	var total_w = 0.0
 	var target_ids: Array[int] = []
-	if region.strip_edges() != "":
+	var reg_lower = region.strip_edges().to_lower()
+	if reg_lower != "" and not (reg_lower in ["all", "overall", "todas"]):
 		for id in all_pokemon_ids:
 			var d = pokemon_catalog.get(id, {})
-			if str(d.get("region", "")).to_lower() == region.strip_edges().to_lower():
+			if str(d.get("region", "")).to_lower() == reg_lower:
 				target_ids.append(id)
 	if target_ids.is_empty():
 		target_ids = all_pokemon_ids
@@ -5892,6 +7314,10 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	stats_battles_won = 0
 	stats_battles_total = 0
 	stats_packs_opened = 0
+	stats_campaign_battles = 0
+	stats_campaign_faints = 0
+	stats_campaign_items_used = 0
+	stats_stadium_tournaments_completed = 0
 	player_diamonds = 25
 	player_rare_candies = 0
 	profile_welcome_claimed = true
@@ -5991,7 +7417,11 @@ func get_save_dict() -> Dictionary:
 			"tournaments_won": stats_tournaments_won,
 			"battles_won": stats_battles_won,
 			"battles_total": stats_battles_total,
-			"packs_opened": stats_packs_opened
+			"packs_opened": stats_packs_opened,
+			"campaign_battles": stats_campaign_battles,
+			"campaign_faints": stats_campaign_faints,
+			"campaign_items_used": stats_campaign_items_used,
+			"stadium_tournaments_completed": stats_stadium_tournaments_completed
 		},
 		"economy": {
 			"diamonds": player_diamonds,
@@ -6037,6 +7467,12 @@ func get_save_dict() -> Dictionary:
 			"ep107_cleared_routes": adventure_ep107_cleared_routes.duplicate(),
 			"ep108_selected_route": adventure_ep108_selected_route,
 			"ep108_cleared_routes": adventure_ep108_cleared_routes.duplicate(),
+			"ep204_selected_route": adventure_ep204_selected_route,
+			"ep204_cleared_routes": adventure_ep204_cleared_routes.duplicate(),
+			"ep206_selected_route": adventure_ep206_selected_route,
+			"ep206_cleared_routes": adventure_ep206_cleared_routes.duplicate(),
+			"ep208_selected_route": adventure_ep208_selected_route,
+			"ep208_cleared_routes": adventure_ep208_cleared_routes.duplicate(),
 			"lake_of_rage_completed": lake_of_rage_completed,
 			"selected_region": adventure_selected_region
 		},
@@ -6132,6 +7568,10 @@ func apply_save_dict(data: Dictionary) -> bool:
 	stats_battles_won = maxi(stats_battles_won, int(st.get("battles_won", 0)))
 	stats_battles_total = maxi(stats_battles_total, int(st.get("battles_total", 0)))
 	stats_packs_opened = maxi(stats_packs_opened, int(st.get("packs_opened", 0)))
+	stats_campaign_battles = maxi(stats_campaign_battles, int(st.get("campaign_battles", 0)))
+	stats_campaign_faints = maxi(stats_campaign_faints, int(st.get("campaign_faints", 0)))
+	stats_campaign_items_used = maxi(stats_campaign_items_used, int(st.get("campaign_items_used", 0)))
+	stats_stadium_tournaments_completed = maxi(stats_stadium_tournaments_completed, int(st.get("stadium_tournaments_completed", stats_tournaments_won)))
 	
 	# Cargar economía directa de la partida (sin sobreescribir ni resetear si el jugador tiene 0)
 	var econ = data.get("economy", {})
@@ -6246,6 +7686,24 @@ func apply_save_dict(data: Dictionary) -> bool:
 	adventure_ep108_cleared_routes.clear()
 	for r in raw_ep108_cleared:
 		adventure_ep108_cleared_routes.append(str(r))
+		
+	adventure_ep204_selected_route = str(adv.get("ep204_selected_route", "jagged_pass"))
+	var raw_ep204_cleared = adv.get("ep204_cleared_routes", [])
+	adventure_ep204_cleared_routes.clear()
+	for r in raw_ep204_cleared:
+		adventure_ep204_cleared_routes.append(str(r))
+
+	adventure_ep206_selected_route = str(adv.get("ep206_selected_route", "weather_institute"))
+	var raw_ep206_cleared = adv.get("ep206_cleared_routes", [])
+	adventure_ep206_cleared_routes.clear()
+	for r in raw_ep206_cleared:
+		adventure_ep206_cleared_routes.append(str(r))
+
+	adventure_ep208_selected_route = str(adv.get("ep208_selected_route", "cave_of_origin"))
+	var raw_ep208_cleared = adv.get("ep208_cleared_routes", [])
+	adventure_ep208_cleared_routes.clear()
+	for r in raw_ep208_cleared:
+		adventure_ep208_cleared_routes.append(str(r))
 		
 	lake_of_rage_completed = bool(adv.get("lake_of_rage_completed", false))
 	adventure_selected_region = str(adv.get("selected_region", "KANTO"))
@@ -6398,6 +7856,10 @@ func erase_profile() -> void:
 	stats_battles_won = 0
 	stats_battles_total = 0
 	stats_packs_opened = 0
+	stats_campaign_battles = 0
+	stats_campaign_faints = 0
+	stats_campaign_items_used = 0
+	stats_stadium_tournaments_completed = 0
 	player_diamonds = 0
 	player_rare_candies = 0
 	

@@ -4,7 +4,7 @@ func _ready():
 	print("--- TESTING BOOSTER PACKS SYSTEM ---")
 	
 	# Verify textures
-	for p_id in ["kanto", "johto", "hoenn", "sinnoh"]:
+	for p_id in ["kanto", "johto", "hoenn", "sinnoh", "overall"]:
 		var tex = GameData.get_booster_pack_texture(p_id)
 		print("Pack: ", p_id, " texture loaded? ", (tex != null))
 		assert(tex != null, "Booster pack texture must exist for " + p_id)
@@ -14,26 +14,32 @@ func _ready():
 	assert(border_tex != null, "Border texture must exist")
 	
 	# Verify drop rates per region
-	for reg in ["Kanto", "Johto", "Hoenn", "Sinnoh"]:
+	for reg in ["Kanto", "Johto", "Hoenn", "Sinnoh", "Overall"]:
 		var rates = GameData.get_booster_rarity_rates(reg)
 		print("Rates for region ", reg, ": ", rates.size(), " rarities")
 		assert(rates.size() == 5, "Should have 5 rarity tiers")
 		
 	# Verify opening packs
 	GameData.player_diamonds = 100
-	var opened_kanto = GameData.open_booster_pack("kanto", 5)
+	var opened_kanto = GameData.open_booster_pack("kanto", 10)
 	print("Opened Kanto: ", opened_kanto.size(), " cards")
-	assert(opened_kanto.size() == 3, "Must return 3 cards")
+	assert(opened_kanto.size() == 6, "Must return 6 cards")
 	for c in opened_kanto:
 		print("  - Kanto card: ", c.get("name"), " [", c.get("region"), "]")
 		assert(str(c.get("region", "")).to_lower() == "kanto", "Card must be from Kanto")
 		
-	var opened_johto = GameData.open_booster_pack("johto", 5)
+	var opened_johto = GameData.open_booster_pack("johto", 10)
 	print("Opened Johto: ", opened_johto.size(), " cards")
-	assert(opened_johto.size() == 3, "Must return 3 cards")
+	assert(opened_johto.size() == 6, "Must return 6 cards")
 	for c in opened_johto:
 		print("  - Johto card: ", c.get("name"), " [", c.get("region"), "]")
 		assert(str(c.get("region", "")).to_lower() == "johto", "Card must be from Johto")
+		
+	var opened_overall = GameData.open_booster_pack("overall", 10)
+	print("Opened Overall: ", opened_overall.size(), " cards")
+	assert(opened_overall.size() == 6, "Must return 6 cards")
+	for c in opened_overall:
+		print("  - Overall card: ", c.get("name"), " [", c.get("region"), "]")
 		
 	print("All logic tests passed! Capturing visual preview...")
 	
@@ -64,7 +70,7 @@ func _ready():
 	row.add_theme_constant_override("separation", 16)
 	main_vbox.add_child(row)
 	
-	for p_id in ["kanto", "johto", "hoenn", "sinnoh"]:
+	for p_id in ["kanto", "johto", "hoenn", "sinnoh", "overall"]:
 		var p_info = GameData.BOOSTER_PACKS[p_id]
 		var pack_card = _create_preview_pack(p_id, p_info)
 		row.add_child(pack_card)

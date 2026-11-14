@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ci8x1nfls10qp"]
+
+[ext_resource type="Script" path="res://tests/test_passives_mechanics.gd" id="1_test"]
+
+[node name="TestPassivesMechanics" type="Node"]
+script = ExtResource("1_test")

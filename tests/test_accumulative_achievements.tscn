@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dgoju1q60v8lw"]
+
+[ext_resource type="Script" path="res://tests/test_accumulative_achievements.gd" id="1_test"]
+
+[node name="TestAccumulativeAchievements" type="Node"]
+script = ExtResource("1_test")
