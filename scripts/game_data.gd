@@ -498,7 +498,7 @@ const CONSUMABLE_ITEM_IDS: Array[String] = [
 	"potion", "super_potion", "hyper_potion", "revive", "remedy", "ether"
 ]
 const KEY_ITEM_IDS: Array[String] = [
-	"poke_flute", "exp_share", "wise_glasses", "quick_claw"
+	"poke_flute", "exp_share", "wise_glasses", "quick_claw", "leftovers", "dragon_fang"
 ]
 
 func get_item_display_name(item_id: String) -> String:
@@ -511,6 +511,10 @@ func get_item_display_name(item_id: String) -> String:
 			return tr_text("Wise Glasses", "Gafas Especiales")
 		"quick_claw":
 			return tr_text("Quick Claw", "Garra Rápida")
+		"leftovers":
+			return tr_text("Leftovers", "Restos")
+		"dragon_fang":
+			return tr_text("Dragon Fang", "Colmillo Dragón")
 		"diamonds":
 			return tr_text("Diamonds", "Diamantes")
 		"potion":
@@ -550,6 +554,16 @@ func get_held_item_desc(item_id: String) -> String:
 				"Gives the holder a 20% chance to act first, ignoring speed comparison.",
 				"Otorga al portador un 20% de probabilidad de actuar primero ignorando la velocidad."
 			)
+		"leftovers":
+			return tr_text(
+				"The holding Pokémon recovers 1/8 of its max HP (minimum 1) at the start of the turn.",
+				"El PKMN que lo lleva recupera 1/8 de su HP (mínimo 1) al inicio del turno."
+			)
+		"dragon_fang":
+			return tr_text(
+				"If the holding Pokémon is a Dragon, its attacks always deal damage as if having type advantage.",
+				"El PKMN que lo lleva, si es un Dragón siempre hace DMG como si tuviese ventaja de tipo."
+			)
 		_:
 			return ""
 
@@ -583,6 +597,20 @@ func get_key_items_definitions(inv: Dictionary = {}) -> Array[Dictionary]:
 			"desc": get_held_item_desc("quick_claw"),
 			"icon": "quick_claw",
 			"stock": int(cur_inv.get("quick_claw", 0))
+		},
+		{
+			"id": "leftovers",
+			"name": get_item_display_name("leftovers"),
+			"desc": get_held_item_desc("leftovers"),
+			"icon": "leftovers",
+			"stock": int(cur_inv.get("leftovers", 0))
+		},
+		{
+			"id": "dragon_fang",
+			"name": get_item_display_name("dragon_fang"),
+			"desc": get_held_item_desc("dragon_fang"),
+			"icon": "dragon_fang",
+			"stock": int(cur_inv.get("dragon_fang", 0))
 		}
 	]
 
@@ -611,7 +639,9 @@ const DEFAULT_INVENTORY: Dictionary = {
 	"poke_flute": 0,
 	"exp_share": 0,
 	"wise_glasses": 0,
-	"quick_claw": 0
+	"quick_claw": 0,
+	"leftovers": 0,
+	"dragon_fang": 0
 }
 
 # --- SISTEMA DE ACHIEVEMENTS / LOGROS ---
@@ -1252,6 +1282,209 @@ var current_chaos_rival_team: Array[int] = []
 var current_chaos_rival_match: int = -1
 var chaos_boss_damage_record: int = 0
 var chaos_last_played_date: String = ""
+
+# Modo Liga de Campeonato:
+const CHAMPIONSHIP_TOTAL_MATCHES: int = 5
+const CHAMPIONSHIP_DIAMOND_REWARDS: Array[int] = [2, 3, 4, 5, 10]
+
+var championship_match_number: int = 1 # 1 to 5
+var championship_inventory: Dictionary = DEFAULT_INVENTORY.duplicate()
+var championship_player_team_state: Array = []
+var championship_active_e4_keys: Array[String] = []
+var championship_rival_team: Array[int] = []
+var championship_last_cleared_date: String = ""
+var championship_first_clear_claimed: bool = false
+var championship_hall_of_fame: Array[Dictionary] = []
+var has_unlocked_leftovers: bool = false
+var has_unlocked_dragon_fang: bool = false
+
+const ELITE_FOUR_ROSTER: Dictionary = {
+	"lorelei": {
+		"region": "Kanto",
+		"gen": 1,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Lorelei",
+		"intro": "¡Nadie puede superar mis Pokémon de hielo! ¡Congelaremos tu avance!",
+		"intro_en": "No one can withstand my ice Pokémon! We will freeze your advance!",
+		"team_pokemon_names": ["Dewgong", "Cloyster", "Lapras"]
+	},
+	"bruno_kanto": {
+		"region": "Kanto",
+		"gen": 1,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Bruno",
+		"intro": "¡A través del entrenamiento riguroso, mis Pokémon de lucha son invencibles!",
+		"intro_en": "Through rigorous training, my fighting Pokémon have become invincible!",
+		"team_pokemon_names": ["Hitmonlee", "Hitmonchan", "Machamp"]
+	},
+	"agatha": {
+		"region": "Kanto",
+		"gen": 1,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Agatha",
+		"intro": "¡Soy Agatha del Alto Mando! ¡Te mostraré cómo luchan los verdaderos maestros!",
+		"intro_en": "I am Agatha of the Elite Four! I'll show you how true masters battle!",
+		"team_pokemon_names": ["Golbat", "Arbok", "Gengar"]
+	},
+	"lance_kanto": {
+		"region": "Kanto",
+		"gen": 1,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Lance",
+		"intro": "¡Rugen los dragones! ¡Demuestra si tienes el temple para soportar su furia!",
+		"intro_en": "The dragons roar! Let's see if you have the grit to withstand their fury!",
+		"team_pokemon_names": ["Gyarados", "Aerodactyl", "Dragonite"]
+	},
+	"will": {
+		"region": "Johto",
+		"gen": 2,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Mento",
+		"trainer_name_en": "Will",
+		"intro": "¡He entrenado por todo el mundo para dominar los poderes psíquicos!",
+		"intro_en": "I have trained all over the world to master psychic powers!",
+		"team_pokemon_names": ["Xatu", "Jynx", "Slowbro"]
+	},
+	"koga": {
+		"region": "Johto",
+		"gen": 2,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Koga",
+		"intro": "¡Jajaja! ¡Los secretos ninja y el veneno del Alto Mando te confundirán!",
+		"intro_en": "Fwahahaha! Ninja secrets and lethal toxins will bewilder you!",
+		"team_pokemon_names": ["Ariados", "Venomoth", "Crobat"]
+	},
+	"bruno_johto": {
+		"region": "Johto",
+		"gen": 2,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Bruno",
+		"intro": "¡El poder absoluto no conoce fronteras! ¡Siente la fuerza del combate!",
+		"intro_en": "Absolute power knows no boundaries! Feel the martial might!",
+		"team_pokemon_names": ["Hitmonchan", "Hitmontop", "Machamp"]
+	},
+	"karen": {
+		"region": "Johto",
+		"gen": 2,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Karen",
+		"intro": "Los Pokémon fuertes, los débiles... Esa es la visión egoísta de la gente. ¡Gana con tus favoritos!",
+		"intro_en": "Strong Pokémon. Weak Pokémon. That is only the selfish perception of people. Win with your favorites!",
+		"team_pokemon_names": ["Umbreon", "Gengar", "Houndoom"]
+	},
+	"sidney": {
+		"region": "Hoenn",
+		"gen": 3,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Sixto",
+		"trainer_name_en": "Sidney",
+		"intro": "¡Bienvenido a la Liga! ¡Divirtámonos al máximo con un combate deslumbrante!",
+		"intro_en": "Welcome to the League! Let's have a blast with an exhilarating clash!",
+		"team_pokemon_names": ["Mightyena", "Shiftry", "Absol"]
+	},
+	"phoebe": {
+		"region": "Hoenn",
+		"gen": 3,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Fátima",
+		"trainer_name_en": "Phoebe",
+		"intro": "Mi vínculo con los espíritus es inquebrantable. ¿Podrás asustar a mis fantasmas?",
+		"intro_en": "My bond with the spirits is unbreakable. Can you frighten my ghosts!",
+		"team_pokemon_names": ["Dusclops", "Banette", "Sableye"]
+	},
+	"glacia": {
+		"region": "Hoenn",
+		"gen": 3,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Nívea",
+		"trainer_name_en": "Glacia",
+		"intro": "He venido de tierras lejanas para templar mi corazón en el frío del combate.",
+		"intro_en": "I traveled from afar to temper my heart in the piercing frost of battle.",
+		"team_pokemon_names": ["Glalie", "Sealeo", "Walrein"]
+	},
+	"drake": {
+		"region": "Hoenn",
+		"gen": 3,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Dracón",
+		"trainer_name_en": "Drake",
+		"intro": "En combate, lo que cuenta es un corazón puro y valiente. ¡Desata tu fuerza ante mis dragones!",
+		"intro_en": "In battle, a pure and courageous heart is everything. Face my dragons!",
+		"team_pokemon_names": ["Altaria", "Flygon", "Salamence"]
+	},
+	"aaron": {
+		"region": "Sinnoh",
+		"gen": 4,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Alecrán",
+		"trainer_name_en": "Aaron",
+		"intro": "¿Sabías que los Pokémon bicho son maravillosos y perfectos? ¡Te lo demostraré!",
+		"intro_en": "Did you know bug Pokémon are wonderful and perfected? Let me prove it!",
+		"team_pokemon_names": ["Vespiquen", "Heracross", "Drapion"]
+	},
+	"bertha": {
+		"region": "Sinnoh",
+		"gen": 4,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Gaia",
+		"trainer_name_en": "Bertha",
+		"intro": "¡Jijiji! La tierra firme sobre la que pisas es sólida y paciente. ¡Muéstrame tu convicción!",
+		"intro_en": "Hehehe! The firm earth beneath you is resilient and patient. Show me your conviction!",
+		"team_pokemon_names": ["Sudowoodo", "Golem", "Hippowdon"]
+	},
+	"flint": {
+		"region": "Sinnoh",
+		"gen": 4,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Fausto",
+		"trainer_name_en": "Flint",
+		"intro": "¡Quiero ver arder tu pasión! ¡Un combate que consuma todo con sus llamas!",
+		"intro_en": "I want to see your passion ablaze! A battle that burns with supreme intensity!",
+		"team_pokemon_names": ["Rapidash", "Magmortar", "Infernape"]
+	},
+	"lucian": {
+		"region": "Sinnoh",
+		"gen": 4,
+		"trainer_title": "Alto Mando",
+		"trainer_title_en": "Elite Four",
+		"trainer_name": "Del Risco",
+		"trainer_name_en": "Lucian",
+		"intro": "Leer libros expande la mente; combatir expande los horizontes del alma.",
+		"intro_en": "Reading books broadens the mind; battling expands the soul's horizons.",
+		"team_pokemon_names": ["Bronzong", "Alakazam", "Gallade"]
+	}
+}
+
+const STARTER_STAGE2_NAMES: Array[String] = [
+	"Venusaur", "Charizard", "Blastoise",
+	"Meganium", "Typhlosion", "Feraligatr",
+	"Sceptile", "Blaziken", "Swampert",
+	"Torterra", "Infernape", "Empoleon"
+]
+
+const DRAGON_STAGE1_2_NAMES: Array[String] = [
+	"Dragonair", "Dragonite",
+	"Kingdra",
+	"Vibrava", "Flygon",
+	"Altaria",
+	"Shelgon", "Salamence",
+	"Gabite", "Garchomp"
+]
 
 const ADVENTURE_EPISODES: Dictionary = {
 	1: {
@@ -6089,6 +6322,8 @@ func get_active_campaign_inventory() -> Dictionary:
 		return adventure_inventory
 	elif campaign_submode == "CHAOS":
 		return chaos_inventory
+	elif campaign_submode == "CHAMPIONSHIP":
+		return championship_inventory
 	return campaign_inventory
 
 func get_active_campaign_team_state() -> Array:
@@ -6096,6 +6331,8 @@ func get_active_campaign_team_state() -> Array:
 		return adventure_player_team_state
 	elif campaign_submode == "CHAOS":
 		return chaos_player_team_state
+	elif campaign_submode == "CHAMPIONSHIP":
+		return championship_player_team_state
 	elif campaign_submode == "LAKE_OF_RAGE":
 		return []
 	return campaign_player_team_state
@@ -6131,6 +6368,10 @@ func reset_campaign(auto_save: bool = true) -> void:
 		campaign_inventory["poke_flute"] = had_camp_flute
 	if has_unlocked_exp_share:
 		campaign_inventory["exp_share"] = 1
+	if has_unlocked_leftovers:
+		campaign_inventory["leftovers"] = 1
+	if has_unlocked_dragon_fang:
+		campaign_inventory["dragon_fang"] = 1
 	campaign_player_team_state.clear()
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
@@ -6206,6 +6447,10 @@ func init_campaign_team(chosen_ids: Array, held_items: Array = []) -> void:
 		campaign_inventory["poke_flute"] = had_camp_flute_init
 	if has_unlocked_exp_share:
 		campaign_inventory["exp_share"] = 1
+	if has_unlocked_leftovers:
+		campaign_inventory["leftovers"] = 1
+	if has_unlocked_dragon_fang:
+		campaign_inventory["dragon_fang"] = 1
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
 	save_profile()
@@ -6306,6 +6551,10 @@ func reset_adventure_episode(episode_id: int) -> void:
 		adventure_inventory["poke_flute"] = 1
 	if has_unlocked_exp_share:
 		adventure_inventory["exp_share"] = 1
+	if has_unlocked_leftovers:
+		adventure_inventory["leftovers"] = 1
+	if has_unlocked_dragon_fang:
+		adventure_inventory["dragon_fang"] = 1
 	adventure_player_team_state.clear()
 
 func init_adventure_team(episode_id: int, chosen_ids: Array, held_items: Array = []) -> void:
@@ -6317,6 +6566,10 @@ func init_adventure_team(episode_id: int, chosen_ids: Array, held_items: Array =
 		adventure_inventory["poke_flute"] = 1
 	if has_unlocked_exp_share:
 		adventure_inventory["exp_share"] = 1
+	if has_unlocked_leftovers:
+		adventure_inventory["leftovers"] = 1
+	if has_unlocked_dragon_fang:
+		adventure_inventory["dragon_fang"] = 1
 	adventure_player_team_state.clear()
 	for cid in chosen_ids:
 		var pid = int(cid)
@@ -7755,6 +8008,12 @@ func reset_chaos_odyssey() -> void:
 	chaos_match_number = 1
 	chaos_player_team_state.clear()
 	chaos_inventory = DEFAULT_INVENTORY.duplicate()
+	if has_unlocked_exp_share:
+		chaos_inventory["exp_share"] = 1
+	if has_unlocked_leftovers:
+		chaos_inventory["leftovers"] = 1
+	if has_unlocked_dragon_fang:
+		chaos_inventory["dragon_fang"] = 1
 	current_chaos_rival_team.clear()
 	current_chaos_rival_match = -1
 	save_profile()
@@ -7941,6 +8200,232 @@ func get_chaos_rival_team(match_num: int) -> Array[int]:
 	current_chaos_rival_match = match_num
 	return current_chaos_rival_team
 
+# --- MÉTODOS DE LA LIGA DE CAMPEONATO ---
+func is_pokemon_dragon(pkmn) -> bool:
+	if not pkmn:
+		return false
+	var p_type = ""
+	var p_name = ""
+	if pkmn is Dictionary:
+		p_type = str(pkmn.get("type", "")).to_upper()
+		p_name = str(pkmn.get("name", ""))
+	elif "type" in pkmn:
+		p_type = str(pkmn.type).to_upper()
+		p_name = str(pkmn.name) if "name" in pkmn else ""
+	if p_type == "DRAGON":
+		return true
+	const KNOWN_DRAGONS = [
+		"Dratini", "Dragonair", "Dragonite",
+		"Kingdra",
+		"Vibrava", "Flygon", "Swablu", "Altaria", "Bagon", "Shelgon", "Salamence", "Rayquaza",
+		"Gible", "Gabite", "Garchomp", "Dialga", "Palkia", "Giratina"
+	]
+	return p_name in KNOWN_DRAGONS
+
+func can_play_championship_today() -> bool:
+	var today = Time.get_date_string_from_system()
+	return championship_last_cleared_date != today
+
+func generate_championship_e4_selection() -> Array[String]:
+	var all_keys = ELITE_FOUR_ROSTER.keys()
+	all_keys.shuffle()
+	var selected: Array[String] = []
+	for i in range(min(4, all_keys.size())):
+		selected.append(all_keys[i])
+	return selected
+
+func generate_championship_rival_team() -> Array[int]:
+	# Slot 1: Cualquier Stage 2 de un inicial de cualquier generación
+	var s2_pool = STARTER_STAGE2_NAMES.duplicate()
+	s2_pool.shuffle()
+	var slot1_id = -1
+	for s_name in s2_pool:
+		var pid = get_pokemon_id_by_name(s_name)
+		if pid >= 0 and pokemon_catalog.has(pid):
+			slot1_id = pid
+			break
+	if slot1_id < 0: slot1_id = 2 # Venusaur fallback
+	
+	# Slot 2: Un dragón en Stage 1 o 2
+	var d_pool = DRAGON_STAGE1_2_NAMES.duplicate()
+	d_pool.shuffle()
+	var slot2_id = -1
+	for d_name in d_pool:
+		var pid = get_pokemon_id_by_name(d_name)
+		if pid >= 0 and pokemon_catalog.has(pid) and pid != slot1_id:
+			slot2_id = pid
+			break
+	if slot2_id < 0: slot2_id = 164 # Dragonite fallback
+	
+	# Slot 3: Un Pokémon Tier A o superior (Tier A, S, S+, o Legendario)
+	var tier_pool: Array[int] = []
+	for pid in pokemon_catalog:
+		if pid == slot1_id or pid == slot2_id:
+			continue
+		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+			continue
+		var cat = pokemon_catalog[pid]
+		var tier = str(cat.get("tier", "")).to_upper()
+		var rarity = str(cat.get("rarity", "")).to_lower()
+		var stage = str(cat.get("stage", "")).to_lower()
+		var is_leg = (rarity in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (stage == "legendary")
+		if tier in ["A", "S", "S+"] or is_leg:
+			tier_pool.append(pid)
+	tier_pool.shuffle()
+	var slot3_id = tier_pool[0] if not tier_pool.is_empty() else 94 # Gengar fallback
+	
+	return [slot1_id, slot2_id, slot3_id]
+
+func reset_championship_league(keep_selection: bool = false) -> void:
+	championship_match_number = 1
+	var had_flute = championship_inventory.get("poke_flute", 0)
+	var had_exp = championship_inventory.get("exp_share", 0)
+	championship_inventory = DEFAULT_INVENTORY.duplicate()
+	if had_flute > 0:
+		championship_inventory["poke_flute"] = 1
+	if had_exp > 0 or has_unlocked_exp_share:
+		championship_inventory["exp_share"] = 1
+	if has_unlocked_leftovers:
+		championship_inventory["leftovers"] = 1
+	if has_unlocked_dragon_fang:
+		championship_inventory["dragon_fang"] = 1
+	
+	if not keep_selection or championship_active_e4_keys.size() < 4:
+		championship_active_e4_keys = generate_championship_e4_selection()
+		championship_rival_team = generate_championship_rival_team()
+
+func get_championship_rival_team(match_num: int) -> Array[int]:
+	if championship_active_e4_keys.size() < 4 or championship_rival_team.is_empty():
+		reset_championship_league(false)
+		
+	if match_num >= 1 and match_num <= 4:
+		var e4_key = championship_active_e4_keys[match_num - 1]
+		var e4_data = ELITE_FOUR_ROSTER.get(e4_key, {})
+		var pkmn_names = e4_data.get("team_pokemon_names", [])
+		var result: Array[int] = []
+		for p_name in pkmn_names:
+			var pid = get_pokemon_id_by_name(p_name)
+			if pid >= 0 and pokemon_catalog.has(pid):
+				result.append(pid)
+		if result.is_empty():
+			return [131, 91, 87] # Lapras, Cloyster, Dewgong fallback
+		return result
+	elif match_num == 5:
+		if championship_rival_team.is_empty():
+			championship_rival_team = generate_championship_rival_team()
+		return championship_rival_team
+	return [149, 6, 94]
+
+func get_championship_match_info(match_num: int) -> Dictionary:
+	if championship_active_e4_keys.size() < 4 or championship_rival_team.is_empty():
+		reset_championship_league(false)
+		
+	var is_sp = is_spanish()
+	if match_num >= 1 and match_num <= 4:
+		var e4_key = championship_active_e4_keys[match_num - 1]
+		var e4_data = ELITE_FOUR_ROSTER.get(e4_key, {})
+		var tname = str(e4_data.get("trainer_name_es" if is_sp else "trainer_name", e4_data.get("trainer_name", "Alto Mando")))
+		var ttitle = str(e4_data.get("trainer_title_es" if is_sp else "trainer_title", e4_data.get("trainer_title", "Alto Mando")))
+		var intro_txt = str(e4_data.get("intro_es" if is_sp else "intro", e4_data.get("intro", "")))
+		return {
+			"match_num": match_num,
+			"phase_name": "Fase %d: %s %s" % [match_num, ttitle, tname] if is_sp else "Round %d: %s %s" % [match_num, ttitle, tname],
+			"trainer_title": ttitle,
+			"trainer_title_es": str(e4_data.get("trainer_title", "Alto Mando")),
+			"trainer_name": tname,
+			"trainer_name_es": str(e4_data.get("trainer_name", "Alto Mando")),
+			"region": str(e4_data.get("region", "Kanto")),
+			"intro": intro_txt,
+			"intro_es": str(e4_data.get("intro", intro_txt)),
+			"is_champion": false,
+			"reward_diamonds": CHAMPIONSHIP_DIAMOND_REWARDS[match_num - 1]
+		}
+	else:
+		return {
+			"match_num": 5,
+			"phase_name": "Fase 5: Combate Final del Campeonato" if is_sp else "Round 5: Championship Final Match",
+			"trainer_title": "Campeón de la Liga" if is_sp else "League Champion",
+			"trainer_title_es": "Campeón de la Liga",
+			"trainer_name": "Rival Azul" if is_sp else "Rival Blue",
+			"trainer_name_es": "Rival Azul",
+			"region": "Championship",
+			"intro": "¡Has llegado lejos, pero este es el pináculo de la Liga Pokémon! ¡Demuestra de qué estás hecho!" if is_sp else "You've come far, but this is the pinnacle of the Pokémon League! Show me what you've got!",
+			"intro_es": "¡Has llegado lejos, pero este es el pináculo de la Liga Pokémon! ¡Demuestra de qué estás hecho!",
+			"is_champion": true,
+			"reward_diamonds": CHAMPIONSHIP_DIAMOND_REWARDS[4]
+		}
+
+func init_championship_team(selected_ids: Array, selected_held_items: Array = []) -> void:
+	championship_player_team_state.clear()
+	for i in range(selected_ids.size()):
+		var pid = int(selected_ids[i])
+		var cat_data = pokemon_catalog.get(pid, {})
+		var max_hp = int(cat_data.get("hp", 20))
+		var max_nrg = int(cat_data.get("max_energy", 3))
+		var held = ""
+		if i < selected_held_items.size():
+			held = str(selected_held_items[i])
+		var p_state = {
+			"id": pid,
+			"name": cat_data.get("name", "Unknown"),
+			"current_hp": max_hp,
+			"max_hp": max_hp,
+			"current_energy": max_nrg,
+			"current_exp": 0,
+			"held_item": held,
+			"is_fainted": false,
+			"burn_turns": 0,
+			"is_poisoned": false,
+			"is_flinched": false
+		}
+		championship_player_team_state.append(p_state)
+	save_profile()
+
+func change_championship_team(selected_ids: Array, selected_held_items: Array = []) -> void:
+	init_championship_team(selected_ids, selected_held_items)
+
+func record_championship_victory(winning_team: Array) -> void:
+	var team_records: Array[Dictionary] = []
+	for p in winning_team:
+		if not p: continue
+		var pid = int(p.id if "id" in p else p.get("id", 0))
+		var cat = pokemon_catalog.get(pid, {})
+		var pname = str(p.name if "name" in p else p.get("name", cat.get("name", "Unknown")))
+		var held = str(p.held_item if "held_item" in p else p.get("held_item", ""))
+		var hp = int(p.max_hp if "max_hp" in p else p.get("max_hp", 20))
+		team_records.append({
+			"id": pid,
+			"name": pname,
+			"hp": hp,
+			"held_item": held,
+			"texture": str(cat.get("texture", ""))
+		})
+	
+	var today = Time.get_date_string_from_system()
+	championship_last_cleared_date = today
+	var entry = {
+		"date": today,
+		"team": team_records
+	}
+	championship_hall_of_fame.push_front(entry)
+	if championship_hall_of_fame.size() > 50:
+		championship_hall_of_fame.resize(50)
+		
+	if not championship_first_clear_claimed:
+		championship_first_clear_claimed = true
+		has_unlocked_leftovers = true
+		has_unlocked_dragon_fang = true
+		campaign_inventory["leftovers"] = 1
+		campaign_inventory["dragon_fang"] = 1
+		adventure_inventory["leftovers"] = 1
+		adventure_inventory["dragon_fang"] = 1
+		chaos_inventory["leftovers"] = 1
+		chaos_inventory["dragon_fang"] = 1
+		championship_inventory["leftovers"] = 1
+		championship_inventory["dragon_fang"] = 1
+		
+	save_profile()
+
 func get_item_texture(item_name: String) -> Texture2D:
 	var clean = item_name.strip_edges().to_lower()
 	var file_name = "C Potion.png"
@@ -7962,6 +8447,10 @@ func get_item_texture(item_name: String) -> Texture2D:
 		file_name = "Gafas_especiales.png"
 	elif clean in ["quick_claw", "quickclaw", "quick claw", "garra_rapida", "garra_rápida", "garra rapida"]:
 		file_name = "Garra_Rápida.png"
+	elif clean in ["leftovers", "restos"]:
+		file_name = "Leftovers.png"
+	elif clean in ["dragon_fang", "dragonfang", "dragon fang", "colmillo_dragon", "colmillo dragon", "colmillo_de_dragon", "colmillo de dragon"]:
+		file_name = "Colmillo_de_Dragon.png"
 	elif clean in ["diamonds", "diamond", "diamante", "diamantes"]:
 		file_name = "Diamante.png"
 	else:
@@ -8495,6 +8984,18 @@ func get_save_dict() -> Dictionary:
 			"boss_damage_record": chaos_boss_damage_record,
 			"last_played_date": chaos_last_played_date
 		},
+		"championship": {
+			"match_number": championship_match_number,
+			"inventory": championship_inventory.duplicate(true),
+			"team_state": championship_player_team_state.duplicate(true),
+			"active_e4_keys": championship_active_e4_keys.duplicate(),
+			"rival_team": championship_rival_team.duplicate(),
+			"last_cleared_date": championship_last_cleared_date,
+			"first_clear_claimed": championship_first_clear_claimed,
+			"hall_of_fame": championship_hall_of_fame.duplicate(true),
+			"has_leftovers": has_unlocked_leftovers,
+			"has_dragon_fang": has_unlocked_dragon_fang
+		},
 		"settings": {
 			"language": settings_language,
 			"music_volume": settings_music_volume,
@@ -8768,6 +9269,46 @@ func apply_save_dict(data: Dictionary) -> bool:
 	chaos_player_team_state = chaos.get("team_state", [])
 	chaos_boss_damage_record = int(chaos.get("boss_damage_record", 0))
 	chaos_last_played_date = str(chaos.get("last_played_date", ""))
+
+	# Cargar Liga de Campeonato
+	var champ = data.get("championship", {})
+	championship_match_number = int(champ.get("match_number", 1))
+	championship_inventory = champ.get("inventory", DEFAULT_INVENTORY.duplicate())
+	for k in DEFAULT_INVENTORY.keys():
+		if not championship_inventory.has(k):
+			championship_inventory[k] = 0
+	championship_player_team_state = champ.get("team_state", [])
+	championship_active_e4_keys.clear()
+	var raw_e4 = champ.get("active_e4_keys", [])
+	if raw_e4 is Array:
+		for k in raw_e4:
+			championship_active_e4_keys.append(str(k))
+	championship_rival_team.clear()
+	var raw_riv = champ.get("rival_team", [])
+	if raw_riv is Array:
+		for rid in raw_riv:
+			championship_rival_team.append(int(rid))
+	championship_last_cleared_date = str(champ.get("last_cleared_date", ""))
+	championship_first_clear_claimed = bool(champ.get("first_clear_claimed", false))
+	has_unlocked_leftovers = bool(champ.get("has_leftovers", false))
+	has_unlocked_dragon_fang = bool(champ.get("has_dragon_fang", false))
+	championship_hall_of_fame.clear()
+	var raw_hof = champ.get("hall_of_fame", [])
+	if raw_hof is Array:
+		for h in raw_hof:
+			if h is Dictionary:
+				championship_hall_of_fame.append(h)
+	
+	if has_unlocked_leftovers:
+		campaign_inventory["leftovers"] = 1
+		adventure_inventory["leftovers"] = 1
+		chaos_inventory["leftovers"] = 1
+		championship_inventory["leftovers"] = 1
+	if has_unlocked_dragon_fang:
+		campaign_inventory["dragon_fang"] = 1
+		adventure_inventory["dragon_fang"] = 1
+		chaos_inventory["dragon_fang"] = 1
+		championship_inventory["dragon_fang"] = 1
 		
 	if campaign_gold > 0 or adventure_current_episode > 1 or adventure_current_stage > 1:
 		profile_welcome_claimed = true
@@ -8826,6 +9367,10 @@ func apply_save_dict(data: Dictionary) -> bool:
 	
 	if has_unlocked_exp_share:
 		campaign_inventory["exp_share"] = 1
+	if has_unlocked_leftovers:
+		campaign_inventory["leftovers"] = 1
+	if has_unlocked_dragon_fang:
+		campaign_inventory["dragon_fang"] = 1
 		adventure_inventory["exp_share"] = 1
 		chaos_inventory["exp_share"] = 1
 		

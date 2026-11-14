@@ -640,6 +640,46 @@ theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "📖 View Chaos Odyssey Guide (Trials & Boss Info)"
 
+[node name="CardChampionship" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="ChampionshipVBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ChampionshipTitle" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin/ChampionshipVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 16
+text = "🏆 Liga de Campeonato"
+
+[node name="ChampionshipDesc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin/ChampionshipVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Enfrenta a 4 miembros aleatorios del Alto Mando de las 4 generaciones y derrota al Campeón Rival. Cada fase da mejores recompensas de Diamantes (sin dar oro). 1 intento completable al día."
+autowrap_mode = 2
+
+[node name="ChampionshipStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin/ChampionshipVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "Estado: Disponible • 1 vez al día"
+
+[node name="BtnHubChampionship" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin/ChampionshipVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "🏆 Entrar a la Liga de Campeonato"
+
 [node name="CardLootRates" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
 layout_mode = 2
 
@@ -1966,6 +2006,14 @@ size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "👥 Change Team"
+
+[node name="BtnChampionshipHistory" type="Button" parent="CampaignModal/Box/ActionsBox/NavRow"]
+visible = false
+custom_minimum_size = Vector2(44, 38)
+layout_mode = 2
+tooltip_text = "History"
+theme_override_font_sizes/font_size = 15
+text = "📝"
 
 [node name="BtnCloseCampaign" type="Button" parent="CampaignModal/Box/ActionsBox/NavRow"]
 custom_minimum_size = Vector2(0, 38)
@@ -4170,6 +4218,81 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "Later"
+
+[node name="ChampionshipHistoryModal" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HistoryBg" type="ColorRect" parent="ChampionshipHistoryModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.05, 0.08, 0.88)
+
+[node name="HistoryCard" type="PanelContainer" parent="ChampionshipHistoryModal"]
+custom_minimum_size = Vector2(420, 540)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -270.0
+offset_right = 210.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="ChampionshipHistoryModal/HistoryCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="HistoryVBox" type="VBoxContainer" parent="ChampionshipHistoryModal/HistoryCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HistoryTitle" type="Label" parent="ChampionshipHistoryModal/HistoryCard/Margin/HistoryVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "🏆 HALL OF FAME"
+horizontal_alignment = 1
+
+[node name="HistorySubtitle" type="Label" parent="ChampionshipHistoryModal/HistoryCard/Margin/HistoryVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Historial de equipos consagrados Campeones de la Liga"
+horizontal_alignment = 1
+
+[node name="HistoryHSep" type="HSeparator" parent="ChampionshipHistoryModal/HistoryCard/Margin/HistoryVBox"]
+layout_mode = 2
+
+[node name="HistoryScroll" type="ScrollContainer" parent="ChampionshipHistoryModal/HistoryCard/Margin/HistoryVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HistoryList" type="VBoxContainer" parent="ChampionshipHistoryModal/HistoryCard/Margin/HistoryVBox/HistoryScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="BtnCloseChampionshipHistory" type="Button" parent="ChampionshipHistoryModal/HistoryCard/Margin/HistoryVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "⬅ Cerrar Historial"
 
 [node name="BGMPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_bgm")

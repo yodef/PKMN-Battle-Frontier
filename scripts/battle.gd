@@ -265,6 +265,13 @@ func get_enemy_trainer_name() -> String:
 			if not tname.is_empty():
 				return tname
 			return "Entrenador Rival" if is_sp else "Rival Trainer"
+		elif GameData.campaign_submode == "CHAMPIONSHIP":
+			var m_info = GameData.get_championship_match_info(GameData.championship_match_number)
+			var tname = str(m_info.get("trainer_name_es" if is_sp else "trainer_name", m_info.get("trainer_name", "")))
+			var ttitle = str(m_info.get("trainer_title_es" if is_sp else "trainer_title", m_info.get("trainer_title", "")))
+			if not tname.is_empty():
+				return ("%s %s" % [ttitle, tname]).strip_edges() if not ttitle.is_empty() else tname
+			return "Campeón Rival" if is_sp else "Rival Champion"
 		else:
 			match GameData.campaign_match_number:
 				1: return "Joven Tristán" if is_sp else "Youngster Tristan"
@@ -1489,6 +1496,15 @@ func start_new_game() -> void:
 					battle_title_lbl.text = "💎 FINAL BOSS: CRYSTAL ONIX (900 HP)"
 				else:
 					battle_title_lbl.text = "🌌 Chaos Odyssey - Trial %d / %d" % [GameData.chaos_match_number, GameData.CHAOS_TOTAL_MATCHES]
+			elif GameData.campaign_submode == "CHAMPIONSHIP":
+				rival_ids = GameData.get_championship_rival_team(GameData.championship_match_number)
+				var match_info = GameData.get_championship_match_info(GameData.championship_match_number)
+				enemy_super_potions = 1 if match_info.get("is_champion", false) else 0
+				var t_name = match_info.get("trainer_name", "Alto Mando")
+				if match_info.get("is_champion", false):
+					battle_title_lbl.text = "👑 LIGA DE CAMPEONATO - COMBATE FINAL vs %s" % t_name
+				else:
+					battle_title_lbl.text = "🏆 LIGA DE CAMPEONATO - FASE %d / %d (%s)" % [GameData.championship_match_number, GameData.CHAMPIONSHIP_TOTAL_MATCHES, t_name]
 			else:
 				enemy_super_potions = 0
 				rival_ids = GameData.get_campaign_rival_team(GameData.campaign_match_number)
@@ -1516,6 +1532,9 @@ func start_new_game() -> void:
 				elif is_e4:
 					enemy_team[last_idx].foil_type = "elite_four_ace"
 					enemy_team[last_idx].is_elite_four_ace = true
+			elif GameData.campaign_submode == "CHAMPIONSHIP":
+				enemy_team[last_idx].foil_type = "elite_four_ace"
+				enemy_team[last_idx].is_elite_four_ace = true
 	else:
 		var p_ids = GameData.player_team_ids.duplicate()
 		if p_ids.is_empty():
@@ -1615,6 +1634,13 @@ func start_new_game() -> void:
 		var is_es = (GameData.settings_language == "es")
 		var intro_dialogue = str(stage_info.get("intro_es" if is_es else "intro", stage_info.get("intro", "")))
 		var trainer_name = str(stage_info.get("trainer_name_es" if is_es else "trainer_name", stage_info.get("trainer_name", "Opponent")))
+		if intro_dialogue != "":
+			log_action("💬 [b]%s[/b]: \"%s\"" % [trainer_name, intro_dialogue], "GLOBAL")
+	elif GameData.is_campaign_mode and GameData.campaign_submode == "CHAMPIONSHIP":
+		var match_info = GameData.get_championship_match_info(GameData.championship_match_number)
+		var is_es = (GameData.settings_language == "es")
+		var intro_dialogue = str(match_info.get("intro_es" if is_es else "intro", match_info.get("intro", "")))
+		var trainer_name = str(match_info.get("trainer_name_es" if is_es else "trainer_name", match_info.get("trainer_name", "Alto Mando")))
 		if intro_dialogue != "":
 			log_action("💬 [b]%s[/b]: \"%s\"" % [trainer_name, intro_dialogue], "GLOBAL")
 	if active_e.has_passive and active_e.passive_name == "String Shot":
@@ -1849,6 +1875,16 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		return false
 	actor.is_digging = false
 	var st_side = "PLAYER" if is_player else "ENEMY"
+
+	# Leftovers (Restos): Holder restores 1/8 max HP (minimum 1) at the start of the turn
+	if actor.held_item == "leftovers" and actor.current_hp > 0 and actor.current_hp < actor.max_hp:
+		var rec_hp = max(1, int(float(actor.max_hp) / 8.0))
+		var actual_rec = min(rec_hp, actor.max_hp - actor.current_hp)
+		actor.current_hp += actual_rec
+		log_action("🍎 [color=green]%s restored +%d HP with Leftovers! (%d/%d HP)[/color]" % [actor.name, actual_rec, actor.current_hp, actor.max_hp], st_side)
+		spawn_floating_combat_number(actor_img, actual_rec, true)
+		GameData.play_combat_sfx("potion.wav")
+		update_ui()
 		
 	# 1. Leech Seed (Seeded)
 	if actor.is_seeded_turns > 0:
@@ -3078,8 +3114,13 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if raw_damage > 0:
 		final_damage = raw_damage
 		
+		# Dragon Fang (Colmillo Dragón): Si es un Dragón siempre hace DMG con ventaja de tipo
+		var has_dragon_fang = (attacker.held_item == "dragon_fang" and GameData.is_pokemon_dragon(attacker))
+		if has_dragon_fang:
+			final_damage += WEAKNESS_BONUS
+			note_text += " [color=yellow]Dragon Fang forces type advantage! (+%d DMG)[/color]" % WEAKNESS_BONUS
 		# Daño Verdadero Fijo (Sonic Boom, Night Shade)
-		if move.effect_type == "FIXED_DMG" or move.name in ["Sonic Boom", "Night Shade"]:
+		elif move.effect_type == "FIXED_DMG" or move.name in ["Sonic Boom", "Night Shade"]:
 			note_text += " [color=cyan]Fixed True Damage (bypasses defense & resistance)![/color]"
 		# Movimientos Adaptativos / Punto Débil (WEAK_SPOT / ADAPT)
 		elif move.effect_type in ["WEAK_SPOT", "ADAPT"]:
@@ -4398,6 +4439,51 @@ func _resolve_battle_victory() -> void:
 				"🌊 ¡EL LAGO DE LA FURIA HA SIDO PACIFICADO!",
 				"¡Has derrotado al colosal Gyarados Rojo Enfurecido en una batalla legendaria!\n\n👑 RECOMPENSA EXCLUSIVA: ¡Carta de Gyarados Rojo (Legendary ⭐) añadida a tu colección!\n💎 +%d Diamantes de bonificación.\n\nEl evento ha quedado completado permanentemente." % lake_diamonds
 			)
+		elif GameData.campaign_submode == "CHAMPIONSHIP":
+			var cur_match = GameData.championship_match_number
+			var phase_diamonds = GameData.CHAMPIONSHIP_DIAMOND_REWARDS[cur_match - 1]
+			GameData.player_diamonds += phase_diamonds
+			combat_earned_gold = 0
+			
+			if cur_match >= 5:
+				var was_first_clear = not GameData.championship_first_clear_claimed
+				GameData.record_championship_victory(player_team)
+				GameData.reset_championship_league(false)
+				GameData.is_campaign_mode = false
+				GameData.save_profile()
+				
+				if was_first_clear:
+					show_game_over(
+						"👑 ¡CAMPEÓN DE LA LIGA POKÉMON!",
+						"¡Increíble hazaña! Has derrotado a los 4 miembros del Alto Mando y al Campeón Rival.\n\n🏆 Tu equipo ha sido inmortalizado en el Historial de Campeones.\n💎 +%d Diamantes (Total: %d)\n\n🎁 ¡RECOMPENSAS DE PRIMERA VICTORIA!\n• 🍎 Leftovers (Restos): El portador recupera 1/8 de HP al inicio de cada turno.\n• 🐉 Dragon Fang (Colmillo Dragón): Si el portador es Dragón, siempre ataca con ventaja de tipo.\n\n¡Completado por hoy! Vuelve mañana para un nuevo desafío." % [
+							phase_diamonds,
+							GameData.player_diamonds
+						]
+					)
+				else:
+					show_game_over(
+						"👑 ¡CAMPEÓN DE LA LIGA POKÉMON!",
+						"¡Felicidades, Campeón! Has conquistado la Liga de Campeonato del día de hoy.\n\n🏆 Tu equipo ha sido registrado en el Historial de Campeones.\n💎 +%d Diamantes (Total: %d)\n\n(Límite diario alcanzado: ¡Vuelve mañana para enfrentar a otros miembros del Alto Mando y Campeón!)" % [
+							phase_diamonds,
+							GameData.player_diamonds
+						]
+					)
+			else:
+				GameData.championship_match_number += 1
+				GameData.save_profile()
+				var next_info = GameData.get_championship_match_info(GameData.championship_match_number)
+				var next_name = next_info.get("trainer_name", "Rival")
+				var is_champ_next = next_info.get("is_champion", false)
+				var next_str = "👑 Combate Final contra el Campeón" if is_champ_next else "Alto Mando %s" % next_name
+				show_game_over(
+					"🏆 FASE %d SUPERADA!" % cur_match,
+					"¡Has vencido a tu oponente!\n\n💎 Recompensa: +%d Diamantes (Total: %d)\n💰 Recompensa de Oro: 0 G (Modo sin oro)\n\n¡Prepárate en el campamento para la siguiente fase: %s!" % [
+						cur_match,
+						phase_diamonds,
+						GameData.player_diamonds,
+						next_str
+					]
+				)
 		else:
 			# Modo Torneo
 			var current_match = GameData.campaign_match_number
@@ -4579,6 +4665,14 @@ func _resolve_battle_defeat(is_double_ko: bool = false) -> void:
 			show_game_over(
 				"💀 DERROTA EN EL LAGO DE LA FURIA",
 				"El Gyarados Rojo Enfurecido desató todo su poder y arrasó a tu equipo.\n\n¡Reorganiza tu escuadrón legendario e inténtalo de nuevo cuando estés listo!"
+			)
+		elif GameData.campaign_submode == "CHAMPIONSHIP":
+			GameData.reset_championship_league(false)
+			GameData.is_campaign_mode = false
+			GameData.save_profile()
+			show_game_over(
+				"💀 DERROTA EN LA LIGA DE CAMPEONATO",
+				"Todos tus Pokémon han caído debilitados.\nEl progreso de la liga se ha reiniciado.\n¡Puedes volver a desafiar la Liga de Campeonato cuando estés listo!"
 			)
 		else:
 			GameData.reset_campaign()
@@ -5025,7 +5119,9 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 
 	# Debilidad / Resistencia
 	if dmg > 0:
-		if move.effect_type == "FIXED_DMG" or move.name in ["Sonic Boom", "Night Shade"]:
+		if attacker.held_item == "dragon_fang" and GameData.is_pokemon_dragon(attacker):
+			dmg += WEAKNESS_BONUS
+		elif move.effect_type == "FIXED_DMG" or move.name in ["Sonic Boom", "Night Shade"]:
 			return dmg
 		elif move.effect_type in ["WEAK_SPOT", "ADAPT"]:
 			dmg += WEAKNESS_BONUS
@@ -6578,7 +6674,9 @@ func update_single_move_ui(move_idx: int, move, slots_container: HBoxContainer, 
 		var ko_tag = " • ✨ KO" if (active_e and dmg >= active_e.current_hp and active_e.current_hp > 0) else ""
 		var type_tag = ""
 		if active_e and dmg > 0:
-			if GameData.types_match(active_e.weakness, move.type):
+			if p.held_item == "dragon_fang" and GameData.is_pokemon_dragon(p):
+				type_tag = " (+%d)" % WEAKNESS_BONUS
+			elif GameData.types_match(active_e.weakness, move.type):
 				type_tag = " (+%d)" % WEAKNESS_BONUS
 			elif GameData.is_attack_resisted(active_e.type, active_e.resistant, move.type):
 				type_tag = " (-%d)" % RESISTANCE_REDUCTION
@@ -7842,7 +7940,7 @@ func refresh_bag_items_ui() -> void:
 				name_lbl.add_theme_color_override("font_color", Color("#CE93D8"))
 			elif item_id == "revive":
 				name_lbl.add_theme_color_override("font_color", Color("#FFE082"))
-			elif item_id in ["exp_share", "poke_flute", "wise_glasses", "quick_claw"]:
+			elif item_id in ["exp_share", "poke_flute", "wise_glasses", "quick_claw", "leftovers", "dragon_fang"]:
 				name_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
 			else:
 				name_lbl.add_theme_color_override("font_color", Color("#FFFFFF"))
@@ -7860,7 +7958,7 @@ func refresh_bag_items_ui() -> void:
 		var use_btn = Button.new()
 		use_btn.custom_minimum_size = Vector2(85, 36)
 		use_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		if item_id in ["exp_share", "wise_glasses", "quick_claw"]:
+		if item_id in ["exp_share", "wise_glasses", "quick_claw", "leftovers", "dragon_fang"]:
 			use_btn.text = "Passive"
 			use_btn.disabled = true
 		elif item_id == "poke_flute":
