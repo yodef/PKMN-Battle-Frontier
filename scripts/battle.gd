@@ -1332,6 +1332,7 @@ func start_new_game() -> void:
 					inst.burn_turns = int(p_state.get("burn_turns", 0))
 					inst.is_poisoned = bool(p_state.get("is_poisoned", false))
 					inst.is_flinched = bool(p_state.get("is_flinched", false))
+					inst.held_item = str(p_state.get("held_item", ""))
 					player_team.append(inst)
 				
 			var rival_ids: Array[int] = []
@@ -1405,9 +1406,12 @@ func start_new_game() -> void:
 			e_ids = [4]
 			
 		player_team = []
-		for pid in p_ids:
+		for p_i in range(p_ids.size()):
+			var pid = p_ids[p_i]
 			var inst = GameData.create_pokemon_instance(pid)
 			if inst:
+				if p_i < GameData.player_team_held_items.size():
+					inst.held_item = GameData.player_team_held_items[p_i]
 				player_team.append(inst)
 		if player_team.is_empty():
 			var fallback_inst = GameData.create_pokemon_instance(0)
@@ -1781,18 +1785,25 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 	if not actor:
 		return true
 
-	# 1. Sleep: Decrement sleep turns upon attempting an action
+	# 1. Sleep: Decrement sleep turns upon attempting an action (or auto-wake if holding Poké Flute)
 	if actor.is_asleep_turns > 0:
-		actor.is_asleep_turns -= 1
-		if actor.is_asleep_turns > 0:
-			log_action("💤 [b]%s[/b] [color=lightblue]is fast asleep and cannot move! (%d rounds remaining)[/color]" % [actor.name, actor.is_asleep_turns])
-			update_ui()
-			_end_failed_action_turn(is_player)
-			return false
-		else:
+		if actor.held_item == "poke_flute":
+			actor.is_asleep_turns = 0
 			actor.immune_sleep_rounds = 1
-			log_action("✨ [b]%s[/b] [color=green]woke up from sleep and gained 1 round Sleep immunity![/color]" % actor.name)
+			log_action("🎶 [b]%s[/b]'s held [color=gold]Poké Flute[/color] played a melody and woke it up! 💤" % actor.name)
+			GameData.play_combat_sfx("use")
 			update_ui()
+		else:
+			actor.is_asleep_turns -= 1
+			if actor.is_asleep_turns > 0:
+				log_action("💤 [b]%s[/b] [color=lightblue]is fast asleep and cannot move! (%d rounds remaining)[/color]" % [actor.name, actor.is_asleep_turns])
+				update_ui()
+				_end_failed_action_turn(is_player)
+				return false
+			else:
+				actor.immune_sleep_rounds = 1
+				log_action("✨ [b]%s[/b] [color=green]woke up from sleep and gained 1 round Sleep immunity![/color]" % actor.name)
+				update_ui()
 
 	# 2. Freeze: Thaw check
 	if actor.is_frozen:
@@ -3502,20 +3513,49 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			if p_idx != -1 and p_idx < active_team.size():
 				active_team[p_idx]["current_exp"] = attacker.current_exp
 
-		# Exp Share (Repartir Experiencia): Mientras esté en la mochila, si el Pokémon activo recibe EXP,
-		# el primer Pokémon en banca que pueda recibir EXP recibe un 20% de la EXP ganada por el Líder.
-		if exp_gained > 0 and GameData.has_exp_share():
+		# Exp Share (Held Item / Bag):
+		# 1. Si el atacante activo lleva equipado "exp_share", recibe un bonus de +20% EXP!
+		if exp_gained > 0 and attacker.held_item == "exp_share":
+			var a_req = attacker.get_required_exp()
+			if a_req > 0 and attacker.current_exp < a_req:
+				var bonus_amt: int = max(1, int(round(float(exp_gained) * 0.20)))
+				var actual_bonus: int = min(bonus_amt, a_req - attacker.current_exp)
+				if actual_bonus > 0:
+					attacker.current_exp += actual_bonus
+					exp_log_str += " [color=#FFD54F][Exp. Share 🎒: %s +%d Bonus EXP ➔ %d/%d][/color]" % [
+						attacker.name, actual_bonus, attacker.current_exp, a_req
+					]
+					if GameData.is_campaign_mode:
+						var p_idx = player_team.find(attacker)
+						var active_team = GameData.get_active_campaign_team_state()
+						if p_idx != -1 and p_idx < active_team.size():
+							active_team[p_idx]["current_exp"] = attacker.current_exp
+
+		# 2. Si un Pokémon en banca lleva equipado "exp_share", recibe 20% de la EXP compartida
+		# (O si se tiene en mochila y nadie lo lleva como held item, el primer Pokémon en banca que pueda recibir EXP lo recibe)
+		if exp_gained > 0:
 			var target_benched = null
 			var target_benched_idx = -1
 			for b_i in range(player_team.size()):
 				if player_team[b_i] == attacker:
 					continue
 				var b_pkmn = player_team[b_i]
-				var b_req = b_pkmn.get_required_exp()
-				if b_req > 0 and b_pkmn.current_exp < b_req:
-					target_benched = b_pkmn
-					target_benched_idx = b_i
-					break
+				if b_pkmn.held_item == "exp_share":
+					var b_req = b_pkmn.get_required_exp()
+					if b_req > 0 and b_pkmn.current_exp < b_req:
+						target_benched = b_pkmn
+						target_benched_idx = b_i
+						break
+			if target_benched == null and GameData.has_exp_share():
+				for b_i in range(player_team.size()):
+					if player_team[b_i] == attacker:
+						continue
+					var b_pkmn = player_team[b_i]
+					var b_req = b_pkmn.get_required_exp()
+					if b_req > 0 and b_pkmn.current_exp < b_req:
+						target_benched = b_pkmn
+						target_benched_idx = b_i
+						break
 			if target_benched != null:
 				var shared_amount: int = max(1, int(round(float(exp_gained) * 0.20)))
 				var b_req: int = target_benched.get_required_exp()
@@ -3893,6 +3933,7 @@ func _resolve_battle_victory() -> void:
 			active_team[i]["burn_turns"] = player_team[i].burn_turns
 			active_team[i]["is_poisoned"] = player_team[i].is_poisoned
 			active_team[i]["is_flinched"] = player_team[i].is_flinched
+			active_team[i]["held_item"] = player_team[i].held_item
 			
 		# Las evoluciones ocurren ahora en el Campamento!
 		var pending_evos = GameData.get_pending_campaign_evolutions()
@@ -5649,7 +5690,7 @@ func _update_bench_button(btn: Button, team: Array, benched_indices: Array, slot
 		
 	var n_lbl = btn.get_node_or_null("CardContent/Details/Header/Name")
 	if n_lbl:
-		n_lbl.text = pkmn.name
+		n_lbl.text = ("%s 🎒" % pkmn.name) if (pkmn.held_item != "") else pkmn.name
 		n_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		n_lbl.clip_text = true
 		n_lbl.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0) if is_alive else Color(0.6, 0.6, 0.6))
@@ -5878,11 +5919,12 @@ func update_ui() -> void:
 			player_card_img.texture = p_tex
 			
 	var p_pas = " | ✨ %s" % active_p.passive_name if active_p.has_passive else ""
+	var p_held = " | 🎒 %s" % GameData.get_item_display_name(active_p.held_item) if ("held_item" in active_p and active_p.held_item != "") else ""
 	player_type_icon.texture = GameData.get_type_icon_texture(active_p.type)
 	player_name_lbl.text = "%s (SPD: %d)" % [active_p.name, get_pokemon_effective_speed(active_p, active_e)]
 	var p_resists = GameData.get_effective_resistances(active_p.type, active_p.resistant)
 	var p_res_str = ", ".join(p_resists) if not p_resists.is_empty() else "NONE"
-	player_type_lbl.text = "Type: %s | Weak: %s | Res: %s%s" % [active_p.type, active_p.weakness, p_res_str, p_pas]
+	player_type_lbl.text = "Type: %s | Weak: %s | Res: %s%s%s" % [active_p.type, active_p.weakness, p_res_str, p_pas, p_held]
 	
 	var is_p2 = (not is_player_turn and GameData.is_pvp_mode)
 	var active_benched_idx = enemy_benched_idx if is_p2 else player_benched_idx
@@ -7018,7 +7060,7 @@ func refresh_bag_items_ui() -> void:
 
 	if btn_battle_tab_consumables and btn_battle_tab_key_items:
 		btn_battle_tab_consumables.text = "🧪 Bolso (%d/10)" % consumable_count
-		btn_battle_tab_key_items.text = "🗝️ Objetos Clave"
+		btn_battle_tab_key_items.text = "🎒 Held Items"
 		if battle_bag_active_tab == "consumables":
 			_style_battle_tab_btn(btn_battle_tab_consumables, true, Color(0.25, 0.70, 0.95))
 			_style_battle_tab_btn(btn_battle_tab_key_items, false, Color(0.85, 0.65, 0.25))
@@ -7026,7 +7068,7 @@ func refresh_bag_items_ui() -> void:
 		else:
 			_style_battle_tab_btn(btn_battle_tab_consumables, false, Color(0.25, 0.70, 0.95))
 			_style_battle_tab_btn(btn_battle_tab_key_items, true, Color(0.85, 0.65, 0.25))
-			battle_bag_capacity_lbl.text = "🗝️ Objetos Clave (Permanentes, no consumibles)"
+			battle_bag_capacity_lbl.text = "🎒 Held Items (Objetos Clave permanentes equipables)"
 
 	var item_defs = []
 	if battle_bag_active_tab == "consumables":
@@ -7069,7 +7111,7 @@ func refresh_bag_items_ui() -> void:
 			}
 		]
 	else:
-		item_defs = [
+		var all_key_defs = [
 			{
 				"id": "poke_flute",
 				"name": "Poké Flute",
@@ -7079,10 +7121,22 @@ func refresh_bag_items_ui() -> void:
 			{
 				"id": "exp_share",
 				"name": "Exp Share",
-				"desc": "Passive item. While in bag, 20% of the EXP earned by the active Pokémon is shared with the first eligible benched Pokémon.",
+				"desc": "Passive item. While held by a benched Pokémon, shares 20% EXP. Held by active leader, grants +20% EXP.",
 				"icon": "exp_share"
 			}
 		]
+		for kd in all_key_defs:
+			if cur_inv.get(kd["id"], 0) > 0:
+				item_defs.append(kd)
+
+	if battle_bag_active_tab == "key_items" and item_defs.is_empty():
+		var empty_lbl = Label.new()
+		empty_lbl.text = "🎒 " + GameData.tr_text("You have no Held Items in your bag.", "No tienes ningún Held Item en tu mochila.")
+		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		empty_lbl.add_theme_font_size_override("font_size", 12)
+		empty_lbl.add_theme_color_override("font_color", Color("#B0BEC5"))
+		bag_items_list.add_child(empty_lbl)
 	
 	for item in item_defs:
 		var item_id = item["id"]
@@ -7120,9 +7174,17 @@ func refresh_bag_items_ui() -> void:
 		
 		var name_lbl = Label.new()
 		if item_id == "poke_flute":
-			name_lbl.text = "%s  (%s)" % [item["name"], "Owned" if stock > 0 else "Not Owned"]
+			name_lbl.text = "%s  [Owned]" % item["name"]
 		elif item_id == "exp_share":
-			name_lbl.text = "%s  (%s)" % [item["name"], "Passive Active" if stock > 0 else "Not Owned"]
+			var holder = ""
+			for p_m in player_team:
+				if p_m.held_item == "exp_share":
+					holder = p_m.name
+					break
+			if holder != "":
+				name_lbl.text = "%s  [Held by %s]" % [item["name"], holder]
+			else:
+				name_lbl.text = "%s  [Owned]" % item["name"]
 		else:
 			name_lbl.text = "%s  (Stock: %d)" % [item["name"], stock]
 		name_lbl.add_theme_font_size_override("font_size", 14)

@@ -198,6 +198,7 @@ var camp_bag_tab_bar: HBoxContainer = null
 var btn_camp_tab_consumables: Button = null
 var btn_camp_tab_key_items: Button = null
 var camp_bag_capacity_lbl: Label = null
+var btn_close_camp_bag: Button = null
 var camp_pokemon_inspector_modal: Control = null
 var camp_evo_selector_modal: Control = null
 var camp_evo_modal: Control = null
@@ -563,6 +564,9 @@ var team_select_mode: String = "QUICK_BATTLE" # "QUICK_BATTLE" o "CAMPAIGN"
 var current_team_tab: String = "PLAYER" # "PLAYER" o "ENEMY"
 var team_sort_mode: String = "ID" # "ID", "DEX", "NAME"
 var selected_player_ids: Array[int] = []
+var selected_player_held_items: Array[String] = ["", "", ""]
+var slot_item_btns: Array[Button] = []
+var equipping_held_item_slot: int = -1
 var selected_enemy_ids: Array[int] = []
 var qb_mode_row: HBoxContainer = null
 var btn_qb_mode_ai: Button = null
@@ -1071,6 +1075,7 @@ func _ready() -> void:
 	
 	# Configurar Toolbar, Tienda y Mochila del Campamento
 	_setup_camp_modals()
+	_setup_slots_container_held_item_buttons()
 	
 	# Reactividad en tiempo real de Diamantes / Gemas y Caramelos Raros
 	if not GameData.diamonds_changed.is_connected(_on_diamonds_changed):
@@ -4425,6 +4430,7 @@ func open_team_select_for_campaign() -> void:
 	
 	# Cargar selección del equipo de la campaña activa
 	selected_player_ids.clear()
+	selected_player_held_items = ["", "", ""]
 	if GameData.campaign_submode != "LAKE_OF_RAGE":
 		var active_team = GameData.get_active_campaign_team_state()
 		if active_team.size() > 0:
@@ -4444,9 +4450,13 @@ func open_team_select_for_campaign() -> void:
 				if GameData.campaign_submode == "CHAOS":
 					if (is_legendary and ev_from == "") or GameData.is_line_legendary(pid):
 						selected_player_ids.append(pid)
+						if selected_player_ids.size() - 1 < 3:
+							selected_player_held_items[selected_player_ids.size() - 1] = str(p.get("held_item", ""))
 				else:
 					if st == "basic" and not is_legendary:
 						selected_player_ids.append(pid)
+						if selected_player_ids.size() - 1 < 3:
+							selected_player_held_items[selected_player_ids.size() - 1] = str(p.get("held_item", ""))
 	# If starting a fresh run, selected_player_ids is cleanly empty so the player can choose freely
 			
 	update_team_sort_buttons_ui()
@@ -4793,6 +4803,14 @@ func update_campaign_ui() -> void:
 		stage_lbl.add_theme_font_size_override("font_size", 10)
 		stage_lbl.add_theme_color_override("font_color", Color("#90A4AE"))
 		top_row.add_child(stage_lbl)
+		
+		var h_item_id = str(p.get("held_item", ""))
+		if h_item_id != "":
+			var held_badge = Label.new()
+			held_badge.text = "🎒 %s" % GameData.get_item_display_name(h_item_id)
+			held_badge.add_theme_font_size_override("font_size", 10)
+			held_badge.add_theme_color_override("font_color", Color("#FFD54F"))
+			top_row.add_child(held_badge)
 		
 		# Mid row: HP Bar & Text
 		var hp_row = HBoxContainer.new()
@@ -5328,7 +5346,7 @@ func _setup_camp_modals() -> void:
 	var btn_close_bag_x = Button.new()
 	btn_close_bag_x.text = "✕"
 	btn_close_bag_x.custom_minimum_size = Vector2(30, 30)
-	btn_close_bag_x.pressed.connect(func(): camp_bag_modal.visible = false)
+	btn_close_bag_x.pressed.connect(_close_camp_bag)
 	bag_head_row.add_child(btn_close_bag_x)
 	bag_vbox.add_child(bag_head_row)
 	
@@ -5414,15 +5432,12 @@ func _setup_camp_modals() -> void:
 	var bag_bot_sep = HSeparator.new()
 	bag_vbox.add_child(bag_bot_sep)
 	
-	var btn_close_camp_bag = Button.new()
+	btn_close_camp_bag = Button.new()
 	btn_close_camp_bag.text = "⬅ Back to Camp"
 	btn_close_camp_bag.custom_minimum_size = Vector2(0, 36)
 	btn_close_camp_bag.add_theme_font_size_override("font_size", 12)
 	_apply_retro_button_style(btn_close_camp_bag, Color(0.45, 0.35, 0.20), Color(0.70, 0.55, 0.30), false)
-	btn_close_camp_bag.pressed.connect(func():
-		camp_bag_modal.visible = false
-		update_campaign_ui()
-	)
+	btn_close_camp_bag.pressed.connect(_close_camp_bag)
 	bag_vbox.add_child(btn_close_camp_bag)
 	
 	# 4. Configurar CampPokemonInspectorModal
@@ -5552,6 +5567,63 @@ func _refresh_camp_shop_stones_ui() -> void:
 		hbox.add_child(buy_btn)
 		camp_shop_stones_list.add_child(row)
 
+func _close_camp_bag() -> void:
+	if camp_bag_modal:
+		camp_bag_modal.visible = false
+	if equipping_held_item_slot >= 0:
+		equipping_held_item_slot = -1
+		update_team_select_ui()
+	elif campaign_modal and campaign_modal.visible:
+		update_campaign_ui()
+
+func _open_camp_bag_for_held_item(slot_idx: int) -> void:
+	if not camp_bag_modal:
+		_setup_camp_modals()
+	equipping_held_item_slot = slot_idx
+	camp_bag_active_tab = "key_items"
+	if camp_bag_modal:
+		camp_bag_modal.visible = true
+		if camp_bag_targets_view:
+			camp_bag_targets_view.visible = false
+		if camp_bag_items_view:
+			camp_bag_items_view.visible = true
+		_refresh_camp_bag_items_ui()
+
+func _setup_slots_container_held_item_buttons() -> void:
+	if not slot_item_btns.is_empty():
+		return
+	var slots = [
+		team_select_modal.get_node_or_null("Box/SlotsContainer/Slot1"),
+		team_select_modal.get_node_or_null("Box/SlotsContainer/Slot2"),
+		team_select_modal.get_node_or_null("Box/SlotsContainer/Slot3")
+	]
+	var labels = [slot1_lbl, slot2_lbl, slot3_lbl]
+	for i in range(3):
+		var slot_panel = slots[i]
+		var lbl = labels[i]
+		if not slot_panel or not lbl:
+			continue
+		slot_panel.remove_child(lbl)
+		var vbox = VBoxContainer.new()
+		vbox.name = "SlotVBox"
+		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		vbox.add_theme_constant_override("separation", 2)
+		slot_panel.add_child(vbox)
+		vbox.add_child(lbl)
+		
+		var btn = Button.new()
+		btn.name = "BtnHeldItem%d" % (i + 1)
+		btn.custom_minimum_size = Vector2(0, 26)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.add_theme_font_size_override("font_size", 10)
+		btn.text = "🎒 + Item"
+		_apply_retro_button_style(btn, Color(0.20, 0.25, 0.32), Color(0.40, 0.50, 0.65), false)
+		var s_idx = i
+		btn.pressed.connect(func(): _open_camp_bag_for_held_item(s_idx))
+		vbox.add_child(btn)
+		slot_item_btns.append(btn)
+
 func _refresh_camp_bag_items_ui() -> void:
 	if not camp_bag_items_view:
 		return
@@ -5566,9 +5638,15 @@ func _refresh_camp_bag_items_ui() -> void:
 	if camp_bag_capacity_lbl:
 		camp_bag_capacity_lbl.visible = true
 		
+	if btn_close_camp_bag:
+		if equipping_held_item_slot >= 0:
+			btn_close_camp_bag.text = "⬅ Back to Team Selection"
+		else:
+			btn_close_camp_bag.text = "⬅ Back to Camp"
+
 	if btn_camp_tab_consumables and btn_camp_tab_key_items:
 		btn_camp_tab_consumables.text = "🧪 Bolso (%d/10)" % consumable_count
-		btn_camp_tab_key_items.text = "🗝️ Objetos Clave"
+		btn_camp_tab_key_items.text = "🎒 Held Items"
 		if camp_bag_active_tab == "consumables":
 			_apply_retro_button_style(btn_camp_tab_consumables, Color(0.20, 0.45, 0.65), Color(0.35, 0.70, 0.95), false)
 			_apply_retro_button_style(btn_camp_tab_key_items, Color(0.18, 0.22, 0.28), Color(0.30, 0.38, 0.48), false)
@@ -5576,7 +5654,13 @@ func _refresh_camp_bag_items_ui() -> void:
 		else:
 			_apply_retro_button_style(btn_camp_tab_consumables, Color(0.18, 0.22, 0.28), Color(0.30, 0.38, 0.48), false)
 			_apply_retro_button_style(btn_camp_tab_key_items, Color(0.65, 0.45, 0.15), Color(0.95, 0.70, 0.25), false)
-			camp_bag_capacity_lbl.text = "🗝️ Objetos Clave (Permanentes, no consumibles)"
+			if equipping_held_item_slot >= 0:
+				var p_name = ""
+				if equipping_held_item_slot < selected_player_ids.size():
+					p_name = " (%s)" % get_card_short_name(selected_player_ids[equipping_held_item_slot])
+				camp_bag_capacity_lbl.text = "🎒 EQUIPAR HELD ITEM - Slot %d%s" % [equipping_held_item_slot + 1, p_name]
+			else:
+				camp_bag_capacity_lbl.text = "🎒 Held Items (Objetos Clave permanentes equipables a tu equipo)"
 
 	var item_defs = []
 	if camp_bag_active_tab == "consumables":
@@ -5619,7 +5703,7 @@ func _refresh_camp_bag_items_ui() -> void:
 			}
 		]
 	else:
-		item_defs = [
+		var all_key_defs = [
 			{
 				"id": "poke_flute",
 				"name": "Poké Flute",
@@ -5629,11 +5713,36 @@ func _refresh_camp_bag_items_ui() -> void:
 			{
 				"id": "exp_share",
 				"name": "Exp Share",
-				"desc": "Passive item. While in bag, 20% of the EXP earned by the active Pokémon is shared with the first eligible benched Pokémon.",
+				"desc": "Passive item. While held by a benched Pokémon, shares 20% EXP. Held by active leader, grants +20% EXP.",
 				"stock": inv.get("exp_share", 0)
 			}
 		]
+		for kd in all_key_defs:
+			if kd["stock"] > 0:
+				item_defs.append(kd)
 	
+	if camp_bag_active_tab == "key_items" and item_defs.is_empty():
+		var empty_panel = PanelContainer.new()
+		var ep_sb = StyleBoxFlat.new()
+		ep_sb.bg_color = Color(0.06, 0.09, 0.14, 0.90)
+		ep_sb.border_color = Color(0.35, 0.25, 0.15, 0.8)
+		ep_sb.set_border_width_all(1)
+		ep_sb.set_corner_radius_all(6)
+		ep_sb.content_margin_left = 12
+		ep_sb.content_margin_right = 12
+		ep_sb.content_margin_top = 16
+		ep_sb.content_margin_bottom = 16
+		empty_panel.add_theme_stylebox_override("panel", ep_sb)
+		
+		var empty_lbl = Label.new()
+		empty_lbl.text = "🎒 " + GameData.tr_text("You have no Held Items in your bag.\nObtain Key Items like the Poké Flute or Exp Share in Adventure or Tournament mode to equip them!", "No tienes ningún Held Item en tu mochila.\n¡Obtén Objetos Clave como la Poké Flauta o Repartir Exp en el modo Aventura o Torneo para equiparlos!")
+		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		empty_lbl.add_theme_font_size_override("font_size", 12)
+		empty_lbl.add_theme_color_override("font_color", Color("#B0BEC5"))
+		empty_panel.add_child(empty_lbl)
+		camp_bag_items_view.add_child(empty_panel)
+
 	for it in item_defs:
 		var item_id = it["id"]
 		var stock = it["stock"]
@@ -5678,11 +5787,34 @@ func _refresh_camp_bag_items_ui() -> void:
 		
 		var stock_lbl = Label.new()
 		if item_id in ["poke_flute", "exp_share"]:
-			stock_lbl.text = "[Owned]" if stock > 0 else "[Not Owned]"
+			if equipping_held_item_slot >= 0:
+				if equipping_held_item_slot < selected_player_held_items.size() and selected_player_held_items[equipping_held_item_slot] == item_id:
+					stock_lbl.text = "[Equipado en este Pokémon]"
+					stock_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
+				elif selected_player_held_items.has(item_id):
+					var other_slot = selected_player_held_items.find(item_id)
+					stock_lbl.text = "[Equipado en Slot %d]" % (other_slot + 1)
+					stock_lbl.add_theme_color_override("font_color", Color("#80DEEA"))
+				else:
+					stock_lbl.text = "[Disponible]"
+					stock_lbl.add_theme_color_override("font_color", Color("#81C784"))
+			else:
+				var holder = ""
+				var c_team = GameData.get_active_campaign_team_state()
+				for tm in c_team:
+					if tm.get("held_item", "") == item_id:
+						holder = tm.get("name", "")
+						break
+				if holder != "":
+					stock_lbl.text = "[Equipado: %s]" % holder
+					stock_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
+				else:
+					stock_lbl.text = "[Owned / Poseído]"
+					stock_lbl.add_theme_color_override("font_color", Color("#81C784"))
 		else:
 			stock_lbl.text = "[Owned: %d]" % stock
+			stock_lbl.add_theme_color_override("font_color", Color("#FFD54F") if stock > 0 else Color("#78909C"))
 		stock_lbl.add_theme_font_size_override("font_size", 11)
-		stock_lbl.add_theme_color_override("font_color", Color("#FFD54F") if stock > 0 else Color("#78909C"))
 		title_row.add_child(stock_lbl)
 		
 		var desc_lbl = Label.new()
@@ -5697,17 +5829,46 @@ func _refresh_camp_bag_items_ui() -> void:
 		use_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		use_btn.add_theme_font_size_override("font_size", 11)
 		
-		if item_id == "ether":
+		if equipping_held_item_slot >= 0 and item_id in ["poke_flute", "exp_share"]:
+			var cur_slot = equipping_held_item_slot
+			var cur_it = item_id
+			if cur_slot < selected_player_held_items.size() and selected_player_held_items[cur_slot] == cur_it:
+				use_btn.text = "❌ Unequip / Quitar"
+				_apply_retro_button_style(use_btn, Color(0.75, 0.25, 0.25), Color(0.95, 0.40, 0.40), false)
+				use_btn.pressed.connect(func():
+					selected_player_held_items[cur_slot] = ""
+					GameData.play_combat_sfx("use")
+					update_team_select_ui()
+					_refresh_camp_bag_items_ui()
+				)
+			elif selected_player_held_items.has(cur_it):
+				var other_slot = selected_player_held_items.find(cur_it)
+				use_btn.text = "🔄 Mover (Slot %d)" % (other_slot + 1)
+				_apply_retro_button_style(use_btn, Color(0.70, 0.50, 0.15), Color(0.95, 0.75, 0.25), false)
+				use_btn.pressed.connect(func():
+					selected_player_held_items[other_slot] = ""
+					selected_player_held_items[cur_slot] = cur_it
+					GameData.play_combat_sfx("use")
+					update_team_select_ui()
+					_refresh_camp_bag_items_ui()
+				)
+			else:
+				use_btn.text = "✅ Equip / Equipar"
+				_apply_retro_button_style(use_btn, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), false)
+				use_btn.pressed.connect(func():
+					selected_player_held_items[cur_slot] = cur_it
+					GameData.play_combat_sfx("use")
+					update_team_select_ui()
+					_refresh_camp_bag_items_ui()
+				)
+		elif item_id == "ether":
 			use_btn.text = "In Battle Only"
 			use_btn.disabled = true
 			_apply_retro_button_style(use_btn, Color(0.3, 0.3, 0.35), Color(0.4, 0.4, 0.45), false)
 		elif item_id == "exp_share":
-			use_btn.text = "Passive / Pasivo"
+			use_btn.text = "Held Item"
 			use_btn.disabled = true
-			if stock > 0:
-				_apply_retro_button_style(use_btn, Color(0.70, 0.50, 0.15), Color(0.95, 0.80, 0.30), false)
-			else:
-				_apply_retro_button_style(use_btn, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
+			_apply_retro_button_style(use_btn, Color(0.70, 0.50, 0.15), Color(0.95, 0.80, 0.30), false)
 		else:
 			use_btn.text = "Use / Usar"
 			use_btn.disabled = (stock <= 0)
@@ -6908,6 +7069,10 @@ func _on_quick_battle_pressed() -> void:
 	if selected_enemy_ids.is_empty():
 		_randomize_enemy_team()
 		
+	selected_player_held_items = ["", "", ""]
+	for i in range(min(3, GameData.player_team_held_items.size())):
+		selected_player_held_items[i] = GameData.player_team_held_items[i]
+		
 	current_team_tab = "PLAYER"
 	btn_tab_player.button_pressed = true
 	btn_tab_enemy.button_pressed = false
@@ -6920,6 +7085,7 @@ func _on_quick_battle_pressed() -> void:
 func _on_close_team_select_pressed() -> void:
 	team_select_modal.visible = false
 	selected_player_ids.clear()
+	selected_player_held_items = ["", "", ""]
 	if team_select_mode == "ONLINE_LOBBY":
 		online_lobby_modal.visible = true
 	elif team_select_mode == "CAMPAIGN":
@@ -7327,6 +7493,9 @@ func toggle_pokemon_selection(pkmn_id: int) -> void:
 	var idx = team.find(pkmn_id)
 	if idx != -1:
 		team.remove_at(idx)
+		if is_player and idx < selected_player_held_items.size():
+			selected_player_held_items.remove_at(idx)
+			selected_player_held_items.append("")
 	else:
 		if team.size() < 3:
 			team.append(pkmn_id)
@@ -7449,6 +7618,23 @@ func update_team_select_ui() -> void:
 	else:
 		slot3_lbl.text = "%s:\n[Empty]" % s3_title
 		slot3_lbl.modulate = Color(0.7, 0.7, 0.7)
+		
+	# Actualizar botones de Held Items en Slots
+	while selected_player_held_items.size() < 3:
+		selected_player_held_items.append("")
+	for i in range(slot_item_btns.size()):
+		var s_btn = slot_item_btns[i]
+		if is_player and active_team.size() > i:
+			s_btn.visible = true
+			var cur_held = selected_player_held_items[i] if i < selected_player_held_items.size() else ""
+			if cur_held != "":
+				s_btn.text = "🎒 %s" % GameData.get_item_display_name(cur_held)
+				_apply_retro_button_style(s_btn, Color(0.70, 0.50, 0.15), Color(1.0, 0.85, 0.30), false)
+			else:
+				s_btn.text = "🎒 + Item"
+				_apply_retro_button_style(s_btn, Color(0.20, 0.25, 0.32), Color(0.40, 0.50, 0.65), false)
+		else:
+			s_btn.visible = false
 		
 	# Actualizar tarjetas de la cuadrícula
 	for cid in team_card_views_map.keys():
@@ -7590,7 +7776,8 @@ func _on_start_battle_pressed() -> void:
 				var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
 				if st != "basic" or is_leg:
 					return
-			GameData.change_adventure_team(selected_player_ids)
+			GameData.player_team_held_items = selected_player_held_items.duplicate()
+			GameData.change_adventure_team(selected_player_ids, selected_player_held_items)
 		elif GameData.campaign_submode == "CHAOS":
 			for pid in selected_player_ids:
 				var cid = int(pid)
@@ -7605,7 +7792,8 @@ func _on_start_battle_pressed() -> void:
 				var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
 				if not ((is_leg and ev_from == "") or GameData.is_line_legendary(cid)):
 					return
-			GameData.change_chaos_team(selected_player_ids)
+			GameData.player_team_held_items = selected_player_held_items.duplicate()
+			GameData.change_chaos_team(selected_player_ids, selected_player_held_items)
 		else:
 			for pid in selected_player_ids:
 				var cid = int(pid)
@@ -7619,7 +7807,8 @@ func _on_start_battle_pressed() -> void:
 				var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
 				if st != "basic" or is_leg:
 					return
-			GameData.change_campaign_team(selected_player_ids)
+			GameData.player_team_held_items = selected_player_held_items.duplicate()
+			GameData.change_campaign_team(selected_player_ids, selected_player_held_items)
 		team_select_modal.visible = false
 		update_campaign_ui()
 		campaign_modal.visible = true
@@ -7633,6 +7822,7 @@ func _on_start_battle_pressed() -> void:
 		
 	GameData.is_campaign_mode = false
 	GameData.player_team_ids = selected_player_ids.duplicate()
+	GameData.player_team_held_items = selected_player_held_items.duplicate()
 	GameData.enemy_team_ids = selected_enemy_ids.duplicate()
 	if bgm_player and bgm_player.playing:
 		bgm_player.stop()

@@ -139,6 +139,7 @@ class PokemonData:
 	var required_exp: int = 0
 	var current_exp: int = 0
 	var max_exp: int = 10
+	var held_item: String = ""
 	var moves: Array = [] # Siempre 2 movimientos activos
 
 	func get_required_exp() -> int:
@@ -422,6 +423,7 @@ var session_entered_lobby: bool = false
 
 # Selección para Combate Libre
 var player_team_ids: Array[int] = [0, 1, 2]
+var player_team_held_items: Array[String] = ["", "", ""]
 var enemy_team_ids: Array[int] = [4, 6, 5]
 
 # --- ESTADO DE CAMPAÑA (TORNEO Y AVENTURA) ---
@@ -495,6 +497,36 @@ const CONSUMABLE_ITEM_IDS: Array[String] = [
 const KEY_ITEM_IDS: Array[String] = [
 	"poke_flute", "exp_share"
 ]
+
+func get_item_display_name(item_id: String) -> String:
+	match item_id:
+		"exp_share":
+			return "Exp Share"
+		"poke_flute":
+			return "Poké Flute"
+		"potion":
+			return "Potion"
+		"super_potion":
+			return "Super Potion"
+		"hyper_potion":
+			return "Hyper Potion"
+		"revive":
+			return "Revive"
+		"remedy":
+			return "Remedy"
+		"ether":
+			return "Ether"
+		_:
+			return item_id.capitalize()
+
+func get_held_item_desc(item_id: String) -> String:
+	match item_id:
+		"exp_share":
+			return "Si lo lleva un Pokémon en banca, recibe 20% de EXP compartido al vencer rivales. Si lo lleva el activo, gana +20% EXP."
+		"poke_flute":
+			return "Si este Pokémon cae dormido, la flauta toca una melodía al iniciar el turno y lo despierta automáticamente."
+		_:
+			return ""
 
 func get_consumable_items_count(inv: Dictionary = {}) -> int:
 	var target_inv = inv if not inv.is_empty() else get_active_campaign_inventory()
@@ -5415,7 +5447,7 @@ func reset_campaign(auto_save: bool = true) -> void:
 	if auto_save:
 		save_profile()
 
-func init_campaign_team(chosen_ids: Array) -> void:
+func init_campaign_team(chosen_ids: Array, held_items: Array = []) -> void:
 	campaign_player_team_state.clear()
 	for cid in chosen_ids:
 		var pid = int(cid)
@@ -5430,6 +5462,17 @@ func init_campaign_team(chosen_ids: Array) -> void:
 		if st == "basic" and not is_legendary:
 			var inst = create_pokemon_instance(pid)
 			if inst:
+				var h_item = ""
+				var s_idx = campaign_player_team_state.size()
+				if s_idx < held_items.size():
+					var cand = str(held_items[s_idx])
+					var dup = false
+					for ex in campaign_player_team_state:
+						if ex.get("held_item", "") == cand and cand != "":
+							dup = true
+							break
+					if not dup:
+						h_item = cand
 				campaign_player_team_state.append({
 					"id": pid,
 					"name": inst.name,
@@ -5443,7 +5486,8 @@ func init_campaign_team(chosen_ids: Array) -> void:
 					"max_exp": inst.get_required_exp(),
 					"burn_turns": 0,
 					"is_poisoned": false,
-					"is_flinched": false
+					"is_flinched": false,
+					"held_item": h_item
 				})
 	if campaign_player_team_state.is_empty():
 		var fb_id = tutorial_starter_id if (tutorial_starter_id >= 0 and is_pokemon_unlocked(tutorial_starter_id)) else 0
@@ -5462,7 +5506,8 @@ func init_campaign_team(chosen_ids: Array) -> void:
 				"max_exp": fb_inst.get_required_exp(),
 				"burn_turns": 0,
 				"is_poisoned": false,
-				"is_flinched": false
+				"is_flinched": false,
+				"held_item": ""
 			})
 	campaign_match_number = 1
 	var had_camp_flute_init = campaign_inventory.get("poke_flute", 0)
@@ -5475,12 +5520,13 @@ func init_campaign_team(chosen_ids: Array) -> void:
 	current_tournament_rival_match = -1
 	save_profile()
 
-func change_campaign_team(chosen_ids: Array) -> void:
+func change_campaign_team(chosen_ids: Array, held_items: Array = []) -> void:
 	var old_hp = {}
 	var old_exp = {}
 	var old_burn = {}
 	var old_poison = {}
 	var old_flinch = {}
+	var old_held = {}
 	for p in campaign_player_team_state:
 		var old_id = int(p["id"])
 		old_hp[old_id] = p["current_hp"]
@@ -5488,6 +5534,7 @@ func change_campaign_team(chosen_ids: Array) -> void:
 		old_burn[old_id] = p.get("burn_turns", 0)
 		old_poison[old_id] = p.get("is_poisoned", false)
 		old_flinch[old_id] = p.get("is_flinched", false)
+		old_held[old_id] = str(p.get("held_item", ""))
 	campaign_player_team_state.clear()
 	for cid in chosen_ids:
 		var pid = int(cid)
@@ -5507,6 +5554,17 @@ func change_campaign_team(chosen_ids: Array) -> void:
 				var burn_val = old_burn.get(pid, 0)
 				var poison_val = old_poison.get(pid, false)
 				var flinch_val = old_flinch.get(pid, false)
+				var h_item = ""
+				var s_idx = campaign_player_team_state.size()
+				if not held_items.is_empty():
+					if s_idx < held_items.size():
+						h_item = str(held_items[s_idx])
+				else:
+					h_item = old_held.get(pid, "")
+				for ex in campaign_player_team_state:
+					if ex.get("held_item", "") == h_item and h_item != "":
+						h_item = ""
+						break
 				campaign_player_team_state.append({
 					"id": pid,
 					"name": inst.name,
@@ -5520,7 +5578,8 @@ func change_campaign_team(chosen_ids: Array) -> void:
 					"max_exp": inst.get_required_exp(),
 					"burn_turns": burn_val,
 					"is_poisoned": poison_val,
-					"is_flinched": flinch_val
+					"is_flinched": flinch_val,
+					"held_item": h_item
 				})
 	if campaign_player_team_state.is_empty():
 		var fb_id = tutorial_starter_id if (tutorial_starter_id >= 0 and is_pokemon_unlocked(tutorial_starter_id)) else 0
@@ -5539,7 +5598,8 @@ func change_campaign_team(chosen_ids: Array) -> void:
 				"max_exp": fb_inst.get_required_exp(),
 				"burn_turns": 0,
 				"is_poisoned": false,
-				"is_flinched": false
+				"is_flinched": false,
+				"held_item": ""
 			})
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
@@ -5558,7 +5618,7 @@ func reset_adventure_episode(episode_id: int) -> void:
 		adventure_inventory["exp_share"] = 1
 	adventure_player_team_state.clear()
 
-func init_adventure_team(episode_id: int, chosen_ids: Array) -> void:
+func init_adventure_team(episode_id: int, chosen_ids: Array, held_items: Array = []) -> void:
 	adventure_current_episode = episode_id
 	adventure_current_stage = 1
 	var had_adv_flute_init = adventure_inventory.get("poke_flute", 0)
@@ -5581,6 +5641,17 @@ func init_adventure_team(episode_id: int, chosen_ids: Array) -> void:
 		if st == "basic" and not is_legendary:
 			var inst = create_pokemon_instance(pid)
 			if inst:
+				var h_item = ""
+				var s_idx = adventure_player_team_state.size()
+				if s_idx < held_items.size():
+					var cand = str(held_items[s_idx])
+					var dup = false
+					for ex in adventure_player_team_state:
+						if ex.get("held_item", "") == cand and cand != "":
+							dup = true
+							break
+					if not dup:
+						h_item = cand
 				adventure_player_team_state.append({
 					"id": pid,
 					"name": inst.name,
@@ -5594,7 +5665,8 @@ func init_adventure_team(episode_id: int, chosen_ids: Array) -> void:
 					"max_exp": inst.get_required_exp(),
 					"burn_turns": 0,
 					"is_poisoned": false,
-					"is_flinched": false
+					"is_flinched": false,
+					"held_item": h_item
 				})
 	if adventure_player_team_state.is_empty():
 		var fb_id = tutorial_starter_id if (tutorial_starter_id >= 0 and is_pokemon_unlocked(tutorial_starter_id)) else 0
@@ -5613,16 +5685,18 @@ func init_adventure_team(episode_id: int, chosen_ids: Array) -> void:
 				"max_exp": fb_inst.get_required_exp(),
 				"burn_turns": 0,
 				"is_poisoned": false,
-				"is_flinched": false
+				"is_flinched": false,
+				"held_item": ""
 			})
 	save_profile()
 
-func change_adventure_team(chosen_ids: Array) -> void:
+func change_adventure_team(chosen_ids: Array, held_items: Array = []) -> void:
 	var old_hp = {}
 	var old_exp = {}
 	var old_burn = {}
 	var old_poison = {}
 	var old_flinch = {}
+	var old_held = {}
 	for p in adventure_player_team_state:
 		var old_id = int(p["id"])
 		old_hp[old_id] = p["current_hp"]
@@ -5630,6 +5704,7 @@ func change_adventure_team(chosen_ids: Array) -> void:
 		old_burn[old_id] = p.get("burn_turns", 0)
 		old_poison[old_id] = p.get("is_poisoned", false)
 		old_flinch[old_id] = p.get("is_flinched", false)
+		old_held[old_id] = str(p.get("held_item", ""))
 	adventure_player_team_state.clear()
 	for cid in chosen_ids:
 		var pid = int(cid)
@@ -5649,6 +5724,17 @@ func change_adventure_team(chosen_ids: Array) -> void:
 				var burn_val = old_burn.get(pid, 0)
 				var poison_val = old_poison.get(pid, false)
 				var flinch_val = old_flinch.get(pid, false)
+				var h_item = ""
+				var s_idx = adventure_player_team_state.size()
+				if not held_items.is_empty():
+					if s_idx < held_items.size():
+						h_item = str(held_items[s_idx])
+				else:
+					h_item = old_held.get(pid, "")
+				for ex in adventure_player_team_state:
+					if ex.get("held_item", "") == h_item and h_item != "":
+						h_item = ""
+						break
 				adventure_player_team_state.append({
 					"id": pid,
 					"name": inst.name,
@@ -5662,7 +5748,8 @@ func change_adventure_team(chosen_ids: Array) -> void:
 					"max_exp": inst.get_required_exp(),
 					"burn_turns": burn_val,
 					"is_poisoned": poison_val,
-					"is_flinched": flinch_val
+					"is_flinched": flinch_val,
+					"held_item": h_item
 				})
 	if adventure_player_team_state.is_empty():
 		var fb_id = tutorial_starter_id if (tutorial_starter_id >= 0 and is_pokemon_unlocked(tutorial_starter_id)) else 0
@@ -5681,7 +5768,8 @@ func change_adventure_team(chosen_ids: Array) -> void:
 				"max_exp": fb_inst.get_required_exp(),
 				"burn_turns": 0,
 				"is_poisoned": false,
-				"is_flinched": false
+				"is_flinched": false,
+				"held_item": ""
 			})
 	save_profile()
 
@@ -6904,18 +6992,20 @@ func reset_chaos_odyssey() -> void:
 	current_chaos_rival_match = -1
 	save_profile()
 
-func change_chaos_team(chosen_ids: Array) -> void:
+func change_chaos_team(chosen_ids: Array, held_items: Array = []) -> void:
 	var old_hp = {}
 	var old_exp = {}
 	var old_burn = {}
 	var old_poison = {}
 	var old_flinch = {}
+	var old_held = {}
 	for p in chaos_player_team_state:
 		old_hp[p["id"]] = p["current_hp"]
 		old_exp[p["id"]] = p.get("current_exp", 0)
 		old_burn[p["id"]] = p.get("burn_turns", 0)
 		old_poison[p["id"]] = p.get("is_poisoned", false)
 		old_flinch[p["id"]] = p.get("is_flinched", false)
+		old_held[p["id"]] = str(p.get("held_item", ""))
 	chaos_player_team_state.clear()
 	for cid in chosen_ids:
 		if not is_pokemon_unlocked(cid):
@@ -6936,6 +7026,17 @@ func change_chaos_team(chosen_ids: Array) -> void:
 				var burn_val = old_burn.get(cid, 0)
 				var poison_val = old_poison.get(cid, false)
 				var flinch_val = old_flinch.get(cid, false)
+				var h_item = ""
+				var s_idx = chaos_player_team_state.size()
+				if not held_items.is_empty():
+					if s_idx < held_items.size():
+						h_item = str(held_items[s_idx])
+				else:
+					h_item = old_held.get(cid, "")
+				for ex in chaos_player_team_state:
+					if ex.get("held_item", "") == h_item and h_item != "":
+						h_item = ""
+						break
 				chaos_player_team_state.append({
 					"id": cid,
 					"name": inst.name,
@@ -6948,7 +7049,8 @@ func change_chaos_team(chosen_ids: Array) -> void:
 					"current_exp": exp_val,
 					"is_poisoned": poison_val,
 					"burn_turns": burn_val,
-					"is_flinched": flinch_val
+					"is_flinched": flinch_val,
+					"held_item": h_item
 				})
 	save_profile()
 
@@ -7551,6 +7653,7 @@ func get_save_dict() -> Dictionary:
 			"unlocked_ids": player_unlocked_ids,
 			"stocks": player_card_stocks
 		},
+		"player_team_held_items": player_team_held_items.duplicate(),
 		"campaign": {
 			"match_number": campaign_match_number,
 			"gold": campaign_gold,
@@ -7725,6 +7828,12 @@ func apply_save_dict(data: Dictionary) -> bool:
 		if not player_card_stocks.has(id) or player_card_stocks[id] < 1:
 			player_card_stocks[id] = 1
 		
+	var raw_held = data.get("player_team_held_items", ["", "", ""])
+	player_team_held_items = ["", "", ""]
+	if raw_held is Array:
+		for h_i in range(min(3, raw_held.size())):
+			player_team_held_items[h_i] = str(raw_held[h_i])
+
 	# Cargar campaña y economía de oro
 	var camp = data.get("campaign", {})
 	campaign_match_number = int(camp.get("match_number", 1))
