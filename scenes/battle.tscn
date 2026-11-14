@@ -1500,36 +1500,11 @@ theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
 theme_override_font_sizes/font_size = 11
 text = "Nivel 4: Dilución alta (64% desvanecimiento)"
 
-[node name="FontSizeTitle" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124533]
+[node name="LblDynamicFontInfo" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124533]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "Tamaño de letra:"
-
-[node name="FontSizeRow" type="HBoxContainer" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124534]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="BtnFontSmall" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow" unique_id=1498124535]
-custom_minimum_size = Vector2(0, 32)
-layout_mode = 2
-size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.5, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 11
-text = "Small"
-
-[node name="BtnFontMedium" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow" unique_id=1498124536]
-custom_minimum_size = Vector2(0, 32)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 12
-text = "Medium"
-
-[node name="BtnFontBig" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow" unique_id=1498124537]
-custom_minimum_size = Vector2(0, 32)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 13
-text = "Big"
+text = "💡 Fuente automática: Estándar (11px)"
 
 [node name="BtnBackFromLogSettings" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124538]
 custom_minimum_size = Vector2(0, 34)

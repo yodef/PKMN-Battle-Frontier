@@ -230,9 +230,7 @@ func player_team_has_poke_flute() -> bool:
 @onready var slider_fade: HSlider = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FadeRow/SliderFade
 @onready var lbl_fade_val: Label = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FadeRow/LblFadeVal
 @onready var lbl_fade_desc: Label = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/LblFadeDesc
-@onready var btn_font_small: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow/BtnFontSmall
-@onready var btn_font_medium: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow/BtnFontMedium
-@onready var btn_font_big: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow/BtnFontBig
+@onready var lbl_dynamic_font_info: Label = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/LblDynamicFontInfo if has_node("BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/LblDynamicFontInfo") else null
 var current_evo_tween: Tween = null
 var current_evo_finish_cb: Callable = Callable()
 var completed_evolutions_this_battle: Array[Dictionary] = []
@@ -325,12 +323,6 @@ func _ready() -> void:
 		slider_max_msg.value_changed.connect(_on_slider_max_msg_changed)
 	if slider_fade:
 		slider_fade.value_changed.connect(_on_slider_fade_changed)
-	if btn_font_small:
-		btn_font_small.pressed.connect(func(): _set_battle_log_font_size("small"))
-	if btn_font_medium:
-		btn_font_medium.pressed.connect(func(): _set_battle_log_font_size("medium"))
-	if btn_font_big:
-		btn_font_big.pressed.connect(func(): _set_battle_log_font_size("big"))
 	if battle_settings_modal:
 		battle_settings_modal.visible = false
 	_update_combat_log_headers()
@@ -6795,20 +6787,22 @@ func _render_combat_log() -> void:
 	_render_player_combat_log()
 
 func _get_combat_log_font_sizes() -> Dictionary:
-	var fs = GameData.battle_log_font_size.to_lower()
-	match fs:
-		"small":
-			return {"old": 9, "current": 10, "global": 10}
-		"big":
-			return {"old": 11, "current": 13, "global": 12}
-		_: # "medium"
-			return {"old": 10, "current": 11, "global": 11}
+	var max_m = clampi(GameData.battle_log_max_messages, 3, 12)
+	if max_m <= 4:
+		return {"old": 11, "current": 12, "global": 11, "line_sep": 1, "tier": "large"}
+	elif max_m <= 6:
+		return {"old": 10, "current": 11, "global": 11, "line_sep": 1, "tier": "medium"}
+	elif max_m <= 9:
+		return {"old": 9, "current": 10, "global": 10, "line_sep": 0, "tier": "compact"}
+	else:
+		return {"old": 8, "current": 9, "global": 9, "line_sep": 0, "tier": "mini"}
 
 func _render_enemy_combat_log() -> void:
 	if not enemy_log_label:
 		return
 	var is_sp = GameData.is_spanish()
 	var f_sizes = _get_combat_log_font_sizes()
+	enemy_log_label.add_theme_constant_override("line_separation", f_sizes.line_sep)
 	if enemy_combat_history.is_empty():
 		var empty_text = "• Rival esperando acción •" if is_sp else "• Rival awaiting action •"
 		enemy_log_label.text = "\n[center][color=#6a4848][font_size=%d]%s[/font_size][/color][/center]" % [f_sizes.old, empty_text]
@@ -6846,6 +6840,7 @@ func _render_player_combat_log() -> void:
 		return
 	var is_sp = GameData.is_spanish()
 	var f_sizes = _get_combat_log_font_sizes()
+	player_log_label.add_theme_constant_override("line_separation", f_sizes.line_sep)
 	if player_combat_history.is_empty():
 		var empty_text = "• Elige tu movimiento •" if is_sp else "• Select your move •"
 		player_log_label.text = "\n[center][color=#405c48][font_size=%d]%s[/font_size][/color][/center]" % [f_sizes.old, empty_text]
@@ -6876,6 +6871,7 @@ func _render_player_combat_log() -> void:
 	player_log_label.text = "\n".join(lines)
 	if player_log_label.scroll_following:
 		var v = player_log_label.get_v_scroll_bar()
+		if v: v.value = v.max_value
 		if v: v.value = v.max_value
 
 func _render_global_combat_log() -> void:
@@ -6950,6 +6946,7 @@ func _on_slider_max_msg_changed(val: float) -> void:
 	GameData.battle_log_max_messages = ival
 	if lbl_max_msg_val:
 		lbl_max_msg_val.text = ("%d mensajes" if GameData.is_spanish() else "%d msgs") % ival
+	_update_dynamic_font_label()
 	GameData.save_profile()
 	_render_combat_log()
 
@@ -6974,33 +6971,20 @@ func _update_fade_labels() -> void:
 		else:
 			lbl_fade_desc.text = ("Nivel %d: Dilución media (%d%% desvanecimiento)" if is_sp else "Level %d: Moderate fading (%d%% fade)") % [ival, pct]
 
-func _set_battle_log_font_size(size_key: String) -> void:
-	if size_key not in ["small", "medium", "big"]:
-		size_key = "medium"
-	GameData.battle_log_font_size = size_key
-	_update_font_size_buttons_ui()
-	GameData.save_profile()
-	_render_combat_log()
-	GameData.play_combat_sfx("hit_normal")
-
-func _apply_active_toggle_style(btn: Button, active: bool) -> void:
-	if not btn: return
-	if active:
-		btn.modulate = Color(1.15, 1.15, 1.0, 1.0)
-		var sb = StyleBoxFlat.new()
-		sb.bg_color = Color("#1e4228")
-		sb.border_color = Color("#51cf66")
-		sb.set_border_width_all(2)
-		sb.set_corner_radius_all(4)
-		btn.add_theme_stylebox_override("normal", sb)
-	else:
-		btn.modulate = Color(0.85, 0.85, 0.85, 1.0)
-		var sb = StyleBoxFlat.new()
-		sb.bg_color = Color("#181c24")
-		sb.border_color = Color("#384252")
-		sb.set_border_width_all(1)
-		sb.set_corner_radius_all(4)
-		btn.add_theme_stylebox_override("normal", sb)
+func _update_dynamic_font_label() -> void:
+	if not lbl_dynamic_font_info:
+		return
+	var is_sp = GameData.is_spanish()
+	var f_sizes = _get_combat_log_font_sizes()
+	match f_sizes.tier:
+		"large":
+			lbl_dynamic_font_info.text = "💡 Fuente automática: Amplia (%dpx)" % f_sizes.current if is_sp else "💡 Dynamic font: Large (%dpx)" % f_sizes.current
+		"medium":
+			lbl_dynamic_font_info.text = "💡 Fuente automática: Estándar (%dpx)" % f_sizes.current if is_sp else "💡 Dynamic font: Standard (%dpx)" % f_sizes.current
+		"compact":
+			lbl_dynamic_font_info.text = "💡 Fuente automática: Compacta (%dpx)" % f_sizes.current if is_sp else "💡 Dynamic font: Compact (%dpx)" % f_sizes.current
+		"mini":
+			lbl_dynamic_font_info.text = "💡 Fuente automática: Mini (%dpx, anti-scroll)" % f_sizes.current if is_sp else "💡 Dynamic font: Mini (%dpx, anti-scroll)" % f_sizes.current
 
 func _update_combat_log_headers() -> void:
 	var is_sp = GameData.is_spanish()
@@ -7008,19 +6992,6 @@ func _update_combat_log_headers() -> void:
 		enemy_header_lbl.text = "🔴 RIVAL"
 	if player_header_lbl:
 		player_header_lbl.text = "🟢 JUGADOR" if is_sp else "🟢 PLAYER"
-
-func _update_font_size_buttons_ui() -> void:
-	var cur = GameData.battle_log_font_size
-	var is_sp = GameData.is_spanish()
-	if btn_font_small:
-		btn_font_small.text = "Small" if not is_sp else "Pequeño"
-		_apply_active_toggle_style(btn_font_small, cur == "small")
-	if btn_font_medium:
-		btn_font_medium.text = "Medium" if not is_sp else "Mediano"
-		_apply_active_toggle_style(btn_font_medium, cur == "medium")
-	if btn_font_big:
-		btn_font_big.text = "Big" if not is_sp else "Grande"
-		_apply_active_toggle_style(btn_font_big, cur == "big")
 
 func _update_battle_settings_ui() -> void:
 	var is_sp = GameData.is_spanish()
@@ -7054,11 +7025,7 @@ func _update_battle_settings_ui() -> void:
 	if slider_fade:
 		slider_fade.set_value_no_signal(GameData.battle_log_fade_strength)
 	_update_fade_labels()
-	
-	var fsize_lbl = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeTitle as Label if has_node("BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeTitle") else null
-	if fsize_lbl:
-		fsize_lbl.text = "Tamaño de letra:" if is_sp else "Font size:"
-	_update_font_size_buttons_ui()
+	_update_dynamic_font_label()
 
 func show_game_over(title: String, subtitle: String) -> void:
 	if is_enemy_fainting or is_player_fainting:
