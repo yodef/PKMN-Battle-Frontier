@@ -1276,6 +1276,27 @@ func start_new_game() -> void:
 			battle_title_lbl.text = "🌊 EVENT BOSS: GYARADOS ROJO ENFURECIDO (600 HP)"
 		else:
 			var team_state = GameData.get_active_campaign_team_state()
+			if GameData.campaign_submode in ["TOURNAMENT", "ADVENTURE"] and not team_state.is_empty():
+				var has_illegal = false
+				for p_chk in team_state:
+					var chk_id = int(p_chk.get("id", -1))
+					if not GameData.pokemon_catalog.has(chk_id) or not GameData.is_pokemon_unlocked(chk_id) or chk_id in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+						has_illegal = true
+						break
+					var cat_c = GameData.pokemon_catalog[chk_id]
+					var r_c = str(cat_c.get("rarity", "Common")).strip_edges().to_lower()
+					var st_c = str(cat_c.get("stage", "Basic")).strip_edges().to_lower()
+					var is_leg_c = (r_c in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st_c == "legendary")
+					if is_leg_c:
+						has_illegal = true
+						break
+				if has_illegal:
+					var fb_id = GameData.tutorial_starter_id if (GameData.tutorial_starter_id >= 0 and GameData.is_pokemon_unlocked(GameData.tutorial_starter_id)) else 0
+					if GameData.campaign_submode == "ADVENTURE":
+						GameData.init_adventure_team(GameData.adventure_current_episode, [fb_id])
+					else:
+						GameData.init_campaign_team([fb_id])
+					team_state = GameData.get_active_campaign_team_state()
 			if team_state.is_empty():
 				if GameData.campaign_submode == "ADVENTURE":
 					GameData.init_adventure_team(GameData.adventure_current_episode, [0, 1, 2])

@@ -4424,12 +4424,10 @@ func open_team_select_for_campaign() -> void:
 	team_select_tabs.visible = false
 	
 	# Cargar selección del equipo de la campaña activa
-	if GameData.campaign_submode == "LAKE_OF_RAGE":
-		selected_player_ids.clear()
-	else:
+	selected_player_ids.clear()
+	if GameData.campaign_submode != "LAKE_OF_RAGE":
 		var active_team = GameData.get_active_campaign_team_state()
 		if active_team.size() > 0:
-			selected_player_ids.clear()
 			for p in active_team:
 				var pid = int(p["id"])
 				if not GameData.is_pokemon_unlocked(pid):
@@ -4437,20 +4435,19 @@ func open_team_select_for_campaign() -> void:
 				if pid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
 					continue
 				var cat_entry = GameData.pokemon_catalog.get(pid)
+				if not cat_entry:
+					continue
+				var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower()
+				var st = str(cat_entry.get("stage", "Basic")).strip_edges().to_lower()
+				var ev_from = str(cat_entry.get("evolves_from", "")).strip_edges()
+				var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
 				if GameData.campaign_submode == "CHAOS":
-					if cat_entry:
-						var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower()
-						var st = str(cat_entry.get("stage", "Basic")).strip_edges().to_lower()
-						var ev_from = str(cat_entry.get("evolves_from", "")).strip_edges()
-						var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
-						if (is_legendary and ev_from == "") or GameData.is_line_legendary(pid):
-							selected_player_ids.append(pid)
-				else:
-					var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower() if cat_entry else ""
-					var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "legendary")
-					if cat_entry and str(cat_entry.get("stage", "Basic")).strip_edges().to_lower() == "basic" and not is_legendary:
+					if (is_legendary and ev_from == "") or GameData.is_line_legendary(pid):
 						selected_player_ids.append(pid)
-	# If starting a fresh run, leave selected_player_ids empty so the player can choose freely
+				else:
+					if st == "basic" and not is_legendary:
+						selected_player_ids.append(pid)
+	# If starting a fresh run, selected_player_ids is cleanly empty so the player can choose freely
 			
 	update_team_sort_buttons_ui()
 	build_team_select_cards_grid()
@@ -6741,7 +6738,19 @@ func _on_reset_campaign_pressed() -> void:
 func _on_start_campaign_battle_pressed() -> void:
 	if GameData.campaign_submode == "ADVENTURE":
 		var total_stages = GameData.get_adventure_total_stages(GameData.adventure_current_episode)
-		if GameData.adventure_current_stage > total_stages or GameData.adventure_player_team_state.is_empty():
+		var adv_invalid = false
+		for p in GameData.adventure_player_team_state:
+			var pid = int(p.get("id", -1))
+			if not GameData.pokemon_catalog.has(pid) or not GameData.is_pokemon_unlocked(pid) or pid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+				adv_invalid = true
+				break
+			var cat_entry = GameData.pokemon_catalog[pid]
+			var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower()
+			var st = str(cat_entry.get("stage", "Basic")).strip_edges().to_lower()
+			if (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary"):
+				adv_invalid = true
+				break
+		if adv_invalid or GameData.adventure_current_stage > total_stages or GameData.adventure_player_team_state.is_empty():
 			GameData.reset_adventure_episode(GameData.adventure_current_episode)
 			open_team_select_for_campaign()
 			return
@@ -6751,7 +6760,21 @@ func _on_start_campaign_battle_pressed() -> void:
 			GameData.player_team_ids.append(int(p["id"]))
 		GameData.enemy_team_ids = GameData.get_adventure_rival_team(GameData.adventure_current_episode, GameData.adventure_current_stage)
 	elif GameData.campaign_submode == "CHAOS":
-		if GameData.chaos_match_number > GameData.CHAOS_TOTAL_MATCHES or GameData.chaos_player_team_state.is_empty():
+		var chaos_invalid = false
+		for p in GameData.chaos_player_team_state:
+			var pid = int(p.get("id", -1))
+			if not GameData.pokemon_catalog.has(pid) or not GameData.is_pokemon_unlocked(pid) or pid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+				chaos_invalid = true
+				break
+			var cat_entry = GameData.pokemon_catalog[pid]
+			var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower()
+			var st = str(cat_entry.get("stage", "Basic")).strip_edges().to_lower()
+			var ev_from = str(cat_entry.get("evolves_from", "")).strip_edges()
+			var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+			if not ((is_leg and ev_from == "") or GameData.is_line_legendary(pid)):
+				chaos_invalid = true
+				break
+		if chaos_invalid or GameData.chaos_match_number > GameData.CHAOS_TOTAL_MATCHES or GameData.chaos_player_team_state.is_empty():
 			GameData.reset_chaos_odyssey()
 			open_team_select_for_campaign()
 			return
@@ -6761,8 +6784,20 @@ func _on_start_campaign_battle_pressed() -> void:
 			GameData.player_team_ids.append(int(p["id"]))
 		GameData.enemy_team_ids = GameData.get_chaos_rival_team(GameData.chaos_match_number)
 	else:
-		if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES or GameData.campaign_player_team_state.is_empty():
-			if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES:
+		var tourn_invalid = false
+		for p in GameData.campaign_player_team_state:
+			var pid = int(p.get("id", -1))
+			if not GameData.pokemon_catalog.has(pid) or not GameData.is_pokemon_unlocked(pid) or pid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+				tourn_invalid = true
+				break
+			var cat_entry = GameData.pokemon_catalog[pid]
+			var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower()
+			var st = str(cat_entry.get("stage", "Basic")).strip_edges().to_lower()
+			if (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary"):
+				tourn_invalid = true
+				break
+		if tourn_invalid or GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES or GameData.campaign_player_team_state.is_empty():
+			if tourn_invalid or GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES:
 				GameData.reset_campaign()
 			open_team_select_for_campaign()
 			return
@@ -6884,13 +6919,13 @@ func _on_quick_battle_pressed() -> void:
 
 func _on_close_team_select_pressed() -> void:
 	team_select_modal.visible = false
+	selected_player_ids.clear()
 	if team_select_mode == "ONLINE_LOBBY":
 		online_lobby_modal.visible = true
 	elif team_select_mode == "CAMPAIGN":
 		if GameData.campaign_submode == "LAKE_OF_RAGE":
 			GameData.campaign_submode = "ADVENTURE"
 			GameData.is_campaign_mode = false
-			selected_player_ids.clear()
 			_open_johto_episodes_modal()
 			return
 		var state = GameData.get_active_campaign_team_state()
@@ -7304,6 +7339,30 @@ func get_card_short_name(id: int) -> String:
 	return "PKMN"
 
 func update_team_select_ui() -> void:
+	if team_select_mode == "CAMPAIGN":
+		var clean_ids: Array[int] = []
+		for pid in selected_player_ids:
+			var cid = int(pid)
+			if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+				continue
+			var cat = GameData.pokemon_catalog.get(cid)
+			if not cat:
+				continue
+			var r = str(cat.get("rarity", "Common")).strip_edges().to_lower()
+			var st = str(cat.get("stage", "Basic")).strip_edges().to_lower()
+			var ev_from = str(cat.get("evolves_from", "")).strip_edges()
+			var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+			if GameData.campaign_submode == "CHAOS":
+				if (is_leg and ev_from == "") or GameData.is_line_legendary(cid):
+					clean_ids.append(cid)
+			elif GameData.campaign_submode == "LAKE_OF_RAGE":
+				clean_ids.append(cid)
+			else:
+				if st == "basic" and not is_leg:
+					clean_ids.append(cid)
+		if clean_ids.size() != selected_player_ids.size():
+			selected_player_ids = clean_ids
+
 	var is_player = (team_select_mode == "CAMPAIGN" or current_team_tab == "PLAYER")
 	var active_team = selected_player_ids if is_player else selected_enemy_ids
 	
@@ -7519,13 +7578,47 @@ func _on_start_battle_pressed() -> void:
 			get_tree().change_scene_to_file("res://scenes/battle.tscn")
 			return
 		elif GameData.campaign_submode == "ADVENTURE":
+			for pid in selected_player_ids:
+				var cid = int(pid)
+				if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+					return
+				var cat = GameData.pokemon_catalog.get(cid)
+				if not cat:
+					return
+				var r = str(cat.get("rarity", "Common")).strip_edges().to_lower()
+				var st = str(cat.get("stage", "Basic")).strip_edges().to_lower()
+				var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+				if st != "basic" or is_leg:
+					return
 			GameData.change_adventure_team(selected_player_ids)
 		elif GameData.campaign_submode == "CHAOS":
 			for pid in selected_player_ids:
-				if not GameData.is_pokemon_unlocked(pid) or pid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+				var cid = int(pid)
+				if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+					return
+				var cat = GameData.pokemon_catalog.get(cid)
+				if not cat:
+					return
+				var r = str(cat.get("rarity", "Common")).strip_edges().to_lower()
+				var st = str(cat.get("stage", "Basic")).strip_edges().to_lower()
+				var ev_from = str(cat.get("evolves_from", "")).strip_edges()
+				var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+				if not ((is_leg and ev_from == "") or GameData.is_line_legendary(cid)):
 					return
 			GameData.change_chaos_team(selected_player_ids)
 		else:
+			for pid in selected_player_ids:
+				var cid = int(pid)
+				if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+					return
+				var cat = GameData.pokemon_catalog.get(cid)
+				if not cat:
+					return
+				var r = str(cat.get("rarity", "Common")).strip_edges().to_lower()
+				var st = str(cat.get("stage", "Basic")).strip_edges().to_lower()
+				var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+				if st != "basic" or is_leg:
+					return
 			GameData.change_campaign_team(selected_player_ids)
 		team_select_modal.visible = false
 		update_campaign_ui()

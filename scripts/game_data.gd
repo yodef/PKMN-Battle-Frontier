@@ -5418,15 +5418,20 @@ func reset_campaign(auto_save: bool = true) -> void:
 func init_campaign_team(chosen_ids: Array) -> void:
 	campaign_player_team_state.clear()
 	for cid in chosen_ids:
-		var d = pokemon_catalog.get(cid, {})
+		var pid = int(cid)
+		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
+			continue
+		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+			continue
+		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
 		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
 		var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
 		if st == "basic" and not is_legendary:
-			var inst = create_pokemon_instance(cid)
+			var inst = create_pokemon_instance(pid)
 			if inst:
 				campaign_player_team_state.append({
-					"id": cid,
+					"id": pid,
 					"name": inst.name,
 					"stage": inst.stage,
 					"type": inst.type,
@@ -5440,6 +5445,25 @@ func init_campaign_team(chosen_ids: Array) -> void:
 					"is_poisoned": false,
 					"is_flinched": false
 				})
+	if campaign_player_team_state.is_empty():
+		var fb_id = tutorial_starter_id if (tutorial_starter_id >= 0 and is_pokemon_unlocked(tutorial_starter_id)) else 0
+		var fb_inst = create_pokemon_instance(fb_id)
+		if fb_inst:
+			campaign_player_team_state.append({
+				"id": fb_id,
+				"name": fb_inst.name,
+				"stage": fb_inst.stage,
+				"type": fb_inst.type,
+				"current_hp": fb_inst.max_hp,
+				"max_hp": fb_inst.max_hp,
+				"speed": fb_inst.speed,
+				"texture_path": fb_inst.texture_path,
+				"current_exp": 0,
+				"max_exp": fb_inst.get_required_exp(),
+				"burn_turns": 0,
+				"is_poisoned": false,
+				"is_flinched": false
+			})
 	campaign_match_number = 1
 	var had_camp_flute_init = campaign_inventory.get("poke_flute", 0)
 	campaign_inventory = DEFAULT_INVENTORY.duplicate()
@@ -5458,27 +5482,33 @@ func change_campaign_team(chosen_ids: Array) -> void:
 	var old_poison = {}
 	var old_flinch = {}
 	for p in campaign_player_team_state:
-		old_hp[p["id"]] = p["current_hp"]
-		old_exp[p["id"]] = p.get("current_exp", 0)
-		old_burn[p["id"]] = p.get("burn_turns", 0)
-		old_poison[p["id"]] = p.get("is_poisoned", false)
-		old_flinch[p["id"]] = p.get("is_flinched", false)
+		var old_id = int(p["id"])
+		old_hp[old_id] = p["current_hp"]
+		old_exp[old_id] = p.get("current_exp", 0)
+		old_burn[old_id] = p.get("burn_turns", 0)
+		old_poison[old_id] = p.get("is_poisoned", false)
+		old_flinch[old_id] = p.get("is_flinched", false)
 	campaign_player_team_state.clear()
 	for cid in chosen_ids:
-		var d = pokemon_catalog.get(cid, {})
+		var pid = int(cid)
+		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
+			continue
+		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+			continue
+		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
 		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
 		var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
 		if st == "basic" and not is_legendary:
-			var inst = create_pokemon_instance(cid)
+			var inst = create_pokemon_instance(pid)
 			if inst:
-				var hp = old_hp.get(cid, inst.max_hp)
-				var exp_val = old_exp.get(cid, 0)
-				var burn_val = old_burn.get(cid, 0)
-				var poison_val = old_poison.get(cid, false)
-				var flinch_val = old_flinch.get(cid, false)
+				var hp = old_hp.get(pid, inst.max_hp)
+				var exp_val = old_exp.get(pid, 0)
+				var burn_val = old_burn.get(pid, 0)
+				var poison_val = old_poison.get(pid, false)
+				var flinch_val = old_flinch.get(pid, false)
 				campaign_player_team_state.append({
-					"id": cid,
+					"id": pid,
 					"name": inst.name,
 					"stage": inst.stage,
 					"type": inst.type,
@@ -5492,6 +5522,25 @@ func change_campaign_team(chosen_ids: Array) -> void:
 					"is_poisoned": poison_val,
 					"is_flinched": flinch_val
 				})
+	if campaign_player_team_state.is_empty():
+		var fb_id = tutorial_starter_id if (tutorial_starter_id >= 0 and is_pokemon_unlocked(tutorial_starter_id)) else 0
+		var fb_inst = create_pokemon_instance(fb_id)
+		if fb_inst:
+			campaign_player_team_state.append({
+				"id": fb_id,
+				"name": fb_inst.name,
+				"stage": fb_inst.stage,
+				"type": fb_inst.type,
+				"current_hp": fb_inst.max_hp,
+				"max_hp": fb_inst.max_hp,
+				"speed": fb_inst.speed,
+				"texture_path": fb_inst.texture_path,
+				"current_exp": 0,
+				"max_exp": fb_inst.get_required_exp(),
+				"burn_turns": 0,
+				"is_poisoned": false,
+				"is_flinched": false
+			})
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
 	save_profile()
@@ -5520,15 +5569,20 @@ func init_adventure_team(episode_id: int, chosen_ids: Array) -> void:
 		adventure_inventory["exp_share"] = 1
 	adventure_player_team_state.clear()
 	for cid in chosen_ids:
-		var d = pokemon_catalog.get(cid, {})
+		var pid = int(cid)
+		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
+			continue
+		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+			continue
+		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
 		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
 		var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
 		if st == "basic" and not is_legendary:
-			var inst = create_pokemon_instance(cid)
+			var inst = create_pokemon_instance(pid)
 			if inst:
 				adventure_player_team_state.append({
-					"id": cid,
+					"id": pid,
 					"name": inst.name,
 					"stage": inst.stage,
 					"type": inst.type,
@@ -5542,6 +5596,25 @@ func init_adventure_team(episode_id: int, chosen_ids: Array) -> void:
 					"is_poisoned": false,
 					"is_flinched": false
 				})
+	if adventure_player_team_state.is_empty():
+		var fb_id = tutorial_starter_id if (tutorial_starter_id >= 0 and is_pokemon_unlocked(tutorial_starter_id)) else 0
+		var fb_inst = create_pokemon_instance(fb_id)
+		if fb_inst:
+			adventure_player_team_state.append({
+				"id": fb_id,
+				"name": fb_inst.name,
+				"stage": fb_inst.stage,
+				"type": fb_inst.type,
+				"current_hp": fb_inst.max_hp,
+				"max_hp": fb_inst.max_hp,
+				"speed": fb_inst.speed,
+				"texture_path": fb_inst.texture_path,
+				"current_exp": 0,
+				"max_exp": fb_inst.get_required_exp(),
+				"burn_turns": 0,
+				"is_poisoned": false,
+				"is_flinched": false
+			})
 	save_profile()
 
 func change_adventure_team(chosen_ids: Array) -> void:
@@ -5551,27 +5624,33 @@ func change_adventure_team(chosen_ids: Array) -> void:
 	var old_poison = {}
 	var old_flinch = {}
 	for p in adventure_player_team_state:
-		old_hp[p["id"]] = p["current_hp"]
-		old_exp[p["id"]] = p.get("current_exp", 0)
-		old_burn[p["id"]] = p.get("burn_turns", 0)
-		old_poison[p["id"]] = p.get("is_poisoned", false)
-		old_flinch[p["id"]] = p.get("is_flinched", false)
+		var old_id = int(p["id"])
+		old_hp[old_id] = p["current_hp"]
+		old_exp[old_id] = p.get("current_exp", 0)
+		old_burn[old_id] = p.get("burn_turns", 0)
+		old_poison[old_id] = p.get("is_poisoned", false)
+		old_flinch[old_id] = p.get("is_flinched", false)
 	adventure_player_team_state.clear()
 	for cid in chosen_ids:
-		var d = pokemon_catalog.get(cid, {})
+		var pid = int(cid)
+		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
+			continue
+		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+			continue
+		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
 		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
 		var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
 		if st == "basic" and not is_legendary:
-			var inst = create_pokemon_instance(cid)
+			var inst = create_pokemon_instance(pid)
 			if inst:
-				var hp = old_hp.get(cid, inst.max_hp)
-				var exp_val = old_exp.get(cid, 0)
-				var burn_val = old_burn.get(cid, 0)
-				var poison_val = old_poison.get(cid, false)
-				var flinch_val = old_flinch.get(cid, false)
+				var hp = old_hp.get(pid, inst.max_hp)
+				var exp_val = old_exp.get(pid, 0)
+				var burn_val = old_burn.get(pid, 0)
+				var poison_val = old_poison.get(pid, false)
+				var flinch_val = old_flinch.get(pid, false)
 				adventure_player_team_state.append({
-					"id": cid,
+					"id": pid,
 					"name": inst.name,
 					"stage": inst.stage,
 					"type": inst.type,
@@ -5585,6 +5664,25 @@ func change_adventure_team(chosen_ids: Array) -> void:
 					"is_poisoned": poison_val,
 					"is_flinched": flinch_val
 				})
+	if adventure_player_team_state.is_empty():
+		var fb_id = tutorial_starter_id if (tutorial_starter_id >= 0 and is_pokemon_unlocked(tutorial_starter_id)) else 0
+		var fb_inst = create_pokemon_instance(fb_id)
+		if fb_inst:
+			adventure_player_team_state.append({
+				"id": fb_id,
+				"name": fb_inst.name,
+				"stage": fb_inst.stage,
+				"type": fb_inst.type,
+				"current_hp": fb_inst.max_hp,
+				"max_hp": fb_inst.max_hp,
+				"speed": fb_inst.speed,
+				"texture_path": fb_inst.texture_path,
+				"current_exp": 0,
+				"max_exp": fb_inst.get_required_exp(),
+				"burn_turns": 0,
+				"is_poisoned": false,
+				"is_flinched": false
+			})
 	save_profile()
 
 func get_adventure_episode_info(episode_id: int) -> Dictionary:
