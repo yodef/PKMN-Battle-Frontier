@@ -1220,6 +1220,13 @@ var adventure_ep206_selected_route: String = "weather_institute"
 var adventure_ep206_cleared_routes: Array[String] = []
 var adventure_ep208_selected_route: String = "cave_of_origin"
 var adventure_ep208_cleared_routes: Array[String] = []
+# Sinnoh Branching Routes:
+var adventure_ep304_selected_route: String = "great_marsh"
+var adventure_ep304_cleared_routes: Array[String] = []
+var adventure_ep306_selected_route: String = "iron_island"
+var adventure_ep306_cleared_routes: Array[String] = []
+var adventure_ep308_selected_route: String = "spear_pillar"
+var adventure_ep308_cleared_routes: Array[String] = []
 var lake_of_rage_completed: bool = false
 const LAKE_OF_RAGE_BOSS_ID: int = 495
 const RED_GYARADOS_BOSS_ID: int = 495
@@ -2970,6 +2977,578 @@ const ADVENTURE_EPISODES: Dictionary = {
 						"outro": "A performance of pure elegance and dazzling prowess! You have conquered every trial across Hoenn. With highest respect, I award you the Rain Badge!",
 						"outro_es": "¡Qué espectáculo tan deslumbrante y conmovedor! Has conquistado todos los desafíos de Hoenn. ¡Te entrego con el más profundo respeto la Medalla Lluvia!",
 						"team_pokemon_names": ["Luvdisc", "Whiscash", "Milotic"]
+					}
+				]
+			}
+		}
+	},
+	301: {
+		"id": 301,
+		"region": "Sinnoh",
+		"title": "Episode I: Coal Badge (Oreburgh City)",
+		"title_es": "Episodio I: Medalla Lenteja (Ciudad Pirita)",
+		"subtitle": "Pass through Oreburgh Gate, delve into the coal mine and face Gym Leader Roark!",
+		"subtitle_es": "¡Cruza la Puerta Pirita, adéntrate en la mina de carbón y enfrenta al Líder Roco!",
+		"reward_diamonds_first_clear": 15,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Youngster Tristan",
+				"trainer_title_es": "Joven Tristán",
+				"trainer_name": "Youngster Tristan",
+				"trainer_name_es": "Joven Tristán",
+				"intro": "You came through Oreburgh Gate? Let's test your strength! Geodude, Rock Throw!",
+				"intro_es": "¡¿Cruzaste la Puerta Pirita?! ¡Probemos tu fuerza! ¡Geodude, Lanzarrocas!",
+				"outro": "You rock! You're ready for Roark's Gym!",
+				"outro_es": "¡Estuviste sólido como una roca! ¡Estás listo para el Gimnasio de Roco!",
+				"team_pokemon_names": ["Geodude"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Worker Colin",
+				"trainer_title_es": "Operario Colin",
+				"trainer_name": "Worker Colin",
+				"trainer_name_es": "Operario Colin",
+				"intro": "Deep in the mine, our Pokémon work hard alongside us! Geodude and Onix, dig in!",
+				"intro_es": "¡En lo profundo de la mina nuestros Pokémon trabajan duro a nuestro lado! ¡Geodude y Onix, a luchar!",
+				"outro": "Hard hat crushed! Your technique is diamond-hard.",
+				"outro_es": "¡Casco roto! Tu técnica es dura como el diamante.",
+				"team_pokemon_names": ["Geodude", "Onix"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Gym Leader Roark",
+				"trainer_title_es": "Líder Roco",
+				"trainer_name": "Gym Leader Roark",
+				"trainer_name_es": "Líder Roco",
+				"is_boss": true,
+				"badge_name": "Coal Badge",
+				"badge_name_es": "Medalla Lenteja",
+				"intro": "I am Roark, the Oreburgh Gym Leader and supervisor of the coal mine! Feel the crushing impact of prehistoric stone! Cranidos, Headbutt!",
+				"intro_es": "¡Soy Roco, el Líder de Ciudad Pirita y supervisor de la mina! ¡Siente el impacto demoledor de la piedra prehistórica! ¡Cranidos, Cabezazo!",
+				"outro": "Remarkable! Your determination broke right through our stone wall. I award you the Coal Badge!",
+				"outro_es": "¡Extraordinario! Tu determinación pulverizó nuestro muro de piedra. ¡Te otorgo la Medalla Lenteja!",
+				"team_pokemon_names": ["Geodude", "Onix", "Cranidos"]
+			}
+		]
+	},
+	302: {
+		"id": 302,
+		"region": "Sinnoh",
+		"title": "Episode II: Forest Badge (Eterna City)",
+		"title_es": "Episodio II: Medalla Bosque (Ciudad Vetusta)",
+		"subtitle": "Navigate Eterna Forest and solve the clockwork maze to challenge Gym Leader Gardenia!",
+		"subtitle_es": "¡Atraviesa el Bosque Vetusto y el laberinto floral para desafiar a la Líder Gardenia!",
+		"reward_diamonds_first_clear": 15,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Lass Caroline",
+				"trainer_title_es": "Chica Carolina",
+				"trainer_name": "Lass Caroline",
+				"trainer_name_es": "Chica Carolina",
+				"intro": "Eterna Forest is filled with charming grass Pokémon! Cherubi, Tackle!",
+				"intro_es": "¡El Bosque Vetusto está lleno de adorables Pokémon planta! ¡Cherubi, Placaje!",
+				"outro": "Cherubi wilted... you're very strong!",
+				"outro_es": "Cherubi se marchitó... ¡eres muy fuerte!",
+				"team_pokemon_names": ["Cherubi"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Aroma Lady Angela",
+				"trainer_title_es": "Señorita Aroma Ángela",
+				"trainer_name": "Aroma Lady Angela",
+				"trainer_name_es": "Señorita Aroma Ángela",
+				"intro": "Breathe in the sweet fragrance of blooming flowers! Turtwig and Cherubi, Razor Leaf!",
+				"intro_es": "¡Inhala la dulce fragancia de las flores en brote! ¡Turtwig y Cherubi, Hoja Afilada!",
+				"outro": "Scattered petals... your offense was overwhelming!",
+				"outro_es": "Pétalos dispersos... ¡tu ofensiva fue arrolladora!",
+				"team_pokemon_names": ["Turtwig", "Cherubi"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Gym Leader Gardenia",
+				"trainer_title_es": "Líder Gardenia",
+				"trainer_name": "Gym Leader Gardenia",
+				"trainer_name_es": "Líder Gardenia",
+				"is_boss": true,
+				"badge_name": "Forest Badge",
+				"badge_name_es": "Medalla Bosque",
+				"intro": "I am Gardenia, Master of Grass-type Pokémon! You won't leave me waiting, will you? Roserade, whip up a storm with Grass Knot!",
+				"intro_es": "¡Soy Gardenia, la maestra de los Pokémon tipo Planta! No me harás esperar, ¿verdad? ¡Roserade, desata una tormenta con Hierba Lazo!",
+				"outro": "What passion! You conquered the thorns and blossomed in victory! Here is the Forest Badge!",
+				"outro_es": "¡Qué pasión! ¡Venciste a las espinas y floreciste con gloria! ¡Aquí tienes la Medalla Bosque!",
+				"team_pokemon_names": ["Cherubi", "Turtwig", "Roserade"]
+			}
+		]
+	},
+	303: {
+		"id": 303,
+		"region": "Sinnoh",
+		"title": "Episode III: Cobble Badge (Veilstone City)",
+		"title_es": "Episodio III: Medalla Adoquín (Ciudad Rocavelo)",
+		"subtitle": "Pass Route 214 and challenge the barefoot martial artist, Gym Leader Maylene!",
+		"subtitle_es": "¡Avanza por la Ruta 214 y desafía a la artista marcial descalza, la Líder Brega!",
+		"reward_diamonds_first_clear": 20,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Black Belt Rafael",
+				"trainer_title_es": "Karateka Rafael",
+				"trainer_name": "Black Belt Rafael",
+				"trainer_name_es": "Karateka Rafael",
+				"intro": "Meditation and discipline! Meditite, show them our inner focus!",
+				"intro_es": "¡Meditación y disciplina! ¡Meditite, muéstrales nuestro enfoque interior!",
+				"outro": "Broken concentration... well done!",
+				"outro_es": "Concentración rota... ¡bien hecho!",
+				"team_pokemon_names": ["Meditite"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Black Belt Colby",
+				"trainer_title_es": "Karateka Colby",
+				"trainer_name": "Black Belt Colby",
+				"trainer_name_es": "Karateka Colby",
+				"intro": "Feel the iron punches of Veilstone Dojo! Machoke and Meditite, Cross Chop!",
+				"intro_es": "¡Siente los puños de hierro del Dojo Rocavelo! ¡Machoke y Meditite, Golpe Cruzado!",
+				"outro": "Our defense shattered! Maylene awaits you!",
+				"outro_es": "¡Nuestra defensa se quebró! ¡Brega te espera!",
+				"team_pokemon_names": ["Machoke", "Meditite"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Gym Leader Maylene",
+				"trainer_title_es": "Líder Brega",
+				"trainer_name": "Gym Leader Maylene",
+				"trainer_name_es": "Líder Brega",
+				"is_boss": true,
+				"badge_name": "Cobble Badge",
+				"badge_name_es": "Medalla Adoquín",
+				"intro": "I'm Maylene! I don't know what it means to be strong yet, but I battle with everything I have! Lucario, Aura Sphere!",
+				"intro_es": "¡Soy Brega! Aún no sé con certeza qué significa ser fuerte, ¡pero combato con todo mi ser! ¡Lucario, Esfera Aural!",
+				"outro": "That was true strength... You taught me so much. Please take the Cobble Badge!",
+				"outro_es": "Esa fue verdadera fuerza... Me enseñaste mucho. ¡Por favor toma la Medalla Adoquín!",
+				"team_pokemon_names": ["Meditite", "Machoke", "Lucario"]
+			}
+		]
+	},
+	304: {
+		"id": 304,
+		"region": "Sinnoh",
+		"is_branching": true,
+		"title": "Episode IV: Fen Badge & the Great Marsh (Pastoria City)",
+		"title_es": "Episodio IV: Medalla Ciénaga y el Gran Pantanal (Ciudad Pradera)",
+		"subtitle": "Search the Great Marsh wetland safari or dive straight into Gym Leader Crasher Wake's deluge!",
+		"subtitle_es": "¡Explora el safari silvestre del Gran Pantanal o sumérgete en el diluvio del Líder Mananti!",
+		"reward_diamonds_first_clear": 25,
+		"routes": {
+			"great_marsh": {
+				"id": "great_marsh",
+				"name": "Great Marsh (Wetlands Safari)",
+				"name_es": "Gran Pantanal (Safari de Humedales)",
+				"desc": "Trek through the muddy waters of the Great Marsh and clash with elusive swamp predators and Galactic grunts.",
+				"desc_es": "Camina por el lodoso Gran Pantanal y combate depredadores de ciénaga y reclutas del Equipo Galaxia.",
+				"reward_diamonds_first_clear": 10,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Poké Fan Beverly",
+						"trainer_title_es": "Pokéfan Beverly",
+						"trainer_name": "Poké Fan Beverly",
+						"trainer_name_es": "Pokéfan Beverly",
+						"intro": "The marsh is full of adorable slippery friends! Wooper, Mud Shot!",
+						"intro_es": "¡El pantanal está lleno de amigos resbaladizos y tiernos! ¡Wooper, Disparo Lodo!",
+						"outro": "So slippery, but you caught us!",
+						"outro_es": "¡Tan resbaladizo, pero nos atrapaste!",
+						"team_pokemon_names": ["Wooper"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Galactic Grunt",
+						"trainer_title_es": "Recluta Galaxia",
+						"trainer_name": "Galactic Grunt",
+						"trainer_name_es": "Recluta Galaxia",
+						"intro": "What are you doing snooping around our marsh operation? Carnivine, Croagunk, eliminate this pest!",
+						"intro_es": "¡¿Qué haces husmeando en nuestra operación del pantano?! ¡Carnivine, Croagunk, eliminen a esta molestia!",
+						"outro": "Ugh! Team Galactic will remember this!",
+						"outro_es": "¡Ugh! ¡El Equipo Galaxia no olvidará esto!",
+						"team_pokemon_names": ["Carnivine", "Croagunk"]
+					}
+				]
+			},
+			"pastoria_gym": {
+				"id": "pastoria_gym",
+				"name": "Pastoria Gym (Crasher Wake)",
+				"name_es": "Gimnasio Pradera (Mananti el Destructor)",
+				"desc": "Operate the water pump switches and plunge into the ring with the tidal wrestler, Crasher Wake!",
+				"desc_es": "Activa los interruptores de nivel de agua y sube al ring contra el luchador de las mareas, ¡Mananti!",
+				"reward_diamonds_first_clear": 15,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Sailor Damian",
+						"trainer_title_es": "Marinero Damian",
+						"trainer_name": "Sailor Damian",
+						"trainer_name_es": "Marinero Damian",
+						"intro": "Riding the waves inside Pastoria Gym! Buizel, Aqua Jet!",
+						"intro_es": "¡Surfeando las olas del Gimnasio Pradera! ¡Buizel, Acua Jet!",
+						"outro": "Washed ashore... solid attack!",
+						"outro_es": "¡Arrastrado a la orilla... sólido ataque!",
+						"team_pokemon_names": ["Buizel"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Tuber Jacky",
+						"trainer_title_es": "Playero Jacky",
+						"trainer_name": "Tuber Jacky",
+						"trainer_name_es": "Playero Jacky",
+						"intro": "The water level is rising! Shellos and Gastrodon, Mud Bomb!",
+						"intro_es": "¡El nivel del agua sigue subiendo! ¡Shellos y Gastrodon, Bomba Fango!",
+						"outro": "The tide reversed completely!",
+						"outro_es": "¡La marea cambió por completo!",
+						"team_pokemon_names": ["Shellos", "Gastrodon"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Gym Leader Crasher Wake",
+						"trainer_title_es": "Líder Mananti",
+						"trainer_name": "Gym Leader Crasher Wake",
+						"trainer_name_es": "Líder Mananti",
+						"is_boss": true,
+						"badge_name": "Fen Badge",
+						"badge_name_es": "Medalla Ciénaga",
+						"intro": "Bwahahaha! I am Crasher Wake, the torrential torrent! The raging waves will crush you! Floatzel, Waterfall!",
+						"intro_es": "¡Jajajaja! ¡Soy Mananti, la marea torrencial! ¡Las olas rugientes te aplastarán! ¡Floatzel, Cascada!",
+						"outro": "Incredible! Your spirit was a crashing tsunami! Take the Fen Badge with pride!",
+						"outro_es": "¡Increíble! ¡Tu espíritu fue un tsunami implacable! ¡Toma con orgullo la Medalla Ciénaga!",
+						"team_pokemon_names": ["Quagsire", "Gyarados", "Floatzel"]
+					}
+				]
+			}
+		}
+	},
+	305: {
+		"id": 305,
+		"region": "Sinnoh",
+		"title": "Episode V: Relic Badge (Hearthome City)",
+		"title_es": "Episodio V: Medalla Reliquia (Ciudad Corazón)",
+		"subtitle": "Solve the pitch-black flashlight quiz and confront the mesmerizing dancer, Gym Leader Fantina!",
+		"subtitle_es": "¡Resuelve el laberinto de linterna y sombras y enfrenta a la deslumbrante bailarina, la Líder Fantina!",
+		"reward_diamonds_first_clear": 25,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Young Couple Ty & Sue",
+				"trainer_title_es": "Pareja Ty & Sue",
+				"trainer_name": "Young Couple Ty & Sue",
+				"trainer_name_es": "Pareja Ty & Sue",
+				"intro": "Our spectral bond glows in the dark! Drifloon, Ominous Wind!",
+				"intro_es": "¡Nuestro vínculo espectral brilla en la oscuridad! ¡Drifloon, Viento Aciago!",
+				"outro": "Blown away like autumn fog!",
+				"outro_es": "¡Dispersados como niebla de otoño!",
+				"team_pokemon_names": ["Drifloon"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Ace Trainer Allen",
+				"trainer_title_es": "Entrenador Guay Allen",
+				"trainer_name": "Ace Trainer Allen",
+				"trainer_name_es": "Entrenador Guay Allen",
+				"intro": "Can you see through these spectral illusions? Ghastly and Haunter, Shadow Ball!",
+				"intro_es": "¡¿Puedes ver a través de las ilusiones espectrales?! ¡Ghastly y Haunter, Bola Sombra!",
+				"outro": "The darkness shattered before your light!",
+				"outro_es": "¡La oscuridad se disipó ante tu luz!",
+				"team_pokemon_names": ["Ghastly", "Haunter"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Gym Leader Fantina",
+				"trainer_title_es": "Líder Fantina",
+				"trainer_name": "Gym Leader Fantina",
+				"trainer_name_es": "Líder Fantina",
+				"is_boss": true,
+				"badge_name": "Relic Badge",
+				"badge_name_es": "Medalla Reliquia",
+				"intro": "Ah! You have arrived, cheri! I am Fantina, the dancing maestro of spirits! Mismagius, dazzle this arena with Shadow Sneak!",
+				"intro_es": "¡Ah! ¡Has llegado, mon chéri! ¡Soy Fantina, la gran bailarina de los espíritus! ¡Mismagius, deslumbremos la pista con Sombra Vil!",
+				"outro": "Magnifique! C'est formidable! What a breathtaking performance! You have truly earned the Relic Badge!",
+				"outro_es": "¡Magnifique! ¡C'est formidable! ¡Qué combate tan sublime y deslumbrante! ¡Has ganado con honores la Medalla Reliquia!",
+				"team_pokemon_names": ["Drifblim", "Gengar", "Mismagius"]
+			}
+		]
+	},
+	306: {
+		"id": 306,
+		"region": "Sinnoh",
+		"is_branching": true,
+		"title": "Episode VI: Mine Badge & Iron Island (Canalave City)",
+		"title_es": "Episodio VI: Medalla Mina e Isla Hierro (Ciudad Canal)",
+		"subtitle": "Train with Aura Guardian Riley on Iron Island or pierce Gym Leader Byron's steel fortress!",
+		"subtitle_es": "¡Entrena junto a Quinoa en la Isla Hierro o penetra la fortaleza de acero del Líder Acerón!",
+		"reward_diamonds_first_clear": 30,
+		"routes": {
+			"iron_island": {
+				"id": "iron_island",
+				"name": "Iron Island (Aura Expedition)",
+				"name_es": "Isla Hierro (Expedición del Aura)",
+				"desc": "Delve into the subterranean mine shafts with Riley, foil Team Galactic's excavation and awaken your aura bond.",
+				"desc_es": "Desciende a las galerías subterráneas junto a Quinoa, frustra la excavación del Equipo Galaxia y despierta el aura.",
+				"reward_diamonds_first_clear": 15,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Worker Jackson",
+						"trainer_title_es": "Operario Jackson",
+						"trainer_name": "Worker Jackson",
+						"trainer_name_es": "Operario Jackson",
+						"intro": "Iron Island is rich in steel ore! Bronzor, Iron Defense!",
+						"intro_es": "¡Isla Hierro es rica en minerales de acero! ¡Bronzor, Defensa Férrea!",
+						"outro": "Struck down cold! Good luck deeper in the caves.",
+						"outro_es": "¡Impacto directo! Buena suerte en lo profundo de las cuevas.",
+						"team_pokemon_names": ["Bronzor"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Galactic Commander Mars",
+						"trainer_title_es": "Comandante Galaxia Ceres",
+						"trainer_name": "Galactic Commander Mars",
+						"trainer_name_es": "Comandante Ceres",
+						"intro": "What is a kid doing interfering with Team Galactic's mining project? Golbat and Skuntank, toxic blast!",
+						"intro_es": "¡¿Qué hace un crío interfiriendo con el proyecto minero del Equipo Galaxia?! ¡Golbat y Skuntank, descarga tóxica!",
+						"outro": "Aaargh! Master Cyrus will hear about this!",
+						"outro_es": "¡Aaargh! ¡El jefe Helio sabrá de esto!",
+						"team_pokemon_names": ["Golbat", "Skuntank"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Aura Guardian Riley",
+						"trainer_title_es": "Guardián del Aura Quinoa",
+						"trainer_name": "Aura Guardian Riley",
+						"trainer_name_es": "Quinoa",
+						"intro": "Thank you for driving off Team Galactic! Before you leave, let our aura clash in a sparring match. Lucario, show our synchronized aura!",
+						"intro_es": "¡Gracias por ahuyentar al Equipo Galaxia! Antes de partir, permíteme medir tu aura en un combate amistoso. ¡Lucario, muestra nuestra sincronía!",
+						"outro": "Magnificent aura! Your spirit shines brighter than any diamond. May this strength guide your path!",
+						"outro_es": "¡Un aura magnífica! Tu espíritu brilla más que cualquier diamante. ¡Que esta fuerza guíe siempre tu camino!",
+						"team_pokemon_names": ["Riolu", "Lucario"]
+					}
+				]
+			},
+			"canalave_gym": {
+				"id": "canalave_gym",
+				"name": "Canalave Gym (Byron)",
+				"name_es": "Gimnasio Canal (Acerón)",
+				"desc": "Ride the moving girder platforms and shatter the unyielding steel bastion of Gym Leader Byron.",
+				"desc_es": "Sube por las plataformas móviles de vigas y desafía el bastión de acero inquebrantable del Líder Acerón.",
+				"reward_diamonds_first_clear": 15,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Black Belt Ricky",
+						"trainer_title_es": "Karateka Ricky",
+						"trainer_name": "Black Belt Ricky",
+						"trainer_name_es": "Karateka Ricky",
+						"intro": "Steel and muscle forged into one! Steelix, Iron Tail!",
+						"intro_es": "¡Acero y músculo forjados en uno solo! ¡Steelix, Cola Férrea!",
+						"outro": "My steel cracked!",
+						"outro_es": "¡Mi acero se agrietó!",
+						"team_pokemon_names": ["Steelix"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Ace Trainer Cesar",
+						"trainer_title_es": "Entrenador Guay César",
+						"trainer_name": "Ace Trainer Cesar",
+						"trainer_name_es": "Entrenador Guay César",
+						"intro": "Magnetism and heavy armor! Magneton and Bronzong, Flash Cannon!",
+						"intro_es": "¡Magnetismo y blindaje pesado! ¡Magneton y Bronzong, Foco Resplandor!",
+						"outro": "Overheating circuit... Byron awaits you at the summit!",
+						"outro_es": "¡Circuito sobrecalentado... Acerón te espera en la cima!",
+						"team_pokemon_names": ["Magneton", "Bronzong"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Gym Leader Byron",
+						"trainer_title_es": "Líder Acerón",
+						"trainer_name": "Gym Leader Byron",
+						"trainer_name_es": "Líder Acerón",
+						"is_boss": true,
+						"badge_name": "Mine Badge",
+						"badge_name_es": "Medalla Mina",
+						"intro": "Gahahahaha! I am Byron, father of Roark! My love for steel and fossils is unmatched in all of Sinnoh! Bastiodon, impenetrable shield wall!",
+						"intro_es": "¡Jajajajaja! ¡Soy Acerón, padre de Roco! ¡Mi pasión por el acero y los fósiles no tiene igual en todo Sinnoh! ¡Bastiodon, muro impenetrable!",
+						"outro": "Gwahahaha! You breached my impenetrable bulwark! Take the Mine Badge, worthy trainer!",
+						"outro_es": "¡Jajajajaja! ¡Lograste perforar mi baluarte impenetrable! ¡Toma la Medalla Mina, digno entrenador!",
+						"team_pokemon_names": ["Magneton", "Steelix", "Bastiodon"]
+					}
+				]
+			}
+		}
+	},
+	307: {
+		"id": 307,
+		"region": "Sinnoh",
+		"title": "Episode VII: Icicle Badge (Snowpoint City)",
+		"title_es": "Episodio VII: Medalla Carámbano (Ciudad Puntaneva)",
+		"subtitle": "Brave the howling blizzards of Route 217 and glide through the ice slides of Gym Leader Candice!",
+		"subtitle_es": "¡Resiste la ventisca polar de la Ruta 217 y deslízate por el hielo de la Líder Inverna!",
+		"reward_diamonds_first_clear": 30,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Ace Trainer Anton",
+				"trainer_title_es": "Entrenador Guay Anton",
+				"trainer_name": "Ace Trainer Anton",
+				"trainer_name_es": "Entrenador Guay Anton",
+				"intro": "The frostbite in Snowpoint is biting! Snover, Powder Snow!",
+				"intro_es": "¡El frío polar de Puntaneva congela hasta los huesos! ¡Snover, Nieve Polvo!",
+				"outro": "Melted by your intense heat!",
+				"outro_es": "¡Derretido por tu intenso calor!",
+				"team_pokemon_names": ["Snover"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Ace Trainer Savanah",
+				"trainer_title_es": "Entrenadora Guay Savanah",
+				"trainer_name": "Ace Trainer Savanah",
+				"trainer_name_es": "Entrenadora Guay Savanah",
+				"intro": "Glide through the ice snowbanks! Sneasel and Piloswine, Blizzard!",
+				"intro_es": "¡Deslízate por los bancos de nieve! ¡Sneasel y Piloswine, Ventisca!",
+				"outro": "The blizzard stopped... you're unstoppable!",
+				"outro_es": "La ventisca se calmó... ¡eres imparable!",
+				"team_pokemon_names": ["Sneasel", "Piloswine"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Gym Leader Candice",
+				"trainer_title_es": "Líder Inverna",
+				"trainer_name": "Gym Leader Candice",
+				"trainer_name_es": "Líder Inverna",
+				"is_boss": true,
+				"badge_name": "Icicle Badge",
+				"badge_name_es": "Medalla Carámbano",
+				"intro": "Hi there! I'm Candice, the Ice-type Gym Leader! You want focus? You want romance? I'll show you pure glacial passion! Abomasnow, Ice Beam!",
+				"intro_es": "¡Hola! ¡Soy Inverna, la Líder de Gimnasio tipo Hielo! ¿Quieres concentración? ¿Quieres pasión? ¡Te mostraré fuego en el hielo! ¡Abomasnow, Rayo Hielo!",
+				"outro": "Whoa, that was boiling hot! You completely thawed my ice! I proudly award you the Icicle Badge!",
+				"outro_es": "¡Uau, eso estuvo que arde! ¡Derretiste por completo mi hielo! ¡Te otorgo con gran orgullo la Medalla Carámbano!",
+				"team_pokemon_names": ["Snover", "Medicham", "Abomasnow"]
+			}
+		]
+	},
+	308: {
+		"id": 308,
+		"region": "Sinnoh",
+		"is_branching": true,
+		"title": "Episode VIII: Beacon Badge & Spear Pillar (Sunyshore City & Mt. Coronet)",
+		"title_es": "Episodio VIII: Medalla Faro y Columna Lanza (Ciudad Marina y Monte Corona)",
+		"subtitle": "Ascend the Spear Pillar to thwart Cyrus & Dialga, then face Gym Leader Volkner's electric storm!",
+		"subtitle_es": "¡Asciende a la Columna Lanza para detener a Helio y Dialga, y enfrenta la tormenta eléctrica de Lectro!",
+		"reward_diamonds_first_clear": 40,
+		"routes": {
+			"spear_pillar": {
+				"id": "spear_pillar",
+				"name": "Spear Pillar (Cataclysm of Time)",
+				"name_es": "Columna Lanza (Cataclismo del Tiempo)",
+				"desc": "Climb Mt. Coronet to the ancient Spear Pillar. Halt Cyrus's Red Chain and calm the legendary master of time, Dialga!",
+				"desc_es": "Sube al Monte Corona hasta la Columna Lanza. ¡Rompe la Cadena Roja de Helio y apacigua al señor del tiempo, Dialga!",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Galactic Admin Saturn",
+						"trainer_title_es": "Comandante Galaxia Saturno",
+						"trainer_name": "Galactic Admin Saturn",
+						"trainer_name_es": "Saturno",
+						"intro": "You will not interfere with Master Cyrus's grand design! Bronzor and Toxicroak, exterminate!",
+						"intro_es": "¡No permitiré que interfieras con el gran plan del jefe Helio! ¡Bronzor y Toxicroak, exterminio!",
+						"outro": "How could you be this powerful...?!",
+						"outro_es": "¡¿Cómo puedes tener semejante poder...?!",
+						"team_pokemon_names": ["Bronzor", "Toxicroak"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Galactic Commanders Mars & Jupiter",
+						"trainer_title_es": "Comandantes Ceres & Venus",
+						"trainer_name": "Mars & Jupiter",
+						"trainer_name_es": "Ceres & Venus",
+						"intro": "A double offensive! Purugly and Skuntank, tear apart their composure!",
+						"intro_es": "¡Una ofensiva doble! ¡Purugly y Skuntank, destrocen su serenidad!",
+						"outro": "No! The Red Chain has already been cast!",
+						"outro_es": "¡No! ¡La Cadena Roja ya ha sido activada!",
+						"team_pokemon_names": ["Purugly", "Skuntank"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Galactic Boss Cyrus",
+						"trainer_title_es": "Líder Galaxia Helio",
+						"trainer_name": "Galactic Boss Cyrus",
+						"trainer_name_es": "Helio",
+						"intro": "Human emotions are incomplete, flawed, and ugly. I shall forge a new world devoid of heart! Honchkrow, Weavile, and Gyarados, eradicate this delusion!",
+						"intro_es": "Las emociones humanas son imperfectas, débiles y destructivas. ¡Crearé un universo puro sin corazón! ¡Honchkrow, Weavile y Gyarados, erradiquen esta ilusión!",
+						"outro": "Inconceivable... The spirit of a trainer can overcome the void... But the rift in spacetime is already torn!",
+						"outro_es": "Inconcebible... El espíritu de un entrenador puede sobreponerse a la nada... ¡Pero la grieta del tiempo ya está abierta!",
+						"team_pokemon_names": ["Honchkrow", "Weavile", "Gyarados"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Temporal Sovereign Dialga",
+						"trainer_title_es": "Soberano del Tiempo Dialga",
+						"trainer_name": "Dialga",
+						"trainer_name_es": "Dialga",
+						"is_boss": true,
+						"intro": "ROOOAAARRR! Time warps and ripples across the cosmos! The primordial dragon of time prepares to unleash Roar of Time!",
+						"intro_es": "¡ROOOAAARRR! ¡El flujo del tiempo se distorsiona en el cosmos! ¡El dragón primordial del tiempo prepara Distorsión!",
+						"outro": "The time ripples subside... Dialga acknowledges your indomitable willpower and returns peace to the Sinnoh cosmos!",
+						"outro_es": "Las ondas temporales se aquietan... ¡Dialga reconoce tu indomable voluntad y devuelve la calma al cosmos de Sinnoh!",
+						"team_pokemon_names": ["Dialga"]
+					}
+				]
+			},
+			"sunyshore_gym": {
+				"id": "sunyshore_gym",
+				"name": "Sunyshore Gym (Volkner)",
+				"name_es": "Gimnasio Marina (Lectro)",
+				"desc": "Traverse the giant solar power gears and awaken the lost passion of Sinnoh's strongest Gym Leader, Volkner.",
+				"desc_es": "Cruza los engranajes solares gigantescos y despierta la pasión dormida del Líder más fuerte de Sinnoh, ¡Lectro!",
+				"reward_diamonds_first_clear": 20,
+				"stages": [
+					{
+						"stage_num": 1,
+						"trainer_title": "Guitarist Jerry",
+						"trainer_title_es": "Guitarrista Jerry",
+						"trainer_name": "Guitarist Jerry",
+						"trainer_name_es": "Guitarrista Jerry",
+						"intro": "Riffing electric chords all over Sunyshore! Luxio, Spark!",
+						"intro_es": "¡Desatando acordes eléctricos por toda Marina! ¡Luxio, Chispa!",
+						"outro": "Amplifier blown! Electric solo ended!",
+						"outro_es": "¡Amplificador fundido! ¡Solo eléctrico terminado!",
+						"team_pokemon_names": ["Luxio"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Ace Trainer Destiny",
+						"trainer_title_es": "Entrenadora Guay Destiny",
+						"trainer_name": "Ace Trainer Destiny",
+						"trainer_name_es": "Entrenadora Guay Destiny",
+						"intro": "High voltage synchronized gears! Raichu and Ambipom, Thunderbolt!",
+						"intro_es": "¡Engranajes de alto voltaje sincronizados! ¡Raichu y Ambipom, Rayo!",
+						"outro": "Overcharged circuits! Volkner is waiting for a spark like yours!",
+						"outro_es": "¡Sobrecarga total! ¡Lectro lleva mucho tiempo esperando una chispa como la tuya!",
+						"team_pokemon_names": ["Raichu", "Ambipom"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Gym Leader Volkner",
+						"trainer_title_es": "Líder Lectro",
+						"trainer_name": "Gym Leader Volkner",
+						"trainer_name_es": "Líder Lectro",
+						"is_boss": true,
+						"badge_name": "Beacon Badge",
+						"badge_name_es": "Medalla Faro",
+						"intro": "I had grown bored of unchallenged battles... but your eyes burn with intensity. Show me everything you've got! Electivire, Luxray, Raichu, Thunder!",
+						"intro_es": "Me había aburrido de batallas sin emoción... pero tus ojos arden con intensidad. ¡Muéstrame todo lo que tienes! ¡Electivire, Luxray, Raichu, Trueno!",
+						"outro": "Incredible... My heart is pounding like thunder! You have conquered all 8 Sinnoh Gyms! Take the Beacon Badge, Champion!",
+						"outro_es": "Increíble... ¡Mi corazón vuelve a latir como un trueno! Has conquistado los 8 Gimnasios de Sinnoh. ¡Te entrego con el más alto honor la Medalla Faro!",
+						"team_pokemon_names": ["Raichu", "Luxray", "Electivire"]
 					}
 				]
 			}
@@ -4750,7 +5329,9 @@ var boss_card_foil_shader: Shader = null
 
 const GYM_LEADER_ACES: Array[String] = [
 	"Onix", "Starmie", "Raichu", "Vileplume", "Venomoth", "Weezing", "Alakazam", "Arcanine", "Rhydon",
-	"Pidgeotto", "Scyther", "Miltank", "Gengar", "Poliwrath", "Steelix", "Piloswine", "Kingdra"
+	"Pidgeotto", "Scyther", "Miltank", "Gengar", "Poliwrath", "Steelix", "Piloswine", "Kingdra",
+	"Nosepass", "Hariyama", "Manectric", "Torkoal", "Slaking", "Altaria", "Claydol", "Milotic",
+	"Cranidos", "Roserade", "Lucario", "Floatzel", "Mismagius", "Bastiodon", "Abomasnow", "Electivire"
 ]
 
 const ELITE_FOUR_ACES: Array[String] = [
@@ -6003,6 +6584,42 @@ func is_adventure_ep208_route_unlocked(route_id: String) -> bool:
 func is_adventure_ep208_route_completed(route_id: String) -> bool:
 	return route_id in adventure_ep208_cleared_routes
 
+func is_adventure_ep304_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(304):
+		return false
+	if route_id == "great_marsh":
+		return true
+	if route_id == "pastoria_gym":
+		return "great_marsh" in adventure_ep304_cleared_routes
+	return false
+
+func is_adventure_ep304_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep304_cleared_routes
+
+func is_adventure_ep306_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(306):
+		return false
+	if route_id == "iron_island":
+		return true
+	if route_id == "canalave_gym":
+		return "iron_island" in adventure_ep306_cleared_routes
+	return false
+
+func is_adventure_ep306_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep306_cleared_routes
+
+func is_adventure_ep308_route_unlocked(route_id: String) -> bool:
+	if not is_adventure_episode_unlocked(308):
+		return false
+	if route_id == "spear_pillar":
+		return true
+	if route_id == "sunyshore_gym":
+		return "spear_pillar" in adventure_ep308_cleared_routes
+	return false
+
+func is_adventure_ep308_route_completed(route_id: String) -> bool:
+	return route_id in adventure_ep308_cleared_routes
+
 func get_adventure_selected_route(episode_id: int) -> String:
 	if episode_id == 5:
 		return adventure_ep5_selected_route
@@ -6022,6 +6639,12 @@ func get_adventure_selected_route(episode_id: int) -> String:
 		return adventure_ep206_selected_route
 	elif episode_id == 208:
 		return adventure_ep208_selected_route
+	elif episode_id == 304:
+		return adventure_ep304_selected_route
+	elif episode_id == 306:
+		return adventure_ep306_selected_route
+	elif episode_id == 308:
+		return adventure_ep308_selected_route
 	return ""
 
 func set_adventure_selected_route(episode_id: int, route_id: String) -> void:
@@ -6043,6 +6666,12 @@ func set_adventure_selected_route(episode_id: int, route_id: String) -> void:
 		adventure_ep206_selected_route = route_id
 	elif episode_id == 208:
 		adventure_ep208_selected_route = route_id
+	elif episode_id == 304:
+		adventure_ep304_selected_route = route_id
+	elif episode_id == 306:
+		adventure_ep306_selected_route = route_id
+	elif episode_id == 308:
+		adventure_ep308_selected_route = route_id
 
 func is_adventure_route_unlocked(episode_id: int, route_id: String) -> bool:
 	if episode_id == 5: return is_adventure_ep5_route_unlocked(route_id)
@@ -6054,6 +6683,9 @@ func is_adventure_route_unlocked(episode_id: int, route_id: String) -> bool:
 	elif episode_id == 204: return is_adventure_ep204_route_unlocked(route_id)
 	elif episode_id == 206: return is_adventure_ep206_route_unlocked(route_id)
 	elif episode_id == 208: return is_adventure_ep208_route_unlocked(route_id)
+	elif episode_id == 304: return is_adventure_ep304_route_unlocked(route_id)
+	elif episode_id == 306: return is_adventure_ep306_route_unlocked(route_id)
+	elif episode_id == 308: return is_adventure_ep308_route_unlocked(route_id)
 	return false
 
 func is_adventure_route_completed(episode_id: int, route_id: String) -> bool:
@@ -6066,6 +6698,9 @@ func is_adventure_route_completed(episode_id: int, route_id: String) -> bool:
 	elif episode_id == 204: return is_adventure_ep204_route_completed(route_id)
 	elif episode_id == 206: return is_adventure_ep206_route_completed(route_id)
 	elif episode_id == 208: return is_adventure_ep208_route_completed(route_id)
+	elif episode_id == 304: return is_adventure_ep304_route_completed(route_id)
+	elif episode_id == 306: return is_adventure_ep306_route_completed(route_id)
+	elif episode_id == 308: return is_adventure_ep308_route_completed(route_id)
 	return false
 
 func get_adventure_total_stages(episode_id: int) -> int:
@@ -6151,7 +6786,7 @@ func is_tutorial_completed() -> bool:
 	return tutorial_completed
 
 func is_adventure_episode_unlocked(episode_id: int) -> bool:
-	if episode_id == 1 or episode_id == 101:
+	if episode_id == 1 or episode_id == 101 or episode_id == 201 or episode_id == 301:
 		return tutorial_completed
 	return (episode_id in adventure_unlocked_episodes) and tutorial_completed
 
@@ -6197,8 +6832,8 @@ func has_all_gym_badges() -> bool:
 	return get_earned_gym_badges_count() >= 8
 
 func has_all_regions_gym_badges() -> bool:
-	# La Liga Pokémon requiere las medallas de todas las regiones (Kanto [8], Johto [8], Hoenn [8], Sinnoh).
-	return get_earned_gym_badges_count() >= 8 and get_johto_gym_badges_count() >= 8 and get_hoenn_gym_badges_count() >= 8
+	# La Liga Pokémon requiere las medallas de todas las regiones (Kanto [8], Johto [8], Hoenn [8], Sinnoh [8]).
+	return get_earned_gym_badges_count() >= 8 and get_johto_gym_badges_count() >= 8 and get_hoenn_gym_badges_count() >= 8 and get_sinnoh_gym_badges_count() >= 8
 
 func get_hoenn_gym_badges_count() -> int:
 	# Episodios de Hoenn que otorgan medallas de gimnasio:
@@ -6212,6 +6847,19 @@ func get_hoenn_gym_badges_count() -> int:
 
 func has_all_hoenn_gym_badges() -> bool:
 	return get_hoenn_gym_badges_count() >= 8
+
+func get_sinnoh_gym_badges_count() -> int:
+	# Episodios de Sinnoh que otorgan medallas de gimnasio:
+	# Ep 301: Coal, Ep 302: Forest, Ep 303: Cobble, Ep 304: Fen,
+	# Ep 305: Relic, Ep 306: Mine, Ep 307: Icicle, Ep 308: Beacon
+	var count = 0
+	for ep in [301, 302, 303, 304, 305, 306, 307, 308]:
+		if ep in adventure_completed_episodes:
+			count += 1
+	return count
+
+func has_all_sinnoh_gym_badges() -> bool:
+	return get_sinnoh_gym_badges_count() >= 8
 
 func _complete_adventure_branch_route(episode_id: int, cur_route: String, cleared_routes: Array[String], final_route: String, next_episode_id: int = -1) -> int:
 	"""Grants standardized route diamonds from ADVENTURE_EPISODES and advances branching progression."""
@@ -6308,6 +6956,16 @@ func complete_adventure_episode(episode_id: int) -> int:
 
 	if episode_id == 208:
 		return _complete_adventure_branch_route(208, adventure_ep208_selected_route, adventure_ep208_cleared_routes, "sootopolis_gym", -1)
+
+	# Sinnoh Ramificados (leen recompensas estandarizadas directamente de ADVENTURE_EPISODES):
+	if episode_id == 304:
+		return _complete_adventure_branch_route(304, adventure_ep304_selected_route, adventure_ep304_cleared_routes, "pastoria_gym", 305)
+
+	if episode_id == 306:
+		return _complete_adventure_branch_route(306, adventure_ep306_selected_route, adventure_ep306_cleared_routes, "canalave_gym", 307)
+
+	if episode_id == 308:
+		return _complete_adventure_branch_route(308, adventure_ep308_selected_route, adventure_ep308_cleared_routes, "sunyshore_gym", -1)
 
 	if not (episode_id in adventure_completed_episodes):
 		adventure_completed_episodes.append(episode_id)
@@ -7686,6 +8344,16 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	adventure_ep6_cleared_routes.clear()
 	adventure_ep7_selected_route = "pokemon_mansion"
 	adventure_ep7_cleared_routes.clear()
+	adventure_ep106_cleared_routes.clear()
+	adventure_ep107_cleared_routes.clear()
+	adventure_ep108_cleared_routes.clear()
+	adventure_ep204_cleared_routes.clear()
+	adventure_ep206_cleared_routes.clear()
+	adventure_ep208_cleared_routes.clear()
+	adventure_ep304_cleared_routes.clear()
+	adventure_ep306_cleared_routes.clear()
+	adventure_ep308_cleared_routes.clear()
+	lake_of_rage_completed = false
 	
 	# Conservar cartas si ya existían cartas desbloqueadas en este dispositivo
 	if player_unlocked_ids.is_empty():
@@ -7808,6 +8476,12 @@ func get_save_dict() -> Dictionary:
 			"ep206_cleared_routes": adventure_ep206_cleared_routes.duplicate(),
 			"ep208_selected_route": adventure_ep208_selected_route,
 			"ep208_cleared_routes": adventure_ep208_cleared_routes.duplicate(),
+			"ep304_selected_route": adventure_ep304_selected_route,
+			"ep304_cleared_routes": adventure_ep304_cleared_routes.duplicate(),
+			"ep306_selected_route": adventure_ep306_selected_route,
+			"ep306_cleared_routes": adventure_ep306_cleared_routes.duplicate(),
+			"ep308_selected_route": adventure_ep308_selected_route,
+			"ep308_cleared_routes": adventure_ep308_cleared_routes.duplicate(),
 			"lake_of_rage_completed": lake_of_rage_completed,
 			"selected_region": adventure_selected_region
 		},
@@ -8049,6 +8723,24 @@ func apply_save_dict(data: Dictionary) -> bool:
 	adventure_ep208_cleared_routes.clear()
 	for r in raw_ep208_cleared:
 		adventure_ep208_cleared_routes.append(str(r))
+
+	adventure_ep304_selected_route = str(adv.get("ep304_selected_route", "great_marsh"))
+	var raw_ep304_cleared = adv.get("ep304_cleared_routes", [])
+	adventure_ep304_cleared_routes.clear()
+	for r in raw_ep304_cleared:
+		adventure_ep304_cleared_routes.append(str(r))
+
+	adventure_ep306_selected_route = str(adv.get("ep306_selected_route", "iron_island"))
+	var raw_ep306_cleared = adv.get("ep306_cleared_routes", [])
+	adventure_ep306_cleared_routes.clear()
+	for r in raw_ep306_cleared:
+		adventure_ep306_cleared_routes.append(str(r))
+
+	adventure_ep308_selected_route = str(adv.get("ep308_selected_route", "spear_pillar"))
+	var raw_ep308_cleared = adv.get("ep308_cleared_routes", [])
+	adventure_ep308_cleared_routes.clear()
+	for r in raw_ep308_cleared:
+		adventure_ep308_cleared_routes.append(str(r))
 		
 	lake_of_rage_completed = bool(adv.get("lake_of_rage_completed", false))
 	adventure_selected_region = str(adv.get("selected_region", "KANTO"))
@@ -8234,6 +8926,16 @@ func erase_profile() -> void:
 	adventure_ep6_cleared_routes.clear()
 	adventure_ep7_selected_route = "pokemon_mansion"
 	adventure_ep7_cleared_routes.clear()
+	adventure_ep106_cleared_routes.clear()
+	adventure_ep107_cleared_routes.clear()
+	adventure_ep108_cleared_routes.clear()
+	adventure_ep204_cleared_routes.clear()
+	adventure_ep206_cleared_routes.clear()
+	adventure_ep208_cleared_routes.clear()
+	adventure_ep304_cleared_routes.clear()
+	adventure_ep306_cleared_routes.clear()
+	adventure_ep308_cleared_routes.clear()
+	lake_of_rage_completed = false
 	
 	player_unlocked_ids.clear()
 	player_friends.clear()

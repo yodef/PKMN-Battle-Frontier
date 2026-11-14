@@ -1364,7 +1364,7 @@ func start_new_game() -> void:
 					var r_info = GameData.get_adventure_route_info(GameData.adventure_current_episode, cur_route)
 					var r_name = str(r_info.get("name_es", r_info.get("name", "Ruta")))
 					var ep_num = GameData.adventure_current_episode
-					var ep_roman = "V" if ep_num == 5 else ("VI" if ep_num == 6 else ("VII" if ep_num == 7 else ("Johto VI" if ep_num == 106 else ("Johto VII" if ep_num == 107 else ("Johto VIII" if ep_num == 108 else ("Hoenn IV" if ep_num == 204 else ("Hoenn VI" if ep_num == 206 else ("Hoenn VIII" if ep_num == 208 else str(ep_num)))))))))
+					var ep_roman = "V" if ep_num == 5 else ("VI" if ep_num == 6 else ("VII" if ep_num == 7 else ("Johto VI" if ep_num == 106 else ("Johto VII" if ep_num == 107 else ("Johto VIII" if ep_num == 108 else ("Hoenn IV" if ep_num == 204 else ("Hoenn VI" if ep_num == 206 else ("Hoenn VIII" if ep_num == 208 else ("Sinnoh IV" if ep_num == 304 else ("Sinnoh VI" if ep_num == 306 else ("Sinnoh VIII" if ep_num == 308 else str(ep_num))))))))))))
 					battle_title_lbl.text = "🗺️ Ep. %s (%s): %s (%d/%d)" % [ep_roman, r_name, trainer_name, GameData.adventure_current_stage, total_stages]
 				else:
 					battle_title_lbl.text = "🗺️ Ep. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name, GameData.adventure_current_stage, total_stages]
@@ -1483,7 +1483,7 @@ func start_new_game() -> void:
 				var r_info = GameData.get_adventure_route_info(GameData.adventure_current_episode, cur_route)
 				var r_name = str(r_info.get("name_es" if is_es else "name", r_info.get("name", "Route")))
 				var ep_num = GameData.adventure_current_episode
-				var ep_roman = "V" if ep_num == 5 else ("VI" if ep_num == 6 else ("VII" if ep_num == 7 else ("Johto VI" if ep_num == 106 else ("Johto VII" if ep_num == 107 else ("Johto VIII" if ep_num == 108 else ("Hoenn IV" if ep_num == 204 else ("Hoenn VI" if ep_num == 206 else ("Hoenn VIII" if ep_num == 208 else str(ep_num)))))))))
+				var ep_roman = "V" if ep_num == 5 else ("VI" if ep_num == 6 else ("VII" if ep_num == 7 else ("Johto VI" if ep_num == 106 else ("Johto VII" if ep_num == 107 else ("Johto VIII" if ep_num == 108 else ("Hoenn IV" if ep_num == 204 else ("Hoenn VI" if ep_num == 206 else ("Hoenn VIII" if ep_num == 208 else ("Sinnoh IV" if ep_num == 304 else ("Sinnoh VI" if ep_num == 306 else ("Sinnoh VIII" if ep_num == 308 else str(ep_num))))))))))))
 				mode_str = "ADVENTURE EP. %s - %s: %s (%d/%d)" % [ep_roman, r_name.to_upper(), trainer_name.to_upper(), GameData.adventure_current_stage, total_stages]
 			else:
 				mode_str = "ADVENTURE EP. %d: %s (%d/%d)" % [GameData.adventure_current_episode, trainer_name.to_upper(), GameData.adventure_current_stage, total_stages]
@@ -1502,6 +1502,18 @@ func start_new_game() -> void:
 		log_action("✨ Weedle's [color=cyan]String Shot[/color] passively reduces foe's Speed by 1.")
 	_trigger_entry_passives(active_p, active_e, true)
 	_trigger_entry_passives(active_e, active_p, false)
+	
+	if GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
+		var cur_ep = GameData.adventure_current_episode
+		if cur_ep == 305:
+			log_action("🌫️ [color=purple]EERIE MIST: A spooky spectral fog engulfs Hearthome Gym! Ghost & Dark moves deal +2 DMG![/color]")
+		elif cur_ep == 307:
+			log_action("❄️ [color=cyan]HAIL BLIZZARD: A fierce polar blizzard sweeps Snowpoint Gym! Ice & Water moves deal +2 DMG![/color]")
+		elif cur_ep == 308:
+			var cur_r = GameData.get_adventure_selected_route(308)
+			if cur_r == "spear_pillar":
+				trick_room_turns = 99
+				log_action("🌀 [color=purple]SPACE-TIME DISTORTION! Dialga's presence warps time and space into a permanent Trick Room! Slower Pokémon act first![/color]")
 	
 	if GameData.is_campaign_mode and not GameData.is_tutorial_mode:
 		GameData.record_campaign_battle_participation()
@@ -2138,7 +2150,7 @@ func _finish_round() -> void:
 			log_action("🌿 [color=green]The Grassy Terrain faded away.[/color]")
 
 	# Trick Room countdown
-	if trick_room_turns > 0:
+	if trick_room_turns > 0 and trick_room_turns < 90:
 		trick_room_turns -= 1
 		if trick_room_turns == 0:
 			log_action("🌀 [color=purple]The twisted dimensions returned to normal! Trick Room ended.[/color]")
@@ -2732,6 +2744,16 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if attacker.held_item == "wise_glasses" and move.type in ["FIRE", "WATER", "GRASS", "ELECTRIC", "PSYCHIC", "ICE", "DRAGON", "GHOST", "DARK"]:
 		raw_damage += 1
 		note_text += " [color=#80DEEA]Wise Glasses (+1 Sp. DMG)![/color]"
+
+	# Sinnoh Environmental bonuses (Ep 305 Eerie Mist & Ep 307 Hail Blizzard)
+	if GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
+		var cur_ep = GameData.adventure_current_episode
+		if cur_ep == 305 and move.type in ["DARK", "PSYCHIC", "GHOST"]:
+			raw_damage += 2
+			note_text += " [color=purple]Eerie Mist (+2 Spectral DMG)![/color]"
+		elif cur_ep == 307 and move.type in ["WATER", "ICE"]:
+			raw_damage += 2
+			note_text += " [color=cyan]Hail Blizzard (+2 Ice DMG)![/color]"
 
 	# Focus Energy (Rattata)
 	if attacker.has_passive and attacker.passive_name == "Focus Energy" and att_spd > def_spd:
@@ -4108,6 +4130,48 @@ func _resolve_battle_victory() -> void:
 							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes & 🏅 %s!\n👑 ¡HAS CONQUISTADO TODAS LAS MEDALLAS DE HOENN!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n👑 YOU HAVE CONQUERED ALL HOENN BADGES!") % [bonus_diamonds, b_name]
 					else:
 						first_clear_text = "\n(Ruta ya superada - ¡Rejugado completado!)" if is_es else "\n(Route already cleared - replay completed!)"
+				elif ep_id == 304:
+					var cur_route = GameData.adventure_ep304_selected_route
+					var r_info = GameData.get_adventure_route_info(304, cur_route)
+					ep_title_display = "Sinnoh Ep. IV - %s" % str(r_info.get("name_es" if is_es else "name", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "great_marsh":
+							victory_title = "🎉 ¡GRAN PANTANAL EXPLORADO!" if is_es else "🎉 GREAT MARSH SAFARI CONQUERED!"
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes!\n🔓 Gimnasio Pradera Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Pastoria Gym Unlocked!") % bonus_diamonds
+						elif cur_route == "pastoria_gym":
+							var b_name = stage_info.get("badge_name_es" if is_es else "badge_name", badge_str)
+							victory_title = ("🎉 ¡EPISODIO CONQUISTADO! ¡%s OBTENIDA!" if is_es else "🎉 EPISODE CONQUERED! %s WON!") % b_name.to_upper()
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes & 🏅 %s!\n🔓 Episodio V (Fantina) Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n🔓 Episode V (Fantina) Unlocked!") % [bonus_diamonds, b_name]
+					else:
+						first_clear_text = "\n(Ruta ya superada - ¡Rejugado completado!)" if is_es else "\n(Route already cleared - replay completed!)"
+				elif ep_id == 306:
+					var cur_route = GameData.adventure_ep306_selected_route
+					var r_info = GameData.get_adventure_route_info(306, cur_route)
+					ep_title_display = "Sinnoh Ep. VI - %s" % str(r_info.get("name_es" if is_es else "name", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "iron_island":
+							victory_title = "🎉 ¡EXPEDICIÓN DE ISLA HIERRO COMPLETADA!" if is_es else "🎉 IRON ISLAND EXPEDITION COMPLETED!"
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes!\n🔓 Gimnasio Canal Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Canalave Gym Unlocked!") % bonus_diamonds
+						elif cur_route == "canalave_gym":
+							var b_name = stage_info.get("badge_name_es" if is_es else "badge_name", badge_str)
+							victory_title = ("🎉 ¡EPISODIO CONQUISTADO! ¡%s OBTENIDA!" if is_es else "🎉 EPISODE CONQUERED! %s WON!") % b_name.to_upper()
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes & 🏅 %s!\n🔓 Episodio VII (Inverna) Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n🔓 Episode VII (Candice) Unlocked!") % [bonus_diamonds, b_name]
+					else:
+						first_clear_text = "\n(Ruta ya superada - ¡Rejugado completado!)" if is_es else "\n(Route already cleared - replay completed!)"
+				elif ep_id == 308:
+					var cur_route = GameData.adventure_ep308_selected_route
+					var r_info = GameData.get_adventure_route_info(308, cur_route)
+					ep_title_display = "Sinnoh Ep. VIII - %s" % str(r_info.get("name_es" if is_es else "name", r_info.get("name", "Route")))
+					if bonus_diamonds > 0:
+						if cur_route == "spear_pillar":
+							victory_title = "🎉 ¡COLUMNA LANZA Y DIALGA APACIGUADOS!" if is_es else "🎉 SPEAR PILLAR & DIALGA PACIFIED!"
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes!\n🔓 Gimnasio Marina Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Sunyshore Gym Unlocked!") % bonus_diamonds
+						elif cur_route == "sunyshore_gym":
+							var b_name = stage_info.get("badge_name_es" if is_es else "badge_name", badge_str)
+							victory_title = ("🏆 ¡CAMPAÑA SINNOH CONQUISTADA! ¡%s OBTENIDA!" if is_es else "🏆 CAMPAIGN SINNOH CONQUERED! %s WON!") % b_name.to_upper()
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes & 🏅 %s!\n👑 ¡HAS CONQUISTADO TODAS LAS MEDALLAS DE SINNOH!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n👑 YOU HAVE CONQUERED ALL SINNOH BADGES!") % [bonus_diamonds, b_name]
+					else:
+						first_clear_text = "\n(Ruta ya superada - ¡Rejugado completado!)" if is_es else "\n(Route already cleared - replay completed!)"
 				else:
 					if bonus_diamonds > 0:
 						first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Episode %d Unlocked!" % [bonus_diamonds, next_ep_id]
@@ -4820,6 +4884,14 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 	# Wise Glasses (Gafas Especiales: +1 DMG a movimientos especiales)
 	if attacker.held_item == "wise_glasses" and move.type in ["FIRE", "WATER", "GRASS", "ELECTRIC", "PSYCHIC", "ICE", "DRAGON", "GHOST", "DARK"]:
 		dmg += 1
+
+	# Sinnoh Environmental bonuses (Ep 305 Eerie Mist & Ep 307 Hail Blizzard)
+	if GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
+		var cur_ep = GameData.adventure_current_episode
+		if cur_ep == 305 and move.type in ["DARK", "PSYCHIC", "GHOST"]:
+			dmg += 2
+		elif cur_ep == 307 and move.type in ["WATER", "ICE"]:
+			dmg += 2
 
 	# Debilidad / Resistencia
 	if dmg > 0:

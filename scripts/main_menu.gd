@@ -112,6 +112,20 @@ var hoenn_episodes_subtitle_lbl: Label = null
 var hoenn_episodes_btn_close: Button = null
 var hoenn_routes_btn_close: Button = null
 
+# --- MODAL SINNOH CAMPAIGN & ROUTES ---
+var sinnoh_episodes_modal: Control = null
+var sinnoh_routes_modal: Control = null
+var sinnoh_episode_cards: Dictionary = {}
+var sinnoh_routes_cards: Dictionary = {}
+var sinnoh_current_routes_ep: int = 304
+var sinnoh_routes_title_lbl: Label = null
+var sinnoh_routes_subtitle_lbl: Label = null
+var sinnoh_routes_scroll_vbox: VBoxContainer = null
+var sinnoh_episodes_title_lbl: Label = null
+var sinnoh_episodes_subtitle_lbl: Label = null
+var sinnoh_episodes_btn_close: Button = null
+var sinnoh_routes_btn_close: Button = null
+
 # --- MODALES DE ACHIEVEMENTS / LOGROS ---
 var achievements_modal: Control = null
 var achievements_panel: PanelContainer = null
@@ -658,6 +672,17 @@ func _ready() -> void:
 			adventure_regions_modal.visible = false
 			_open_hoenn_episodes_modal()
 		)
+	if btn_enter_sinnoh:
+		btn_enter_sinnoh.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			if not GameData.is_tutorial_completed():
+				_show_tutorial_prompt_for_locked_episode()
+				return
+			GameData.adventure_selected_region = "SINNOH"
+			adventure_regions_modal.visible = false
+			_open_sinnoh_episodes_modal()
+		)
 	if btn_close_adventure_regions:
 		btn_close_adventure_regions.pressed.connect(func():
 			adventure_regions_modal.visible = false
@@ -759,6 +784,8 @@ func _ready() -> void:
 				_open_johto_episodes_modal()
 			elif GameData.adventure_selected_region == "HOENN":
 				_open_hoenn_episodes_modal()
+			elif GameData.adventure_selected_region == "SINNOH":
+				_open_sinnoh_episodes_modal()
 			else:
 				update_adventure_episodes_ui()
 				adventure_episodes_modal.visible = true
@@ -1130,6 +1157,8 @@ func _ready() -> void:
 			_open_johto_episodes_modal()
 		elif GameData.adventure_selected_region == "HOENN":
 			_open_hoenn_episodes_modal()
+		elif GameData.adventure_selected_region == "SINNOH":
+			_open_sinnoh_episodes_modal()
 		else:
 			update_adventure_episodes_ui()
 			adventure_episodes_modal.visible = true
@@ -1740,6 +1769,19 @@ func update_adventure_regions_ui() -> void:
 		btn_enter_hoenn.disabled = false
 		btn_enter_hoenn.text = "🌊 Enter Hoenn ➜"
 		_apply_retro_button_style(btn_enter_hoenn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+	var card_sinnoh = get_node_or_null("AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh")
+	if card_sinnoh:
+		card_sinnoh.modulate = Color(1, 1, 1, 1)
+	var sinnoh_status_lbl = get_node_or_null("AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh/Margin/SinnohVBox/SinnohStatus") as Label
+	var sinnoh_badges = GameData.get_sinnoh_gym_badges_count()
+	if sinnoh_status_lbl:
+		sinnoh_status_lbl.text = "Status: 🔓 Unlocked • 🏅 Gym Badges: %d/8 Conquered" % sinnoh_badges
+		sinnoh_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+	if btn_enter_sinnoh:
+		btn_enter_sinnoh.disabled = false
+		btn_enter_sinnoh.text = "❄️ Enter Sinnoh ➜"
+		_apply_retro_button_style(btn_enter_sinnoh, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 		
 	if league_status_lbl:
 		var kanto_badges = GameData.get_earned_gym_badges_count()
@@ -1751,7 +1793,7 @@ func update_adventure_regions_ui() -> void:
 				btn_enter_league.text = "🏆 Enter Pokémon League ➜"
 				_apply_retro_button_style(btn_enter_league, Color(0.85, 0.65, 0.15), Color(1.0, 0.85, 0.3), true)
 		else:
-			league_status_lbl.text = "Status: 🔒 Bloqueada (Requiere las medallas de todas las regiones: Kanto [%d/8], Johto, Hoenn y Sinnoh)" % kanto_badges
+			league_status_lbl.text = "Status: 🔒 Bloqueada (Requiere las medallas de todas las regiones: Kanto [%d/8], Johto [%d/8], Hoenn [%d/8], Sinnoh [%d/8])" % [kanto_badges, johto_badges, hoenn_badges, sinnoh_badges]
 			league_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
 			if btn_enter_league:
 				btn_enter_league.disabled = true
@@ -3882,6 +3924,645 @@ func _on_select_hoenn_route_pressed(ep_id: int, route_id: String) -> void:
 		GameData.adventure_current_episode = ep_id
 		open_team_select_for_campaign()
 
+# ==============================================================================
+# --- MODALES Y CONTROLADOR DE CAMPAÑA SINNOH ---
+# ==============================================================================
+
+func _open_sinnoh_episodes_modal() -> void:
+	_setup_sinnoh_episodes_modal()
+	_refresh_sinnoh_episodes_ui()
+	sinnoh_episodes_modal.visible = true
+
+func _setup_sinnoh_episodes_modal() -> void:
+	if sinnoh_episodes_modal != null:
+		return
+	sinnoh_episodes_modal = Control.new()
+	sinnoh_episodes_modal.name = "SinnohEpisodesModal"
+	sinnoh_episodes_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sinnoh_episodes_modal.visible = false
+	sinnoh_episodes_modal.z_index = 45
+	add_child(sinnoh_episodes_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.06, 0.08, 0.12, 1.0)
+	sinnoh_episodes_modal.add_child(bg)
+	
+	var vbox = VBoxContainer.new()
+	vbox.name = "SinnohEpisodesBox"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 20.0
+	vbox.offset_top = 28.0
+	vbox.offset_right = -20.0
+	vbox.offset_bottom = -20.0
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
+	vbox.add_theme_constant_override("separation", 8)
+	sinnoh_episodes_modal.add_child(vbox)
+	
+	sinnoh_episodes_title_lbl = Label.new()
+	sinnoh_episodes_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sinnoh_episodes_title_lbl.text = "❄️ SINNOH CAMPAIGN: EPISODES & GYMS"
+	sinnoh_episodes_title_lbl.add_theme_font_size_override("font_size", 16)
+	sinnoh_episodes_title_lbl.add_theme_color_override("font_color", Color(0.55, 0.80, 1.0))
+	vbox.add_child(sinnoh_episodes_title_lbl)
+	
+	sinnoh_episodes_subtitle_lbl = Label.new()
+	sinnoh_episodes_subtitle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sinnoh_episodes_subtitle_lbl.text = "Conquer the 8 Sinnoh Gyms, thwart Team Galactic & uncover space-time legends!"
+	sinnoh_episodes_subtitle_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	sinnoh_episodes_subtitle_lbl.add_theme_font_size_override("font_size", 11)
+	sinnoh_episodes_subtitle_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+	vbox.add_child(sinnoh_episodes_subtitle_lbl)
+	
+	var wallet_lbl = Label.new()
+	wallet_lbl.name = "SinnohWalletBadge"
+	wallet_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	wallet_lbl.text = "💰 Campaign Gold: %d G  |  💎 %d Diamonds" % [GameData.campaign_gold, GameData.player_diamonds]
+	wallet_lbl.add_theme_font_size_override("font_size", 12)
+	wallet_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+	vbox.add_child(wallet_lbl)
+	
+	var scroll = ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+	
+	var ep_vbox = VBoxContainer.new()
+	ep_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ep_vbox.add_theme_constant_override("separation", 8)
+	scroll.add_child(ep_vbox)
+	
+	var ep_ids = [301, 302, 303, 304, 305, 306, 307, 308]
+	for ep_id in ep_ids:
+		var is_branching = (ep_id in [304, 306, 308])
+		var c_panel = PanelContainer.new()
+		c_panel.name = "CardSinnohEp%d" % ep_id
+		var c_sb = StyleBoxFlat.new()
+		c_sb.bg_color = Color(0.10, 0.16, 0.22, 0.95)
+		c_sb.border_color = Color(0.25, 0.45, 0.65, 0.8)
+		c_sb.set_border_width_all(1)
+		c_sb.set_corner_radius_all(6)
+		c_sb.content_margin_left = 12
+		c_sb.content_margin_right = 12
+		c_sb.content_margin_top = 8
+		c_sb.content_margin_bottom = 8
+		c_panel.add_theme_stylebox_override("panel", c_sb)
+		ep_vbox.add_child(c_panel)
+		
+		var cvbox = VBoxContainer.new()
+		cvbox.add_theme_constant_override("separation", 3)
+		c_panel.add_child(cvbox)
+		
+		var ep_title = Label.new()
+		ep_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_title.add_theme_font_size_override("font_size", 13)
+		ep_title.add_theme_color_override("font_color", Color(1, 1, 1))
+		cvbox.add_child(ep_title)
+		
+		var ep_desc = Label.new()
+		ep_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_desc.add_theme_font_size_override("font_size", 11)
+		ep_desc.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		cvbox.add_child(ep_desc)
+		
+		var ep_rew = Label.new()
+		ep_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_rew.add_theme_font_size_override("font_size", 11)
+		ep_rew.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		cvbox.add_child(ep_rew)
+		
+		var ep_status = Label.new()
+		ep_status.text = "Status: Ready"
+		ep_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		ep_status.add_theme_font_size_override("font_size", 11)
+		ep_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		cvbox.add_child(ep_status)
+		
+		var ep_btn = Button.new()
+		ep_btn.custom_minimum_size = Vector2(0, 34)
+		ep_btn.add_theme_font_size_override("font_size", 12)
+		ep_btn.text = "Embark"
+		_apply_retro_button_style(ep_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		if is_branching:
+			ep_btn.pressed.connect(func():
+				if GameData.is_drag_scrolling():
+					return
+				_open_sinnoh_branching_routes_modal(ep_id)
+			)
+		else:
+			ep_btn.pressed.connect(func():
+				if GameData.is_drag_scrolling():
+					return
+				_on_select_sinnoh_episode_pressed(ep_id)
+			)
+		cvbox.add_child(ep_btn)
+		
+		sinnoh_episode_cards[ep_id] = {
+			"panel": c_panel,
+			"title": ep_title,
+			"desc": ep_desc,
+			"rewards": ep_rew,
+			"status": ep_status,
+			"btn": ep_btn,
+			"is_branching": is_branching
+		}
+	
+	sinnoh_episodes_btn_close = Button.new()
+	sinnoh_episodes_btn_close.name = "BtnCloseSinnohEpisodes"
+	sinnoh_episodes_btn_close.custom_minimum_size = Vector2(0, 36)
+	sinnoh_episodes_btn_close.text = "⬅ Return to Regions"
+	sinnoh_episodes_btn_close.add_theme_font_size_override("font_size", 12)
+	_apply_retro_button_style(sinnoh_episodes_btn_close, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+	sinnoh_episodes_btn_close.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		sinnoh_episodes_modal.visible = false
+		update_adventure_regions_ui()
+		adventure_regions_modal.visible = true
+	)
+	vbox.add_child(sinnoh_episodes_btn_close)
+
+func _refresh_sinnoh_episodes_ui() -> void:
+	if sinnoh_episodes_modal == null:
+		return
+	var is_es = GameData.is_spanish()
+	
+	if sinnoh_episodes_title_lbl:
+		sinnoh_episodes_title_lbl.text = "❄️ CAMPAÑA SINNOH: EPISODIOS Y GIMNASIOS" if is_es else "❄️ SINNOH CAMPAIGN: EPISODES & GYMS"
+	if sinnoh_episodes_subtitle_lbl:
+		sinnoh_episodes_subtitle_lbl.text = "¡Conquista los 8 Gimnasios de Sinnoh, detén al Equipo Galaxia y desafía el espacio-tiempo!" if is_es else "Conquer the 8 Sinnoh Gyms, thwart Team Galactic & uncover space-time legends!"
+	if sinnoh_episodes_btn_close:
+		sinnoh_episodes_btn_close.text = "⬅ Volver a Regiones" if is_es else "⬅ Return to Regions"
+	
+	var wallet_lbl = sinnoh_episodes_modal.find_child("SinnohWalletBadge", true, false) as Label
+	if wallet_lbl:
+		wallet_lbl.text = ("💰 Oro de Campaña: %d G  |  💎 %d Diamantes" if is_es else "💰 Campaign Gold: %d G  |  💎 %d Diamonds") % [GameData.campaign_gold, GameData.player_diamonds]
+		
+	var episode_meta = {
+		301: {
+			"title_en": "Episode I: Roark & the Coal Badge",
+			"title_es": "Episodio I: Roco y la Medalla Lenteja",
+			"desc_en": "Pass through Oreburgh Gate and descend into the coal mine before facing Gym Leader Roark's prehistoric rock team.",
+			"desc_es": "Cruza la Puerta Pirita y desciende a la mina de carbón antes de enfrentar a los Pokémon roca prehistóricos del Líder Roco.",
+			"badge_en": "Coal Badge",
+			"badge_es": "Medalla Lenteja",
+			"prev_en": "the Tutorial",
+			"prev_es": "el Tutorial"
+		},
+		302: {
+			"title_en": "Episode II: Gardenia & the Forest Badge",
+			"title_es": "Episodio II: Gardenia y la Medalla Bosque",
+			"desc_en": "Venture through Eterna Forest and solve the clockwork maze to challenge Gym Leader Gardenia's vibrant flora.",
+			"desc_es": "Adéntrate en el Bosque Vetusto y resuelve el laberinto vegetal para retar a las plantas de la Líder Gardenia.",
+			"badge_en": "Forest Badge",
+			"badge_es": "Medalla Bosque",
+			"prev_en": "Episode I",
+			"prev_es": "el Episodio I"
+		},
+		303: {
+			"title_en": "Episode III: Maylene & the Cobble Badge",
+			"title_es": "Episodio III: Brega y la Medalla Adoquín",
+			"desc_en": "Travel down Route 214 to Veilstone City and test your fighting spirit against Gym Leader Maylene and Lucario.",
+			"desc_es": "Viaja por la Ruta 214 a Ciudad Rocavelo y pon a prueba tu espíritu de combate contra la Líder Brega y Lucario.",
+			"badge_en": "Cobble Badge",
+			"badge_es": "Medalla Adoquín",
+			"prev_en": "Episode II",
+			"prev_es": "el Episodio II"
+		},
+		304: {
+			"title_en": "Episode IV: Crasher Wake & the Fen Badge (Branching)",
+			"title_es": "Episodio IV: Mananti y la Medalla Ciénaga (Ruta Ramificada)",
+			"desc_en": "Explore the Great Marsh wetland safari or plunge into the tidal whirlpool arena of Gym Leader Crasher Wake.",
+			"desc_es": "Explora el safari del Gran Pantanal o sumérgete en la arena de torbellinos del Líder Mananti.",
+			"badge_en": "Fen Badge",
+			"badge_es": "Medalla Ciénaga",
+			"prev_en": "Episode III",
+			"prev_es": "el Episodio III"
+		},
+		305: {
+			"title_en": "Episode V: Fantina & the Relic Badge",
+			"title_es": "Episodio V: Fantina y la Medalla Reliquia",
+			"desc_en": "Solve the shadowed flashlight riddles and dance with the spectral mastery of Gym Leader Fantina.",
+			"desc_es": "Resuelve los acertijos de linterna y sombras y baila ante la maestría espectral de la Líder Fantina.",
+			"badge_en": "Relic Badge",
+			"badge_es": "Medalla Reliquia",
+			"prev_en": "Episode IV",
+			"prev_es": "el Episodio IV"
+		},
+		306: {
+			"title_en": "Episode VI: Byron & the Mine Badge (Branching)",
+			"title_es": "Episodio VI: Acerón y la Medalla Mina (Ruta Ramificada)",
+			"desc_en": "Train with Aura Guardian Riley inside Iron Island or breach Gym Leader Byron's steel bastion in Canalave City.",
+			"desc_es": "Entrena junto a Quinoa en la Isla Hierro o penetra el bastión de acero del Líder Acerón en Ciudad Canal.",
+			"badge_en": "Mine Badge",
+			"badge_es": "Medalla Mina",
+			"prev_en": "Episode V",
+			"prev_es": "el Episodio V"
+		},
+		307: {
+			"title_en": "Episode VII: Candice & the Icicle Badge",
+			"title_es": "Episodio VII: Inverna y la Medalla Carámbano",
+			"desc_en": "Brave the freezing whiteout blizzard of Route 217 and glide through Gym Leader Candice's glacial slopes.",
+			"desc_es": "Resiste la ventisca polar de la Ruta 217 y deslízate por las pendientes heladas de la Líder Inverna.",
+			"badge_en": "Icicle Badge",
+			"badge_es": "Medalla Carámbano",
+			"prev_en": "Episode VI",
+			"prev_es": "el Episodio VI"
+		},
+		308: {
+			"title_en": "Episode VIII: Volkner & the Beacon Badge (Branching)",
+			"title_es": "Episodio VIII: Lectro y la Medalla Faro (Ruta Ramificada)",
+			"desc_en": "Halt Cyrus & Dialga atop the Spear Pillar, then conquer Sinnoh's electric lighthouse Gym Leader, Volkner!",
+			"desc_es": "Detén a Helio y a Dialga en la Columna Lanza y conquista el Gimnasio eléctrico del Líder Lectro en Ciudad Marina.",
+			"badge_en": "Beacon Badge",
+			"badge_es": "Medalla Faro",
+			"prev_en": "Episode VII",
+			"prev_es": "el Episodio VII"
+		}
+	}
+	
+	var _fmt_combates := func(n: int) -> String:
+		if is_es:
+			return "1 Combate" if n == 1 else "%d Combates" % n
+		return "1 Battle" if n == 1 else "%d Battles" % n
+	
+	for ep_id in sinnoh_episode_cards:
+		var card = sinnoh_episode_cards[ep_id]
+		var meta = episode_meta.get(ep_id, {})
+		var panel: PanelContainer = card["panel"]
+		var lbl_title: Label = card["title"]
+		var lbl_desc: Label = card["desc"]
+		var lbl_rewards: Label = card["rewards"]
+		var lbl_status: Label = card["status"]
+		var btn: Button = card["btn"]
+		var is_branching: bool = card["is_branching"]
+		
+		lbl_title.text = meta.get("title_es" if is_es else "title_en", "Episode %d" % ep_id)
+		lbl_desc.text = meta.get("desc_es" if is_es else "desc_en", "")
+		
+		var b_name = meta.get("badge_es" if is_es else "badge_en", "Badge")
+		var tot_combates = GameData.get_adventure_episode_total_stages_all_routes(ep_id)
+		var tot_dia = GameData.get_adventure_episode_total_diamonds(ep_id)
+		lbl_rewards.text = ("%s  |  Recompensas: 💎 %d Diamantes & 🏅 %s" if is_es else "%s  |  Rewards: 💎 %d Diamonds & 🏅 %s") % [
+			_fmt_combates.call(tot_combates),
+			tot_dia,
+			b_name
+		]
+		
+		var is_unlocked = GameData.is_adventure_episode_unlocked(ep_id)
+		var is_completed = GameData.is_adventure_episode_completed(ep_id)
+		var is_in_progress = (GameData.adventure_current_episode == ep_id and not GameData.adventure_player_team_state.is_empty())
+		
+		if not is_unlocked:
+			panel.modulate = Color(0.7, 0.7, 0.75, 0.8)
+			lbl_title.add_theme_color_override("font_color", Color(0.5, 0.6, 0.7))
+			var prev_ep_str = meta.get("prev_es" if is_es else "prev_en", "the previous episode")
+			lbl_status.text = ("Status: 🔒 Bloqueado (Completa %s)" if is_es else "Status: 🔒 Locked (Clear %s first)") % prev_ep_str
+			lbl_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			btn.text = "🔒 Bloqueado" if is_es else "🔒 Locked"
+			btn.disabled = true
+			_apply_retro_button_style(btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+		elif is_in_progress:
+			panel.modulate = Color(1, 1, 1, 1)
+			lbl_title.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			if is_branching:
+				var cur_r = GameData.get_adventure_selected_route(ep_id)
+				var r_info = GameData.get_adventure_route_info(ep_id, cur_r)
+				var total = GameData.get_adventure_total_stages(ep_id)
+				lbl_status.text = ("Status: En Progreso (%s • Combate %d/%d)" if is_es else "Status: In Progress (%s • Battle %d/%d)") % [
+					str(r_info.get("name_es" if is_es else "name", "Route")),
+					GameData.adventure_current_stage,
+					total
+				]
+			else:
+				var total = GameData.get_adventure_total_stages(ep_id)
+				lbl_status.text = ("Status: En Progreso (Combate %d/%d)" if is_es else "Status: In Progress (Battle %d/%d)") % [
+					GameData.adventure_current_stage,
+					total
+				]
+			lbl_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			btn.text = "⚔️ Continuar Aventura ➜" if is_es else "⚔️ Resume Journey ➜"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		elif is_completed:
+			panel.modulate = Color(1, 1, 1, 1)
+			lbl_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			lbl_status.text = ("Status: 🏅 ¡Conquistado! • Medalla %s Obtenida" if is_es else "Status: 🏅 Conquered! • %s Earned") % b_name
+			lbl_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			if is_branching:
+				btn.text = "🗺️ Ver / Rejugar Rutas" if is_es else "🗺️ View / Replay Routes"
+			else:
+				btn.text = "🏆 Rejugar Episodio" if is_es else "🏆 Replay Episode"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		else:
+			panel.modulate = Color(1, 1, 1, 1)
+			lbl_title.add_theme_color_override("font_color", Color(1, 1, 1))
+			lbl_status.text = "Status: ⚡ Disponible • ¡Listo para desafiar!" if is_es else "Status: ⚡ Available • Ready to challenge!"
+			lbl_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			if is_branching:
+				btn.text = "🗺️ Elegir Ruta ➜" if is_es else "🗺️ Select Route ➜"
+			else:
+				btn.text = "⚔️ Comenzar Desafío ➜" if is_es else "⚔️ Start Challenge ➜"
+			btn.disabled = false
+			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+func _on_select_sinnoh_episode_pressed(episode_id: int) -> void:
+	if GameData.is_drag_scrolling():
+		return
+	if not GameData.is_tutorial_completed():
+		_show_tutorial_prompt_for_locked_episode()
+		return
+	if not GameData.is_adventure_episode_unlocked(episode_id):
+		return
+	if sinnoh_episodes_modal:
+		sinnoh_episodes_modal.visible = false
+	GameData.campaign_submode = "ADVENTURE"
+	GameData.adventure_selected_region = "SINNOH"
+	if GameData.adventure_current_episode != episode_id:
+		GameData.reset_adventure_episode(episode_id)
+	GameData.adventure_current_episode = episode_id
+	if GameData.adventure_player_team_state.is_empty():
+		open_team_select_for_campaign()
+	else:
+		update_campaign_ui()
+		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
+
+func _open_sinnoh_branching_routes_modal(ep_id: int) -> void:
+	sinnoh_current_routes_ep = ep_id
+	_setup_sinnoh_routes_modal()
+	_refresh_sinnoh_routes_ui(ep_id)
+	if sinnoh_episodes_modal:
+		sinnoh_episodes_modal.visible = false
+	sinnoh_routes_modal.visible = true
+
+func _setup_sinnoh_routes_modal() -> void:
+	if sinnoh_routes_modal != null:
+		return
+	sinnoh_routes_modal = Control.new()
+	sinnoh_routes_modal.name = "SinnohRoutesModal"
+	sinnoh_routes_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sinnoh_routes_modal.visible = false
+	sinnoh_routes_modal.z_index = 50
+	add_child(sinnoh_routes_modal)
+	
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.06, 0.08, 0.12, 1.0)
+	sinnoh_routes_modal.add_child(bg)
+	
+	var vbox = VBoxContainer.new()
+	vbox.name = "SinnohRoutesBox"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 20.0
+	vbox.offset_top = 28.0
+	vbox.offset_right = -20.0
+	vbox.offset_bottom = -20.0
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
+	vbox.add_theme_constant_override("separation", 8)
+	sinnoh_routes_modal.add_child(vbox)
+	
+	sinnoh_routes_title_lbl = Label.new()
+	sinnoh_routes_title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sinnoh_routes_title_lbl.text = "🗺️ SINNOH: BRANCHING ROUTES"
+	sinnoh_routes_title_lbl.add_theme_font_size_override("font_size", 15)
+	sinnoh_routes_title_lbl.add_theme_color_override("font_color", Color(0.55, 0.80, 1.0))
+	vbox.add_child(sinnoh_routes_title_lbl)
+	
+	sinnoh_routes_subtitle_lbl = Label.new()
+	sinnoh_routes_subtitle_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sinnoh_routes_subtitle_lbl.text = "Select an operation sector to proceed with your expedition:"
+	sinnoh_routes_subtitle_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	sinnoh_routes_subtitle_lbl.add_theme_font_size_override("font_size", 11)
+	sinnoh_routes_subtitle_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+	vbox.add_child(sinnoh_routes_subtitle_lbl)
+	
+	var scroll = ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+	
+	sinnoh_routes_scroll_vbox = VBoxContainer.new()
+	sinnoh_routes_scroll_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sinnoh_routes_scroll_vbox.add_theme_constant_override("separation", 8)
+	scroll.add_child(sinnoh_routes_scroll_vbox)
+	
+	sinnoh_routes_btn_close = Button.new()
+	sinnoh_routes_btn_close.name = "BtnCloseSinnohRoutes"
+	sinnoh_routes_btn_close.custom_minimum_size = Vector2(0, 36)
+	sinnoh_routes_btn_close.text = "⬅ Return to Sinnoh Episodes"
+	sinnoh_routes_btn_close.add_theme_font_size_override("font_size", 12)
+	_apply_retro_button_style(sinnoh_routes_btn_close, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), false)
+	sinnoh_routes_btn_close.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		sinnoh_routes_modal.visible = false
+		_open_sinnoh_episodes_modal()
+	)
+	vbox.add_child(sinnoh_routes_btn_close)
+
+func _refresh_sinnoh_routes_ui(ep_id: int) -> void:
+	if sinnoh_routes_scroll_vbox == null:
+		return
+	for child in sinnoh_routes_scroll_vbox.get_children():
+		sinnoh_routes_scroll_vbox.remove_child(child)
+		child.queue_free()
+	sinnoh_routes_cards.clear()
+	
+	var is_es = GameData.is_spanish()
+	var _fmt_combates := func(n: int) -> String:
+		if is_es:
+			return "1 Combate" if n == 1 else "%d Combates" % n
+		return "1 Battle" if n == 1 else "%d Battles" % n
+	
+	if sinnoh_routes_btn_close:
+		sinnoh_routes_btn_close.text = "⬅ Volver a Episodios de Sinnoh" if is_es else "⬅ Return to Sinnoh Episodes"
+	
+	var routes_def = []
+	if ep_id == 304:
+		sinnoh_routes_title_lbl.text = "🌊 EPISODIO IV: OPERACIONES DE CIUDAD PRADERA" if is_es else "🌊 EPISODE IV: PASTORIA OPERATIONS"
+		sinnoh_routes_subtitle_lbl.text = "Explora el Gran Pantanal y sumérgete en el Gimnasio Pradera:" if is_es else "Explore the Great Marsh and dive into Pastoria Gym:"
+		var c_mar = GameData.get_adventure_route_stage_count(304, "great_marsh")
+		var c_gym = GameData.get_adventure_route_stage_count(304, "pastoria_gym")
+		routes_def = [
+			{
+				"id": "great_marsh",
+				"name": ("Gran Pantanal (Safari de Humedales) (%s)" if is_es else "Great Marsh Wetlands Safari (%s)") % _fmt_combates.call(c_mar),
+				"desc": "Camina por el lodoso Gran Pantanal y combate depredadores de ciénaga y reclutas del Equipo Galaxia." if is_es else "Trek through the muddy waters of the Great Marsh and clash with elusive swamp predators and Galactic grunts.",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes • Desbloquea el Gimnasio Pradera" if is_es else "%s  |  Reward: 💎 %d Diamonds • Unlocks Pastoria Gym") % [_fmt_combates.call(c_mar), GameData.get_adventure_route_diamonds(304, "great_marsh")]
+			},
+			{
+				"id": "pastoria_gym",
+				"name": ("Gimnasio Pradera de Mananti (%s)" if is_es else "Pastoria Tidal Gym (%s)") % _fmt_combates.call(c_gym),
+				"desc": "Activa los interruptores de nivel de agua y sube al ring contra el luchador de las mareas, ¡Mananti!" if is_es else "Operate the water pump switches and plunge into the ring with the tidal wrestler, Crasher Wake!",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes & 🏅 Medalla Ciénaga (¡Victoria Final!)" if is_es else "%s  |  Reward: 💎 %d Diamonds & 🏅 Fen Badge (Final Clear!)") % [_fmt_combates.call(c_gym), GameData.get_adventure_route_diamonds(304, "pastoria_gym")]
+			}
+		]
+	elif ep_id == 306:
+		sinnoh_routes_title_lbl.text = "⚙️ EPISODIO VI: OPERACIONES DE CIUDAD CANAL" if is_es else "⚙️ EPISODE VI: CANALAVE OPERATIONS"
+		sinnoh_routes_subtitle_lbl.text = "Explora la Isla Hierro con Quinoa y conquista la fortaleza de acero de Acerón:" if is_es else "Explore Iron Island with Riley and breach Byron's steel fortress:"
+		var c_isl = GameData.get_adventure_route_stage_count(306, "iron_island")
+		var c_gym = GameData.get_adventure_route_stage_count(306, "canalave_gym")
+		routes_def = [
+			{
+				"id": "iron_island",
+				"name": ("Isla Hierro (Expedición del Aura) (%s)" if is_es else "Iron Island Aura Expedition (%s)") % _fmt_combates.call(c_isl),
+				"desc": "Desciende a las galerías subterráneas junto a Quinoa, frustra la excavación del Equipo Galaxia y despierta el aura." if is_es else "Delve into the subterranean mine shafts with Riley, foil Team Galactic's excavation and awaken your aura bond.",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes • Desbloquea el Gimnasio Canal" if is_es else "%s  |  Reward: 💎 %d Diamonds • Unlocks Canalave Gym") % [_fmt_combates.call(c_isl), GameData.get_adventure_route_diamonds(306, "iron_island")]
+			},
+			{
+				"id": "canalave_gym",
+				"name": ("Gimnasio Canal de Acerón (%s)" if is_es else "Canalave Steel Gym (%s)") % _fmt_combates.call(c_gym),
+				"desc": "Sube por las plataformas móviles de vigas y desafía el bastión de acero inquebrantable del Líder Acerón." if is_es else "Ride the moving girder platforms and shatter the unyielding steel bastion of Gym Leader Byron.",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes & 🏅 Medalla Mina (¡Victoria Final!)" if is_es else "%s  |  Reward: 💎 %d Diamonds & 🏅 Mine Badge (Final Clear!)") % [_fmt_combates.call(c_gym), GameData.get_adventure_route_diamonds(306, "canalave_gym")]
+			}
+		]
+	elif ep_id == 308:
+		sinnoh_routes_title_lbl.text = "🌌 EPISODIO VIII: COLUMNA LANZA Y CIUDAD MARINA" if is_es else "🌌 EPISODE VIII: SPEAR PILLAR & SUNYSHORE"
+		sinnoh_routes_subtitle_lbl.text = "Detén a Helio y a Dialga en el Monte Corona y conquista la última medalla de Sinnoh:" if is_es else "Halt Cyrus & Dialga atop Mt. Coronet and conquer Sinnoh's final Gym:"
+		var c_spe = GameData.get_adventure_route_stage_count(308, "spear_pillar")
+		var c_gym = GameData.get_adventure_route_stage_count(308, "sunyshore_gym")
+		routes_def = [
+			{
+				"id": "spear_pillar",
+				"name": ("Columna Lanza (Cataclismo del Tiempo) (%s)" if is_es else "Spear Pillar (Cataclysm of Time) (%s)") % _fmt_combates.call(c_spe),
+				"desc": "Sube al Monte Corona hasta la Columna Lanza. ¡Rompe la Cadena Roja de Helio y apacigua al señor del tiempo, Dialga!" if is_es else "Climb Mt. Coronet to the ancient Spear Pillar. Halt Cyrus's Red Chain and calm the legendary master of time, Dialga!",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes • Desbloquea el Gimnasio Marina" if is_es else "%s  |  Reward: 💎 %d Diamonds • Unlocks Sunyshore Gym") % [_fmt_combates.call(c_spe), GameData.get_adventure_route_diamonds(308, "spear_pillar")]
+			},
+			{
+				"id": "sunyshore_gym",
+				"name": ("Gimnasio Marina de Lectro (%s)" if is_es else "Sunyshore Electric Gym (%s)") % _fmt_combates.call(c_gym),
+				"desc": "Cruza los engranajes solares gigantescos y despierta la pasión dormida del Líder más fuerte de Sinnoh, ¡Lectro!" if is_es else "Traverse the giant solar power gears and awaken the lost passion of Sinnoh's strongest Gym Leader, Volkner.",
+				"rewards": ("%s  |  Recompensa: 💎 %d Diamantes & 🏅 Medalla Faro (¡Campaña Conquistada!)" if is_es else "%s  |  Reward: 💎 %d Diamonds & 🏅 Beacon Badge (Campaign Conquered!)") % [_fmt_combates.call(c_gym), GameData.get_adventure_route_diamonds(308, "sunyshore_gym")]
+			}
+		]
+		
+	for r in routes_def:
+		var r_id: String = str(r["id"])
+		var c_panel = PanelContainer.new()
+		c_panel.name = "CardSinnohRoute_%s" % r_id
+		var c_sb = StyleBoxFlat.new()
+		c_sb.bg_color = Color(0.10, 0.16, 0.22, 0.95)
+		c_sb.border_color = Color(0.25, 0.45, 0.65, 0.8)
+		c_sb.set_border_width_all(1)
+		c_sb.set_corner_radius_all(6)
+		c_sb.content_margin_left = 12
+		c_sb.content_margin_right = 12
+		c_sb.content_margin_top = 8
+		c_sb.content_margin_bottom = 8
+		c_panel.add_theme_stylebox_override("panel", c_sb)
+		sinnoh_routes_scroll_vbox.add_child(c_panel)
+		
+		var cvbox = VBoxContainer.new()
+		cvbox.add_theme_constant_override("separation", 3)
+		c_panel.add_child(cvbox)
+		
+		var r_title = Label.new()
+		r_title.text = r["name"]
+		r_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_title.add_theme_font_size_override("font_size", 13)
+		r_title.add_theme_color_override("font_color", Color(1, 1, 1))
+		cvbox.add_child(r_title)
+		
+		var r_desc = Label.new()
+		r_desc.text = r["desc"]
+		r_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_desc.add_theme_font_size_override("font_size", 11)
+		r_desc.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		cvbox.add_child(r_desc)
+		
+		var r_rew = Label.new()
+		r_rew.text = r["rewards"]
+		r_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_rew.add_theme_font_size_override("font_size", 11)
+		r_rew.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		cvbox.add_child(r_rew)
+		
+		var r_status = Label.new()
+		r_status.text = "Status: Ready"
+		r_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_status.add_theme_font_size_override("font_size", 11)
+		r_status.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		cvbox.add_child(r_status)
+		
+		var r_btn = Button.new()
+		r_btn.custom_minimum_size = Vector2(0, 34)
+		r_btn.add_theme_font_size_override("font_size", 12)
+		r_btn.text = "Select Route"
+		_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		r_btn.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			_on_select_sinnoh_route_pressed(ep_id, r_id)
+		)
+		cvbox.add_child(r_btn)
+		
+		var is_unlocked = GameData.is_adventure_route_unlocked(ep_id, r_id)
+		var is_cleared = GameData.is_adventure_route_completed(ep_id, r_id)
+		var is_in_progress = (GameData.adventure_current_episode == ep_id and GameData.get_adventure_selected_route(ep_id) == r_id and not GameData.adventure_player_team_state.is_empty())
+		
+		if not is_unlocked:
+			c_panel.modulate = Color(0.7, 0.7, 0.75, 0.8)
+			r_title.add_theme_color_override("font_color", Color(0.5, 0.6, 0.7))
+			r_status.text = "Status: 🔒 Bloqueado (Completa la operación previa)" if is_es else "Status: 🔒 Locked (Clear previous sector first)"
+			r_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			r_btn.text = "🔒 Bloqueado" if is_es else "🔒 Locked"
+			r_btn.disabled = true
+			_apply_retro_button_style(r_btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+		elif is_in_progress:
+			c_panel.modulate = Color(1, 1, 1, 1)
+			r_title.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			r_status.text = ("Status: ⚔️ En Curso (Combate %d/%d)" if is_es else "Status: ⚔️ Active (%d/%d)") % [
+				GameData.adventure_current_stage,
+				GameData.get_adventure_total_stages(ep_id)
+			]
+			r_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			r_btn.text = "⚔️ Continuar Operación ➜" if is_es else "⚔️ Resume Operation ➜"
+			r_btn.disabled = false
+			_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		elif is_cleared:
+			c_panel.modulate = Color(1, 1, 1, 1)
+			r_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			r_status.text = "Status: 🏅 ¡Sector Conquistado! • Recompensa reclamada" if is_es else "Status: 🏅 Sector Conquered! • Reward claimed"
+			r_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			r_btn.text = "🗺️ Rejugar Ruta" if is_es else "🗺️ Replay Route"
+			r_btn.disabled = false
+			_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+		else:
+			c_panel.modulate = Color(1, 1, 1, 1)
+			r_title.add_theme_color_override("font_color", Color(1, 1, 1))
+			r_status.text = "Status: ⚡ Disponible • ¡Lista para desplegar!" if is_es else "Status: ⚡ Available • Ready to deploy!"
+			r_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			r_btn.text = "⚔️ Iniciar Operación ➜" if is_es else "⚔️ Launch Operation ➜"
+			r_btn.disabled = false
+			_apply_retro_button_style(r_btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+func _on_select_sinnoh_route_pressed(ep_id: int, route_id: String) -> void:
+	if not GameData.is_adventure_route_unlocked(ep_id, route_id):
+		return
+	if sinnoh_routes_modal:
+		sinnoh_routes_modal.visible = false
+	if sinnoh_episodes_modal:
+		sinnoh_episodes_modal.visible = false
+	GameData.campaign_submode = "ADVENTURE"
+	GameData.adventure_selected_region = "SINNOH"
+	
+	var is_same_route = (GameData.adventure_current_episode == ep_id and GameData.get_adventure_selected_route(ep_id) == route_id)
+	if is_same_route and not GameData.adventure_player_team_state.is_empty():
+		update_campaign_ui()
+		campaign_modal.visible = true
+		_check_and_run_camp_evolutions()
+	else:
+		GameData.set_adventure_selected_route(ep_id, route_id)
+		GameData.reset_adventure_episode(ep_id)
+		GameData.adventure_current_episode = ep_id
+		open_team_select_for_campaign()
+
 
 func _on_hub_tutorial_pressed() -> void:
 	if GameData.is_drag_scrolling():
@@ -4414,7 +5095,9 @@ func open_team_select_for_campaign() -> void:
 			101: "Johto I", 102: "Johto II", 103: "Johto III", 104: "Johto IV",
 			105: "Johto V", 106: "Johto VI", 107: "Johto VII", 108: "Johto VIII",
 			201: "Hoenn I", 202: "Hoenn II", 203: "Hoenn III", 204: "Hoenn IV",
-			205: "Hoenn V", 206: "Hoenn VI", 207: "Hoenn VII", 208: "Hoenn VIII"
+			205: "Hoenn V", 206: "Hoenn VI", 207: "Hoenn VII", 208: "Hoenn VIII",
+			301: "Sinnoh I", 302: "Sinnoh II", 303: "Sinnoh III", 304: "Sinnoh IV",
+			305: "Sinnoh V", 306: "Sinnoh VI", 307: "Sinnoh VII", 308: "Sinnoh VIII"
 		}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
 		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
 	elif GameData.campaign_submode == "LAKE_OF_RAGE":
@@ -4606,7 +5289,7 @@ func update_campaign_ui() -> void:
 			
 		if cur_stage > total_stages:
 			var badge_name = "Badge"
-			if ep_id in [5, 6, 7]:
+			if ep_info.get("is_branching", false):
 				var cur_route = GameData.get_adventure_selected_route(ep_id)
 				var r_info = GameData.get_adventure_route_info(ep_id, cur_route)
 				badge_name = str(r_info.get("badge_name", "Operation Complete!"))
@@ -7090,6 +7773,8 @@ func _on_close_team_select_pressed() -> void:
 				_open_johto_episodes_modal()
 			elif GameData.adventure_selected_region == "HOENN":
 				_open_hoenn_episodes_modal()
+			elif GameData.adventure_selected_region == "SINNOH":
+				_open_sinnoh_episodes_modal()
 			else:
 				update_adventure_episodes_ui()
 				adventure_episodes_modal.visible = true
@@ -7540,7 +8225,9 @@ func update_team_select_ui() -> void:
 				101: "Johto I", 102: "Johto II", 103: "Johto III", 104: "Johto IV",
 				105: "Johto V", 106: "Johto VI", 107: "Johto VII", 108: "Johto VIII",
 				201: "Hoenn I", 202: "Hoenn II", 203: "Hoenn III", 204: "Hoenn IV",
-				205: "Hoenn V", 206: "Hoenn VI", 207: "Hoenn VII", 208: "Hoenn VIII"
+				205: "Hoenn V", 206: "Hoenn VI", 207: "Hoenn VII", 208: "Hoenn VIII",
+			301: "Sinnoh I", 302: "Sinnoh II", 303: "Sinnoh III", 304: "Sinnoh IV",
+			305: "Sinnoh V", 306: "Sinnoh VI", 307: "Sinnoh VII", 308: "Sinnoh VIII"
 			}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
 			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
 		elif GameData.campaign_submode == "CHAOS":
