@@ -161,6 +161,16 @@ var battle_bag_tab_bar: HBoxContainer = null
 var btn_battle_tab_consumables: Button = null
 var btn_battle_tab_key_items: Button = null
 var battle_bag_capacity_lbl: Label = null
+var btn_poke_flute: Button = null
+
+func get_poke_flute_holder():
+	for p in player_team:
+		if p and p.held_item == "poke_flute":
+			return p
+	return null
+
+func player_team_has_poke_flute() -> bool:
+	return get_poke_flute_holder() != null
 
 # --- TABLA DE EFECTIVIDADES POR TIPO ---
 @onready var btn_type_chart: Button = $MainContainer/TopBar/BtnTypeChart
@@ -238,6 +248,7 @@ func _ready() -> void:
 	btn_bag.pressed.connect(_on_bag_pressed)
 	btn_cancel_bag.pressed.connect(func(): bag_modal.visible = false)
 	bag_modal.visible = false
+	_setup_poke_flute_button()
 	
 	if btn_type_chart:
 		btn_type_chart.pressed.connect(_on_type_chart_pressed)
@@ -1575,12 +1586,21 @@ func start_new_round() -> void:
 	var p_spd = get_pokemon_effective_speed(p, e)
 	var e_spd = get_pokemon_effective_speed(e, p)
 	
+	var p_quick_claw = (p != null and p.held_item == "quick_claw" and randf() < 0.20)
+	var e_quick_claw = (e != null and e.held_item == "quick_claw" and randf() < 0.20)
+	
 	var initiative_msg = ""
 	var p_is_faster = (p_spd < e_spd) if (trick_room_turns > 0) else (p_spd > e_spd)
 	var e_is_faster = (e_spd < p_spd) if (trick_room_turns > 0) else (e_spd > p_spd)
 	var tr_tag = " [color=purple]🌀 TRICK ROOM ACTIVE (%d rds left)![/color]" % trick_room_turns if trick_room_turns > 0 else ""
 	
-	if p_is_faster:
+	if p_quick_claw and not e_quick_claw:
+		round_order = ["PLAYER", "ENEMY"]
+		initiative_msg = "[b]━━━ ROUND %d ━━━[/b]%s\n⚡ [b]%s[/b]'s [color=gold]Quick Claw[/color] activated! It strikes first! 🐾" % [round_number, tr_tag, p.name]
+	elif e_quick_claw and not p_quick_claw:
+		round_order = ["ENEMY", "PLAYER"]
+		initiative_msg = "[b]━━━ ROUND %d ━━━[/b]%s\n⚡ Rival [b]%s[/b]'s [color=gold]Quick Claw[/color] activated! It strikes first! 🐾" % [round_number, tr_tag, e.name]
+	elif p_is_faster:
 		round_order = ["PLAYER", "ENEMY"]
 		var reason = "is slower and acts first via Trick Room" if trick_room_turns > 0 else "is faster and takes the first turn"
 		initiative_msg = "[b]━━━ ROUND %d ━━━[/b]%s\n[b]%s[/b] (SPD %d vs %d) %s." % [round_number, tr_tag, p.name, p_spd, e_spd, reason]
@@ -1785,25 +1805,18 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 	if not actor:
 		return true
 
-	# 1. Sleep: Decrement sleep turns upon attempting an action (or auto-wake if holding Poké Flute)
+	# 1. Sleep: Decrement sleep turns upon attempting an action
 	if actor.is_asleep_turns > 0:
-		if actor.held_item == "poke_flute":
-			actor.is_asleep_turns = 0
-			actor.immune_sleep_rounds = 1
-			log_action("🎶 [b]%s[/b]'s held [color=gold]Poké Flute[/color] played a melody and woke it up! 💤" % actor.name)
-			GameData.play_combat_sfx("use")
+		actor.is_asleep_turns -= 1
+		if actor.is_asleep_turns > 0:
+			log_action("💤 [b]%s[/b] [color=lightblue]is fast asleep and cannot move! (%d rounds remaining)[/color]" % [actor.name, actor.is_asleep_turns])
 			update_ui()
+			_end_failed_action_turn(is_player)
+			return false
 		else:
-			actor.is_asleep_turns -= 1
-			if actor.is_asleep_turns > 0:
-				log_action("💤 [b]%s[/b] [color=lightblue]is fast asleep and cannot move! (%d rounds remaining)[/color]" % [actor.name, actor.is_asleep_turns])
-				update_ui()
-				_end_failed_action_turn(is_player)
-				return false
-			else:
-				actor.immune_sleep_rounds = 1
-				log_action("✨ [b]%s[/b] [color=green]woke up from sleep and gained 1 round Sleep immunity![/color]" % actor.name)
-				update_ui()
+			actor.immune_sleep_rounds = 1
+			log_action("✨ [b]%s[/b] [color=green]woke up from sleep and gained 1 round Sleep immunity![/color]" % actor.name)
+			update_ui()
 
 	# 2. Freeze: Thaw check
 	if actor.is_frozen:
@@ -2715,6 +2728,11 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			note_text += " [color=yellow](Close Combat: -%d DMG for partial energy)[/color]" % (missing * 6)
 
 	# 8. Modificadores de daño del atacante
+	# Wise Glasses (Gafas Especiales: +1 DMG a movimientos especiales)
+	if attacker.held_item == "wise_glasses" and move.type in ["FIRE", "WATER", "GRASS", "ELECTRIC", "PSYCHIC", "ICE", "DRAGON", "GHOST", "DARK"]:
+		raw_damage += 1
+		note_text += " [color=#80DEEA]Wise Glasses (+1 Sp. DMG)![/color]"
+
 	# Focus Energy (Rattata)
 	if attacker.has_passive and attacker.passive_name == "Focus Energy" and att_spd > def_spd:
 		raw_damage += 1
@@ -3513,26 +3531,8 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			if p_idx != -1 and p_idx < active_team.size():
 				active_team[p_idx]["current_exp"] = attacker.current_exp
 
-		# Exp Share (Held Item / Bag):
-		# 1. Si el atacante activo lleva equipado "exp_share", recibe un bonus de +20% EXP!
-		if exp_gained > 0 and attacker.held_item == "exp_share":
-			var a_req = attacker.get_required_exp()
-			if a_req > 0 and attacker.current_exp < a_req:
-				var bonus_amt: int = max(1, int(round(float(exp_gained) * 0.20)))
-				var actual_bonus: int = min(bonus_amt, a_req - attacker.current_exp)
-				if actual_bonus > 0:
-					attacker.current_exp += actual_bonus
-					exp_log_str += " [color=#FFD54F][Exp. Share 🎒: %s +%d Bonus EXP ➔ %d/%d][/color]" % [
-						attacker.name, actual_bonus, attacker.current_exp, a_req
-					]
-					if GameData.is_campaign_mode:
-						var p_idx = player_team.find(attacker)
-						var active_team = GameData.get_active_campaign_team_state()
-						if p_idx != -1 and p_idx < active_team.size():
-							active_team[p_idx]["current_exp"] = attacker.current_exp
-
-		# 2. Si un Pokémon en banca lleva equipado "exp_share", recibe 20% de la EXP compartida
-		# (O si se tiene en mochila y nadie lo lleva como held item, el primer Pokémon en banca que pueda recibir EXP lo recibe)
+		# Exp Share (Held Item):
+		# "El PKMN que lleva este objeto mientras está en banca, recibe un 30% de la EXP que recibe el PKMN activo."
 		if exp_gained > 0:
 			var target_benched = null
 			var target_benched_idx = -1
@@ -3540,30 +3540,20 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				if player_team[b_i] == attacker:
 					continue
 				var b_pkmn = player_team[b_i]
-				if b_pkmn.held_item == "exp_share":
-					var b_req = b_pkmn.get_required_exp()
-					if b_req > 0 and b_pkmn.current_exp < b_req:
-						target_benched = b_pkmn
-						target_benched_idx = b_i
-						break
-			if target_benched == null and GameData.has_exp_share():
-				for b_i in range(player_team.size()):
-					if player_team[b_i] == attacker:
-						continue
-					var b_pkmn = player_team[b_i]
+				if b_pkmn and b_pkmn.held_item == "exp_share":
 					var b_req = b_pkmn.get_required_exp()
 					if b_req > 0 and b_pkmn.current_exp < b_req:
 						target_benched = b_pkmn
 						target_benched_idx = b_i
 						break
 			if target_benched != null:
-				var shared_amount: int = max(1, int(round(float(exp_gained) * 0.20)))
+				var shared_amount: int = max(1, int(round(float(exp_gained) * 0.30)))
 				var b_req: int = target_benched.get_required_exp()
 				var b_actual_gain: int = min(shared_amount, b_req - target_benched.current_exp)
 				if b_actual_gain > 0:
 					target_benched.current_exp += b_actual_gain
 					var b_is_max: bool = (target_benched.current_exp >= b_req)
-					exp_log_str += " [color=#FFD54F][Exp. Share 🎒: %s +%d EXP ➔ %d/%d%s][/color]" % [
+					exp_log_str += " [color=#FFD54F][Exp. Share 🎒: %s +%d EXP (30%%) ➔ %d/%d%s][/color]" % [
 						target_benched.name,
 						b_actual_gain,
 						target_benched.current_exp,
@@ -4826,6 +4816,10 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 	# Bono de daño por tipo objetivo
 	if move.effect_type == "BOOST_DMG_TYPE" and is_full_energy:
 		dmg += _get_boost_dmg_type_bonus(move, defender)
+
+	# Wise Glasses (Gafas Especiales: +1 DMG a movimientos especiales)
+	if attacker.held_item == "wise_glasses" and move.type in ["FIRE", "WATER", "GRASS", "ELECTRIC", "PSYCHIC", "ICE", "DRAGON", "GHOST", "DARK"]:
+		dmg += 1
 
 	# Debilidad / Resistencia
 	if dmg > 0:
@@ -6442,6 +6436,21 @@ func update_move_button_labels() -> void:
 			else:
 				btn_bag.text = "🎒 Bag"
 				btn_bag.modulate = Color.WHITE
+				
+	if btn_poke_flute:
+		var active_p = get_active_player()
+		var p_is_asleep = (active_p != null and active_p.is_asleep_turns > 0 and active_p.current_hp > 0)
+		var has_flute = player_team_has_poke_flute()
+		if p_is_asleep and has_flute:
+			btn_poke_flute.visible = true
+			btn_poke_flute.disabled = not _is_turn_action_allowed()
+			btn_poke_flute.text = "🎶 " + GameData.tr_text("Poké Flute (Wake Up)", "Poké Flauta (Despertar)")
+			btn_poke_flute.tooltip_text = GameData.tr_text(
+				"Consume your turn to awaken your active Pokémon with the Poké Flute.",
+				"Consume tu turno para despertar a tu Pokémon activo con la Poké Flauta."
+			)
+		else:
+			btn_poke_flute.visible = false
 	if GameData.is_spanish():
 		GameData.apply_language_to_scene_tree()
 
@@ -6463,6 +6472,8 @@ func set_controls_enabled(enabled: bool) -> void:
 	btn_switch_2.disabled = not allow
 	if btn_bag:
 		btn_bag.disabled = (not allow) or is_crystal_onix_boss_battle()
+	if btn_poke_flute:
+		btn_poke_flute.disabled = not allow
 	if btn_passive:
 		btn_passive.disabled = not allow
 	if not allow and energy_modal:
@@ -6950,6 +6961,75 @@ func spawn_floating_combat_text(target_node: Control, msg: String, color: Color 
 	tw.chain().tween_callback(label.queue_free)
 
 # --- SISTEMA DE MOCHILA / ITEMS EN COMBATE ---
+func _setup_poke_flute_button() -> void:
+	if btn_poke_flute != null:
+		return
+	var options_node = get_node_or_null("MainContainer/ActionsSection/Options")
+	if not options_node:
+		return
+	btn_poke_flute = Button.new()
+	btn_poke_flute.name = "BtnPokeFlute"
+	btn_poke_flute.custom_minimum_size = Vector2(150, 36)
+	btn_poke_flute.add_theme_font_size_override("font_size", 12)
+	
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.12, 0.22, 0.14, 0.95)
+	sb.border_color = Color(0.95, 0.75, 0.20, 0.95)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(6)
+	sb.content_margin_left = 8
+	sb.content_margin_right = 8
+	sb.content_margin_top = 4
+	sb.content_margin_bottom = 4
+	btn_poke_flute.add_theme_stylebox_override("normal", sb)
+	
+	var sb_hover = sb.duplicate()
+	sb_hover.border_color = Color(1.0, 0.9, 0.4)
+	sb_hover.bg_color = Color(0.18, 0.32, 0.20, 0.95)
+	btn_poke_flute.add_theme_stylebox_override("hover", sb_hover)
+	
+	btn_poke_flute.visible = false
+	btn_poke_flute.pressed.connect(_on_poke_flute_action_pressed)
+	options_node.add_child(btn_poke_flute)
+
+func _on_poke_flute_action_pressed() -> void:
+	if not is_player_turn or is_busy or not can_player_act:
+		return
+	var active_p = get_active_player()
+	if not active_p or active_p.is_asleep_turns <= 0:
+		return
+	var holder = get_poke_flute_holder()
+	if not holder:
+		return
+		
+	# Consume player turn to awaken active Pokémon
+	can_player_act = false
+	is_busy = true
+	set_controls_enabled(false)
+	
+	active_p.is_asleep_turns = 0
+	active_p.immune_sleep_rounds = 1
+	
+	var holder_str = (" (held by [b]%s[/b])" % holder.name) if holder != active_p else ""
+	log_action("🎶 [b]Trainer[/b] played the [color=gold]Poké Flute[/color]%s! [b]%s[/b] woke up! (Turn consumed) 💤✨" % [holder_str, active_p.name])
+	GameData.play_combat_sfx("use")
+	
+	if GameData.is_campaign_mode:
+		var active_team = GameData.get_active_campaign_team_state()
+		if active_player_idx < active_team.size():
+			active_team[active_player_idx]["is_asleep_turns"] = 0
+			
+	play_heal_flash(active_player_idx)
+	update_ui()
+	
+	var timer = get_tree().create_timer(1.6)
+	timer.timeout.connect(func():
+		if is_battle_over:
+			return
+		is_busy = false
+		end_player_turn()
+	)
+
 func team_has_negative_status() -> bool:
 	for p in player_team:
 		if p.current_hp > 0 and (p.burn_turns > 0 or p.is_poisoned or p.is_flinched):
@@ -7111,22 +7191,9 @@ func refresh_bag_items_ui() -> void:
 			}
 		]
 	else:
-		var all_key_defs = [
-			{
-				"id": "poke_flute",
-				"name": "Poké Flute",
-				"desc": "Plays a melody that awakens any sleeping Pokémon. Permanent item (not consumed).",
-				"icon": "poke_flute"
-			},
-			{
-				"id": "exp_share",
-				"name": "Exp Share",
-				"desc": "Passive item. While held by a benched Pokémon, shares 20% EXP. Held by active leader, grants +20% EXP.",
-				"icon": "exp_share"
-			}
-		]
+		var all_key_defs = GameData.get_key_items_definitions(cur_inv)
 		for kd in all_key_defs:
-			if cur_inv.get(kd["id"], 0) > 0:
+			if int(kd.get("stock", 0)) > 0:
 				item_defs.append(kd)
 
 	if battle_bag_active_tab == "key_items" and item_defs.is_empty():
@@ -7173,18 +7240,16 @@ func refresh_bag_items_ui() -> void:
 		hbox.add_child(info_vbox)
 		
 		var name_lbl = Label.new()
-		if item_id == "poke_flute":
-			name_lbl.text = "%s  [Owned]" % item["name"]
-		elif item_id == "exp_share":
+		if item_id in GameData.KEY_ITEM_IDS:
 			var holder = ""
 			for p_m in player_team:
-				if p_m.held_item == "exp_share":
+				if p_m and p_m.held_item == item_id:
 					holder = p_m.name
 					break
 			if holder != "":
 				name_lbl.text = "%s  [Held by %s]" % [item["name"], holder]
 			else:
-				name_lbl.text = "%s  [Owned]" % item["name"]
+				name_lbl.text = "%s  [Not Held by Team]" % item["name"]
 		else:
 			name_lbl.text = "%s  (Stock: %d)" % [item["name"], stock]
 		name_lbl.add_theme_font_size_override("font_size", 14)
@@ -7197,7 +7262,7 @@ func refresh_bag_items_ui() -> void:
 				name_lbl.add_theme_color_override("font_color", Color("#CE93D8"))
 			elif item_id == "revive":
 				name_lbl.add_theme_color_override("font_color", Color("#FFE082"))
-			elif item_id == "exp_share":
+			elif item_id in ["exp_share", "poke_flute", "wise_glasses", "quick_claw"]:
 				name_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
 			else:
 				name_lbl.add_theme_color_override("font_color", Color("#FFFFFF"))
@@ -7215,9 +7280,21 @@ func refresh_bag_items_ui() -> void:
 		var use_btn = Button.new()
 		use_btn.custom_minimum_size = Vector2(85, 36)
 		use_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		if item_id == "exp_share":
+		if item_id in ["exp_share", "wise_glasses", "quick_claw"]:
 			use_btn.text = "Passive"
 			use_btn.disabled = true
+		elif item_id == "poke_flute":
+			var has_flute_held = player_team_has_poke_flute()
+			if not has_flute_held:
+				use_btn.text = "Not Held"
+				use_btn.disabled = true
+			else:
+				var active_p = get_active_player()
+				var p_asleep = (active_p != null and active_p.is_asleep_turns > 0 and active_p.current_hp > 0)
+				use_btn.text = "Use" if p_asleep else "Not Asleep"
+				use_btn.disabled = not p_asleep
+				if p_asleep:
+					use_btn.pressed.connect(func(): show_bag_targets(item_id))
 		else:
 			use_btn.text = "Use" if stock > 0 else "Empty"
 			use_btn.disabled = (stock <= 0)
@@ -7304,8 +7381,12 @@ func show_bag_targets(item_id: String) -> void:
 			else:
 				can_apply = true
 		elif item_id == "poke_flute":
-			if pkmn.current_hp <= 0:
+			if not player_team_has_poke_flute():
+				reason = " (Not Held by Team)"
+			elif pkmn.current_hp <= 0:
 				reason = " (Fainted)"
+			elif not is_active:
+				reason = " (Only Active PKMN)"
 			elif pkmn.is_asleep_turns <= 0:
 				reason = " (Not Asleep)"
 			else:
@@ -7401,7 +7482,10 @@ func apply_item_in_battle(item_id: String, target_idx: int) -> void:
 		log_action("[b]Trainer[/b] used [color=#EC407A]Hyper Potion[/color] on [b]%s[/b], restoring all [color=green]+%d HP (100%% Max)![/color] 🧪 (%d/%d)" % [target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
 	elif item_id == "poke_flute":
 		target_pkmn.is_asleep_turns = 0
-		log_action("[b]Trainer[/b] played the [color=gold]Poké Flute[/color]! [b]%s[/b] woke up! 🎶💤" % target_pkmn.name)
+		target_pkmn.immune_sleep_rounds = 1
+		var holder = get_poke_flute_holder()
+		var holder_str = (" (held by [b]%s[/b])" % holder.name) if holder and holder != target_pkmn else ""
+		log_action("🎶 [b]Trainer[/b] played the [color=gold]Poké Flute[/color]%s! [b]%s[/b] woke up! (Turn consumed) 💤✨" % [holder_str, target_pkmn.name])
 	elif item_id == "ether":
 		energy_recovered = target_pkmn.max_energy - target_pkmn.current_energy
 		target_pkmn.current_energy = target_pkmn.max_energy

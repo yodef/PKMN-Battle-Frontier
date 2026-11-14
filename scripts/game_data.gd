@@ -495,38 +495,93 @@ const CONSUMABLE_ITEM_IDS: Array[String] = [
 	"potion", "super_potion", "hyper_potion", "revive", "remedy", "ether"
 ]
 const KEY_ITEM_IDS: Array[String] = [
-	"poke_flute", "exp_share"
+	"poke_flute", "exp_share", "wise_glasses", "quick_claw"
 ]
 
 func get_item_display_name(item_id: String) -> String:
 	match item_id:
 		"exp_share":
-			return "Exp Share"
+			return tr_text("Exp Share", "Repartir Experiencia")
 		"poke_flute":
-			return "Poké Flute"
+			return tr_text("Poké Flute", "Poké Flauta")
+		"wise_glasses":
+			return tr_text("Wise Glasses", "Gafas Especiales")
+		"quick_claw":
+			return tr_text("Quick Claw", "Garra Rápida")
+		"diamonds":
+			return tr_text("Diamonds", "Diamantes")
 		"potion":
-			return "Potion"
+			return tr_text("Potion", "Poción")
 		"super_potion":
-			return "Super Potion"
+			return tr_text("Super Potion", "Superpoción")
 		"hyper_potion":
-			return "Hyper Potion"
+			return tr_text("Hyper Potion", "Hiperpoción")
 		"revive":
-			return "Revive"
+			return tr_text("Revive", "Revivir")
 		"remedy":
-			return "Remedy"
+			return tr_text("Remedy", "Cura Total")
 		"ether":
-			return "Ether"
+			return tr_text("Ether", "Éter")
 		_:
 			return item_id.capitalize()
 
 func get_held_item_desc(item_id: String) -> String:
 	match item_id:
 		"exp_share":
-			return "Si lo lleva un Pokémon en banca, recibe 20% de EXP compartido al vencer rivales. Si lo lleva el activo, gana +20% EXP."
+			return tr_text(
+				"The Pokémon holding this item while on the bench receives 30% of the EXP gained by the active Pokémon.",
+				"El PKMN que lleva este objeto mientras está en banca, recibe un 30% de la EXP que recibe el PKMN activo."
+			)
 		"poke_flute":
-			return "Si este Pokémon cae dormido, la flauta toca una melodía al iniciar el turno y lo despierta automáticamente."
+			return tr_text(
+				"If a Pokémon on your team holds this item, you have the option to consume your turn to awaken an active Pokémon under Sleep.",
+				"Si un PKMN en tu equipo lleva este objeto, tienes la opción de consumir tu turno para despertar a un PKMN activo que esté bajo el efecto de Sleep."
+			)
+		"wise_glasses":
+			return tr_text(
+				"Boosts the power of special moves of the holder by 10% (min +1).",
+				"Aumenta la potencia de los movimientos especiales del portador en un 10% (mínimo +1 daño)."
+			)
+		"quick_claw":
+			return tr_text(
+				"Gives the holder a 20% chance to act first, ignoring speed comparison.",
+				"Otorga al portador un 20% de probabilidad de actuar primero ignorando la velocidad."
+			)
 		_:
 			return ""
+
+func get_key_items_definitions(inv: Dictionary = {}) -> Array[Dictionary]:
+	var cur_inv = inv if not inv.is_empty() else get_active_campaign_inventory()
+	return [
+		{
+			"id": "poke_flute",
+			"name": get_item_display_name("poke_flute"),
+			"desc": get_held_item_desc("poke_flute"),
+			"icon": "poke_flute",
+			"stock": int(cur_inv.get("poke_flute", 0))
+		},
+		{
+			"id": "exp_share",
+			"name": get_item_display_name("exp_share"),
+			"desc": get_held_item_desc("exp_share"),
+			"icon": "exp_share",
+			"stock": int(cur_inv.get("exp_share", 0))
+		},
+		{
+			"id": "wise_glasses",
+			"name": get_item_display_name("wise_glasses"),
+			"desc": get_held_item_desc("wise_glasses"),
+			"icon": "wise_glasses",
+			"stock": int(cur_inv.get("wise_glasses", 0))
+		},
+		{
+			"id": "quick_claw",
+			"name": get_item_display_name("quick_claw"),
+			"desc": get_held_item_desc("quick_claw"),
+			"icon": "quick_claw",
+			"stock": int(cur_inv.get("quick_claw", 0))
+		}
+	]
 
 func get_consumable_items_count(inv: Dictionary = {}) -> int:
 	var target_inv = inv if not inv.is_empty() else get_active_campaign_inventory()
@@ -551,7 +606,9 @@ const DEFAULT_INVENTORY: Dictionary = {
 	"remedy": 0,
 	"ether": 0,
 	"poke_flute": 0,
-	"exp_share": 0
+	"exp_share": 0,
+	"wise_glasses": 0,
+	"quick_claw": 0
 }
 
 # --- SISTEMA DE ACHIEVEMENTS / LOGROS ---
@@ -572,8 +629,8 @@ const ACHIEVEMENTS_DEF: Array[Dictionary] = [
 		"reward_amount": 1,
 		"reward_name": "Repartir Experiencia (Exp Share)",
 		"reward_name_en": "Exp Share",
-		"reward_desc": "Objeto permanente no consumible. Comparte el 20% de la EXP ganada en combate con el primer Pokémon de tu banca.",
-		"reward_desc_en": "Permanent non-consumable item. Shares 20% of battle EXP earned with the first Pokémon on your bench."
+		"reward_desc": "Objeto permanente no consumible. El Pokémon que lo lleva equipado mientras está en banca recibe el 30% de la EXP que recibe el Pokémon activo.",
+		"reward_desc_en": "Permanent non-consumable item. The Pokémon holding it while on the bench receives 30% of the EXP gained by the active Pokémon."
 	},
 
 	# CADENA A: VETERANO DE CAMPAÑA (Participa en X combates de Campaña)
@@ -3710,6 +3767,55 @@ func dismiss_achievement_notification(ach_id: String) -> void:
 	if idx != -1:
 		pending_achievement_notifications.remove_at(idx)
 		save_profile()
+
+var achievement_textures_cache: Dictionary = {}
+
+func get_achievement_texture(tier_val: Variant) -> Texture2D:
+	var tier_num: int = 1
+	if tier_val is int:
+		tier_num = tier_val
+	elif tier_val is float:
+		tier_num = int(tier_val)
+	elif tier_val is String:
+		var s = str(tier_val).strip_edges().to_upper()
+		if s in ["1", "I"]: tier_num = 1
+		elif s in ["2", "II"]: tier_num = 2
+		elif s in ["3", "III"]: tier_num = 3
+		elif s in ["4", "IV"]: tier_num = 4
+		elif s in ["5", "V"]: tier_num = 5
+		elif s in ["6", "VI"]: tier_num = 6
+		elif s in ["7", "VII"]: tier_num = 7
+		elif int(tier_val) > 0:
+			tier_num = int(tier_val)
+	tier_num = clampi(tier_num, 1, 7)
+	
+	if achievement_textures_cache.has(tier_num):
+		return achievement_textures_cache[tier_num]
+		
+	var roman_map = ["I", "II", "III", "IV", "V", "VI", "VII"]
+	var roman = roman_map[tier_num - 1]
+	
+	var candidates: Array[String] = [
+		"res://assets/items/Achievements %s.png" % roman,
+		"res://assets/items/achievement_tier_%d.png" % tier_num,
+		ProjectSettings.globalize_path("res://assets/items/Achievements %s.png" % roman),
+		"D:/Games/Pokemon Battle Frontier/ITEMS/Achievements %s.png" % roman,
+		"D:/Games/Pokemon Battle Frontier/ITEMS/achievement_tier_%d.png" % tier_num
+	]
+	
+	for path in candidates:
+		if path.begins_with("res://") and ResourceLoader.exists(path):
+			var res = load(path)
+			if res is Texture2D:
+				achievement_textures_cache[tier_num] = res
+				return res
+		elif FileAccess.file_exists(path):
+			var img = Image.load_from_file(path)
+			if img:
+				var itex = ImageTexture.create_from_image(img)
+				achievement_textures_cache[tier_num] = itex
+				return itex
+	return null
 
 func has_exp_share() -> bool:
 	var inv = get_active_campaign_inventory()
@@ -7191,6 +7297,12 @@ func get_item_texture(item_name: String) -> Texture2D:
 		file_name = "poke_flute.png"
 	elif clean in ["exp_share", "expshare", "exp share", "repartir_experiencia", "repartir experiencia"]:
 		file_name = "exp_share.png"
+	elif clean in ["wise_glasses", "wiseglasses", "wise glasses", "gafas_especiales", "gafas especiales", "special_glasses", "special glasses"]:
+		file_name = "Gafas_especiales.png"
+	elif clean in ["quick_claw", "quickclaw", "quick claw", "garra_rapida", "garra_rápida", "garra rapida"]:
+		file_name = "Garra_Rápida.png"
+	elif clean in ["diamonds", "diamond", "diamante", "diamantes"]:
+		file_name = "Diamante.png"
 	else:
 		var stone_clean = clean.replace("stone_", "").replace("_stone", "").replace(" stone", "").strip_edges()
 		if stone_clean in ["fire", "water", "leaf", "thunder", "ground", "heart", "night", "psyche", "punch", "scale"]:

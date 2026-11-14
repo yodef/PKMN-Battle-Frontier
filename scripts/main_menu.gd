@@ -5703,22 +5703,9 @@ func _refresh_camp_bag_items_ui() -> void:
 			}
 		]
 	else:
-		var all_key_defs = [
-			{
-				"id": "poke_flute",
-				"name": "Poké Flute",
-				"desc": "Plays a melody that awakens any sleeping Pokémon. Permanent item (not consumed).",
-				"stock": inv.get("poke_flute", 0)
-			},
-			{
-				"id": "exp_share",
-				"name": "Exp Share",
-				"desc": "Passive item. While held by a benched Pokémon, shares 20% EXP. Held by active leader, grants +20% EXP.",
-				"stock": inv.get("exp_share", 0)
-			}
-		]
+		var all_key_defs = GameData.get_key_items_definitions(inv)
 		for kd in all_key_defs:
-			if kd["stock"] > 0:
+			if int(kd.get("stock", 0)) > 0:
 				item_defs.append(kd)
 	
 	if camp_bag_active_tab == "key_items" and item_defs.is_empty():
@@ -5786,7 +5773,7 @@ func _refresh_camp_bag_items_ui() -> void:
 		title_row.add_child(name_lbl)
 		
 		var stock_lbl = Label.new()
-		if item_id in ["poke_flute", "exp_share"]:
+		if item_id in GameData.KEY_ITEM_IDS:
 			if equipping_held_item_slot >= 0:
 				if equipping_held_item_slot < selected_player_held_items.size() and selected_player_held_items[equipping_held_item_slot] == item_id:
 					stock_lbl.text = "[Equipado en este Pokémon]"
@@ -5829,7 +5816,7 @@ func _refresh_camp_bag_items_ui() -> void:
 		use_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		use_btn.add_theme_font_size_override("font_size", 11)
 		
-		if equipping_held_item_slot >= 0 and item_id in ["poke_flute", "exp_share"]:
+		if equipping_held_item_slot >= 0 and (item_id in GameData.KEY_ITEM_IDS):
 			var cur_slot = equipping_held_item_slot
 			var cur_it = item_id
 			if cur_slot < selected_player_held_items.size() and selected_player_held_items[cur_slot] == cur_it:
@@ -13874,29 +13861,40 @@ func _refresh_achievements_ui() -> void:
 		hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		m.add_child(hbox)
 		
-		# Icono del Reward o Insignia
-		var rew_id = str(ach.get("reward_id", ""))
-		var tex = GameData.get_item_texture(rew_id)
-		if tex:
+		# Icono del Logro (Medalla por Tier I - VII descargada)
+		var ach_tier = int(ach.get("tier", 1))
+		var ach_tex = GameData.get_achievement_texture(ach_tier)
+		if ach_tex:
 			var icon_rect = TextureRect.new()
 			icon_rect.custom_minimum_size = Vector2(44, 44)
 			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			icon_rect.texture = tex
+			icon_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			icon_rect.texture = ach_tex
 			hbox.add_child(icon_rect)
 		else:
-			var emoji_lbl = Label.new()
-			emoji_lbl.custom_minimum_size = Vector2(44, 44)
-			emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			emoji_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			emoji_lbl.add_theme_font_size_override("font_size", 22)
-			if rew_id == "gold":
-				emoji_lbl.text = "🪙"
-			elif rew_id == "diamonds":
-				emoji_lbl.text = "💎"
+			var rew_id = str(ach.get("reward_id", ""))
+			var tex = GameData.get_item_texture(rew_id)
+			if tex:
+				var icon_rect = TextureRect.new()
+				icon_rect.custom_minimum_size = Vector2(44, 44)
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_rect.texture = tex
+				hbox.add_child(icon_rect)
 			else:
-				emoji_lbl.text = "🏆"
-			hbox.add_child(emoji_lbl)
+				var emoji_lbl = Label.new()
+				emoji_lbl.custom_minimum_size = Vector2(44, 44)
+				emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				emoji_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+				emoji_lbl.add_theme_font_size_override("font_size", 22)
+				if rew_id == "gold":
+					emoji_lbl.text = "🪙"
+				elif rew_id == "diamonds":
+					emoji_lbl.text = "💎"
+				else:
+					emoji_lbl.text = "🏆"
+				hbox.add_child(emoji_lbl)
 		
 		# VBox con Información
 		var info_vbox = VBoxContainer.new()
@@ -14138,8 +14136,12 @@ func _show_achievement_notification_modal(ach: Dictionary) -> void:
 	achievement_notif_reward_name_lbl.text = rew_name
 	achievement_notif_reward_desc_lbl.text = "🎒 " + rew_desc
 	
-	var tex = GameData.get_item_texture(rew_id)
+	var ach_tier = int(ach.get("tier", 1))
+	var tex = GameData.get_achievement_texture(ach_tier)
+	if not tex:
+		tex = GameData.get_item_texture(rew_id)
 	if tex:
+		achievement_notif_icon_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		achievement_notif_icon_rect.texture = tex
 	elif rew_id in ["gold", "diamonds"]:
 		achievement_notif_icon_rect.texture = null
