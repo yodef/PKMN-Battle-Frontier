@@ -203,6 +203,29 @@ func player_team_has_poke_flute() -> bool:
 @onready var evo_hp_bar: ProgressBar = $EvolutionModal/CenterBox/CardPanel/Margin/VBox/HpBar
 @onready var evo_hp_text: Label = $EvolutionModal/CenterBox/CardPanel/Margin/VBox/HpText
 @onready var evo_btn_continue: Button = $EvolutionModal/CenterBox/CardPanel/Margin/VBox/BtnContinueEvo
+
+# --- MODAL DE AJUSTES EN COMBATE (SETTINGS & BATTLE LOG) ---
+@onready var btn_settings: Button = $MainContainer/TopBar/BtnSettings
+@onready var battle_settings_modal: Control = $BattleSettingsModal
+@onready var settings_panel: PanelContainer = $BattleSettingsModal/CenterBox/Panel
+@onready var settings_title_lbl: Label = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/TitleRow/TitleLbl
+@onready var settings_main_view: VBoxContainer = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView
+@onready var settings_battle_log_view: VBoxContainer = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView
+@onready var btn_close_settings_x: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/TitleRow/BtnCloseSettingsX
+@onready var btn_close_settings_bottom: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView/BtnCloseSettingsBottom
+@onready var btn_toggle_lang: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView/LangRow/BtnToggleLang
+@onready var btn_mute_bgm: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView/BgmRow/BtnMuteBgm
+@onready var btn_mute_sfx: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView/SfxRow/BtnMuteSfx
+@onready var btn_open_battle_log_settings: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView/BtnOpenBattleLogSettings
+@onready var btn_back_from_log_settings: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/BtnBackFromLogSettings
+@onready var slider_max_msg: HSlider = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/MaxMsgRow/SliderMaxMsg
+@onready var lbl_max_msg_val: Label = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/MaxMsgRow/LblMaxMsgVal
+@onready var slider_fade: HSlider = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FadeRow/SliderFade
+@onready var lbl_fade_val: Label = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FadeRow/LblFadeVal
+@onready var lbl_fade_desc: Label = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/LblFadeDesc
+@onready var btn_font_small: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow/BtnFontSmall
+@onready var btn_font_medium: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow/BtnFontMedium
+@onready var btn_font_big: Button = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow/BtnFontBig
 var current_evo_tween: Tween = null
 var current_evo_finish_cb: Callable = Callable()
 var completed_evolutions_this_battle: Array[Dictionary] = []
@@ -271,8 +294,38 @@ func _ready() -> void:
 	if energy_modal: energy_modal.z_index = 40
 	if bag_modal: bag_modal.z_index = 40
 	if type_chart_modal: type_chart_modal.z_index = 45
+	if battle_settings_modal: battle_settings_modal.z_index = 50
 	if evolution_modal: evolution_modal.z_index = 60
 	if game_over_panel: game_over_panel.z_index = 75
+	
+	if btn_settings:
+		btn_settings.pressed.connect(_on_settings_button_pressed)
+	if btn_close_settings_x:
+		btn_close_settings_x.pressed.connect(_close_battle_settings)
+	if btn_close_settings_bottom:
+		btn_close_settings_bottom.pressed.connect(_close_battle_settings)
+	if btn_toggle_lang:
+		btn_toggle_lang.pressed.connect(_on_battle_toggle_language)
+	if btn_mute_bgm:
+		btn_mute_bgm.pressed.connect(_on_battle_toggle_mute_bgm)
+	if btn_mute_sfx:
+		btn_mute_sfx.pressed.connect(_on_battle_toggle_mute_sfx)
+	if btn_open_battle_log_settings:
+		btn_open_battle_log_settings.pressed.connect(_on_open_battle_log_settings_pressed)
+	if btn_back_from_log_settings:
+		btn_back_from_log_settings.pressed.connect(_on_back_from_log_settings_pressed)
+	if slider_max_msg:
+		slider_max_msg.value_changed.connect(_on_slider_max_msg_changed)
+	if slider_fade:
+		slider_fade.value_changed.connect(_on_slider_fade_changed)
+	if btn_font_small:
+		btn_font_small.pressed.connect(func(): _set_battle_log_font_size("small"))
+	if btn_font_medium:
+		btn_font_medium.pressed.connect(func(): _set_battle_log_font_size("medium"))
+	if btn_font_big:
+		btn_font_big.pressed.connect(func(): _set_battle_log_font_size("big"))
+	if battle_settings_modal:
+		battle_settings_modal.visible = false
 	
 	if battle_title_lbl:
 		battle_title_lbl.clip_text = true
@@ -5631,6 +5684,13 @@ func _setup_battle_hud_theme() -> void:
 		spd_hover.bg_color = Color("#1a3048")
 		btn_speed.add_theme_stylebox_override("hover", spd_hover)
 		
+	if btn_settings:
+		btn_settings.add_theme_stylebox_override("normal", spd_btn_style.duplicate())
+		var sett_hover = spd_btn_style.duplicate()
+		sett_hover.border_color = Color("#ffb74d")
+		sett_hover.bg_color = Color("#332211")
+		btn_settings.add_theme_stylebox_override("hover", sett_hover)
+		
 	var btn_info_node = $MainContainer/TopBar.get_node_or_null("BtnDetailsInfo") if has_node("MainContainer/TopBar") else null
 	if btn_info_node:
 		btn_info_node.add_theme_stylebox_override("normal", spd_btn_style.duplicate())
@@ -5648,6 +5708,8 @@ func _setup_battle_hud_theme() -> void:
 	tc_diag_box.texture_margin_bottom = 8
 	if type_chart_panel:
 		type_chart_panel.add_theme_stylebox_override("panel", tc_diag_box)
+	if settings_panel:
+		settings_panel.add_theme_stylebox_override("panel", tc_diag_box)
 		
 	var tc_sub_sb = StyleBoxFlat.new()
 	tc_sub_sb.bg_color = Color(0.08, 0.12, 0.18, 0.95)
@@ -6686,29 +6748,47 @@ func _render_combat_log() -> void:
 	_render_global_combat_log()
 	_render_player_combat_log()
 
+func _get_combat_log_font_sizes() -> Dictionary:
+	var fs = GameData.battle_log_font_size.to_lower()
+	match fs:
+		"small":
+			return {"old": 9, "current": 10, "global": 10}
+		"big":
+			return {"old": 11, "current": 13, "global": 12}
+		_: # "medium"
+			return {"old": 10, "current": 11, "global": 11}
+
 func _render_enemy_combat_log() -> void:
 	if not enemy_log_label:
 		return
 	var is_sp = GameData.is_spanish()
+	var f_sizes = _get_combat_log_font_sizes()
 	if enemy_combat_history.is_empty():
 		var empty_text = "• Rival esperando acción •" if is_sp else "• Rival awaiting action •"
-		enemy_log_label.text = "\n[center][color=#6a4848][font_size=10]%s[/font_size][/color][/center]" % empty_text
+		enemy_log_label.text = "\n[center][color=#6a4848][font_size=%d]%s[/font_size][/color][/center]" % [f_sizes.old, empty_text]
 		return
 	
-	var slice = enemy_combat_history.slice(max(0, enemy_combat_history.size() - 2), enemy_combat_history.size())
+	var max_msgs = clampi(GameData.battle_log_max_messages, 3, 12)
+	var slice = enemy_combat_history.slice(max(0, enemy_combat_history.size() - max_msgs), enemy_combat_history.size())
 	var lines: Array[String] = []
 	var regex = _get_combat_log_regex()
+	var total = slice.size()
+	var fade_strength = clampi(GameData.battle_log_fade_strength, 0, 5)
+	var max_dilution_ratio = (float(fade_strength) / 5.0) * 0.80 # 0.0 to 0.80
 	
-	if slice.size() == 1:
-		lines.append("")
-		var s0 = Localization.translate_en_to_es(slice[0]) if is_sp else slice[0]
-		lines.append("[center][font_size=11][color=#ff8585]🔴[/color] [b][color=#ffffff]%s[/color][/b][/font_size][/center]" % s0)
-	else:
-		var l0 = Localization.translate_en_to_es(slice[0]) if is_sp else slice[0]
-		var clean_l0 = regex.sub(l0, "", true)
-		lines.append("[center][font_size=10][color=#7a5252]%s[/color][/font_size][/center]" % clean_l0)
-		var l1 = Localization.translate_en_to_es(slice[1]) if is_sp else slice[1]
-		lines.append("[center][font_size=11][color=#ff8585]🔴[/color] [b][color=#ffffff]%s[/color][/b][/font_size][/center]" % l1)
+	for i in range(total):
+		var raw = slice[i]
+		var line_txt = Localization.translate_en_to_es(raw) if is_sp else raw
+		if i == total - 1:
+			lines.append("[center][font_size=%d][color=#ff8585]🔴[/color] [b][color=#ffffff]%s[/color][/b][/font_size][/center]" % [f_sizes.current, line_txt])
+		else:
+			var clean = regex.sub(line_txt, "", true)
+			var age_ratio = float(total - 1 - i) / float(max(1, total - 1))
+			var dilution = age_ratio * max_dilution_ratio
+			var base_col = Color("#ff9999")
+			var bg_col = Color("#2a1818")
+			var blended_hex = base_col.lerp(bg_col, dilution).to_html(false)
+			lines.append("[center][font_size=%d][color=#%s]%s[/color][/font_size][/center]" % [f_sizes.old, blended_hex, clean])
 		
 	enemy_log_label.text = "\n".join(lines)
 	if enemy_log_label.scroll_following:
@@ -6719,25 +6799,33 @@ func _render_player_combat_log() -> void:
 	if not player_log_label:
 		return
 	var is_sp = GameData.is_spanish()
+	var f_sizes = _get_combat_log_font_sizes()
 	if player_combat_history.is_empty():
 		var empty_text = "• Elige tu movimiento •" if is_sp else "• Select your move •"
-		player_log_label.text = "\n[center][color=#405c48][font_size=10]%s[/font_size][/color][/center]" % empty_text
+		player_log_label.text = "\n[center][color=#405c48][font_size=%d]%s[/font_size][/color][/center]" % [f_sizes.old, empty_text]
 		return
 	
-	var slice = player_combat_history.slice(max(0, player_combat_history.size() - 2), player_combat_history.size())
+	var max_msgs = clampi(GameData.battle_log_max_messages, 3, 12)
+	var slice = player_combat_history.slice(max(0, player_combat_history.size() - max_msgs), player_combat_history.size())
 	var lines: Array[String] = []
 	var regex = _get_combat_log_regex()
+	var total = slice.size()
+	var fade_strength = clampi(GameData.battle_log_fade_strength, 0, 5)
+	var max_dilution_ratio = (float(fade_strength) / 5.0) * 0.80 # 0.0 to 0.80
 	
-	if slice.size() == 1:
-		lines.append("")
-		var s0 = Localization.translate_en_to_es(slice[0]) if is_sp else slice[0]
-		lines.append("[center][font_size=11][color=#51cf66]🟢[/color] [b][color=#ffffff]%s[/color][/b][/font_size][/center]" % s0)
-	else:
-		var l0 = Localization.translate_en_to_es(slice[0]) if is_sp else slice[0]
-		var clean_l0 = regex.sub(l0, "", true)
-		lines.append("[center][font_size=10][color=#486e56]%s[/color][/font_size][/center]" % clean_l0)
-		var l1 = Localization.translate_en_to_es(slice[1]) if is_sp else slice[1]
-		lines.append("[center][font_size=11][color=#51cf66]🟢[/color] [b][color=#ffffff]%s[/color][/b][/font_size][/center]" % l1)
+	for i in range(total):
+		var raw = slice[i]
+		var line_txt = Localization.translate_en_to_es(raw) if is_sp else raw
+		if i == total - 1:
+			lines.append("[center][font_size=%d][color=#51cf66]🟢[/color] [b][color=#ffffff]%s[/color][/b][/font_size][/center]" % [f_sizes.current, line_txt])
+		else:
+			var clean = regex.sub(line_txt, "", true)
+			var age_ratio = float(total - 1 - i) / float(max(1, total - 1))
+			var dilution = age_ratio * max_dilution_ratio
+			var base_col = Color("#85e09b")
+			var bg_col = Color("#18281e")
+			var blended_hex = base_col.lerp(bg_col, dilution).to_html(false)
+			lines.append("[center][font_size=%d][color=#%s]%s[/color][/font_size][/center]" % [f_sizes.old, blended_hex, clean])
 		
 	player_log_label.text = "\n".join(lines)
 	if player_log_label.scroll_following:
@@ -6748,15 +6836,175 @@ func _render_global_combat_log() -> void:
 	if not global_log_label:
 		return
 	var is_sp = GameData.is_spanish()
+	var f_sizes = _get_combat_log_font_sizes()
 	if global_combat_history.is_empty():
 		var ready_msg = Localization.translate_en_to_es("Battle Ready!") if is_sp else "Battle Ready!"
-		global_log_label.text = "[center][color=#88a0b0][font_size=11]%s[/font_size][/color][/center]" % ready_msg
+		global_log_label.text = "[center][color=#88a0b0][font_size=%d]%s[/font_size][/color][/center]" % [f_sizes.global, ready_msg]
 		return
 	
 	var latest = global_combat_history[-1]
 	if is_sp:
 		latest = Localization.translate_en_to_es(latest)
-	global_log_label.text = "[center][font_size=11][b][color=#ffd54f]%s[/color][/b][/font_size][/center]" % latest
+	global_log_label.text = "[center][font_size=%d][b][color=#ffd54f]%s[/color][/b][/font_size][/center]" % [f_sizes.global, latest]
+
+# --- AJUSTES EN COMBATE (SETTINGS & BATTLE LOG) ---
+func _on_settings_button_pressed() -> void:
+	if battle_settings_modal:
+		if settings_main_view: settings_main_view.visible = true
+		if settings_battle_log_view: settings_battle_log_view.visible = false
+		_update_battle_settings_ui()
+		battle_settings_modal.visible = true
+		GameData.play_combat_sfx("hit_normal")
+
+func _close_battle_settings() -> void:
+	if battle_settings_modal:
+		battle_settings_modal.visible = false
+		GameData.play_combat_sfx("hit_normal")
+
+func _on_open_battle_log_settings_pressed() -> void:
+	if settings_main_view and settings_battle_log_view:
+		settings_main_view.visible = false
+		settings_battle_log_view.visible = true
+		_update_battle_settings_ui()
+		GameData.play_combat_sfx("hit_normal")
+
+func _on_back_from_log_settings_pressed() -> void:
+	if settings_main_view and settings_battle_log_view:
+		settings_battle_log_view.visible = false
+		settings_main_view.visible = true
+		_update_battle_settings_ui()
+		GameData.play_combat_sfx("hit_normal")
+
+func _on_battle_toggle_language() -> void:
+	var next_lang = "en" if GameData.is_spanish() else "es"
+	GameData.set_language(next_lang)
+	GameData.save_profile()
+	_update_battle_settings_ui()
+	_render_combat_log()
+	update_move_button_labels()
+	GameData.play_combat_sfx("hit_normal")
+
+func _on_battle_toggle_mute_bgm() -> void:
+	GameData.settings_music_muted = not GameData.settings_music_muted
+	if bgm_player:
+		bgm_player.volume_db = GameData.get_music_db()
+	GameData.save_profile()
+	_update_battle_settings_ui()
+	GameData.play_combat_sfx("hit_normal")
+
+func _on_battle_toggle_mute_sfx() -> void:
+	GameData.settings_sfx_muted = not GameData.settings_sfx_muted
+	GameData.save_profile()
+	_update_battle_settings_ui()
+	if not GameData.settings_sfx_muted:
+		GameData.play_combat_sfx("hit_normal")
+
+func _on_slider_max_msg_changed(val: float) -> void:
+	var ival = clampi(int(val), 3, 12)
+	GameData.battle_log_max_messages = ival
+	if lbl_max_msg_val:
+		lbl_max_msg_val.text = ("%d mensajes" if GameData.is_spanish() else "%d msgs") % ival
+	GameData.save_profile()
+	_render_combat_log()
+
+func _on_slider_fade_changed(val: float) -> void:
+	var ival = clampi(int(val), 0, 5)
+	GameData.battle_log_fade_strength = ival
+	_update_fade_labels()
+	GameData.save_profile()
+	_render_combat_log()
+
+func _update_fade_labels() -> void:
+	var ival = clampi(GameData.battle_log_fade_strength, 0, 5)
+	var pct = int((float(ival) / 5.0) * 80.0)
+	var is_sp = GameData.is_spanish()
+	if lbl_fade_val:
+		lbl_fade_val.text = "%d (%d%%)" % [ival, pct]
+	if lbl_fade_desc:
+		if ival == 0:
+			lbl_fade_desc.text = "Nivel 0: Sin dilución (100% visible)" if is_sp else "Level 0: No fading (100% visible)"
+		elif ival == 5:
+			lbl_fade_desc.text = "Nivel 5: Dilución máxima (80% desvanecimiento)" if is_sp else "Level 5: Maximum fading (80% fade)"
+		else:
+			lbl_fade_desc.text = ("Nivel %d: Dilución media (%d%% desvanecimiento)" if is_sp else "Level %d: Moderate fading (%d%% fade)") % [ival, pct]
+
+func _set_battle_log_font_size(size_key: String) -> void:
+	if size_key not in ["small", "medium", "big"]:
+		size_key = "medium"
+	GameData.battle_log_font_size = size_key
+	_update_font_size_buttons_ui()
+	GameData.save_profile()
+	_render_combat_log()
+	GameData.play_combat_sfx("hit_normal")
+
+func _apply_active_toggle_style(btn: Button, active: bool) -> void:
+	if not btn: return
+	if active:
+		btn.modulate = Color(1.15, 1.15, 1.0, 1.0)
+		var sb = StyleBoxFlat.new()
+		sb.bg_color = Color("#1e4228")
+		sb.border_color = Color("#51cf66")
+		sb.set_border_width_all(2)
+		sb.set_corner_radius_all(4)
+		btn.add_theme_stylebox_override("normal", sb)
+	else:
+		btn.modulate = Color(0.85, 0.85, 0.85, 1.0)
+		var sb = StyleBoxFlat.new()
+		sb.bg_color = Color("#181c24")
+		sb.border_color = Color("#384252")
+		sb.set_border_width_all(1)
+		sb.set_corner_radius_all(4)
+		btn.add_theme_stylebox_override("normal", sb)
+
+func _update_font_size_buttons_ui() -> void:
+	var cur = GameData.battle_log_font_size
+	var is_sp = GameData.is_spanish()
+	if btn_font_small:
+		btn_font_small.text = "Small" if not is_sp else "Pequeño"
+		_apply_active_toggle_style(btn_font_small, cur == "small")
+	if btn_font_medium:
+		btn_font_medium.text = "Medium" if not is_sp else "Mediano"
+		_apply_active_toggle_style(btn_font_medium, cur == "medium")
+	if btn_font_big:
+		btn_font_big.text = "Big" if not is_sp else "Grande"
+		_apply_active_toggle_style(btn_font_big, cur == "big")
+
+func _update_battle_settings_ui() -> void:
+	var is_sp = GameData.is_spanish()
+	if settings_title_lbl:
+		settings_title_lbl.text = "⚙️ AJUSTES DE BATALLA" if is_sp else "⚙️ BATTLE SETTINGS"
+	if btn_toggle_lang:
+		btn_toggle_lang.text = "Español" if is_sp else "English"
+	if btn_mute_bgm:
+		btn_mute_bgm.text = ("Silenciado" if GameData.settings_music_muted else "Activo") if is_sp else ("Muted" if GameData.settings_music_muted else "Active")
+	if btn_mute_sfx:
+		btn_mute_sfx.text = ("Silenciado" if GameData.settings_sfx_muted else "Activo") if is_sp else ("Muted" if GameData.settings_sfx_muted else "Active")
+	if btn_open_battle_log_settings:
+		btn_open_battle_log_settings.text = "📜 Configurar Battle Log" if is_sp else "📜 Battle Log Settings"
+	if btn_close_settings_bottom:
+		btn_close_settings_bottom.text = "Cerrar" if is_sp else "Close"
+	if btn_back_from_log_settings:
+		btn_back_from_log_settings.text = "⬅ Volver" if is_sp else "⬅ Back"
+		
+	var max_lbl = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/MaxMsgTitle as Label if has_node("BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/MaxMsgTitle") else null
+	if max_lbl:
+		max_lbl.text = "Máximo de mensajes (3 - 12):" if is_sp else "Max messages (3 - 12):"
+	if slider_max_msg:
+		slider_max_msg.set_value_no_signal(GameData.battle_log_max_messages)
+	if lbl_max_msg_val:
+		lbl_max_msg_val.text = ("%d mensajes" if is_sp else "%d msgs") % GameData.battle_log_max_messages
+		
+	var fade_lbl = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FadeTitle as Label if has_node("BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FadeTitle") else null
+	if fade_lbl:
+		fade_lbl.text = "Fuerza de dilución (0 a 5):" if is_sp else "Fading strength (0 to 5):"
+	if slider_fade:
+		slider_fade.set_value_no_signal(GameData.battle_log_fade_strength)
+	_update_fade_labels()
+	
+	var fsize_lbl = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeTitle as Label if has_node("BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeTitle") else null
+	if fsize_lbl:
+		fsize_lbl.text = "Tamaño de letra:" if is_sp else "Font size:"
+	_update_font_size_buttons_ui()
 
 func show_game_over(title: String, subtitle: String) -> void:
 	if is_enemy_fainting or is_player_fainting:

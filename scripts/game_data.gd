@@ -379,6 +379,9 @@ var settings_music_muted: bool = false
 var settings_sfx_volume: float = 0.9 # 0.0 to 1.0
 var settings_sfx_muted: bool = false
 var initial_settings_shown: bool = false
+var battle_log_max_messages: int = 6 # 3 to 12
+var battle_log_fade_strength: int = 4 # 0 (no dilution) to 5 (80% dilution max)
+var battle_log_font_size: String = "medium" # "small", "medium", "big"
 
 func normalize_language_code(lang: String) -> String:
 	var c = lang.strip_edges().to_lower()
@@ -8498,7 +8501,10 @@ func get_save_dict() -> Dictionary:
 			"music_muted": settings_music_muted,
 			"sfx_volume": settings_sfx_volume,
 			"sfx_muted": settings_sfx_muted,
-			"initial_settings_shown": initial_settings_shown
+			"initial_settings_shown": initial_settings_shown,
+			"battle_log_max_messages": battle_log_max_messages,
+			"battle_log_fade_strength": battle_log_fade_strength,
+			"battle_log_font_size": battle_log_font_size
 		},
 		"daily": {
 			"login_last_date": daily_login_last_date,
@@ -8774,6 +8780,12 @@ func apply_save_dict(data: Dictionary) -> bool:
 	settings_sfx_volume = float(sett.get("sfx_volume", 0.9))
 	settings_sfx_muted = bool(sett.get("sfx_muted", false))
 	initial_settings_shown = bool(sett.get("initial_settings_shown", false))
+	battle_log_max_messages = clampi(int(sett.get("battle_log_max_messages", 6)), 3, 12)
+	battle_log_fade_strength = clampi(int(sett.get("battle_log_fade_strength", 4)), 0, 5)
+	var fsize = str(sett.get("battle_log_font_size", "medium")).to_lower()
+	if fsize not in ["small", "medium", "big"]:
+		fsize = "medium"
+	battle_log_font_size = fsize
 	apply_language_to_scene_tree()
 	
 	# Cargar misiones diarias
@@ -8957,5 +8969,8 @@ func erase_profile() -> void:
 	settings_sfx_volume = 0.9
 	settings_sfx_muted = false
 	initial_settings_shown = false
+	battle_log_max_messages = 6
+	battle_log_fade_strength = 4
+	battle_log_font_size = "medium"
 	apply_language_to_scene_tree()
 	print("Profile erased. Starting fresh!")

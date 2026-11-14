@@ -61,6 +61,12 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 11
 text = "⏩ 1x"
 
+[node name="BtnSettings" type="Button" parent="MainContainer/TopBar" unique_id=1849201934]
+custom_minimum_size = Vector2(38, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⚙️"
+
 [node name="BattleTitle" type="Label" parent="MainContainer/TopBar" unique_id=1658137403]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -1248,3 +1254,222 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 13
 text = "Continue ▶"
+
+[node name="BattleSettingsModal" type="Control" parent="." unique_id=1498124501]
+visible = false
+z_index = 50
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Backdrop" type="ColorRect" parent="BattleSettingsModal" unique_id=1498124502]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.75)
+
+[node name="CenterBox" type="CenterContainer" parent="BattleSettingsModal" unique_id=1498124503]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="BattleSettingsModal/CenterBox" unique_id=1498124504]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="BattleSettingsModal/CenterBox/Panel" unique_id=1498124505]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="VBox" type="VBoxContainer" parent="BattleSettingsModal/CenterBox/Panel/Margin" unique_id=1498124506]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleRow" type="HBoxContainer" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox" unique_id=1498124507]
+layout_mode = 2
+
+[node name="TitleLbl" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/TitleRow" unique_id=1498124508]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+text = "⚙️ AJUSTES DE BATALLA"
+
+[node name="BtnCloseSettingsX" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/TitleRow" unique_id=1498124509]
+custom_minimum_size = Vector2(28, 26)
+layout_mode = 2
+text = "✖"
+
+[node name="MainView" type="VBoxContainer" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox" unique_id=1498124510]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LangRow" type="HBoxContainer" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView" unique_id=1498124511]
+layout_mode = 2
+
+[node name="LangLbl" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView/LangRow" unique_id=1498124512]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "🌐 Idioma / Language:"
+
+[node name="BtnToggleLang" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView/LangRow" unique_id=1498124513]
+custom_minimum_size = Vector2(100, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Español"
+
+[node name="BgmRow" type="HBoxContainer" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView" unique_id=1498124514]
+layout_mode = 2
+
+[node name="BgmLbl" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView/BgmRow" unique_id=1498124515]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "🎵 Música:"
+
+[node name="BtnMuteBgm" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView/BgmRow" unique_id=1498124516]
+custom_minimum_size = Vector2(90, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Activo"
+
+[node name="SfxRow" type="HBoxContainer" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView" unique_id=1498124517]
+layout_mode = 2
+
+[node name="SfxLbl" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView/SfxRow" unique_id=1498124518]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "🔊 Efectos SFX:"
+
+[node name="BtnMuteSfx" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView/SfxRow" unique_id=1498124519]
+custom_minimum_size = Vector2(90, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Activo"
+
+[node name="Sep1" type="HSeparator" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView" unique_id=1498124520]
+layout_mode = 2
+
+[node name="BtnOpenBattleLogSettings" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView" unique_id=1498124521]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "📜 Battle Log"
+
+[node name="BtnCloseSettingsBottom" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/MainView" unique_id=1498124522]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Cerrar"
+
+[node name="BattleLogView" type="VBoxContainer" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox" unique_id=1498124523]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MaxMsgTitle" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124524]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Máximo de mensajes (3 - 12):"
+
+[node name="MaxMsgRow" type="HBoxContainer" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124525]
+layout_mode = 2
+
+[node name="SliderMaxMsg" type="HSlider" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/MaxMsgRow" unique_id=1498124526]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 3.0
+max_value = 12.0
+step = 1.0
+value = 6.0
+
+[node name="LblMaxMsgVal" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/MaxMsgRow" unique_id=1498124527]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "6 mensajes"
+horizontal_alignment = 2
+
+[node name="FadeTitle" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124528]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Fuerza de dilución (0 a 5):"
+
+[node name="FadeRow" type="HBoxContainer" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124529]
+layout_mode = 2
+
+[node name="SliderFade" type="HSlider" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FadeRow" unique_id=1498124530]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 5.0
+step = 1.0
+value = 4.0
+
+[node name="LblFadeVal" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FadeRow" unique_id=1498124531]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "4 (64%)"
+horizontal_alignment = 2
+
+[node name="LblFadeDesc" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124532]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 11
+text = "Nivel 4: Dilución alta (64% desvanecimiento)"
+
+[node name="FontSizeTitle" type="Label" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124533]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Tamaño de letra:"
+
+[node name="FontSizeRow" type="HBoxContainer" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124534]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BtnFontSmall" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow" unique_id=1498124535]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Small"
+
+[node name="BtnFontMedium" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow" unique_id=1498124536]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
+text = "Medium"
+
+[node name="BtnFontBig" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView/FontSizeRow" unique_id=1498124537]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "Big"
+
+[node name="BtnBackFromLogSettings" type="Button" parent="BattleSettingsModal/CenterBox/Panel/Margin/VBox/BattleLogView" unique_id=1498124538]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "⬅ Volver"
