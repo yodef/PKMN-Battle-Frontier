@@ -3797,7 +3797,7 @@ func _resolve_battle_victory() -> void:
 			
 			GameData.campaign_submode = "ADVENTURE"
 			GameData.adventure_current_episode = 1
-			GameData.adventure_gold = max(10, GameData.adventure_gold)
+			GameData.set_active_campaign_gold(max(10, GameData.get_active_campaign_gold()))
 			var st_id = GameData.tutorial_starter_id if GameData.tutorial_starter_id >= 0 else 1
 			var st_inst = GameData.create_pokemon_instance(st_id)
 			var req = st_inst.get_required_exp()

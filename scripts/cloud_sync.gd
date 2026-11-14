@@ -95,6 +95,19 @@ func parse_trainer_doc_to_save_data(fields: Dictionary) -> Dictionary:
 	if not root_updated.is_empty():
 		save_data["profile"]["last_activity_at"] = root_updated
 		
+	# Extraer oro de la raíz si existe
+	if fields.has("gold"):
+		var root_gold = int(fields["gold"].get("integerValue", 0))
+		if not save_data.has("economy"):
+			save_data["economy"] = {}
+		save_data["economy"]["gold"] = root_gold
+		if not save_data.has("campaign"):
+			save_data["campaign"] = {}
+		save_data["campaign"]["gold"] = root_gold
+		if not save_data.has("adventure"):
+			save_data["adventure"] = {}
+		save_data["adventure"]["gold"] = root_gold
+		
 	return save_data
 
 # --- FIREBASE AUTHENTICATION (EMAIL & VERIFICATION) ---
@@ -318,6 +331,7 @@ func save_profile_to_cloud(account_key: String, save_dict: Dictionary, callback:
 	var p_id = str(prof.get("id", "PKMN-000000"))
 	var diamonds = int(save_dict.get("economy", {}).get("diamonds", 0))
 	var candies = int(save_dict.get("economy", {}).get("rare_candies", 0))
+	var gold = int(save_dict.get("economy", {}).get("gold", save_dict.get("campaign", {}).get("gold", 0)))
 	var now_iso = Time.get_datetime_string_from_system(true)
 	var now_unix = int(Time.get_unix_time_from_system())
 	
@@ -329,6 +343,7 @@ func save_profile_to_cloud(account_key: String, save_dict: Dictionary, callback:
 			"profile_id": { "stringValue": p_id },
 			"diamonds": { "integerValue": diamonds },
 			"rare_candies": { "integerValue": candies },
+			"gold": { "integerValue": gold },
 			"save_json": { "stringValue": json_str },
 			"updated_at": { "stringValue": now_iso },
 			"last_activity_at": { "stringValue": now_iso },

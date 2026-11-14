@@ -3998,6 +3998,7 @@ func calculate_pkmn_defeat_reward(rarity_str: String, stage_str: String = "") ->
 # --- SISTEMA DE RAREZA Y SOBRES (BOOSTER PACKS) ---
 signal diamonds_changed(new_diamonds: int)
 signal rare_candies_changed(new_candies: int)
+signal gold_changed(new_gold: int)
 signal card_stocks_changed()
 
 const BOOSTER_PACKS: Dictionary = {
@@ -5354,10 +5355,12 @@ func get_active_campaign_gold() -> int:
 func set_active_campaign_gold(val: int) -> void:
 	campaign_gold = max(0, val)
 	adventure_gold = campaign_gold
+	gold_changed.emit(campaign_gold)
 
 func add_active_campaign_gold(val: int) -> void:
 	campaign_gold = max(0, campaign_gold + val)
 	adventure_gold = campaign_gold
+	gold_changed.emit(campaign_gold)
 
 func get_active_campaign_inventory() -> Dictionary:
 	if campaign_submode == "ADVENTURE":
@@ -5396,10 +5399,10 @@ func set_campaign_team_leader(index: int) -> bool:
 	save_profile()
 	return true
 
-func reset_campaign() -> void:
+func reset_campaign(auto_save: bool = true) -> void:
 	is_campaign_mode = false
 	campaign_match_number = 1
-	# Nota: campaign_gold y player_diamonds se conservan permanentemente
+	# Nota: campaign_gold y player_diamonds se conservan permanentemente entre torneos
 	var had_camp_flute = campaign_inventory.get("poke_flute", 0)
 	campaign_inventory = DEFAULT_INVENTORY.duplicate()
 	if had_camp_flute > 0:
@@ -5409,7 +5412,8 @@ func reset_campaign() -> void:
 	campaign_player_team_state.clear()
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
-	save_profile()
+	if auto_save:
+		save_profile()
 
 func init_campaign_team(chosen_ids: Array) -> void:
 	campaign_player_team_state.clear()
@@ -7320,19 +7324,13 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	stats_stadium_tournaments_completed = 0
 	player_diamonds = 25
 	player_rare_candies = 0
+	set_active_campaign_gold(0)
 	profile_welcome_claimed = true
-	reset_campaign()
+	reset_campaign(false)
 	is_tutorial_mode = false
 	tutorial_completed = false
 	tutorial_reward_claimed = false
 	just_completed_tutorial = false
-	just_completed_tutorial_combat1 = false
-	tutorial_step = 0
-	tutorial_starter_id = -1
-	tutorial_stage1_id = -1
-	tutorial_rival_id = -1
-	tutorial_rival_stage1_id = -1
-	tutorial_combat_phase = 1
 	just_completed_tutorial_combat1 = false
 	tutorial_step = 1
 	tutorial_starter_id = -1
@@ -7342,7 +7340,7 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	tutorial_combat_phase = 1
 	adventure_current_episode = 1
 	adventure_current_stage = 1
-	adventure_gold = 0
+	set_active_campaign_gold(0)
 	adventure_inventory = DEFAULT_INVENTORY.duplicate()
 	adventure_player_team_state.clear()
 	adventure_completed_episodes.clear()
@@ -7425,7 +7423,8 @@ func get_save_dict() -> Dictionary:
 		},
 		"economy": {
 			"diamonds": player_diamonds,
-			"rare_candies": player_rare_candies
+			"rare_candies": player_rare_candies,
+			"gold": get_active_campaign_gold()
 		},
 		"collection": {
 			"unlocked_ids": player_unlocked_ids,
@@ -7605,10 +7604,17 @@ func apply_save_dict(data: Dictionary) -> bool:
 		if not player_card_stocks.has(id) or player_card_stocks[id] < 1:
 			player_card_stocks[id] = 1
 		
-	# Cargar campaña
+	# Cargar campaña y economía de oro
 	var camp = data.get("campaign", {})
 	campaign_match_number = int(camp.get("match_number", 1))
-	campaign_gold = int(camp.get("gold", 0))
+	if econ.has("gold"):
+		set_active_campaign_gold(int(econ.get("gold", 0)))
+	elif camp.has("gold"):
+		set_active_campaign_gold(int(camp.get("gold", 0)))
+	elif data.get("adventure", {}).has("gold"):
+		set_active_campaign_gold(int(data.get("adventure", {}).get("gold", 0)))
+	else:
+		set_active_campaign_gold(0)
 	campaign_inventory = camp.get("inventory", DEFAULT_INVENTORY.duplicate())
 	for k in DEFAULT_INVENTORY.keys():
 		if not campaign_inventory.has(k):
@@ -7633,9 +7639,6 @@ func apply_save_dict(data: Dictionary) -> bool:
 	var adv = data.get("adventure", {})
 	adventure_current_episode = int(adv.get("current_episode", 1))
 	adventure_current_stage = int(adv.get("current_stage", 1))
-	var legacy_adv_gold = int(adv.get("gold", 0))
-	if legacy_adv_gold > 0 and campaign_gold == 0:
-		campaign_gold = legacy_adv_gold
 	adventure_gold = campaign_gold
 	adventure_inventory = adv.get("inventory", DEFAULT_INVENTORY.duplicate())
 	for k in DEFAULT_INVENTORY.keys():
@@ -7862,8 +7865,9 @@ func erase_profile() -> void:
 	stats_stadium_tournaments_completed = 0
 	player_diamonds = 0
 	player_rare_candies = 0
+	set_active_campaign_gold(0)
 	
-	reset_campaign()
+	reset_campaign(false)
 	is_tutorial_mode = false
 	tutorial_completed = false
 	tutorial_reward_claimed = false
@@ -7877,7 +7881,7 @@ func erase_profile() -> void:
 	tutorial_combat_phase = 1
 	adventure_current_episode = 1
 	adventure_current_stage = 1
-	adventure_gold = 0
+	set_active_campaign_gold(0)
 	adventure_inventory = DEFAULT_INVENTORY.duplicate()
 	adventure_player_team_state.clear()
 	adventure_completed_episodes.clear()
