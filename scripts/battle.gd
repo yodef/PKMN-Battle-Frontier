@@ -103,10 +103,17 @@ const SPEED_LABELS: Array[String] = ["⏩ 1x", "⏩ 1.5x", "⏩ 2x", "⏩ 3x"]
 @onready var enemy_energy_lbl: Label = $MainContainer/EnemySection/HBox/Info/EnemyEnergyLbl
 @onready var enemy_status_lbl: Label = $MainContainer/EnemySection/HBox/Info/HPBox/HPTopRow/EnemyStatusLbl
 
-@onready var enemy_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/EnemyLogLabel
-@onready var turn_badge: Label = $MainContainer/CenterLog/Margin/VBox/TurnBadge
-@onready var global_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/GlobalLogLabel
-@onready var player_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/PlayerLogLabel
+@onready var enemy_log_panel: PanelContainer = $MainContainer/CenterLog/Margin/VBox/EnemyLogPanel if has_node("MainContainer/CenterLog/Margin/VBox/EnemyLogPanel") else null
+@onready var enemy_header_lbl: Label = $MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox/HeaderRow/EnemyHeaderLbl if has_node("MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox/HeaderRow/EnemyHeaderLbl") else null
+@onready var enemy_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox/EnemyLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox/EnemyLogLabel") else ($MainContainer/CenterLog/Margin/VBox/EnemyLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/EnemyLogLabel") else null)
+
+@onready var neutral_log_panel: PanelContainer = $MainContainer/CenterLog/Margin/VBox/NeutralLogPanel if has_node("MainContainer/CenterLog/Margin/VBox/NeutralLogPanel") else null
+@onready var turn_badge: Label = $MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/VBox/TurnBadge if has_node("MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/VBox/TurnBadge") else ($MainContainer/CenterLog/Margin/VBox/TurnBadge if has_node("MainContainer/CenterLog/Margin/VBox/TurnBadge") else null)
+@onready var global_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/VBox/GlobalLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/VBox/GlobalLogLabel") else ($MainContainer/CenterLog/Margin/VBox/GlobalLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/GlobalLogLabel") else null)
+
+@onready var player_log_panel: PanelContainer = $MainContainer/CenterLog/Margin/VBox/PlayerLogPanel if has_node("MainContainer/CenterLog/Margin/VBox/PlayerLogPanel") else null
+@onready var player_header_lbl: Label = $MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox/HeaderRow/PlayerHeaderLbl if has_node("MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox/HeaderRow/PlayerHeaderLbl") else null
+@onready var player_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox/PlayerLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox/PlayerLogLabel") else ($MainContainer/CenterLog/Margin/VBox/PlayerLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/PlayerLogLabel") else null)
 @onready var log_label: RichTextLabel = player_log_label
 
 @onready var player_card_img: Control = $MainContainer/PlayerSection/HBox/PlayerCard
@@ -326,6 +333,7 @@ func _ready() -> void:
 		btn_font_big.pressed.connect(func(): _set_battle_log_font_size("big"))
 	if battle_settings_modal:
 		battle_settings_modal.visible = false
+	_update_combat_log_headers()
 	
 	if battle_title_lbl:
 		battle_title_lbl.clip_text = true
@@ -5609,6 +5617,43 @@ func _setup_battle_hud_theme() -> void:
 	if has_node("MainContainer/CenterLog"):
 		$MainContainer/CenterLog.add_theme_stylebox_override("panel", diag_box)
 		
+	# Marcos independientes con estilo retro para los 3 Battle Logs
+	var enemy_log_box = StyleBoxFlat.new()
+	enemy_log_box.bg_color = Color(0.12, 0.05, 0.06, 0.88) # Tinte vino/rojo oscuro
+	enemy_log_box.border_color = Color(0.72, 0.28, 0.30, 0.8) # Borde rojo carmesí
+	enemy_log_box.set_border_width_all(1)
+	enemy_log_box.set_corner_radius_all(5)
+	enemy_log_box.content_margin_left = 6
+	enemy_log_box.content_margin_right = 6
+	enemy_log_box.content_margin_top = 2
+	enemy_log_box.content_margin_bottom = 2
+	if enemy_log_panel:
+		enemy_log_panel.add_theme_stylebox_override("panel", enemy_log_box)
+
+	var neutral_log_box = StyleBoxFlat.new()
+	neutral_log_box.bg_color = Color(0.08, 0.11, 0.17, 0.92) # Azul medianoche titanio
+	neutral_log_box.border_color = Color(0.75, 0.60, 0.25, 0.85) # Borde dorado/ámbar suave
+	neutral_log_box.set_border_width_all(1)
+	neutral_log_box.set_corner_radius_all(5)
+	neutral_log_box.content_margin_left = 6
+	neutral_log_box.content_margin_right = 6
+	neutral_log_box.content_margin_top = 3
+	neutral_log_box.content_margin_bottom = 3
+	if neutral_log_panel:
+		neutral_log_panel.add_theme_stylebox_override("panel", neutral_log_box)
+
+	var player_log_box = StyleBoxFlat.new()
+	player_log_box.bg_color = Color(0.05, 0.12, 0.07, 0.88) # Tinte verde bosque oscuro
+	player_log_box.border_color = Color(0.28, 0.70, 0.38, 0.8) # Borde verde esmeralda
+	player_log_box.set_border_width_all(1)
+	player_log_box.set_corner_radius_all(5)
+	player_log_box.content_margin_left = 6
+	player_log_box.content_margin_right = 6
+	player_log_box.content_margin_top = 2
+	player_log_box.content_margin_bottom = 2
+	if player_log_panel:
+		player_log_panel.add_theme_stylebox_override("panel", player_log_box)
+		
 	var enemy_card_style = StyleBoxFlat.new()
 	enemy_card_style.bg_color = Color("#101822")
 	enemy_card_style.border_color = Color("#2a6888")
@@ -6131,6 +6176,7 @@ func reset_selected_energy() -> void:
 	selected_energy_move2 = -1
 
 func _on_battle_language_changed(_new_lang: String) -> void:
+	_update_combat_log_headers()
 	update_ui()
 	_render_combat_log()
 	GameData.apply_language_to_scene_tree()
@@ -6956,6 +7002,13 @@ func _apply_active_toggle_style(btn: Button, active: bool) -> void:
 		sb.set_corner_radius_all(4)
 		btn.add_theme_stylebox_override("normal", sb)
 
+func _update_combat_log_headers() -> void:
+	var is_sp = GameData.is_spanish()
+	if enemy_header_lbl:
+		enemy_header_lbl.text = "🔴 RIVAL"
+	if player_header_lbl:
+		player_header_lbl.text = "🟢 JUGADOR" if is_sp else "🟢 PLAYER"
+
 func _update_font_size_buttons_ui() -> void:
 	var cur = GameData.battle_log_font_size
 	var is_sp = GameData.is_spanish()
@@ -6971,6 +7024,7 @@ func _update_font_size_buttons_ui() -> void:
 
 func _update_battle_settings_ui() -> void:
 	var is_sp = GameData.is_spanish()
+	_update_combat_log_headers()
 	if settings_title_lbl:
 		settings_title_lbl.text = "⚙️ AJUSTES DE BATALLA" if is_sp else "⚙️ BATTLE SETTINGS"
 	if btn_toggle_lang:
