@@ -6820,12 +6820,17 @@ func change_chaos_team(chosen_ids: Array) -> void:
 		old_flinch[p["id"]] = p.get("is_flinched", false)
 	chaos_player_team_state.clear()
 	for cid in chosen_ids:
+		if not is_pokemon_unlocked(cid):
+			continue
+		if cid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+			continue
 		var d = pokemon_catalog.get(cid, {})
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
 		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
+		var ev_from = str(d.get("evolves_from", "")).strip_edges()
 		var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
-		var is_dragon_basic = (st == "basic" and is_line_legendary(cid))
-		if is_leg or is_dragon_basic:
+		var is_dragon_line = is_line_legendary(cid)
+		if (is_leg and ev_from == "") or is_dragon_line:
 			var inst = create_pokemon_instance(cid)
 			if inst:
 				var hp = old_hp.get(cid, inst.max_hp)

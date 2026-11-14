@@ -1280,7 +1280,21 @@ func start_new_game() -> void:
 				if GameData.campaign_submode == "ADVENTURE":
 					GameData.init_adventure_team(GameData.adventure_current_episode, [0, 1, 2])
 				elif GameData.campaign_submode == "CHAOS":
-					GameData.change_chaos_team([149]) # Fallback Dragonite
+					var fallback_chaos_id = -1
+					for uid in GameData.player_unlocked_ids:
+						if uid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+							continue
+						var cd = GameData.pokemon_catalog.get(uid, {})
+						var cr = str(cd.get("rarity", "Common")).strip_edges().to_lower()
+						var cst = str(cd.get("stage", "Basic")).strip_edges().to_lower()
+						var cev = str(cd.get("evolves_from", "")).strip_edges()
+						var is_leg = (cr in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (cst == "legendary")
+						if (is_leg and cev == "") or GameData.is_line_legendary(uid):
+							fallback_chaos_id = uid
+							break
+					if fallback_chaos_id == -1:
+						fallback_chaos_id = 0
+					GameData.change_chaos_team([fallback_chaos_id])
 				else:
 					GameData.init_campaign_team([0, 1, 2])
 				team_state = GameData.get_active_campaign_team_state()
