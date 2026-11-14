@@ -8403,22 +8403,22 @@ func _open_guide_modal(mode: String = "STADIUM", return_modal: Control = null) -
 			p1_header.text = "🥊 PHASE 1: CLASSIFICATION (Rounds 1 - 3)"
 			p1_header.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
 		if p1_info:
-			p1_info.text = "• Round 1 (Warmup): 1 Basic PKMN (Tier D / C). Fast opening duel.\n  Reward: 💰 10 G  |  💎 1 Diamond\n\n• Round 2 (Duo Clash): 2 Basic PKMN (Tier C / B). Fast-paced 2v2.\n  Reward: 💰 15 G  |  💎 2 Diamonds\n\n• Round 3 (Phase Finale): 1 Basic (Tier B/C) + 1 Stage 1 (Tier B/A).\n  Reward: 💰 25 G  |  💎 5 Diamonds (+5 💎 Phase 1 Bonus!)"
+			p1_info.text = "• Round 1 (Warmup): 1 Basic PKMN (Tier D / C). Fast opening duel.\n  Reward: 💰 10 G  |  💎 1 Diamond\n\n• Round 2 (Duo Clash): 2 Basic PKMN (Tier D / C). Fast-paced 2v2.\n  Reward: 💰 15 G  |  💎 2 Diamonds\n\n• Round 3 (Phase Finale): 3 PKMN (2 Basic + 1 Stage 1 Tier D / C).\n  Reward: 💰 25 G  |  💎 5 Diamonds (+5 💎 Phase 1 Bonus!)"
 		if p2_header:
 			p2_header.text = "⚡ PHASE 2: ELIMINATION (Rounds 4 - 6)"
 			p2_header.add_theme_color_override("font_color", Color(0.4, 0.85, 1))
 		if p2_info:
-			p2_info.text = "• Round 4 (Speed Duel): 1 Stage 1 PKMN (Tier B / A). Evolved clash.\n  Reward: 💰 20 G  |  💎 2 Diamonds\n\n• Round 5 (Tag Team): 1 Stage 1 + 1 Basic PKMN (Tier B / A).\n  Reward: 💰 25 G  |  💎 3 Diamonds\n\n• Round 6 (Phase Finale): 2 Stage 1 / Tier A powerhouses.\n  Reward: 💰 40 G  |  💎 10 Diamonds (+10 💎 Phase 2 Bonus!)"
+			p2_info.text = "• Round 4 (Speed Duel): 1 Stage 1 PKMN (Tier B / A). Evolved clash.\n  Reward: 💰 20 G  |  💎 2 Diamonds\n\n• Round 5 (Tag Team): 2 PKMN (1 Stage 1 + 1 Basic Tier B / A).\n  Reward: 💰 25 G  |  💎 3 Diamonds\n\n• Round 6 (Phase Finale): 3 PKMN (2 Stage 1 + 1 Tier B / A ally).\n  Reward: 💰 40 G  |  💎 10 Diamonds (+10 💎 Phase 2 Bonus!)"
 		if p3_header:
 			p3_header.text = "🏆 PHASE 3: GRAND FINALE (Rounds 7 - 9)"
 			p3_header.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 		if p3_info:
-			p3_info.text = "• Round 7 (Quarterfinals): 1 Stage 2 (Tier A/B) + 1 Stage 1 (Tier A/B).\n  Reward: 💰 30 G  |  💎 4 Diamonds\n\n• Round 8 (Semifinals): 1 Stage 2 (Tier A) + 1 Elite Tier A PKMN.\n  Reward: 💰 40 G  |  💎 5 Diamonds\n\n• Round 9 (Championship): 3 Elite Tier A PKMN (1 Stage 2 + 2 Tier A allies).\n  Reward: 💰 75 G  |  💎 25 Diamonds (+25 💎 Trophy Bonus!)"
+			p3_info.text = "• Round 7 (Quarterfinals): 1 Stage 2 / Tier S Colossus (Tier A / S).\n  Reward: 💰 30 G  |  💎 4 Diamonds\n\n• Round 8 (Semifinals): 2 PKMN (1 Stage 2 Tier A / S + 1 Elite Tier A / S).\n  Reward: 💰 40 G  |  💎 5 Diamonds\n\n• Round 9 (Championship): 3 PKMN (3 Elite Tier A / Tier S PKMN, Leader Stage 2 / Tier S).\n  Reward: 💰 75 G  |  💎 25 Diamonds (+25 💎 Trophy Bonus!)"
 		if rules_header:
 			rules_header.text = "⚖️ STADIUM RULES & GENERATION CRITERIA"
 			rules_header.add_theme_color_override("font_color", Color(0.95, 0.75, 0.4))
 		if rules_body:
-			rules_body.text = "• Banned for Rivals: All Legendaries and Tier S/S+ (Venusaur, Alakazam, etc.) are strictly prohibited.\n• Fair Progression: Early rounds use Tier D/C; middle rounds feature Tier B/A; finale uses Tier A and Stage 2.\n• Party Persistence: HP & Status carry over across matches. Buy Potions & Revives at the Camp Shop.\n• In-Camp Evolutions: Evolve your Pokémon between matches whenever their EXP threshold is reached!\n• Daily Rewards: Stage clear Gold & Diamond bonuses are granted once per day. Subsequent runs on the same day earn Gold & Diamonds exclusively by defeating rival Pokémon."
+			rules_body.text = "• Strictly Banned for Rivals: All Legendaries (Mewtwo, Birds, Beasts, Weather Trio, etc.) are strictly prohibited.\n• Tier S Permitted in Phase 3: Non-legendary Tier S powerhouses (Venusaur, Charizard, Gengar, Alakazam, Machamp, etc.) can now appear exclusively in Phase 3!\n• Team Size Progression: Each phase progressively challenges you with 1, 2, and 3 rival Pokémon.\n• Party Persistence: HP & Status carry over across matches. Buy Potions & Revives at the Camp Shop.\n• In-Camp Evolutions: Evolve your Pokémon between matches whenever their EXP threshold is reached!\n• Daily Rewards: Stage clear Gold & Diamond bonuses are granted once per day. Subsequent runs on the same day earn Gold & Diamonds exclusively by defeating rival Pokémon."
 			
 	stadium_guide_modal.visible = true
 

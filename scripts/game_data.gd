@@ -6480,7 +6480,7 @@ func get_tournament_match_info(match_num: int) -> Dictionary:
 				"match_in_phase": 3,
 				"reward_gold": 25,
 				"reward_diamonds": 5,
-				"desc": "Battle 3/3 (Phase 1 Finale): 1 Basic + 1 Stage 1 Pokémon (+5 💎 Phase Bonus!)"
+				"desc": "Battle 3/3 (Phase 1 Finale): 3 Basic / Stage 1 Pokémon (+5 💎 Phase Bonus!)"
 			}
 		4:
 			return {
@@ -6498,7 +6498,7 @@ func get_tournament_match_info(match_num: int) -> Dictionary:
 				"match_in_phase": 2,
 				"reward_gold": 25,
 				"reward_diamonds": 3,
-				"desc": "Battle 2/3 (Tag Team): 2 Evolved / Strong Pokémon"
+				"desc": "Battle 2/3 (Tag Team): 2 Evolved / Strong Pokémon (Tier B/A)"
 			}
 		6:
 			return {
@@ -6507,7 +6507,7 @@ func get_tournament_match_info(match_num: int) -> Dictionary:
 				"match_in_phase": 3,
 				"reward_gold": 40,
 				"reward_diamonds": 10,
-				"desc": "Battle 3/3 (Phase 2 Finale): 2 Stage 1 / Tier A Pokémon (+10 💎 Phase Bonus!)"
+				"desc": "Battle 3/3 (Phase 2 Finale): 3 Evolved Pokémon (Tier B/A) (+10 💎 Phase Bonus!)"
 			}
 		7:
 			return {
@@ -6516,7 +6516,7 @@ func get_tournament_match_info(match_num: int) -> Dictionary:
 				"match_in_phase": 1,
 				"reward_gold": 30,
 				"reward_diamonds": 4,
-				"desc": "Battle 1/3 (Quarterfinals): 1 Stage 2 + 1 Stage 1 Pokémon"
+				"desc": "Battle 1/3 (Quarterfinals): 1 Stage 2 / Tier S Colossus"
 			}
 		8:
 			return {
@@ -6525,7 +6525,7 @@ func get_tournament_match_info(match_num: int) -> Dictionary:
 				"match_in_phase": 2,
 				"reward_gold": 40,
 				"reward_diamonds": 5,
-				"desc": "Battle 2/3 (Semifinals): 1 Stage 2 + 1 Elite Tier A Pokémon"
+				"desc": "Battle 2/3 (Semifinals): 2 Elite Tier A / Tier S Pokémon"
 			}
 		9:
 			return {
@@ -6534,7 +6534,7 @@ func get_tournament_match_info(match_num: int) -> Dictionary:
 				"match_in_phase": 3,
 				"reward_gold": 75,
 				"reward_diamonds": 25,
-				"desc": "Battle 3/3 (Championship): 3 Elite Tier A Pokémon! (+25 💎 Trophy Bonus!)"
+				"desc": "Battle 3/3 (Championship): 3 Elite Tier A / Tier S Pokémon! (+25 💎 Trophy Bonus!)"
 			}
 		_:
 			return {
@@ -6560,7 +6560,7 @@ func claim_tournament_match_reward_today(match_num: int) -> void:
 	if not tournament_claimed_matches_today.has(match_num):
 		tournament_claimed_matches_today.append(match_num)
 
-func is_valid_tournament_rival_id(pkmn_id: int) -> bool:
+func is_valid_tournament_rival_id(pkmn_id: int, allow_tier_s: bool = false) -> bool:
 	if pkmn_id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
 		return false
 	var d = pokemon_catalog.get(pkmn_id, {})
@@ -6571,18 +6571,19 @@ func is_valid_tournament_rival_id(pkmn_id: int) -> bool:
 	if r in ["legendary", "legendaria", "legendario", "ur", "ultra rare", "boss", "special"] or st in ["legendary", "boss", "special"]:
 		return false
 	var p_tier = str(d.get("tier", "C")).strip_edges().to_upper()
-	if p_tier in ["S", "S+", "SS", "SSS"]:
+	if not allow_tier_s and p_tier in ["S", "S+", "SS", "SSS"]:
 		return false
 	return true
 
-func get_tournament_candidates(stage_target: String = "any", rarity_target: String = "any", allowed_tiers: Array = ["D", "C", "B", "A"]) -> Array[int]:
+func get_tournament_candidates(stage_target: String = "any", rarity_target: String = "any", allowed_tiers: Array = ["D", "C", "B", "A"], allow_tier_s: bool = false) -> Array[int]:
 	var result: Array[int] = []
 	var st_clean = stage_target.strip_edges().to_lower()
 	var r_clean = rarity_target.strip_edges().to_lower()
+	var effective_allow_s = allow_tier_s or ("S" in allowed_tiers) or ("S+" in allowed_tiers)
 	
 	for id in all_pokemon_ids:
-		# 1-2. Strictly ban Red Gyarados, Bosses, Legendaries, Special, and Tier S/S+
-		if not is_valid_tournament_rival_id(id):
+		# 1-2. Strictly ban Red Gyarados, Bosses, Legendaries, and Tier S unless allowed
+		if not is_valid_tournament_rival_id(id, effective_allow_s):
 			continue
 		var d = pokemon_catalog.get(id, {})
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
@@ -6657,57 +6658,72 @@ func generate_tournament_rival_team(match_num: int) -> Array[int]:
 			var pool = get_tournament_candidates("basic", "any", ["D"])
 			return pick_random_unique(pool, 1)
 		2:
-			# Match 2 (Phase 1 Skirmish): 2 Basic Pokémon (Strictly Tier D)
-			var pool = get_tournament_candidates("basic", "any", ["D"])
+			# Match 2 (Phase 1 Skirmish): 2 Basic Pokémon (Tier D/C)
+			var pool = get_tournament_candidates("basic", "any", ["D", "C"])
 			return pick_random_unique(pool, 2)
 		3:
-			# Match 3 (Phase 1 Finale): 1 Basic (Strictly Tier D) + 1 Stage 1 (Tier D/C)
-			var b = pick_random_unique(get_tournament_candidates("basic", "any", ["D"]), 1)
+			# Match 3 (Phase 1 Finale): 3 Pokémon (2 Basic Tier D/C + 1 Stage 1 Tier D/C)
+			var b = pick_random_unique(get_tournament_candidates("basic", "any", ["D", "C"]), 2)
 			var s1 = pick_random_unique(get_tournament_candidates("stage 1", "any", ["D", "C"]), 1, b)
-			return b + s1
+			var team = b + s1
+			while team.size() < 3:
+				var fill = pick_random_unique(get_tournament_candidates("any", "any", ["D", "C"]), 1, team)
+				if fill.is_empty(): break
+				team.append_array(fill)
+			return team
 		4:
 			# Match 4 (Phase 2 Duel): 1 Stage 1 Pokémon (Tier B/A) - snappy evolved clash
 			var pool = get_tournament_candidates("stage 1", "any", ["B", "A"])
 			return pick_random_unique(pool, 1)
 		5:
-			# Match 5 (Phase 2 Tag Team): 1 Stage 1 + 1 Basic (Tier B/A)
+			# Match 5 (Phase 2 Tag Team): 2 Pokémon (1 Stage 1 + 1 Basic Tier B/A)
 			var s1 = pick_random_unique(get_tournament_candidates("stage 1", "any", ["B", "A"]), 1)
 			var b = pick_random_unique(get_tournament_candidates("basic", "any", ["B", "A"]), 1, s1)
-			return s1 + b
+			var team = s1 + b
+			while team.size() < 2:
+				var fill = pick_random_unique(get_tournament_candidates("any", "any", ["B", "A"]), 1, team)
+				if fill.is_empty(): break
+				team.append_array(fill)
+			return team
 		6:
-			# Match 6 (Phase 2 Finale): 2 Pokémon: Stage 1 or Tier A powerhouses
-			var pool = get_tournament_candidates("stage 1", "any", ["B", "A"])
-			var team = pick_random_unique(pool, 2)
-			if team.size() < 2:
-				var backup = pick_random_unique(get_tournament_candidates("basic", "any", ["A"]), 1, team)
-				team += backup
+			# Match 6 (Phase 2 Finale): 3 Pokémon (2 Stage 1 + 1 Basic/Stage 1 Tier B/A)
+			var s1_pool = get_tournament_candidates("stage 1", "any", ["B", "A"])
+			var s1 = pick_random_unique(s1_pool, 2)
+			var other = pick_random_unique(get_tournament_candidates("any", "any", ["B", "A"]), 1, s1)
+			var team = s1 + other
+			while team.size() < 3:
+				var fill = pick_random_unique(get_tournament_candidates("any", "any", ["B", "A"]), 1, team)
+				if fill.is_empty(): break
+				team.append_array(fill)
 			return team
 		7:
-			# Match 7 (Phase 3 Contender): 1 Stage 2 (Tier A/B) + 1 Stage 1 / Basic (Tier A/B)
-			var s2 = pick_random_unique(get_tournament_candidates("stage 2", "any", ["B", "A"]), 1)
-			var support = pick_random_unique(get_tournament_candidates("stage 1", "any", ["B", "A"]), 1, s2)
-			if support.is_empty():
-				support = pick_random_unique(get_tournament_candidates("basic", "any", ["A"]), 1, s2)
-			return s2 + support
+			# Match 7 (Phase 3 Quarterfinals): 1 Stage 2 or Tier S powerhouse (NO Legendaries)
+			var pool = get_tournament_candidates("stage 2", "any", ["A", "S", "S+"], true)
+			if pool.is_empty():
+				pool = get_tournament_candidates("any", "any", ["A", "S", "S+"], true)
+			return pick_random_unique(pool, 1)
 		8:
-			# Match 8 (Phase 3 Semifinals): 1 Stage 2 (Tier A) + 1 Elite Tier A Pokémon
-			var s2 = pick_random_unique(get_tournament_candidates("stage 2", "any", ["A"]), 1)
-			var elite = pick_random_unique(get_tournament_candidates("stage 1", "any", ["A"]), 1, s2)
-			if elite.is_empty():
-				elite = pick_random_unique(get_tournament_candidates("basic", "any", ["A"]), 1, s2)
-			return s2 + elite
+			# Match 8 (Phase 3 Semifinals): 2 Pokémon (1 Stage 2 Tier A/S + 1 Elite Tier A/S)
+			var s2 = pick_random_unique(get_tournament_candidates("stage 2", "any", ["A", "S", "S+"], true), 1)
+			var elite = pick_random_unique(get_tournament_candidates("any", "any", ["A", "S", "S+"], true), 1, s2)
+			var team = s2 + elite
+			while team.size() < 2:
+				var fill = pick_random_unique(get_tournament_candidates("any", "any", ["A", "S", "S+"], true), 1, team)
+				if fill.is_empty(): break
+				team.append_array(fill)
+			return team
 		9:
-			# Match 9 (Phase 3 Grand Championship): 3 Elite Tier A Pokémon (NO Legendaries, strictly < Tier S!)
-			var s2_pool = get_tournament_candidates("stage 2", "any", ["A"])
-			var other_a_pool = get_tournament_candidates("any", "any", ["A"])
+			# Match 9 (Phase 3 Grand Championship): 3 Elite Tier A / Tier S Pokémon (NO Legendaries)
+			var s2_pool = get_tournament_candidates("stage 2", "any", ["A", "S", "S+"], true)
+			var other_pool = get_tournament_candidates("any", "any", ["A", "S", "S+"], true)
 			var team: Array[int] = []
 			var leader = pick_random_unique(s2_pool, 1)
 			if not leader.is_empty():
 				team.append_array(leader)
-			var rest = pick_random_unique(other_a_pool, 3 - team.size(), team)
+			var rest = pick_random_unique(other_pool, 3 - team.size(), team)
 			team.append_array(rest)
 			while team.size() < 3:
-				var fill = pick_random_unique(get_tournament_candidates("any", "any", ["B", "A"]), 1, team)
+				var fill = pick_random_unique(get_tournament_candidates("any", "any", ["A", "S", "S+"], true), 1, team)
 				if fill.is_empty(): break
 				team.append_array(fill)
 			return team
@@ -6715,10 +6731,12 @@ func generate_tournament_rival_team(match_num: int) -> Array[int]:
 			return pick_random_unique(get_tournament_candidates("basic", "any", ["D"]), 1)
 
 func get_campaign_rival_team(match_num: int) -> Array[int]:
-	if match_num == current_tournament_rival_match and not current_tournament_rival_team.is_empty():
+	var allow_s = (match_num >= 7)
+	var expected_size = ((match_num - 1) % 3) + 1
+	if match_num == current_tournament_rival_match and current_tournament_rival_team.size() == expected_size:
 		var all_legal = true
 		for pid in current_tournament_rival_team:
-			if not is_valid_tournament_rival_id(int(pid)):
+			if not is_valid_tournament_rival_id(int(pid), allow_s):
 				all_legal = false
 				break
 		if all_legal:
