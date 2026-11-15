@@ -382,12 +382,12 @@ var tutorial_prompt_callback: Callable = Callable()
 var _pending_tutorial_after_settings: bool = false
 
 # --- MODAL LOGIN (PANTALLA DE ACCESO PREVIA AL LOBBY) ---
-@onready var login_modal: Control = $LoginModal
-@onready var profile_detected_lbl: Label = $LoginModal/LoginBox/LoginHeader/ProfileDetectedLbl
-@onready var btn_login_play: Button = $LoginModal/LoginBox/LoginButtons/BtnLoginPlay
-@onready var btn_login_cloud: Button = $LoginModal/LoginBox/LoginButtons/BtnLoginCloud
-@onready var btn_sign_up_google: Button = $LoginModal/LoginBox/LoginButtons/BtnSignUpGoogle
-@onready var login_feedback_lbl: Label = $LoginModal/LoginBox/LoginFeedbackLbl
+@onready var login_modal: Control = find_child("LoginModal", true, false)
+@onready var profile_detected_lbl: Label = find_child("ProfileDetectedLbl", true, false)
+@onready var btn_login_play: Button = find_child("BtnLoginPlay", true, false)
+@onready var btn_login_cloud: Button = find_child("BtnLoginCloud", true, false)
+@onready var btn_sign_up_google: Button = find_child("BtnSignUpGoogle", true, false)
+@onready var login_feedback_lbl: Label = find_child("LoginFeedbackLbl", true, false)
 
 # --- MODAL PERFIL DEL ENTRENADOR ---
 @onready var profile_modal: Control = $ProfileModal
