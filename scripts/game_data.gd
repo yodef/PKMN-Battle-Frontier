@@ -9061,16 +9061,17 @@ const REGION_BADGES_DATA: Dictionary = {
 	]
 }
 
-func get_earned_badges_by_region() -> Dictionary:
+func get_earned_badges_by_region(custom_completed_episodes = null) -> Dictionary:
 	var result: Dictionary = {
 		"Kanto": [],
 		"Johto": [],
 		"Hoenn": [],
 		"Sinnoh": []
 	}
+	var target_episodes = adventure_completed_episodes if custom_completed_episodes == null else custom_completed_episodes
 	for reg in REGION_BADGES_DATA:
 		for b_info in REGION_BADGES_DATA[reg]:
-			if int(b_info.id) in adventure_completed_episodes:
+			if int(b_info.id) in target_episodes:
 				var info_copy = b_info.duplicate()
 				info_copy["texture"] = get_badge_texture(reg, b_info.file_key)
 				result[reg].append(info_copy)

@@ -15063,8 +15063,12 @@ func _show_friend_profile_modal_error(f_alias: String, err_msg: String) -> void:
 	vbox.add_child(btn_close)
 
 func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> void:
-	if not friend_profile_modal:
-		return
+	if friend_profile_modal == null:
+		friend_profile_modal = Control.new()
+		friend_profile_modal.name = "FriendProfileModal"
+		friend_profile_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+		friend_profile_modal.z_index = 92
+		add_child(friend_profile_modal)
 	for c in friend_profile_modal.get_children():
 		c.queue_free()
 		
@@ -15106,6 +15110,9 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	var email = str(prof.get("email", f_data.get("email", ""))).strip_edges()
 	var p_id = str(prof.get("id", f_data.get("id", ""))).strip_edges()
 	var act_val = prof.get("last_activity_at", f_data.get("last_activity_at", prof.get("updated_at", "")))
+	var f_avatar_id = str(prof.get("avatar", f_data.get("avatar", "leaf"))).strip_edges().to_lower()
+	if f_avatar_id.is_empty():
+		f_avatar_id = "leaf"
 	
 	var title = Label.new()
 	title.text = "👤 TRAINER PROFILE"
@@ -15131,9 +15138,24 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	info_margin.add_theme_constant_override("margin_bottom", 8)
 	info_panel.add_child(info_margin)
 	
+	var info_row = HBoxContainer.new()
+	info_row.add_theme_constant_override("separation", 12)
+	info_row.alignment = BoxContainer.ALIGNMENT_BEGIN
+	info_margin.add_child(info_row)
+	
+	# Friend Avatar Portrait
+	var avatar_rect = TextureRect.new()
+	avatar_rect.name = "FriendAvatarPreview"
+	avatar_rect.custom_minimum_size = Vector2(64, 64)
+	avatar_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	avatar_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	avatar_rect.texture = GameData.get_avatar_texture(f_avatar_id)
+	info_row.add_child(avatar_rect)
+	
 	var info_vbox = VBoxContainer.new()
 	info_vbox.add_theme_constant_override("separation", 3)
-	info_margin.add_child(info_vbox)
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_row.add_child(info_vbox)
 	
 	var name_lbl = Label.new()
 	name_lbl.text = "Trainer: %s" % alias
@@ -15201,6 +15223,7 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	var diamonds = int(econ.get("diamonds", 0))
 	var candies = int(econ.get("rare_candies", 0))
 	var tourneys = int(stats.get("tournaments_won", 0))
+	var champs = int(stats.get("championships_won", 0))
 	var b_won = int(stats.get("battles_won", 0))
 	var b_tot = int(stats.get("battles_total", 0))
 	var win_rate = (float(b_won) / float(b_tot) * 100.0) if b_tot > 0 else 0.0
@@ -15212,6 +15235,7 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 		"💎 Diamonds: %d" % diamonds,
 		"🍬 Rare Candies: %d" % candies,
 		"🏆 Tournaments Won: %d" % tourneys,
+		"👑 Championships Won: %d" % champs,
 		"⚔️ Battles: %d/%d (%.0f%%)" % [b_won, b_tot, win_rate],
 		"🎴 Cards: %d/%d (%.0f%%)" % [unl_ids.size(), total_cards, col_pct],
 		"📦 Packs Opened: %d" % packs
@@ -15221,6 +15245,81 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 		s_lbl.text = s_text
 		s_lbl.add_theme_font_size_override("font_size", 11)
 		stats_grid.add_child(s_lbl)
+		
+	# Badges Section (Medallas obtenidas del amigo)
+	var f_adv = save_data.get("adventure", {})
+	var f_completed_eps = f_adv.get("completed_episodes", [])
+	var f_earned_by_region = GameData.get_earned_badges_by_region(f_completed_eps)
+	var f_total_badges = 0
+	for reg in f_earned_by_region:
+		f_total_badges += f_earned_by_region[reg].size()
+		
+	var f_badges_panel = PanelContainer.new()
+	f_badges_panel.name = "FriendBadgesCard"
+	var sb_f_badges = StyleBoxFlat.new()
+	sb_f_badges.bg_color = Color(0.06, 0.09, 0.14, 0.9)
+	sb_f_badges.border_color = Color(0.2, 0.4, 0.55)
+	sb_f_badges.set_border_width_all(1)
+	sb_f_badges.set_corner_radius_all(6)
+	f_badges_panel.add_theme_stylebox_override("panel", sb_f_badges)
+	vbox.add_child(f_badges_panel)
+	
+	var f_badges_margin = MarginContainer.new()
+	f_badges_margin.add_theme_constant_override("margin_left", 10)
+	f_badges_margin.add_theme_constant_override("margin_top", 8)
+	f_badges_margin.add_theme_constant_override("margin_right", 10)
+	f_badges_margin.add_theme_constant_override("margin_bottom", 8)
+	f_badges_panel.add_child(f_badges_margin)
+	
+	var f_badges_vbox = VBoxContainer.new()
+	f_badges_vbox.add_theme_constant_override("separation", 6)
+	f_badges_margin.add_child(f_badges_vbox)
+	
+	var is_es = GameData.is_spanish()
+	var f_badges_title = Label.new()
+	f_badges_title.name = "FriendBadgesTitle"
+	f_badges_title.text = "🎖️ MEDALLAS OBTENIDAS" if is_es else "🎖️ EARNED GYM BADGES"
+	f_badges_title.add_theme_font_size_override("font_size", 12)
+	f_badges_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	f_badges_vbox.add_child(f_badges_title)
+	
+	if f_total_badges == 0:
+		var empty_lbl = Label.new()
+		empty_lbl.text = "Sin medallas obtenidas aún" if is_es else "No badges earned yet"
+		empty_lbl.add_theme_font_size_override("font_size", 11)
+		empty_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		f_badges_vbox.add_child(empty_lbl)
+	else:
+		for reg in ["Kanto", "Johto", "Hoenn", "Sinnoh"]:
+			var b_list = f_earned_by_region.get(reg, [])
+			if b_list.is_empty():
+				continue # Mostrar solo las medallas obtenidas de cada región
+				
+			var b_row = HBoxContainer.new()
+			b_row.add_theme_constant_override("separation", 8)
+			b_row.alignment = BoxContainer.ALIGNMENT_BEGIN
+			f_badges_vbox.add_child(b_row)
+			
+			var reg_lbl = Label.new()
+			reg_lbl.text = reg.to_upper() + ":"
+			reg_lbl.custom_minimum_size = Vector2(58, 0)
+			reg_lbl.add_theme_font_size_override("font_size", 11)
+			reg_lbl.add_theme_color_override("font_color", Color(0.4, 0.85, 1.0))
+			b_row.add_child(reg_lbl)
+			
+			var icons_row = HBoxContainer.new()
+			icons_row.add_theme_constant_override("separation", 6)
+			icons_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			b_row.add_child(icons_row)
+			
+			for b in b_list:
+				var icon_rect = TextureRect.new()
+				icon_rect.custom_minimum_size = Vector2(26, 26)
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_rect.texture = b.get("texture", null)
+				icon_rect.tooltip_text = str(b.get("name_es" if is_es else "name", "Badge"))
+				icons_row.add_child(icon_rect)
 		
 	# Showcase Section con Foils
 	var showcase_box = VBoxContainer.new()
@@ -16277,11 +16376,21 @@ func _create_friend_card(f_data: Dictionary) -> Control:
 	hbox.add_theme_constant_override("separation", 6)
 	margin.add_child(hbox)
 	
-	var avatar_lbl = Label.new()
-	avatar_lbl.text = "👤"
-	avatar_lbl.add_theme_font_size_override("font_size", 18)
-	avatar_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hbox.add_child(avatar_lbl)
+	var f_av_id = str(f_data.get("avatar", "")).strip_edges().to_lower()
+	if not f_av_id.is_empty():
+		var av_tex = GameData.get_avatar_texture(f_av_id)
+		var av_rect = TextureRect.new()
+		av_rect.custom_minimum_size = Vector2(28, 28)
+		av_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		av_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		av_rect.texture = av_tex
+		hbox.add_child(av_rect)
+	else:
+		var avatar_lbl = Label.new()
+		avatar_lbl.text = "👤"
+		avatar_lbl.add_theme_font_size_override("font_size", 18)
+		avatar_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		hbox.add_child(avatar_lbl)
 	
 	var info_vbox = VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL

@@ -3028,7 +3028,7 @@ theme_override_constants/separation = 12
 alignment = 1
 
 [node name="ProfileAvatarPreview" type="TextureRect" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow"]
-custom_minimum_size = Vector2(70, 95)
+custom_minimum_size = Vector2(74, 74)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dsr42ekjc3vma"]
+
+[ext_resource type="Script" path="res://tests/generate_face_avatars.gd" id="1_gen"]
+
+[node name="GenFaceAvatars" type="Node"]
+script = ExtResource("1_gen")

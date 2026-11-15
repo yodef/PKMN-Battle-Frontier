@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://testprofilebadges"]
+[gd_scene format=3 uid="uid://r1tf0m13g6q5"]
 
 [ext_resource type="Script" path="res://tests/test_profile_and_episode_badges.gd" id="1_test"]
 
