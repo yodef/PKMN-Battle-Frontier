@@ -264,6 +264,16 @@ func get_enemy_trainer_name() -> String:
 					return "Mewtwo Enfurecido" if is_sp else "Enraged Mewtwo"
 				_:
 					return "Mewtwo Enfurecido" if is_sp else "Enraged Mewtwo"
+		elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+			match GameData.celestial_flight_current_round:
+				1:
+					return "Trío Alado" if is_sp else "Winged Trio"
+				2:
+					return "Aves Legendarias" if is_sp else "Legendary Birds"
+				3:
+					return "Señores Celestiales" if is_sp else "Celestial Lords"
+				_:
+					return "Señores Celestiales" if is_sp else "Celestial Lords"
 		elif GameData.campaign_submode == "CHAOS":
 			var match_info = GameData.get_chaos_match_info(GameData.chaos_match_number)
 			if match_info.get("is_boss", false):
@@ -1184,6 +1194,10 @@ func _show_forfeit_confirmation_modal() -> void:
 			forfeit_title_lbl.text = "🔮 ¿ABANDONAR EL DUELO PSÍQUICO?"
 			forfeit_body_lbl.text = "¿Seguro que deseas retirarte del Duelo contra los Psíquicos?\nEl progreso de las rondas se reiniciará."
 			btn_confirm_forfeit.text = "🏳️ Abandonar Duelo"
+		elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+			forfeit_title_lbl.text = "🪽 ¿ABANDONAR EL VUELO CELESTIAL?"
+			forfeit_body_lbl.text = "¿Seguro que deseas retirarte de El Vuelo Celestial?\nEl progreso de las rondas se reiniciará."
+			btn_confirm_forfeit.text = "🏳️ Abandonar Vuelo"
 		elif GameData.campaign_submode == "ADVENTURE":
 			forfeit_title_lbl.text = "⚠️ RETREAT FROM ADVENTURE?"
 			forfeit_body_lbl.text = "Are you sure you want to retreat?\nCurrent episode progress will be reset.\n(Your earned Gold and Diamonds are safe)."
@@ -1252,6 +1266,11 @@ func _on_return_to_menu() -> void:
 		GameData.is_campaign_mode = false
 		GameData.campaign_submode = "ADVENTURE"
 		GameData.save_profile()
+	elif not is_battle_over and GameData.is_campaign_mode and GameData.campaign_submode == "CELESTIAL_FLIGHT":
+		GameData.reset_celestial_flight_run()
+		GameData.is_campaign_mode = false
+		GameData.campaign_submode = "ADVENTURE"
+		GameData.save_profile()
 	elif not is_battle_over and GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
 		# Solo si se abandona a mitad de combate (forfeit):
 		# Si sales antes de terminar el combate, se reinicia el progreso del episodio conservando los recursos G y Diamonds
@@ -1300,6 +1319,8 @@ func get_pokemon_effective_speed(pkmn, opponent) -> int:
 	if pkmn and pkmn.has_passive and pkmn.passive_name in ["Chlorophyll", "Swift Swim", "Weather Rush", "Sand Rush"]:
 		if sandstorm_turns > 0 or grassy_terrain_turns > 0:
 			spd += 3
+	if pkmn and pkmn.get("celestial_enraged", false):
+		spd += 3
 	return spd
 
 func _cleanse_pokemon_status(pkmn) -> void:
@@ -1475,6 +1496,10 @@ func start_new_game() -> void:
 					if fallback_chaos_id == -1:
 						fallback_chaos_id = 0
 					GameData.change_chaos_team([fallback_chaos_id])
+				elif GameData.campaign_submode == "PSYCHIC_DUEL":
+					GameData.init_psychic_duel_run([0, 1, 2])
+				elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+					GameData.init_celestial_flight_run([0, 1, 2])
 				else:
 					GameData.init_campaign_team([0, 1, 2])
 				team_state = GameData.get_active_campaign_team_state()
@@ -1536,6 +1561,18 @@ func start_new_game() -> void:
 						battle_title_lbl.text = "🔮 DUELO PSÍQUICO: BOSS FINAL (vs Mewtwo Enfurecido - 65 HP)"
 					_:
 						battle_title_lbl.text = "🔮 DUELO PSÍQUICO"
+			elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+				rival_ids = GameData.get_celestial_flight_round_rival_team(GameData.celestial_flight_current_round)
+				enemy_super_potions = 0
+				match GameData.celestial_flight_current_round:
+					1:
+						battle_title_lbl.text = "🪽 EL VUELO CELESTIAL: RONDA 1/3 (vs Trío Alado)"
+					2:
+						battle_title_lbl.text = "🪽 EL VUELO CELESTIAL: RONDA 2/3 (vs Aves Legendarias)"
+					3:
+						battle_title_lbl.text = "🪽 EL VUELO CELESTIAL: BOSS FINAL (vs Lugia & Ho-Oh)"
+					_:
+						battle_title_lbl.text = "🪽 EL VUELO CELESTIAL"
 			elif GameData.campaign_submode == "CHAMPIONSHIP":
 				rival_ids = GameData.get_championship_rival_team(GameData.championship_match_number)
 				var match_info = GameData.get_championship_match_info(GameData.championship_match_number)
@@ -1575,6 +1612,10 @@ func start_new_game() -> void:
 			elif GameData.campaign_submode == "PSYCHIC_DUEL":
 				if GameData.psychic_duel_current_round == 3:
 					enemy_team[last_idx].foil_type = "boss"
+			elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+				if GameData.celestial_flight_current_round == 3:
+					for p_en in enemy_team:
+						p_en.foil_type = "boss"
 			elif GameData.campaign_submode == "CHAMPIONSHIP":
 				enemy_team[last_idx].foil_type = "elite_four_ace"
 				enemy_team[last_idx].is_elite_four_ace = true
@@ -1649,6 +1690,8 @@ func start_new_game() -> void:
 			mode_str = "EL LAGO DE LA FURIA - GYARADOS ROJO (BOSS)"
 		elif GameData.campaign_submode == "PSYCHIC_DUEL":
 			mode_str = "DUELO CONTRA LOS PSÍQUICOS (RONDA %d/3)" % GameData.psychic_duel_current_round
+		elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+			mode_str = "EL VUELO CELESTIAL (RONDA %d/3)" % GameData.celestial_flight_current_round
 		elif GameData.campaign_submode == "ADVENTURE":
 			var total_stages = GameData.get_adventure_total_stages(GameData.adventure_current_episode)
 			var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
@@ -1788,8 +1831,8 @@ func start_new_round() -> void:
 	var p_spd = get_pokemon_effective_speed(p, e)
 	var e_spd = get_pokemon_effective_speed(e, p)
 	
-	var p_quick_claw = (p != null and p.held_item == "quick_claw" and randf() < 0.20)
-	var e_quick_claw = (e != null and e.held_item == "quick_claw" and randf() < 0.20)
+	var p_quick_claw = (p != null and p.held_item == "quick_claw" and randf() < 0.25)
+	var e_quick_claw = (e != null and e.held_item == "quick_claw" and randf() < 0.25)
 	
 	var initiative_msg = ""
 	var p_is_faster = (p_spd < e_spd) if (trick_room_turns > 0) else (p_spd > e_spd)
@@ -2991,6 +3034,12 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			raw_damage += rage_bonus
 			note_text += " [color=#CE93D8]Escalada Furiosa (+%d DMG)![/color]" % rage_bonus
 		
+	# Ira Celestial (Celestial Lugia & Celestial Ho-Oh: +3 DMG al caer su compañero)
+	if attacker.has_passive and (attacker.passive_name in ["Ira Celestial", "Celestial Wrath", "Vínculo Celestial"]) and attacker.get("celestial_enraged", false):
+		if raw_damage > 0:
+			raw_damage += 3
+			note_text += " [color=#FFD700]Ira Celestial (+3 DMG)![/color]"
+		
 	# Guts / Agallas (+3 DMG si sufre un estado alterado)
 	if attacker.has_passive and attacker.passive_name == "Guts":
 		if attacker.burn_turns > 0 or attacker.is_poisoned or attacker.is_paralyzed or attacker.is_asleep_turns > 0 or attacker.is_frozen:
@@ -3932,6 +3981,19 @@ func _animate_faint_and_replacement(is_player: bool, fainted_pkmn, next_idx: int
 	if not is_player:
 		process_defeated_enemies()
 		
+	# Ira Celestial: si un compañero cae, el superviviente con la habilidad se enfurece (+3 DMG y +3 SPD)
+	var team_to_check = player_team if is_player else enemy_team
+	for member in team_to_check:
+		if member != fainting_pkmn and member.current_hp > 0:
+			if member.has_passive and (member.passive_name in ["Ira Celestial", "Celestial Wrath", "Vínculo Celestial"]) and not member.get("celestial_enraged", false):
+				member.set("celestial_enraged", true)
+				var side = "PLAYER" if is_player else "ENEMY"
+				log_action("⚡ [b]%s[/b] se enfurece por la caída de su compañero y entra en [color=gold]¡Ira Celestial![/color] (+3 DMG y +3 Velocidad permanente)!" % member.name, side)
+				if not is_player and enemy_card_img:
+					spawn_floating_combat_text(enemy_card_img, "⚡ ¡IRA CELESTIAL! (+3 DMG, +3 SPD)", Color("#FFD700"))
+				elif is_player and player_card_img:
+					spawn_floating_combat_text(player_card_img, "⚡ ¡IRA CELESTIAL! (+3 DMG, +3 SPD)", Color("#FFD700"))
+		
 	var orig_pos = card_node.position
 		
 	# 1. Animación clásica y dramática de caída / desmayo (faint):
@@ -4539,6 +4601,44 @@ func _resolve_battle_victory() -> void:
 						next_enemy_desc
 					]
 				)
+		elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+			var cur_round = GameData.celestial_flight_current_round
+			if cur_round >= 3:
+				var was_first_clear = not GameData.celestial_flight_first_clear_claimed
+				GameData.complete_celestial_flight()
+				GameData.is_campaign_mode = false
+				if was_first_clear:
+					show_game_over(
+						"🪽 ¡EL VUELO CELESTIAL SUPERADO!",
+						"¡Has derrotado a los Señores Celestiales Lugia y Ho-Oh y conquistado las 3 rondas del evento!\n\n👑 ¡RECOMPENSAS DE PRIMERA VICTORIA!\n💎 +%d Diamantes (Total: %d)\n⚡ Garra Rápida (Quick Claw): El PKMN que lleva este objeto tiene 25%% de probabilidad de actuar primero sin importar su Velocidad.\n\n¡Ambos premios han sido añadidos a tu colección e inventario!" % [
+							GameData.CELESTIAL_FLIGHT_REWARD_DIAMONDS,
+							GameData.player_diamonds
+						]
+					)
+				else:
+					show_game_over(
+						"🪽 ¡EL VUELO CELESTIAL SUPERADO!",
+						"¡Has vuelto a derrotar a Lugia y Ho-Oh superando el majestuoso Vuelo Celestial!\n\n¡Victoria legendaria!"
+					)
+			else:
+				GameData.celestial_flight_player_team_state.clear()
+				for p in player_team:
+					GameData.celestial_flight_player_team_state.append({
+						"id": p.id,
+						"current_hp": max(0, p.current_hp),
+						"max_hp": p.max_hp,
+						"held_item": p.held_item
+					})
+				GameData.celestial_flight_current_round += 1
+				GameData.save_profile()
+				var next_enemy_desc = "Trío de Aves Legendarias (Articuno, Zapdos y Moltres)" if cur_round == 1 else "Señores Celestiales: Lugia & Ho-Oh (Bosses)"
+				show_game_over(
+					"🪽 ¡RONDA %d SUPERADA!" % cur_round,
+					"¡Has vencido en la Ronda %d de El Vuelo Celestial!\n\nTu equipo mantiene su vitalidad para el siguiente combate.\nPuedes usar objetos curativos en el campamento o continuar al combate contra: %s." % [
+						cur_round,
+						next_enemy_desc
+					]
+				)
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			var cur_match = GameData.championship_match_number
 			var phase_diamonds = GameData.CHAMPIONSHIP_DIAMOND_REWARDS[cur_match - 1]
@@ -4773,6 +4873,14 @@ func _resolve_battle_defeat(is_double_ko: bool = false) -> void:
 			show_game_over(
 				"💀 DERROTA EN EL DUELO PSÍQUICO",
 				"Tu equipo ha sido superado por los poderes psíquicos.\nEl desafío se ha reiniciado a la Ronda 1.\n¡Reorganiza tu equipo e inténtalo de nuevo!"
+			)
+		elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+			GameData.reset_celestial_flight_run()
+			GameData.is_campaign_mode = false
+			GameData.save_profile()
+			show_game_over(
+				"💀 DERROTA EN EL VUELO CELESTIAL",
+				"Tu equipo no pudo resistir el poder del cielo.\nEl desafío se ha reiniciado a la Ronda 1.\n¡Reorganiza tu equipo e inténtalo de nuevo!"
 			)
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			GameData.reset_championship_league(false)
@@ -5119,6 +5227,9 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 		var rage_bonus = max(0, round_number - 1)
 		if rage_bonus > 0 and dmg > 0:
 			dmg += rage_bonus
+	if attacker.has_passive and (attacker.passive_name in ["Ira Celestial", "Celestial Wrath", "Vínculo Celestial"]) and attacker.get("celestial_enraged", false):
+		if dmg > 0:
+			dmg += 3
 	if attacker.has_passive and attacker.passive_name == "Guts":
 		if attacker.burn_turns > 0 or attacker.is_poisoned or attacker.is_paralyzed or attacker.is_asleep_turns > 0 or attacker.is_frozen:
 			dmg += 3
@@ -6355,6 +6466,12 @@ func _format_passive_display(pkmn, opponent) -> String:
 	elif p_name in ["Escalada Furiosa", "Enraged Escalation"]:
 		var bonus = max(0, round_number - 1)
 		return " | ⚡ " + (GameData.tr_text("Enraged Escalation [+%d DMG]", "Escalada Furiosa [+%d DMG]") % bonus)
+	elif p_name in ["Ira Celestial", "Celestial Wrath", "Vínculo Celestial"]:
+		var is_enraged = pkmn.get("celestial_enraged", false)
+		if is_enraged:
+			return " | ⚡ " + GameData.tr_text("Celestial Wrath [ACTIVE: +3 DMG, +3 SPD]", "Ira Celestial [ACTIVO: +3 DMG, +3 VEL]")
+		else:
+			return " | 🕊️ " + GameData.tr_text("Celestial Bond [Awaits Partner]", "Vínculo Celestial [Esperando Compañero]")
 	elif p_name == "Sturdy":
 		var is_full = (pkmn.current_hp == pkmn.max_hp)
 		return " | 🛡️ " + (GameData.tr_text("Sturdy [ACTIVE: Endure 1 HP]", "Robustez [ACTIVO: Aguanta 1 HP]") if is_full else GameData.tr_text("Sturdy [SPENT]", "Robustez [AGOTADO]"))
@@ -7363,6 +7480,11 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 				btn_game_over_menu.text = "🗺️ Volver a Kanto"
 			else:
 				btn_game_over_menu.text = "⛺ Campamento (Ronda %d/3)" % GameData.psychic_duel_current_round
+		elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+			if GameData.celestial_flight_current_round > 3 or (is_battle_over and not is_victory):
+				btn_game_over_menu.text = "🗺️ Volver a Johto"
+			else:
+				btn_game_over_menu.text = "⛺ Campamento (Ronda %d/3)" % GameData.celestial_flight_current_round
 		elif GameData.campaign_submode == "ADVENTURE":
 			btn_game_over_menu.text = "⛺ Camp / Shop"
 		elif GameData.campaign_submode == "CHAOS":

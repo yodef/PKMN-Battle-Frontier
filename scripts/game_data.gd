@@ -123,6 +123,7 @@ class PokemonData:
 	var amnesia_active: bool = false
 	var payday_used: bool = false
 	var ground_boost_turns: int = 0
+	var celestial_enraged: bool = false
 	var texture_path: String
 	var passive_name: String = ""
 	var passive_desc: String = ""
@@ -555,8 +556,8 @@ func get_held_item_desc(item_id: String) -> String:
 			)
 		"quick_claw":
 			return tr_text(
-				"Gives the holder a 20% chance to act first, ignoring speed comparison.",
-				"Otorga al portador un 20% de probabilidad de actuar primero ignorando la velocidad."
+				"The holding Pokémon has a 25% chance to move first even if it has lower Speed.",
+				"El PKMN que lleva este objeto, tiene 25% de empezar primero aunque tenga menos velocidad."
 			)
 		"leftovers":
 			return tr_text(
@@ -1315,6 +1316,7 @@ var championship_hall_of_fame: Array[Dictionary] = []
 var has_unlocked_leftovers: bool = false
 var has_unlocked_dragon_fang: bool = false
 var has_unlocked_twisted_spoon: bool = false
+var has_unlocked_quick_claw: bool = false
 
 # Evento Especial de Kanto: Duelo contra los Psíquicos
 const ENRAGED_MEWTWO_BOSS_ID: int = 496
@@ -1324,6 +1326,25 @@ var psychic_duel_first_clear_claimed: bool = false
 var psychic_duel_current_round: int = 1
 var psychic_duel_inventory: Dictionary = DEFAULT_INVENTORY.duplicate()
 var psychic_duel_player_team_state: Array[Dictionary] = []
+
+# Evento Especial de Johto: El Vuelo Celestial
+const CELESTIAL_LUGIA_BOSS_ID: int = 497
+const CELESTIAL_HOOH_BOSS_ID: int = 498
+const CELESTIAL_FLIGHT_REWARD_DIAMONDS: int = 50
+var celestial_flight_completed: bool = false
+var celestial_flight_first_clear_claimed: bool = false
+var celestial_flight_current_round: int = 1
+var celestial_flight_inventory: Dictionary = DEFAULT_INVENTORY.duplicate()
+var celestial_flight_player_team_state: Array[Dictionary] = []
+
+const ALL_BOSS_IDS: Array[int] = [
+	CRYSTAL_ONIX_ID,
+	RED_GYARADOS_BOSS_ID,
+	RED_GYARADOS_CARD_ID,
+	ENRAGED_MEWTWO_BOSS_ID,
+	CELESTIAL_LUGIA_BOSS_ID,
+	CELESTIAL_HOOH_BOSS_ID
+]
 
 const ELITE_FOUR_ROSTER: Dictionary = {
 	"lorelei": {
@@ -6547,7 +6568,7 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 	var candidate_ids: Array[int] = []
 	if target_region.to_lower() in ["all", "overall", "todas"]:
 		for id in all_pokemon_ids:
-			if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
+			if id in ALL_BOSS_IDS:
 				continue
 			var d = pokemon_catalog.get(id, {})
 			var r = str(d.get("rarity", "")).to_lower()
@@ -6555,7 +6576,7 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 				candidate_ids.append(id)
 	elif target_region != "":
 		for id in all_pokemon_ids:
-			if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
+			if id in ALL_BOSS_IDS:
 				continue
 			var d = pokemon_catalog.get(id, {})
 			if str(d.get("region", "")).to_lower() == target_region.to_lower():
@@ -6564,7 +6585,7 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 	if candidate_ids.size() < BOOSTER_PACK_CARD_COUNT:
 		candidate_ids = []
 		for id in all_pokemon_ids:
-			if not (id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]):
+			if not (id in ALL_BOSS_IDS):
 				var d = pokemon_catalog.get(id, {})
 				var r = str(d.get("rarity", "")).to_lower()
 				if not (r in ["boss", "special"]):
@@ -6617,7 +6638,7 @@ func open_special_booster_pack() -> Array[Dictionary]:
 	var pool_epic_legendary: Array[int] = []
 	
 	for id in all_pokemon_ids:
-		if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
+		if id in ALL_BOSS_IDS:
 			continue
 		var d = pokemon_catalog.get(id, {})
 		var r = str(d.get("rarity", "")).strip_edges().to_lower()
@@ -6829,6 +6850,8 @@ func get_active_campaign_inventory() -> Dictionary:
 		return championship_inventory
 	elif campaign_submode == "PSYCHIC_DUEL":
 		return psychic_duel_inventory
+	elif campaign_submode == "CELESTIAL_FLIGHT":
+		return celestial_flight_inventory
 	return campaign_inventory
 
 func get_active_campaign_team_state() -> Array:
@@ -6842,6 +6865,8 @@ func get_active_campaign_team_state() -> Array:
 		return []
 	elif campaign_submode == "PSYCHIC_DUEL":
 		return psychic_duel_player_team_state
+	elif campaign_submode == "CELESTIAL_FLIGHT":
+		return celestial_flight_player_team_state
 	return campaign_player_team_state
 
 func swap_campaign_team_members(idx_a: int, idx_b: int) -> bool:
@@ -6893,7 +6918,7 @@ func init_campaign_team(chosen_ids: Array, held_items: Array = []) -> void:
 		var pid = int(cid)
 		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
 			continue
-		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
+		if pid in ALL_BOSS_IDS:
 			continue
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
@@ -6986,7 +7011,7 @@ func change_campaign_team(chosen_ids: Array, held_items: Array = []) -> void:
 		var pid = int(cid)
 		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
 			continue
-		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
+		if pid in ALL_BOSS_IDS:
 			continue
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
@@ -7090,7 +7115,7 @@ func init_adventure_team(episode_id: int, chosen_ids: Array, held_items: Array =
 		var pid = int(cid)
 		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
 			continue
-		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
+		if pid in ALL_BOSS_IDS:
 			continue
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
@@ -7168,7 +7193,7 @@ func change_adventure_team(chosen_ids: Array, held_items: Array = []) -> void:
 		var pid = int(cid)
 		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
 			continue
-		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
+		if pid in ALL_BOSS_IDS:
 			continue
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
@@ -7625,6 +7650,14 @@ func complete_psychic_duel() -> void:
 		chaos_inventory["twisted_spoon"] = 1
 		championship_inventory["twisted_spoon"] = 1
 		psychic_duel_inventory["twisted_spoon"] = 1
+		celestial_flight_inventory["twisted_spoon"] = 1
+	if has_unlocked_quick_claw:
+		campaign_inventory["quick_claw"] = 1
+		adventure_inventory["quick_claw"] = 1
+		chaos_inventory["quick_claw"] = 1
+		championship_inventory["quick_claw"] = 1
+		psychic_duel_inventory["quick_claw"] = 1
+		celestial_flight_inventory["quick_claw"] = 1
 	save_profile()
 
 func reset_psychic_duel_run(auto_save: bool = true) -> void:
@@ -7647,6 +7680,14 @@ func init_psychic_duel_run(chosen_ids: Array, held_items: Array = []) -> void:
 		psychic_duel_inventory["dragon_fang"] = 1
 	if has_unlocked_twisted_spoon:
 		psychic_duel_inventory["twisted_spoon"] = 1
+		celestial_flight_inventory["twisted_spoon"] = 1
+	if has_unlocked_quick_claw:
+		campaign_inventory["quick_claw"] = 1
+		adventure_inventory["quick_claw"] = 1
+		chaos_inventory["quick_claw"] = 1
+		championship_inventory["quick_claw"] = 1
+		psychic_duel_inventory["quick_claw"] = 1
+		celestial_flight_inventory["quick_claw"] = 1
 	psychic_duel_player_team_state.clear()
 	for i in range(chosen_ids.size()):
 		var pid = int(chosen_ids[i])
@@ -7673,6 +7714,75 @@ func get_psychic_duel_round_rival_team(round_num: int) -> Array[int]:
 			return [ENRAGED_MEWTWO_BOSS_ID] # Enraged Mewtwo (496)
 		_:
 			return [ENRAGED_MEWTWO_BOSS_ID]
+
+func is_celestial_flight_unlocked() -> bool:
+	return has_all_johto_gym_badges()
+
+func is_celestial_flight_completed() -> bool:
+	return celestial_flight_completed
+
+func complete_celestial_flight() -> void:
+	celestial_flight_completed = true
+	if not celestial_flight_first_clear_claimed:
+		celestial_flight_first_clear_claimed = true
+		has_unlocked_quick_claw = true
+		player_diamonds += CELESTIAL_FLIGHT_REWARD_DIAMONDS
+		campaign_inventory["quick_claw"] = 1
+		adventure_inventory["quick_claw"] = 1
+		chaos_inventory["quick_claw"] = 1
+		championship_inventory["quick_claw"] = 1
+		psychic_duel_inventory["quick_claw"] = 1
+		celestial_flight_inventory["quick_claw"] = 1
+	save_profile()
+
+func reset_celestial_flight_run(auto_save: bool = true) -> void:
+	celestial_flight_current_round = 1
+	celestial_flight_player_team_state.clear()
+	celestial_flight_inventory.clear()
+	if auto_save:
+		save_profile()
+
+func init_celestial_flight_run(chosen_ids: Array, held_items: Array = []) -> void:
+	celestial_flight_current_round = 1
+	celestial_flight_inventory.clear()
+	for k in DEFAULT_INVENTORY.keys():
+		celestial_flight_inventory[k] = DEFAULT_INVENTORY[k]
+	if has_unlocked_exp_share:
+		celestial_flight_inventory["exp_share"] = 1
+	if has_unlocked_leftovers:
+		celestial_flight_inventory["leftovers"] = 1
+	if has_unlocked_dragon_fang:
+		celestial_flight_inventory["dragon_fang"] = 1
+	if has_unlocked_twisted_spoon:
+		celestial_flight_inventory["twisted_spoon"] = 1
+	if has_unlocked_quick_claw:
+		celestial_flight_inventory["quick_claw"] = 1
+	celestial_flight_player_team_state.clear()
+	for i in range(chosen_ids.size()):
+		var pid = int(chosen_ids[i])
+		var p_data = pokemon_catalog.get(pid, {})
+		var max_hp = int(p_data.get("hp", 20))
+		var h_item = ""
+		if i < held_items.size():
+			h_item = str(held_items[i])
+		celestial_flight_player_team_state.append({
+			"id": pid,
+			"current_hp": max_hp,
+			"max_hp": max_hp,
+			"held_item": h_item
+		})
+	save_profile()
+
+func get_celestial_flight_round_rival_team(round_num: int) -> Array[int]:
+	match round_num:
+		1:
+			return [179, 22, 18] # Noctowl (179), Fearow (22), Pidgeot (18)
+		2:
+			return [159, 160, 161] # Articuno (159), Zapdos (160), Moltres (161)
+		3:
+			return [CELESTIAL_LUGIA_BOSS_ID, CELESTIAL_HOOH_BOSS_ID] # Celestial Lugia (497), Celestial Ho-Oh (498)
+		_:
+			return [CELESTIAL_LUGIA_BOSS_ID, CELESTIAL_HOOH_BOSS_ID]
 
 func has_all_regions_gym_badges() -> bool:
 	# La Liga de Campeonato requiere las medallas de todas las regiones (Kanto [8/8], Johto [8/8], Hoenn [8/8], Sinnoh [8/8]).
@@ -8356,7 +8466,7 @@ func claim_tournament_match_reward_today(match_num: int) -> void:
 		tournament_claimed_matches_today.append(match_num)
 
 func is_valid_tournament_rival_id(pkmn_id: int, allow_tier_s: bool = false) -> bool:
-	if pkmn_id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
+	if pkmn_id in ALL_BOSS_IDS:
 		return false
 	var d = pokemon_catalog.get(pkmn_id, {})
 	if d.is_empty():
@@ -8570,7 +8680,7 @@ func is_line_legendary(pkmn_id: int) -> bool:
 func get_chaos_legendary_candidates() -> Array[int]:
 	var candidates: Array[int] = []
 	for id in all_pokemon_ids:
-		if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
+		if id in ALL_BOSS_IDS:
 			continue
 		var d = pokemon_catalog.get(id, {})
 		var r = str(d.get("rarity", "")).strip_edges().to_lower()
@@ -8627,7 +8737,7 @@ func change_chaos_team(chosen_ids: Array, held_items: Array = []) -> void:
 	for cid in chosen_ids:
 		if not is_pokemon_unlocked(cid):
 			continue
-		if cid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
+		if cid in ALL_BOSS_IDS:
 			continue
 		var d = pokemon_catalog.get(cid, {})
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
@@ -8853,7 +8963,7 @@ func generate_championship_rival_team() -> Array[int]:
 	for pid in pokemon_catalog:
 		if pid == slot1_id or pid == slot2_id:
 			continue
-		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
+		if pid in ALL_BOSS_IDS:
 			continue
 		var cat = pokemon_catalog[pid]
 		var tier = str(cat.get("tier", "")).to_upper()
@@ -9591,6 +9701,12 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	psychic_duel_current_round = 1
 	psychic_duel_player_team_state.clear()
 	psychic_duel_inventory = DEFAULT_INVENTORY.duplicate()
+	celestial_flight_completed = false
+	celestial_flight_first_clear_claimed = false
+	has_unlocked_quick_claw = false
+	celestial_flight_current_round = 1
+	celestial_flight_player_team_state.clear()
+	celestial_flight_inventory = DEFAULT_INVENTORY.duplicate()
 	
 	# Conservar cartas si ya existían cartas desbloqueadas en este dispositivo
 	if player_unlocked_ids.is_empty():
@@ -9728,6 +9844,12 @@ func get_save_dict() -> Dictionary:
 			"psychic_duel_current_round": psychic_duel_current_round,
 			"psychic_duel_team_state": psychic_duel_player_team_state.duplicate(true),
 			"psychic_duel_inventory": psychic_duel_inventory.duplicate(true),
+			"celestial_flight_completed": celestial_flight_completed,
+			"celestial_flight_first_clear_claimed": celestial_flight_first_clear_claimed,
+			"has_quick_claw": has_unlocked_quick_claw,
+			"celestial_flight_current_round": celestial_flight_current_round,
+			"celestial_flight_team_state": celestial_flight_player_team_state.duplicate(true),
+			"celestial_flight_inventory": celestial_flight_inventory.duplicate(true),
 			"selected_region": adventure_selected_region
 		},
 		"chaos_odyssey": {
@@ -10019,6 +10141,21 @@ func apply_save_dict(data: Dictionary) -> bool:
 	for k in DEFAULT_INVENTORY.keys():
 		if not psychic_duel_inventory.has(k):
 			psychic_duel_inventory[k] = 0
+			
+	celestial_flight_completed = bool(adv.get("celestial_flight_completed", false))
+	celestial_flight_first_clear_claimed = bool(adv.get("celestial_flight_first_clear_claimed", false))
+	has_unlocked_quick_claw = bool(adv.get("has_quick_claw", false))
+	celestial_flight_current_round = int(adv.get("celestial_flight_current_round", 1))
+	celestial_flight_player_team_state.clear()
+	var raw_c_team = adv.get("celestial_flight_team_state", [])
+	if raw_c_team is Array:
+		for ct in raw_c_team:
+			if ct is Dictionary:
+				celestial_flight_player_team_state.append(ct)
+	celestial_flight_inventory = adv.get("celestial_flight_inventory", DEFAULT_INVENTORY.duplicate())
+	for k in DEFAULT_INVENTORY.keys():
+		if not celestial_flight_inventory.has(k):
+			celestial_flight_inventory[k] = 0
 	adventure_selected_region = str(adv.get("selected_region", "KANTO"))
 		
 	# Sanitizar: si el episodio ya fue completado o la etapa excede el total, reiniciar progreso del run
@@ -10084,6 +10221,14 @@ func apply_save_dict(data: Dictionary) -> bool:
 		chaos_inventory["twisted_spoon"] = 1
 		championship_inventory["twisted_spoon"] = 1
 		psychic_duel_inventory["twisted_spoon"] = 1
+		celestial_flight_inventory["twisted_spoon"] = 1
+	if has_unlocked_quick_claw:
+		campaign_inventory["quick_claw"] = 1
+		adventure_inventory["quick_claw"] = 1
+		chaos_inventory["quick_claw"] = 1
+		championship_inventory["quick_claw"] = 1
+		psychic_duel_inventory["quick_claw"] = 1
+		celestial_flight_inventory["quick_claw"] = 1
 		
 	if campaign_gold > 0 or adventure_current_episode > 1 or adventure_current_stage > 1:
 		profile_welcome_claimed = true
@@ -10278,6 +10423,12 @@ func erase_profile() -> void:
 	psychic_duel_current_round = 1
 	psychic_duel_player_team_state.clear()
 	psychic_duel_inventory = DEFAULT_INVENTORY.duplicate()
+	celestial_flight_completed = false
+	celestial_flight_first_clear_claimed = false
+	has_unlocked_quick_claw = false
+	celestial_flight_current_round = 1
+	celestial_flight_player_team_state.clear()
+	celestial_flight_inventory = DEFAULT_INVENTORY.duplicate()
 	
 	player_unlocked_ids.clear()
 	player_friends.clear()

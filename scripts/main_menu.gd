@@ -107,6 +107,7 @@ var johto_episodes_modal: Control = null
 var johto_routes_modal: Control = null
 var johto_episode_cards: Dictionary = {}
 var johto_lake_of_rage_card: Dictionary = {}
+var johto_celestial_flight_card: Dictionary = {}
 var johto_routes_cards: Dictionary = {}
 var johto_current_routes_ep: int = 106
 var johto_routes_title_lbl: Label = null
@@ -845,6 +846,11 @@ func _ready() -> void:
 			GameData.reset_psychic_duel_run()
 			update_adventure_episodes_ui()
 			adventure_episodes_modal.visible = true
+		elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+			GameData.campaign_submode = "ADVENTURE"
+			GameData.is_campaign_mode = false
+			GameData.reset_celestial_flight_run()
+			_open_johto_episodes_modal()
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			GameData.is_campaign_mode = false
 			update_adventure_regions_ui()
@@ -1249,6 +1255,20 @@ func _ready() -> void:
 				GameData.campaign_submode = "ADVENTURE"
 				update_adventure_episodes_ui()
 				adventure_episodes_modal.visible = true
+			else:
+				update_campaign_ui()
+				campaign_modal.visible = true
+		elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+			var active_state = GameData.get_active_campaign_team_state()
+			var any_alive = false
+			for p in active_state:
+				if p.get("current_hp", 0) > 0:
+					any_alive = true
+					break
+			if GameData.celestial_flight_completed or not any_alive or active_state.is_empty():
+				GameData.is_campaign_mode = false
+				GameData.campaign_submode = "ADVENTURE"
+				_open_johto_episodes_modal()
 			else:
 				update_campaign_ui()
 				campaign_modal.visible = true
@@ -3200,6 +3220,75 @@ func _setup_johto_episodes_modal() -> void:
 		"btn": lake_btn
 	}
 	
+	# --- Special Event Card: El Vuelo Celestial ---
+	var celestial_panel = PanelContainer.new()
+	celestial_panel.name = "CardCelestialFlight"
+	var celestial_sb = StyleBoxFlat.new()
+	celestial_sb.bg_color = Color(0.10, 0.12, 0.22, 0.95)
+	celestial_sb.border_color = Color(0.35, 0.70, 0.95, 0.9)
+	celestial_sb.set_border_width_all(2)
+	celestial_sb.set_corner_radius_all(6)
+	celestial_sb.content_margin_left = 12
+	celestial_sb.content_margin_right = 12
+	celestial_sb.content_margin_top = 8
+	celestial_sb.content_margin_bottom = 8
+	celestial_panel.add_theme_stylebox_override("panel", celestial_sb)
+	ep_vbox.add_child(celestial_panel)
+	
+	var celestial_vbox = VBoxContainer.new()
+	celestial_vbox.add_theme_constant_override("separation", 3)
+	celestial_panel.add_child(celestial_vbox)
+	
+	var celestial_title = Label.new()
+	celestial_title.text = "🪽 EVENTO ESPECIAL: EL VUELO CELESTIAL"
+	celestial_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	celestial_title.add_theme_font_size_override("font_size", 13)
+	celestial_title.add_theme_color_override("font_color", Color(0.45, 0.85, 1.0))
+	celestial_vbox.add_child(celestial_title)
+	
+	var celestial_desc = Label.new()
+	celestial_desc.text = "¡Un combate en 3 rondas en las alturas celestiales! Desafía al Trío Alado, a las Aves Legendarias y a los Señores Celestiales Lugia & Ho-Oh (con su Boss Skill: Ira Celestial). Se permiten Legendarios y Evoluciones."
+	celestial_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	celestial_desc.add_theme_font_size_override("font_size", 11)
+	celestial_desc.add_theme_color_override("font_color", Color(0.85, 0.90, 0.95))
+	celestial_vbox.add_child(celestial_desc)
+	
+	var celestial_rew = Label.new()
+	celestial_rew.text = "👑 Recompensa 1ª Victoria: 💎 %d Diamantes + ⚡ Garra Rápida (25%% prob. de atacar primero)" % GameData.CELESTIAL_FLIGHT_REWARD_DIAMONDS
+	celestial_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	celestial_rew.add_theme_font_size_override("font_size", 11)
+	celestial_rew.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	celestial_vbox.add_child(celestial_rew)
+	
+	var celestial_status = Label.new()
+	celestial_status.text = "Status: Locked"
+	celestial_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	celestial_status.add_theme_font_size_override("font_size", 11)
+	celestial_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+	celestial_vbox.add_child(celestial_status)
+	
+	var celestial_btn = Button.new()
+	celestial_btn.custom_minimum_size = Vector2(0, 36)
+	celestial_btn.add_theme_font_size_override("font_size", 12)
+	celestial_btn.text = "🔒 Bloqueado (Completa Johto)"
+	celestial_btn.disabled = true
+	_apply_retro_button_style(celestial_btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	celestial_btn.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		_start_celestial_flight_event()
+	)
+	celestial_vbox.add_child(celestial_btn)
+	
+	johto_celestial_flight_card = {
+		"panel": celestial_panel,
+		"title": celestial_title,
+		"desc": celestial_desc,
+		"rewards": celestial_rew,
+		"status": celestial_status,
+		"btn": celestial_btn
+	}
+	
 	var btn_close = Button.new()
 	btn_close.name = "BtnCloseJohtoEpisodes"
 	btn_close.custom_minimum_size = Vector2(0, 36)
@@ -3315,6 +3404,55 @@ func _refresh_johto_episodes_ui() -> void:
 			l_btn.text = "🌊 Desafiar al Lago de la Furia ➜"
 			l_btn.disabled = false
 			_apply_retro_button_style(l_btn, Color(0.75, 0.20, 0.20), Color(0.95, 0.4, 0.35), true)
+
+	# Update Celestial Flight Card
+	if not johto_celestial_flight_card.is_empty():
+		var c_status = johto_celestial_flight_card["status"] as Label
+		var c_btn = johto_celestial_flight_card["btn"] as Button
+		var c_panel = johto_celestial_flight_card["panel"] as PanelContainer
+		var has_8_badges = GameData.has_all_johto_gym_badges()
+		var is_celestial_done = GameData.is_celestial_flight_completed()
+		
+		if not has_8_badges:
+			c_panel.modulate = Color(0.7, 0.7, 0.75, 0.8)
+			c_status.text = "Status: 🔒 Bloqueado (Requiere completar los 8 episodios de Johto [%d/8])" % GameData.get_johto_gym_badges_count()
+			c_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			c_btn.text = "🔒 Bloqueado (Completa Johto)"
+			c_btn.disabled = true
+			_apply_retro_button_style(c_btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+		elif GameData.campaign_submode == "CELESTIAL_FLIGHT" and not GameData.celestial_flight_player_team_state.is_empty():
+			c_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			c_status.text = "Status: ⚔️ En curso (Ronda %d/3)" % GameData.celestial_flight_current_round
+			c_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			c_btn.text = "⛺ Continuar Vuelo Celestial (Ronda %d/3)" % GameData.celestial_flight_current_round
+			c_btn.disabled = false
+			_apply_retro_button_style(c_btn, Color(0.20, 0.55, 0.75), Color(0.35, 0.75, 0.95), true)
+		elif is_celestial_done:
+			c_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			c_status.text = "Status: 🏆 COMPLETADO • Desafío Rejugable"
+			c_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			c_btn.text = "🪽 Rejugar El Vuelo Celestial"
+			c_btn.disabled = false
+			_apply_retro_button_style(c_btn, Color(0.20, 0.55, 0.75), Color(0.35, 0.75, 0.95), true)
+		else:
+			c_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			c_status.text = "Status: 🔓 DISPONIBLE • ¡Desafía las Alturas Celestiales!"
+			c_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			c_btn.text = "🪽 Iniciar El Vuelo Celestial"
+			c_btn.disabled = false
+			_apply_retro_button_style(c_btn, Color(0.20, 0.55, 0.75), Color(0.35, 0.75, 0.95), true)
+
+func _start_celestial_flight_event() -> void:
+	if not GameData.is_celestial_flight_unlocked():
+		return
+	if johto_episodes_modal:
+		johto_episodes_modal.visible = false
+	GameData.campaign_submode = "CELESTIAL_FLIGHT"
+	if not GameData.celestial_flight_player_team_state.is_empty():
+		update_campaign_ui()
+		campaign_modal.visible = true
+	else:
+		open_team_select_for_campaign()
 
 func _on_select_johto_episode_pressed(episode_id: int) -> void:
 	if GameData.is_drag_scrolling():
@@ -5434,6 +5572,12 @@ func open_team_select_for_campaign() -> void:
 	elif GameData.campaign_submode == "LAKE_OF_RAGE":
 		team_select_title.text = "🌊 EL LAGO DE LA FURIA"
 		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Pokémon for the Boss Event (All allowed).", "Elige 1 a 3 Pokémon para el Jefe (Todos permitidos).")
+	elif GameData.campaign_submode == "PSYCHIC_DUEL":
+		team_select_title.text = "🔮 DUELO CONTRA LOS PSÍQUICOS"
+		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Pokémon for the Psychic Duel (Legendaries allowed).", "Elige 1 a 3 Pokémon para el Duelo Psíquico (Legendarios permitidos).")
+	elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+		team_select_title.text = "🪽 EL VUELO CELESTIAL"
+		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Pokémon for Celestial Flight (Legendaries allowed).", "Elige 1 a 3 Pokémon para El Vuelo Celestial (Legendarios permitidos).")
 	elif GameData.campaign_submode == "CHAOS":
 		team_select_title.text = "🌌 CHAOS ODYSSEY TEAM"
 		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Legendary or Dragon Pokémon.", "Elige 1 a 3 Pokémon Legendarios o Dragones.")
@@ -5472,6 +5616,11 @@ func open_team_select_for_campaign() -> void:
 				elif GameData.campaign_submode == "CHAMPIONSHIP":
 					var ev_to = str(cat_entry.get("evolves_to", "")).strip_edges()
 					if not is_legendary and ev_to == "":
+						selected_player_ids.append(pid)
+						if selected_player_ids.size() - 1 < 3:
+							selected_player_held_items[selected_player_ids.size() - 1] = str(p.get("held_item", ""))
+				elif GameData.campaign_submode in ["PSYCHIC_DUEL", "CELESTIAL_FLIGHT"]:
+					if pid not in GameData.ALL_BOSS_IDS:
 						selected_player_ids.append(pid)
 						if selected_player_ids.size() - 1 < 3:
 							selected_player_held_items[selected_player_ids.size() - 1] = str(p.get("held_item", ""))
@@ -5766,6 +5915,42 @@ func update_campaign_ui() -> void:
 				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA 2 (vs Mew)"
 			3:
 				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA FINAL (vs Mewtwo Enfurecido)"
+			_:
+				btn_start_campaign_battle.text = "⚔️ INICIAR COMBATE"
+		
+		var any_alive = false
+		for p in cur_team:
+			if p["current_hp"] > 0:
+				any_alive = true
+				break
+		btn_start_campaign_battle.disabled = not any_alive
+		if campaign_track_diagram:
+			campaign_track_diagram.set_campaign_progress(3, cur_rnd, false, true)
+	elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+		btn_close_campaign.text = "⬅ Abandonar Vuelo"
+		btn_change_campaign_team.visible = (GameData.celestial_flight_current_round == 1)
+		btn_reset_campaign.text = "🔄 Reiniciar El Vuelo Celestial"
+		if camp_title:
+			camp_title.text = "🪽 EL VUELO CELESTIAL"
+		if camp_desc:
+			camp_desc.text = GameData.tr_text("Boss Fight in 3 rounds: Winged Trio, Legendary Birds, and Celestial Lords Lugia & Ho-Oh!", "Boss Fight en 3 rondas: Trío Alado, Aves Legendarias y Señores Celestiales Lugia & Ho-Oh.")
+		if camp_team_header:
+			camp_team_header.text = GameData.tr_text("👥 YOUR TEAM:", "👥 TU EQUIPO:")
+		
+		var cur_rnd = GameData.celestial_flight_current_round
+		var round_names = {
+			1: "Ronda 1/3: Trío Alado (Noctowl, Fearow, Pidgeot)",
+			2: "Ronda 2/3: Aves Legendarias (Articuno, Zapdos, Moltres)",
+			3: "Ronda 3/3: Señores Celestiales (Lugia & Ho-Oh - Ira Celestial)"
+		}
+		campaign_match_lbl.text = "🪽 " + round_names.get(cur_rnd, "Ronda %d/3" % cur_rnd)
+		match cur_rnd:
+			1:
+				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA 1 (vs Trío Alado)"
+			2:
+				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA 2 (vs Aves Legendarias)"
+			3:
+				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA FINAL (vs Lugia & Ho-Oh)"
 			_:
 				btn_start_campaign_battle.text = "⚔️ INICIAR COMBATE"
 		
@@ -7989,6 +8174,8 @@ func _on_reset_campaign_pressed() -> void:
 		GameData.reset_championship_league(false)
 	elif GameData.campaign_submode == "PSYCHIC_DUEL":
 		GameData.reset_psychic_duel_run()
+	elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+		GameData.reset_celestial_flight_run()
 	else:
 		GameData.reset_campaign()
 	open_team_select_for_campaign()
@@ -8082,6 +8269,22 @@ func _on_start_campaign_battle_pressed() -> void:
 		for p in GameData.psychic_duel_player_team_state:
 			GameData.player_team_ids.append(int(p["id"]))
 		GameData.enemy_team_ids = GameData.get_psychic_duel_round_rival_team(GameData.psychic_duel_current_round)
+	elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+		var flight_invalid = false
+		for p in GameData.celestial_flight_player_team_state:
+			var pid = int(p.get("id", -1))
+			if not GameData.pokemon_catalog.has(pid) or not GameData.is_pokemon_unlocked(pid) or pid in GameData.ALL_BOSS_IDS:
+				flight_invalid = true
+				break
+		if flight_invalid or GameData.celestial_flight_current_round > 3 or GameData.celestial_flight_player_team_state.is_empty():
+			GameData.reset_celestial_flight_run()
+			open_team_select_for_campaign()
+			return
+		GameData.is_campaign_mode = true
+		GameData.player_team_ids.clear()
+		for p in GameData.celestial_flight_player_team_state:
+			GameData.player_team_ids.append(int(p["id"]))
+		GameData.enemy_team_ids = GameData.get_celestial_flight_round_rival_team(GameData.celestial_flight_current_round)
 	else:
 		var tourn_invalid = false
 		for p in GameData.campaign_player_team_state:
@@ -8237,6 +8440,11 @@ func _on_close_team_select_pressed() -> void:
 			GameData.reset_psychic_duel_run()
 			update_adventure_episodes_ui()
 			adventure_episodes_modal.visible = true
+		elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+			GameData.campaign_submode = "ADVENTURE"
+			GameData.is_campaign_mode = false
+			GameData.reset_celestial_flight_run()
+			_open_johto_episodes_modal()
 			return
 		var state = GameData.get_active_campaign_team_state()
 		if state.size() > 0:
@@ -8336,10 +8544,10 @@ func build_team_select_cards_grid() -> void:
 				var ev_to = str(c.get("evolves_to", "")).strip_edges()
 				if not is_legendary and ev_to == "":
 					allowed_pool.append(c)
-		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL"]:
+		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT"]:
 			for c in cards_data:
 				var cid = int(c.get("id", -1))
-				if cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID, GameData.ENRAGED_MEWTWO_BOSS_ID]:
+				if cid in GameData.ALL_BOSS_IDS or cid == GameData.CRYSTAL_ONIX_ID:
 					continue
 				if not GameData.is_pokemon_unlocked(cid):
 					continue
@@ -8377,7 +8585,7 @@ func build_team_select_cards_grid() -> void:
 			empty_lbl.text = "🔒 No tienes Pokémon Legendarios ni Dragones en tu colección.\n¡Consíguelos en sobres o evoluciona tus Pokémon para entrar en Chaos Odyssey!"
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			empty_lbl.text = GameData.tr_text("🔒 No fully evolved Pokémon in your collection.\n(Only final evolution stages allowed, no Legendaries).", "🔒 No tienes Pokémon en su fase final en tu colección.\n(Solo Pokémon en etapa final, no legendarios).")
-		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL"]:
+		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT"]:
 			empty_lbl.text = "🔒 No tienes Pokémon disponibles en tu colección."
 		else:
 			empty_lbl.text = "🔒 No tienes Pokémon Básicos disponibles en tu colección."
@@ -8651,7 +8859,7 @@ func toggle_pokemon_selection(pkmn_id: int) -> void:
 				var ev_to = str(cat_entry.get("evolves_to", "")).strip_edges()
 				if is_legendary or ev_to != "":
 					return
-			elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL"]:
+			elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT"]:
 				# All Pokémon unlocked in collection are allowed, boss cards excluded
 				pass
 			else:
@@ -8681,7 +8889,7 @@ func update_team_select_ui() -> void:
 		var clean_ids: Array[int] = []
 		for pid in selected_player_ids:
 			var cid = int(pid)
-			if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID, GameData.ENRAGED_MEWTWO_BOSS_ID]:
+			if not GameData.is_pokemon_unlocked(cid) or cid in GameData.ALL_BOSS_IDS or cid == GameData.CRYSTAL_ONIX_ID:
 				continue
 			var cat = GameData.pokemon_catalog.get(cid)
 			if not cat:
@@ -8693,7 +8901,7 @@ func update_team_select_ui() -> void:
 			if GameData.campaign_submode == "CHAOS":
 				if (is_leg and ev_from == "") or GameData.is_line_legendary(cid):
 					clean_ids.append(cid)
-			elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL"]:
+			elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT"]:
 				clean_ids.append(cid)
 			else:
 				if st == "basic" and not is_leg:
@@ -8882,6 +9090,8 @@ func update_team_select_ui() -> void:
 				btn_start_battle.text = "🌊 BATTLE RED GYARADOS (%d PKMN)!" % p_count
 			elif GameData.campaign_submode == "PSYCHIC_DUEL":
 				btn_start_battle.text = "🔮 INICIAR DUELO PSÍQUICO (%d PKMN)" % p_count
+			elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+				btn_start_battle.text = "🪽 INICIAR VUELO CELESTIAL (%d PKMN)" % p_count
 			else:
 				btn_start_battle.text = "✅ CONFIRM %s TEAM (%d PKMN)" % [mode_label, p_count]
 		else:
@@ -8889,6 +9099,8 @@ func update_team_select_ui() -> void:
 				btn_start_battle.text = "Choose 1 to 3 Pokémon for Boss Fight"
 			elif GameData.campaign_submode == "PSYCHIC_DUEL":
 				btn_start_battle.text = "Elige de 1 a 3 Pokémon para el Duelo"
+			elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+				btn_start_battle.text = "Elige de 1 a 3 Pokémon para el Vuelo Celestial"
 			elif GameData.campaign_submode == "CHAOS":
 				btn_start_battle.text = "Choose 1 to 3 Legendary / Dragon Pokémon"
 			else:
@@ -8941,12 +9153,25 @@ func _on_start_battle_pressed() -> void:
 		elif GameData.campaign_submode == "PSYCHIC_DUEL":
 			for pid in selected_player_ids:
 				var cid = int(pid)
-				if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID, GameData.ENRAGED_MEWTWO_BOSS_ID]:
+				if not GameData.is_pokemon_unlocked(cid) or cid in GameData.ALL_BOSS_IDS or cid == GameData.CRYSTAL_ONIX_ID:
 					return
 			GameData.is_campaign_mode = true
 			GameData.player_team_ids = selected_player_ids.duplicate()
 			GameData.player_team_held_items = selected_player_held_items.duplicate()
 			GameData.init_psychic_duel_run(selected_player_ids, selected_player_held_items)
+			team_select_modal.visible = false
+			update_campaign_ui()
+			campaign_modal.visible = true
+			return
+		elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
+			for pid in selected_player_ids:
+				var cid = int(pid)
+				if not GameData.is_pokemon_unlocked(cid) or cid in GameData.ALL_BOSS_IDS or cid == GameData.CRYSTAL_ONIX_ID:
+					return
+			GameData.is_campaign_mode = true
+			GameData.player_team_ids = selected_player_ids.duplicate()
+			GameData.player_team_held_items = selected_player_held_items.duplicate()
+			GameData.init_celestial_flight_run(selected_player_ids, selected_player_held_items)
 			team_select_modal.visible = false
 			update_campaign_ui()
 			campaign_modal.visible = true
