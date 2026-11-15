@@ -9068,10 +9068,18 @@ func get_earned_badges_by_region(custom_completed_episodes = null) -> Dictionary
 		"Hoenn": [],
 		"Sinnoh": []
 	}
-	var target_episodes = adventure_completed_episodes if custom_completed_episodes == null else custom_completed_episodes
+	var normalized_targets: Array[int] = []
+	if custom_completed_episodes != null:
+		if typeof(custom_completed_episodes) == TYPE_ARRAY:
+			for item in custom_completed_episodes:
+				normalized_targets.append(int(item))
+	else:
+		for item in adventure_completed_episodes:
+			normalized_targets.append(int(item))
+			
 	for reg in REGION_BADGES_DATA:
 		for b_info in REGION_BADGES_DATA[reg]:
-			if int(b_info.id) in target_episodes:
+			if int(b_info.id) in normalized_targets:
 				var info_copy = b_info.duplicate()
 				info_copy["texture"] = get_badge_texture(reg, b_info.file_key)
 				result[reg].append(info_copy)

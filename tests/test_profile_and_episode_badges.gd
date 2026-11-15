@@ -144,5 +144,45 @@ func _ready() -> void:
 	assert(not f_johto, "JOHTO: row must NOT be displayed since friend earned 0 Johto badges")
 	print("✓ Test 9 Passed: Friend badges gallery renders only earned badges.")
 
+	# 10. Test JSON float parsing (2 Kanto badges: 1, 2, and 1 Sinnoh badge: 301)
+	var raw_json = '{"adventure": {"completed_episodes": [1, 2, 301]}}'
+	var parsed_json_dict = JSON.parse_string(raw_json)
+	assert(typeof(parsed_json_dict["adventure"]["completed_episodes"][0]) == TYPE_FLOAT, "JSON parser returns floats in untyped arrays")
+	var badges_from_json = GameData.get_earned_badges_by_region(parsed_json_dict["adventure"]["completed_episodes"])
+	assert(badges_from_json["Kanto"].size() == 2, "Kanto must have 2 badges even when completed_episodes are floats from JSON")
+	assert(badges_from_json["Sinnoh"].size() == 1, "Sinnoh must have 1 badge even when completed_episodes are floats from JSON")
+	assert(badges_from_json["Johto"].size() == 0, "Johto must have 0 badges")
+	assert(badges_from_json["Hoenn"].size() == 0, "Hoenn must have 0 badges")
+	print("✓ Test 10 Passed: Floats from JSON are correctly normalized and matched by get_earned_badges_by_region.")
+
+	# 11. Test Friend Profile Modal with 2 Kanto and 1 Sinnoh badge from JSON-like data
+	var player_2k_1s_data = {
+		"profile": {"trainer_alias": "RivalGary", "avatar": "eevee"},
+		"adventure": parsed_json_dict["adventure"],
+		"stats": {},
+		"economy": {}
+	}
+	menu_instance._render_friend_profile_data(player_2k_1s_data, {"alias": "RivalGary", "avatar": "eevee"})
+	var r_badges_card = menu_instance.friend_profile_modal.find_child("FriendBadgesCard", true, false) as PanelContainer
+	assert(r_badges_card != null, "FriendBadgesCard must exist")
+	var r_kanto = false
+	var r_sinnoh = false
+	var r_johto = false
+	var r_hoenn = false
+	for lbl in r_badges_card.find_children("*", "Label", true, false):
+		if "KANTO:" in lbl.text:
+			r_kanto = true
+		if "SINNOH:" in lbl.text:
+			r_sinnoh = true
+		if "JOHTO:" in lbl.text:
+			r_johto = true
+		if "HOENN:" in lbl.text:
+			r_hoenn = true
+	assert(r_kanto, "KANTO: must appear in Friend Profile with 2 Kanto badges")
+	assert(r_sinnoh, "SINNOH: must appear in Friend Profile with 1 Sinnoh badge")
+	assert(not r_johto, "JOHTO: must NOT appear in Friend Profile")
+	assert(not r_hoenn, "HOENN: must NOT appear in Friend Profile")
+	print("✓ Test 11 Passed: Friend profile correctly displays 2 Kanto and 1 Sinnoh badges.")
+
 	print("=== ALL TESTS PASSED! ===")
 	get_tree().quit(0)

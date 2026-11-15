@@ -108,6 +108,29 @@ func parse_trainer_doc_to_save_data(fields: Dictionary) -> Dictionary:
 			save_data["adventure"] = {}
 		save_data["adventure"]["gold"] = root_gold
 		
+	# Extraer completed_episodes de campos raíz de Firestore si existen
+	var root_eps: Array[int] = []
+	if fields.has("completed_episodes"):
+		var vals = fields["completed_episodes"].get("arrayValue", {}).get("values", [])
+		for v in vals:
+			if v.has("integerValue"):
+				root_eps.append(int(v["integerValue"]))
+			elif v.has("stringValue"):
+				root_eps.append(int(v["stringValue"]))
+				
+	if not save_data.has("adventure"):
+		save_data["adventure"] = {}
+		
+	if not root_eps.is_empty():
+		save_data["adventure"]["completed_episodes"] = root_eps
+	elif save_data["adventure"].has("completed_episodes"):
+		var raw_ce = save_data["adventure"]["completed_episodes"]
+		var normalized_ce: Array[int] = []
+		if typeof(raw_ce) == TYPE_ARRAY:
+			for item in raw_ce:
+				normalized_ce.append(int(item))
+		save_data["adventure"]["completed_episodes"] = normalized_ce
+		
 	return save_data
 
 # --- FIREBASE AUTHENTICATION (EMAIL & VERIFICATION) ---
@@ -335,6 +358,12 @@ func save_profile_to_cloud(account_key: String, save_dict: Dictionary, callback:
 	var now_iso = Time.get_datetime_string_from_system(true)
 	var now_unix = int(Time.get_unix_time_from_system())
 	
+	var comp_eps = save_dict.get("adventure", {}).get("completed_episodes", [])
+	var eps_array_vals: Array = []
+	if typeof(comp_eps) == TYPE_ARRAY:
+		for ep in comp_eps:
+			eps_array_vals.append({ "integerValue": int(ep) })
+
 	var payload = {
 		"fields": {
 			"email": { "stringValue": p_email },
@@ -344,6 +373,7 @@ func save_profile_to_cloud(account_key: String, save_dict: Dictionary, callback:
 			"diamonds": { "integerValue": diamonds },
 			"rare_candies": { "integerValue": candies },
 			"gold": { "integerValue": gold },
+			"completed_episodes": { "arrayValue": { "values": eps_array_vals } },
 			"save_json": { "stringValue": json_str },
 			"updated_at": { "stringValue": now_iso },
 			"last_activity_at": { "stringValue": now_iso },
@@ -711,6 +741,22 @@ func search_trainers(query_text: String, callback: Callable) -> void:
 													break
 							
 					var t_updated = str(f.get("last_activity_at", f.get("updated_at", {})).get("stringValue", "")).strip_edges()
+					var t_comp_eps: Array[int] = []
+					if f.has("completed_episodes"):
+						var vals = f["completed_episodes"].get("arrayValue", {}).get("values", [])
+						for v in vals:
+							if v.has("integerValue"):
+								t_comp_eps.append(int(v["integerValue"]))
+					elif f.has("save_json"):
+						var raw_s_eps = str(f["save_json"].get("stringValue", ""))
+						if not raw_s_eps.is_empty():
+							var p_s_eps = JSON.parse_string(raw_s_eps)
+							if typeof(p_s_eps) == TYPE_DICTIONARY and p_s_eps.has("adventure"):
+								var eps_list = p_s_eps["adventure"].get("completed_episodes", [])
+								if typeof(eps_list) == TYPE_ARRAY:
+									for ep in eps_list:
+										t_comp_eps.append(int(ep))
+
 					if match_found:
 						results.append({
 							"alias": t_alias,
@@ -719,7 +765,8 @@ func search_trainers(query_text: String, callback: Callable) -> void:
 							"diamonds": t_diamonds,
 							"last_activity_at": t_updated,
 							"is_self": is_self,
-							"has_added_you": has_added_me
+							"has_added_you": has_added_me,
+							"completed_episodes": t_comp_eps
 						})
 						
 			if callback.is_valid():

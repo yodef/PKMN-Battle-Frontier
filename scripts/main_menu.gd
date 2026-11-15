@@ -14953,6 +14953,7 @@ func _show_friend_profile_modal_loading(f_alias: String, _f_email: String, _f_id
 		add_child(friend_profile_modal)
 		
 	for c in friend_profile_modal.get_children():
+		friend_profile_modal.remove_child(c)
 		c.queue_free()
 		
 	var bg = ColorRect.new()
@@ -15014,6 +15015,7 @@ func _show_friend_profile_modal_error(f_alias: String, err_msg: String) -> void:
 	if not friend_profile_modal:
 		return
 	for c in friend_profile_modal.get_children():
+		friend_profile_modal.remove_child(c)
 		c.queue_free()
 		
 	var bg = ColorRect.new()
@@ -15070,6 +15072,7 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 		friend_profile_modal.z_index = 92
 		add_child(friend_profile_modal)
 	for c in friend_profile_modal.get_children():
+		friend_profile_modal.remove_child(c)
 		c.queue_free()
 		
 	var bg = ColorRect.new()
@@ -15248,7 +15251,30 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 		
 	# Badges Section (Medallas obtenidas del amigo)
 	var f_adv = save_data.get("adventure", {})
-	var f_completed_eps = f_adv.get("completed_episodes", [])
+	var f_completed_eps = []
+	if typeof(f_adv) == TYPE_DICTIONARY and f_adv.has("completed_episodes"):
+		f_completed_eps = f_adv.get("completed_episodes", [])
+	if typeof(f_completed_eps) != TYPE_ARRAY or f_completed_eps.is_empty():
+		if save_data.has("completed_episodes"):
+			f_completed_eps = save_data.get("completed_episodes", [])
+	if typeof(f_completed_eps) != TYPE_ARRAY or f_completed_eps.is_empty():
+		if prof.has("completed_episodes"):
+			f_completed_eps = prof.get("completed_episodes", [])
+	if typeof(f_completed_eps) != TYPE_ARRAY or f_completed_eps.is_empty():
+		if f_data.has("completed_episodes"):
+			f_completed_eps = f_data.get("completed_episodes", [])
+
+	var is_current_user = false
+	if not GameData.profile_email.is_empty() and (f_email_clean == GameData.profile_email.to_lower() or email.to_lower() == GameData.profile_email.to_lower()):
+		is_current_user = true
+	elif not GameData.profile_id.is_empty() and (p_id == GameData.profile_id or f_data.get("id", "") == GameData.profile_id):
+		is_current_user = true
+	elif alias.to_lower() == GameData.profile_name.to_lower() and alias.to_lower() != "trainer":
+		is_current_user = true
+
+	if is_current_user and (typeof(f_completed_eps) != TYPE_ARRAY or f_completed_eps.is_empty()):
+		f_completed_eps = GameData.adventure_completed_episodes.duplicate()
+		
 	var f_earned_by_region = GameData.get_earned_badges_by_region(f_completed_eps)
 	var f_total_badges = 0
 	for reg in f_earned_by_region:
