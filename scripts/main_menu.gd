@@ -46,8 +46,8 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var chaos_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox/ChaosStatus
 @onready var btn_hub_chaos: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox/BtnHubChaos
 @onready var btn_chaos_guide: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox/BtnChaosGuide
-@onready var championship_status_lbl: Label = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin/ChampionshipVBox/ChampionshipStatus
-@onready var btn_hub_championship: Button = $CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin/ChampionshipVBox/BtnHubChampionship
+@onready var championship_status_lbl: Label = null
+@onready var btn_hub_championship: Button = null
 @onready var btn_close_campaign_hub: Button = $CampaignHubModal/Box/BtnCloseCampaignHub
 
 # --- MODAL ADVENTURE REGIONS ---
@@ -60,7 +60,8 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var btn_enter_hoenn: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn/Margin/HoennVBox/BtnEnterHoenn
 @onready var btn_enter_sinnoh: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionSinnoh/Margin/SinnohVBox/BtnEnterSinnoh
 @onready var league_status_lbl: Label = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/LeagueStatus
-@onready var btn_enter_league: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/BtnEnterLeague
+@onready var btn_enter_league: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/LeagueActionsRow/BtnEnterLeague if has_node("AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/LeagueActionsRow/BtnEnterLeague") else ($AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/BtnEnterLeague if has_node("AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/BtnEnterLeague") else null)
+@onready var btn_league_history: Button = $AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/LeagueActionsRow/BtnLeagueHistory if has_node("AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/LeagueActionsRow/BtnLeagueHistory") else null
 @onready var btn_close_adventure_regions: Button = $AdventureRegionsModal/Box/BtnCloseAdventureRegions
 
 # --- MODAL ADVENTURE EPISODES ---
@@ -699,6 +700,10 @@ func _ready() -> void:
 			adventure_regions_modal.visible = false
 			_open_sinnoh_episodes_modal()
 		)
+	if btn_enter_league:
+		btn_enter_league.pressed.connect(_on_select_championship_pressed)
+	if btn_league_history:
+		btn_league_history.pressed.connect(_on_btn_championship_history_pressed)
 	if btn_close_adventure_regions:
 		btn_close_adventure_regions.pressed.connect(func():
 			adventure_regions_modal.visible = false
@@ -795,6 +800,10 @@ func _ready() -> void:
 			GameData.campaign_submode = "ADVENTURE"
 			GameData.is_campaign_mode = false
 			_open_johto_episodes_modal()
+		elif GameData.campaign_submode == "CHAMPIONSHIP":
+			GameData.is_campaign_mode = false
+			update_adventure_regions_ui()
+			adventure_regions_modal.visible = true
 		elif GameData.campaign_submode == "ADVENTURE":
 			if GameData.adventure_selected_region == "JOHTO":
 				_open_johto_episodes_modal()
@@ -1472,40 +1481,6 @@ func update_campaign_hub_ui() -> void:
 			btn_hub_chaos.text = "🌌 Enter Chaos Odyssey ➜"
 			btn_hub_chaos.disabled = false
 
-	# 5. Estado de la Liga de Campeonato
-	var can_play_champ = GameData.can_play_championship_today()
-	var hof_count = GameData.championship_hall_of_fame.size()
-	var champ_sub_str = "Victorias en el Historial: %d" % hof_count
-	if not GameData.is_tutorial_completed():
-		if championship_status_lbl:
-			championship_status_lbl.text = "Estado: 🔒 Bloqueado (¡Completa el Tutorial para desbloquear!)\n%s" % champ_sub_str
-			championship_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
-		if btn_hub_championship:
-			btn_hub_championship.text = "🔒 Bloqueado (Completa Tutorial)"
-			btn_hub_championship.disabled = false
-	elif not can_play_champ and GameData.championship_player_team_state.is_empty():
-		if championship_status_lbl:
-			championship_status_lbl.text = "Estado: ⏳ Completado hoy (¡Vuelve mañana para otro intento!)\n%s" % champ_sub_str
-			championship_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.7, 0.3))
-		if btn_hub_championship:
-			btn_hub_championship.text = "🏆 Ver Campamento / Historial (Completado hoy)"
-			btn_hub_championship.disabled = false
-	elif not GameData.championship_player_team_state.is_empty():
-		if championship_status_lbl:
-			var phase_str = "Combate Final contra el Campeón" if GameData.championship_match_number == GameData.CHAMPIONSHIP_TOTAL_MATCHES else "Fase %d / %d" % [GameData.championship_match_number, GameData.CHAMPIONSHIP_TOTAL_MATCHES]
-			championship_status_lbl.text = "Estado: En Progreso • %s\n%s" % [phase_str, champ_sub_str]
-			championship_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
-		if btn_hub_championship:
-			btn_hub_championship.text = "🏆 Continuar Liga de Campeonato (Campamento) ➜"
-			btn_hub_championship.disabled = false
-	else:
-		if championship_status_lbl:
-			championship_status_lbl.text = "Estado: 🔓 Disponible hoy (1 victoria al día)\n%s" % champ_sub_str
-			championship_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
-		if btn_hub_championship:
-			btn_hub_championship.text = "🏆 Entrar a la Liga de Campeonato ➜"
-			btn_hub_championship.disabled = false
-
 func update_adventure_episodes_ui() -> void:
 	var ep_badge = adventure_episodes_modal.get_node_or_null("Box/EpisodesWalletBadge")
 	if ep_badge:
@@ -1833,21 +1808,55 @@ func update_adventure_regions_ui() -> void:
 		btn_enter_sinnoh.text = "❄️ Enter Sinnoh ➜"
 		_apply_retro_button_style(btn_enter_sinnoh, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 		
+	if btn_league_history:
+		_apply_retro_button_style(btn_league_history, Color(0.25, 0.52, 0.60), Color(0.40, 0.85, 0.95), true)
 	if league_status_lbl:
 		var kanto_badges = GameData.get_earned_gym_badges_count()
+		var card_league = get_node_or_null("AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague")
+		var is_sp = GameData.is_spanish()
+		var league_title_lbl = get_node_or_null("AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/LeagueTitle") as Label
+		if league_title_lbl:
+			league_title_lbl.text = "🏆 " + ("Liga de Campeonato" if is_sp else "Championship League")
+		var league_desc_lbl = get_node_or_null("AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/LeagueDesc") as Label
+		if league_desc_lbl:
+			league_desc_lbl.text = "Enfrenta a 4 miembros del Alto Mando al azar y al Campeón Rival. 1 victoria al día." if is_sp else "Face 4 random Elite Four members and the Champion Rival. 1 clear per day."
+		var hof_count = GameData.championship_hall_of_fame.size()
+		var champ_sub_str = ("Victorias en Historial: %d" if is_sp else "Hall of Fame Clears: %d") % hof_count
 		if GameData.has_all_regions_gym_badges():
-			league_status_lbl.text = "Status: 🔓 Unlocked • Ready to challenge the Indigo Plateau!"
-			league_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-			if btn_enter_league:
-				btn_enter_league.disabled = false
-				btn_enter_league.text = "🏆 Enter Pokémon League ➜"
-				_apply_retro_button_style(btn_enter_league, Color(0.85, 0.65, 0.15), Color(1.0, 0.85, 0.3), true)
+			if card_league:
+				card_league.modulate = Color(1, 1, 1, 1)
+			var can_play_champ = GameData.can_play_championship_today()
+			var has_in_progress = not GameData.championship_player_team_state.is_empty()
+			if has_in_progress:
+				var phase_str = ("Combate Final contra el Campeón" if is_sp else "Final Battle vs Champion") if GameData.championship_match_number == GameData.CHAMPIONSHIP_TOTAL_MATCHES else ("Fase %d / %d" if is_sp else "Round %d / %d") % [GameData.championship_match_number, GameData.CHAMPIONSHIP_TOTAL_MATCHES]
+				league_status_lbl.text = ("Estado: ⚔️ En Progreso • %s\n%s" if is_sp else "Status: ⚔️ In Progress • %s\n%s") % [phase_str, champ_sub_str]
+				league_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+				if btn_enter_league:
+					btn_enter_league.disabled = false
+					btn_enter_league.text = "🏆 " + ("Continuar Liga de Campeonato ➜" if is_sp else "Continue Championship League ➜")
+					_apply_retro_button_style(btn_enter_league, Color(0.85, 0.65, 0.15), Color(1.0, 0.85, 0.3), true)
+			elif not can_play_champ:
+				league_status_lbl.text = ("Estado: ⏳ Completado hoy (¡Vuelve mañana para otro intento!)\n%s" if is_sp else "Status: ⏳ Completed today (Come back tomorrow for another run!)\n%s") % champ_sub_str
+				league_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.7, 0.3))
+				if btn_enter_league:
+					btn_enter_league.disabled = false
+					btn_enter_league.text = "🏆 " + ("Ver Campamento / Historial (Completado hoy)" if is_sp else "View Camp / History (Completed today)")
+					_apply_retro_button_style(btn_enter_league, Color(0.35, 0.65, 0.45), Color(0.5, 0.85, 0.6), true)
+			else:
+				league_status_lbl.text = ("Estado: 🔓 Desbloqueada • ¡Desafía la Liga de Campeonato! (1 victoria al día)\n%s" if is_sp else "Status: 🔓 Unlocked • Ready to challenge Championship League! (1 clear per day)\n%s") % champ_sub_str
+				league_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+				if btn_enter_league:
+					btn_enter_league.disabled = false
+					btn_enter_league.text = "🏆 " + ("Entrar a la Liga de Campeonato ➜" if is_sp else "Enter Championship League ➜")
+					_apply_retro_button_style(btn_enter_league, Color(0.85, 0.65, 0.15), Color(1.0, 0.85, 0.3), true)
 		else:
-			league_status_lbl.text = "Status: 🔒 Bloqueada (Requiere las medallas de todas las regiones: Kanto [%d/8], Johto [%d/8], Hoenn [%d/8], Sinnoh [%d/8])" % [kanto_badges, johto_badges, hoenn_badges, sinnoh_badges]
+			if card_league:
+				card_league.modulate = Color(0.85, 0.85, 0.9, 0.8)
+			league_status_lbl.text = ("Estado: 🔒 Bloqueada (Requiere las medallas de todas las regiones: Kanto [%d/7], Johto [%d/8], Hoenn [%d/8], Sinnoh [%d/8])" if is_sp else "Status: 🔒 Locked (Requires all gym badges: Kanto [%d/7], Johto [%d/8], Hoenn [%d/8], Sinnoh [%d/8])") % [kanto_badges, johto_badges, hoenn_badges, sinnoh_badges]
 			league_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
 			if btn_enter_league:
 				btn_enter_league.disabled = true
-				btn_enter_league.text = "🔒 Bloqueada (Requiere medallas de todas las regiones)"
+				btn_enter_league.text = "🔒 " + ("Bloqueada (Requiere todas las medallas)" if is_sp else "Locked (Requires all badges)")
 				_apply_retro_button_style(btn_enter_league, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
 
 func _on_hub_adventure_pressed() -> void:
@@ -1895,9 +1904,17 @@ func _on_select_championship_pressed() -> void:
 	if not GameData.is_tutorial_completed():
 		_show_tutorial_prompt_for_locked_episode()
 		return
+	if not GameData.has_all_regions_gym_badges():
+		return
+	if not GameData.can_play_championship_today() and GameData.championship_player_team_state.is_empty():
+		return
+	if adventure_regions_modal:
+		adventure_regions_modal.visible = false
 	campaign_hub_modal.visible = false
+	GameData.is_campaign_mode = true
 	GameData.campaign_submode = "CHAMPIONSHIP"
 	if GameData.championship_player_team_state.is_empty():
+		GameData.init_championship_league()
 		open_team_select_for_campaign()
 	else:
 		update_campaign_ui()
@@ -5172,7 +5189,7 @@ func open_team_select_for_campaign() -> void:
 		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Legendary or Dragon Pokémon.", "Elige 1 a 3 Pokémon Legendarios o Dragones.")
 	elif GameData.campaign_submode == "CHAMPIONSHIP":
 		team_select_title.text = "🏆 " + GameData.tr_text("CHAMPIONSHIP LEAGUE TEAM", "EQUIPO LIGA DE CAMPEONATO")
-		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Pokémon from your collection.", "Elige tu equipo definitivo de 1 a 3 Pokémon.")
+		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 fully evolved Pokémon (Legendaries banned).", "Elige 1 a 3 Pokémon en su fase final (sin Legendarios).")
 	else:
 		team_select_title.text = "🏟️ POKÉMON STADIUM TEAM"
 		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Basic Pokémon (⏫ = Evolution ready).", "Elige 1 a 3 Pokémon Básicos (⏫ = Evolución lista).")
@@ -5188,7 +5205,7 @@ func open_team_select_for_campaign() -> void:
 				var pid = int(p["id"])
 				if not GameData.is_pokemon_unlocked(pid):
 					continue
-				if pid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+				if pid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID, GameData.RED_GYARADOS_CARD_ID]:
 					continue
 				var cat_entry = GameData.pokemon_catalog.get(pid)
 				if not cat_entry:
@@ -5196,16 +5213,18 @@ func open_team_select_for_campaign() -> void:
 				var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower()
 				var st = str(cat_entry.get("stage", "Basic")).strip_edges().to_lower()
 				var ev_from = str(cat_entry.get("evolves_from", "")).strip_edges()
-				var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+				var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare", "boss", "special"]) or (st in ["legendary", "boss", "special"])
 				if GameData.campaign_submode == "CHAOS":
 					if (is_legendary and ev_from == "") or GameData.is_line_legendary(pid):
 						selected_player_ids.append(pid)
 						if selected_player_ids.size() - 1 < 3:
 							selected_player_held_items[selected_player_ids.size() - 1] = str(p.get("held_item", ""))
 				elif GameData.campaign_submode == "CHAMPIONSHIP":
-					selected_player_ids.append(pid)
-					if selected_player_ids.size() - 1 < 3:
-						selected_player_held_items[selected_player_ids.size() - 1] = str(p.get("held_item", ""))
+					var ev_to = str(cat_entry.get("evolves_to", "")).strip_edges()
+					if not is_legendary and ev_to == "":
+						selected_player_ids.append(pid)
+						if selected_player_ids.size() - 1 < 3:
+							selected_player_held_items[selected_player_ids.size() - 1] = str(p.get("held_item", ""))
 				else:
 					if st == "basic" and not is_legendary:
 						selected_player_ids.append(pid)
@@ -7735,12 +7754,20 @@ func _on_start_campaign_battle_pressed() -> void:
 			GameData.player_team_ids.append(int(p["id"]))
 		GameData.enemy_team_ids = GameData.get_chaos_rival_team(GameData.chaos_match_number)
 	elif GameData.campaign_submode == "CHAMPIONSHIP":
-		if not GameData.can_play_championship_today() and GameData.championship_match_number == 1:
+		if not GameData.can_play_championship_today() and GameData.championship_match_number == 1 and GameData.championship_player_team_state.is_empty():
 			return
 		var champ_invalid = false
 		for p in GameData.championship_player_team_state:
 			var pid = int(p.get("id", -1))
-			if not GameData.pokemon_catalog.has(pid) or not GameData.is_pokemon_unlocked(pid) or pid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+			if not GameData.pokemon_catalog.has(pid) or not GameData.is_pokemon_unlocked(pid) or pid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID, GameData.RED_GYARADOS_CARD_ID]:
+				champ_invalid = true
+				break
+			var cat_entry = GameData.pokemon_catalog[pid]
+			var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower()
+			var st = str(cat_entry.get("stage", "Basic")).strip_edges().to_lower()
+			var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare", "boss", "special"]) or (st in ["legendary", "boss", "special"])
+			var ev_to = str(cat_entry.get("evolves_to", "")).strip_edges()
+			if is_leg or ev_to != "":
 				champ_invalid = true
 				break
 		if champ_invalid or GameData.championship_match_number > GameData.CHAMPIONSHIP_TOTAL_MATCHES or GameData.championship_player_team_state.is_empty():
@@ -7905,6 +7932,10 @@ func _on_close_team_select_pressed() -> void:
 		if state.size() > 0:
 			update_campaign_ui()
 			campaign_modal.visible = true
+		elif GameData.campaign_submode == "CHAMPIONSHIP":
+			GameData.is_campaign_mode = false
+			update_adventure_regions_ui()
+			adventure_regions_modal.visible = true
 		elif GameData.campaign_submode == "ADVENTURE":
 			if GameData.adventure_selected_region == "JOHTO":
 				_open_johto_episodes_modal()
@@ -7982,7 +8013,20 @@ func build_team_select_cards_grid() -> void:
 				var ev_from = str(c.get("evolves_from", "")).strip_edges()
 				if (is_legendary and ev_from == "") or GameData.is_line_legendary(cid):
 					allowed_pool.append(c)
-		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "CHAMPIONSHIP"]:
+		elif GameData.campaign_submode == "CHAMPIONSHIP":
+			for c in cards_data:
+				var cid = int(c.get("id", -1))
+				if cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID, GameData.RED_GYARADOS_CARD_ID]:
+					continue
+				if not GameData.is_pokemon_unlocked(cid):
+					continue
+				var st = str(c.get("stage", "Basic")).strip_edges().to_lower()
+				var r = str(c.get("rarity", "Common")).strip_edges().to_lower()
+				var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare", "boss", "special"]) or (st in ["legendary", "boss", "special"])
+				var ev_to = str(c.get("evolves_to", "")).strip_edges()
+				if not is_legendary and ev_to == "":
+					allowed_pool.append(c)
+		elif GameData.campaign_submode == "LAKE_OF_RAGE":
 			for c in cards_data:
 				var cid = int(c.get("id", -1))
 				if cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
@@ -8021,7 +8065,9 @@ func build_team_select_cards_grid() -> void:
 			empty_lbl.text = "🔍 No Pokémon match this region / search."
 		elif GameData.campaign_submode == "CHAOS":
 			empty_lbl.text = "🔒 No tienes Pokémon Legendarios ni Dragones en tu colección.\n¡Consíguelos en sobres o evoluciona tus Pokémon para entrar en Chaos Odyssey!"
-		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "CHAMPIONSHIP"]:
+		elif GameData.campaign_submode == "CHAMPIONSHIP":
+			empty_lbl.text = GameData.tr_text("🔒 No fully evolved Pokémon in your collection.\n(Only final evolution stages allowed, no Legendaries).", "🔒 No tienes Pokémon en su fase final en tu colección.\n(Solo Pokémon en etapa final, no legendarios).")
+		elif GameData.campaign_submode == "LAKE_OF_RAGE":
 			empty_lbl.text = "🔒 No tienes Pokémon disponibles en tu colección."
 		else:
 			empty_lbl.text = "🔒 No tienes Pokémon Básicos disponibles en tu colección."
@@ -8291,7 +8337,11 @@ func toggle_pokemon_selection(pkmn_id: int) -> void:
 			if GameData.campaign_submode == "CHAOS":
 				if not ((is_legendary and ev_from == "") or GameData.is_line_legendary(pkmn_id)):
 					return
-			elif GameData.campaign_submode in ["LAKE_OF_RAGE", "CHAMPIONSHIP"]:
+			elif GameData.campaign_submode == "CHAMPIONSHIP":
+				var ev_to = str(cat_entry.get("evolves_to", "")).strip_edges()
+				if is_legendary or ev_to != "":
+					return
+			elif GameData.campaign_submode == "LAKE_OF_RAGE":
 				# All Pokémon unlocked in collection are allowed, boss cards excluded
 				pass
 			else:
@@ -8608,10 +8658,16 @@ func _on_start_battle_pressed() -> void:
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			for pid in selected_player_ids:
 				var cid = int(pid)
-				if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+				if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID, GameData.RED_GYARADOS_CARD_ID]:
 					return
 				var cat = GameData.pokemon_catalog.get(cid)
 				if not cat:
+					return
+				var r = str(cat.get("rarity", "Common")).strip_edges().to_lower()
+				var st = str(cat.get("stage", "Basic")).strip_edges().to_lower()
+				var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare", "boss", "special"]) or (st in ["legendary", "boss", "special"]) or GameData.is_line_legendary(cid)
+				var ev_to = str(cat.get("evolves_to", "")).strip_edges()
+				if is_leg or ev_to != "":
 					return
 			GameData.player_team_held_items = selected_player_held_items.duplicate()
 			GameData.change_championship_team(selected_player_ids, selected_player_held_items)

@@ -7085,11 +7085,11 @@ func complete_lake_of_rage() -> void:
 		save_profile()
 
 func has_all_gym_badges() -> bool:
-	return get_earned_gym_badges_count() >= 8
+	return get_earned_gym_badges_count() >= 7
 
 func has_all_regions_gym_badges() -> bool:
-	# La Liga Pokémon requiere las medallas de todas las regiones (Kanto [8], Johto [8], Hoenn [8], Sinnoh [8]).
-	return get_earned_gym_badges_count() >= 8 and get_johto_gym_badges_count() >= 8 and get_hoenn_gym_badges_count() >= 8 and get_sinnoh_gym_badges_count() >= 8
+	# La Liga de Campeonato requiere las medallas de todas las regiones (Kanto [7/7], Johto [8/8], Hoenn [8/8], Sinnoh [8/8]).
+	return get_earned_gym_badges_count() >= 7 and get_johto_gym_badges_count() >= 8 and get_hoenn_gym_badges_count() >= 8 and get_sinnoh_gym_badges_count() >= 8
 
 func get_hoenn_gym_badges_count() -> int:
 	# Episodios de Hoenn que otorgan medallas de gimnasio:

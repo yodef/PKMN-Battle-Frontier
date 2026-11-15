@@ -640,46 +640,6 @@ theme_override_colors/font_color = Color(0.85, 0.5, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "📖 View Chaos Odyssey Guide (Trials & Boss Info)"
 
-[node name="CardChampionship" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
-layout_mode = 2
-
-[node name="Margin" type="MarginContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
-
-[node name="ChampionshipVBox" type="VBoxContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="ChampionshipTitle" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin/ChampionshipVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
-theme_override_font_sizes/font_size = 16
-text = "🏆 Liga de Campeonato"
-
-[node name="ChampionshipDesc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin/ChampionshipVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
-theme_override_font_sizes/font_size = 12
-text = "Face 4 random Elite Four members and the Champion Rival. 1 clear per day."
-autowrap_mode = 2
-
-[node name="ChampionshipStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin/ChampionshipVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.6, 1)
-theme_override_font_sizes/font_size = 12
-text = "Estado: Disponible • 1 vez al día"
-
-[node name="BtnHubChampionship" type="Button" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin/ChampionshipVBox"]
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
-theme_override_font_sizes/font_size = 13
-text = "🏆 Entrar a la Liga de Campeonato"
-
 [node name="CardLootRates" type="PanelContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox"]
 layout_mode = 2
 
@@ -1050,30 +1010,42 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 theme_override_font_sizes/font_size = 16
-text = "🏆 Liga Pokémon (Indigo Plateau)"
+text = "🏆 Liga de Campeonato"
 
 [node name="LeagueDesc" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 12
-text = "The ultimate challenge! Face the Elite Four and the Pokémon Champion to claim the Title of Champion."
+text = "Face 4 random Elite Four members and the Champion Rival. 1 clear per day."
 autowrap_mode = 2
 
 [node name="LeagueStatus" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
 theme_override_font_sizes/font_size = 12
-text = "Status: 🔒 Bloqueada (Requiere las medallas de todas las regiones para acceder)"
+text = "Status: 🔒 Locked (Requires all gym badges across regions)"
 autowrap_mode = 2
 
-[node name="BtnEnterLeague" type="Button" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox"]
+[node name="LeagueActionsRow" type="HBoxContainer" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnEnterLeague" type="Button" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/LeagueActionsRow"]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
+size_flags_horizontal = 3
 disabled = true
 theme_override_colors/font_color = Color(0.6, 0.65, 0.75, 1)
 theme_override_font_sizes/font_size = 13
 text = "🔒 Bloqueada (Requiere medallas de todas las regiones)"
 autowrap_mode = 2
+
+[node name="BtnLeagueHistory" type="Button" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionLeague/Margin/LeagueVBox/LeagueActionsRow"]
+custom_minimum_size = Vector2(44, 38)
+layout_mode = 2
+tooltip_text = "History / Salón de la Fama"
+theme_override_font_sizes/font_size = 16
+text = "📜"
 
 [node name="BtnCloseAdventureRegions" type="Button" parent="AdventureRegionsModal/Box"]
 custom_minimum_size = Vector2(0, 42)
