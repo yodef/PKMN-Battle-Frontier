@@ -511,7 +511,7 @@ func get_item_display_name(item_id: String) -> String:
 		"poke_flute":
 			return tr_text("Poké Flute", "Poké Flauta")
 		"wise_glasses":
-			return tr_text("Wise Glasses", "Gafas Especiales")
+			return tr_text("Wise Glasses", "Lentes Especiales")
 		"quick_claw":
 			return tr_text("Quick Claw", "Garra Rápida")
 		"leftovers":
@@ -551,8 +551,8 @@ func get_held_item_desc(item_id: String) -> String:
 			)
 		"wise_glasses":
 			return tr_text(
-				"Boosts the power of special moves of the holder by 10% (min +1).",
-				"Aumenta la potencia de los movimientos especiales del portador en un 10% (mínimo +1 daño)."
+				"The holding Pokémon deals +1 DMG with any move it uses.",
+				"El PKMN que lleva este objeto, aumenta +1 DMG en cualquier Move que utilice."
 			)
 		"quick_claw":
 			return tr_text(
@@ -1317,6 +1317,7 @@ var has_unlocked_leftovers: bool = false
 var has_unlocked_dragon_fang: bool = false
 var has_unlocked_twisted_spoon: bool = false
 var has_unlocked_quick_claw: bool = false
+var has_unlocked_wise_glasses: bool = false
 
 # Evento Especial de Kanto: Duelo contra los Psíquicos
 const ENRAGED_MEWTWO_BOSS_ID: int = 496
@@ -1337,13 +1338,29 @@ var celestial_flight_current_round: int = 1
 var celestial_flight_inventory: Dictionary = DEFAULT_INVENTORY.duplicate()
 var celestial_flight_player_team_state: Array[Dictionary] = []
 
+# Evento Especial de Hoenn: Llamado Primigenio
+const PRIMAL_KYOGRE_BOSS_ID: int = 499
+const PRIMAL_GROUDON_BOSS_ID: int = 500
+const PRIMAL_RAYQUAZA_BOSS_ID: int = 501
+const COSMIC_DEOXYS_BOSS_ID: int = 502
+const PRIMAL_CALL_REWARD_DIAMONDS: int = 50
+var primal_call_completed: bool = false
+var primal_call_first_clear_claimed: bool = false
+var primal_call_current_round: int = 1
+var primal_call_inventory: Dictionary = DEFAULT_INVENTORY.duplicate()
+var primal_call_player_team_state: Array[Dictionary] = []
+
 const ALL_BOSS_IDS: Array[int] = [
 	CRYSTAL_ONIX_ID,
 	RED_GYARADOS_BOSS_ID,
 	RED_GYARADOS_CARD_ID,
 	ENRAGED_MEWTWO_BOSS_ID,
 	CELESTIAL_LUGIA_BOSS_ID,
-	CELESTIAL_HOOH_BOSS_ID
+	CELESTIAL_HOOH_BOSS_ID,
+	PRIMAL_KYOGRE_BOSS_ID,
+	PRIMAL_GROUDON_BOSS_ID,
+	PRIMAL_RAYQUAZA_BOSS_ID,
+	COSMIC_DEOXYS_BOSS_ID
 ]
 
 const ELITE_FOUR_ROSTER: Dictionary = {
@@ -6852,6 +6869,8 @@ func get_active_campaign_inventory() -> Dictionary:
 		return psychic_duel_inventory
 	elif campaign_submode == "CELESTIAL_FLIGHT":
 		return celestial_flight_inventory
+	elif campaign_submode == "PRIMAL_CALL":
+		return primal_call_inventory
 	return campaign_inventory
 
 func get_active_campaign_team_state() -> Array:
@@ -6867,6 +6886,8 @@ func get_active_campaign_team_state() -> Array:
 		return psychic_duel_player_team_state
 	elif campaign_submode == "CELESTIAL_FLIGHT":
 		return celestial_flight_player_team_state
+	elif campaign_submode == "PRIMAL_CALL":
+		return primal_call_player_team_state
 	return campaign_player_team_state
 
 func swap_campaign_team_members(idx_a: int, idx_b: int) -> bool:
@@ -7658,6 +7679,14 @@ func complete_psychic_duel() -> void:
 		championship_inventory["quick_claw"] = 1
 		psychic_duel_inventory["quick_claw"] = 1
 		celestial_flight_inventory["quick_claw"] = 1
+	if has_unlocked_wise_glasses:
+		campaign_inventory["wise_glasses"] = 1
+		adventure_inventory["wise_glasses"] = 1
+		chaos_inventory["wise_glasses"] = 1
+		championship_inventory["wise_glasses"] = 1
+		psychic_duel_inventory["wise_glasses"] = 1
+		celestial_flight_inventory["wise_glasses"] = 1
+		primal_call_inventory["wise_glasses"] = 1
 	save_profile()
 
 func reset_psychic_duel_run(auto_save: bool = true) -> void:
@@ -7688,6 +7717,22 @@ func init_psychic_duel_run(chosen_ids: Array, held_items: Array = []) -> void:
 		championship_inventory["quick_claw"] = 1
 		psychic_duel_inventory["quick_claw"] = 1
 		celestial_flight_inventory["quick_claw"] = 1
+	if has_unlocked_wise_glasses:
+		campaign_inventory["wise_glasses"] = 1
+		adventure_inventory["wise_glasses"] = 1
+		chaos_inventory["wise_glasses"] = 1
+		championship_inventory["wise_glasses"] = 1
+		psychic_duel_inventory["wise_glasses"] = 1
+		celestial_flight_inventory["wise_glasses"] = 1
+		primal_call_inventory["wise_glasses"] = 1
+	if has_unlocked_wise_glasses:
+		campaign_inventory["wise_glasses"] = 1
+		adventure_inventory["wise_glasses"] = 1
+		chaos_inventory["wise_glasses"] = 1
+		championship_inventory["wise_glasses"] = 1
+		psychic_duel_inventory["wise_glasses"] = 1
+		celestial_flight_inventory["wise_glasses"] = 1
+		primal_call_inventory["wise_glasses"] = 1
 	psychic_duel_player_team_state.clear()
 	for i in range(chosen_ids.size()):
 		var pid = int(chosen_ids[i])
@@ -7757,6 +7802,8 @@ func init_celestial_flight_run(chosen_ids: Array, held_items: Array = []) -> voi
 		celestial_flight_inventory["twisted_spoon"] = 1
 	if has_unlocked_quick_claw:
 		celestial_flight_inventory["quick_claw"] = 1
+	if has_unlocked_wise_glasses:
+		celestial_flight_inventory["wise_glasses"] = 1
 	celestial_flight_player_team_state.clear()
 	for i in range(chosen_ids.size()):
 		var pid = int(chosen_ids[i])
@@ -7800,6 +7847,80 @@ func get_hoenn_gym_badges_count() -> int:
 
 func has_all_hoenn_gym_badges() -> bool:
 	return get_hoenn_gym_badges_count() >= 8
+
+func is_primal_call_unlocked() -> bool:
+	return has_all_hoenn_gym_badges()
+
+func is_primal_call_completed() -> bool:
+	return primal_call_completed
+
+func complete_primal_call() -> void:
+	primal_call_completed = true
+	if not primal_call_first_clear_claimed:
+		primal_call_first_clear_claimed = true
+		has_unlocked_wise_glasses = true
+		player_diamonds += PRIMAL_CALL_REWARD_DIAMONDS
+		campaign_inventory["wise_glasses"] = 1
+		adventure_inventory["wise_glasses"] = 1
+		chaos_inventory["wise_glasses"] = 1
+		championship_inventory["wise_glasses"] = 1
+		psychic_duel_inventory["wise_glasses"] = 1
+		celestial_flight_inventory["wise_glasses"] = 1
+		primal_call_inventory["wise_glasses"] = 1
+	save_profile()
+
+func reset_primal_call_run(auto_save: bool = true) -> void:
+	primal_call_current_round = 1
+	primal_call_player_team_state.clear()
+	primal_call_inventory.clear()
+	if auto_save:
+		save_profile()
+
+func init_primal_call_run(chosen_ids: Array, held_items: Array = []) -> void:
+	primal_call_current_round = 1
+	primal_call_inventory.clear()
+	for k in DEFAULT_INVENTORY.keys():
+		primal_call_inventory[k] = DEFAULT_INVENTORY[k]
+	if has_unlocked_exp_share:
+		primal_call_inventory["exp_share"] = 1
+	if has_unlocked_leftovers:
+		primal_call_inventory["leftovers"] = 1
+	if has_unlocked_dragon_fang:
+		primal_call_inventory["dragon_fang"] = 1
+	if has_unlocked_twisted_spoon:
+		primal_call_inventory["twisted_spoon"] = 1
+	if has_unlocked_quick_claw:
+		primal_call_inventory["quick_claw"] = 1
+	if has_unlocked_wise_glasses:
+		primal_call_inventory["wise_glasses"] = 1
+	primal_call_player_team_state.clear()
+	for i in range(chosen_ids.size()):
+		var pid = int(chosen_ids[i])
+		var p_data = pokemon_catalog.get(pid, {})
+		var max_hp = int(p_data.get("hp", 20))
+		var h_item = ""
+		if i < held_items.size():
+			h_item = str(held_items[i])
+		primal_call_player_team_state.append({
+			"id": pid,
+			"current_hp": max_hp,
+			"max_hp": max_hp,
+			"held_item": h_item
+		})
+	save_profile()
+
+func get_primal_call_round_rival_team(round_num: int) -> Array[int]:
+	match round_num:
+		1:
+			return [267, 45, 328] # Mightyena (267), Crobat (45), Camerupt (328) - Team Magma
+		2:
+			return [267, 45, 324] # Mightyena (267), Crobat (45), Sharpedo (324) - Team Aqua
+		3:
+			return [PRIMAL_KYOGRE_BOSS_ID, PRIMAL_GROUDON_BOSS_ID] # Primal Kyogre (499), Primal Groudon (500)
+		4:
+			return [PRIMAL_RAYQUAZA_BOSS_ID, COSMIC_DEOXYS_BOSS_ID] # Apex Rayquaza (501), Cosmic Deoxys (502)
+		_:
+			return [PRIMAL_RAYQUAZA_BOSS_ID, COSMIC_DEOXYS_BOSS_ID]
 
 func get_sinnoh_gym_badges_count() -> int:
 	# Episodios de Sinnoh que otorgan medallas de gimnasio:
@@ -9150,7 +9271,7 @@ func get_item_texture(item_name: String) -> Texture2D:
 		file_name = "poke_flute.png"
 	elif clean in ["exp_share", "expshare", "exp share", "repartir_experiencia", "repartir experiencia"]:
 		file_name = "exp_share.png"
-	elif clean in ["wise_glasses", "wiseglasses", "wise glasses", "gafas_especiales", "gafas especiales", "special_glasses", "special glasses"]:
+	elif clean in ["wise_glasses", "wiseglasses", "wise glasses", "gafas_especiales", "gafas especiales", "lentes_especiales", "lentes especiales", "special_glasses", "special glasses"]:
 		file_name = "Gafas_especiales.png"
 	elif clean in ["quick_claw", "quickclaw", "quick claw", "garra_rapida", "garra_rápida", "garra rapida"]:
 		file_name = "Garra_Rápida.png"
@@ -9707,6 +9828,12 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	celestial_flight_current_round = 1
 	celestial_flight_player_team_state.clear()
 	celestial_flight_inventory = DEFAULT_INVENTORY.duplicate()
+	primal_call_completed = false
+	primal_call_first_clear_claimed = false
+	has_unlocked_wise_glasses = false
+	primal_call_current_round = 1
+	primal_call_player_team_state.clear()
+	primal_call_inventory = DEFAULT_INVENTORY.duplicate()
 	
 	# Conservar cartas si ya existían cartas desbloqueadas en este dispositivo
 	if player_unlocked_ids.is_empty():
@@ -9850,6 +9977,12 @@ func get_save_dict() -> Dictionary:
 			"celestial_flight_current_round": celestial_flight_current_round,
 			"celestial_flight_team_state": celestial_flight_player_team_state.duplicate(true),
 			"celestial_flight_inventory": celestial_flight_inventory.duplicate(true),
+			"primal_call_completed": primal_call_completed,
+			"primal_call_first_clear_claimed": primal_call_first_clear_claimed,
+			"has_wise_glasses": has_unlocked_wise_glasses,
+			"primal_call_current_round": primal_call_current_round,
+			"primal_call_team_state": primal_call_player_team_state.duplicate(true),
+			"primal_call_inventory": primal_call_inventory.duplicate(true),
 			"selected_region": adventure_selected_region
 		},
 		"chaos_odyssey": {
@@ -10156,6 +10289,21 @@ func apply_save_dict(data: Dictionary) -> bool:
 	for k in DEFAULT_INVENTORY.keys():
 		if not celestial_flight_inventory.has(k):
 			celestial_flight_inventory[k] = 0
+			
+	primal_call_completed = bool(adv.get("primal_call_completed", false))
+	primal_call_first_clear_claimed = bool(adv.get("primal_call_first_clear_claimed", false))
+	has_unlocked_wise_glasses = bool(adv.get("has_wise_glasses", false))
+	primal_call_current_round = int(adv.get("primal_call_current_round", 1))
+	primal_call_player_team_state.clear()
+	var raw_pr_team = adv.get("primal_call_team_state", [])
+	if raw_pr_team is Array:
+		for prt in raw_pr_team:
+			if prt is Dictionary:
+				primal_call_player_team_state.append(prt)
+	primal_call_inventory = adv.get("primal_call_inventory", DEFAULT_INVENTORY.duplicate())
+	for k in DEFAULT_INVENTORY.keys():
+		if not primal_call_inventory.has(k):
+			primal_call_inventory[k] = 0
 	adventure_selected_region = str(adv.get("selected_region", "KANTO"))
 		
 	# Sanitizar: si el episodio ya fue completado o la etapa excede el total, reiniciar progreso del run
@@ -10229,6 +10377,14 @@ func apply_save_dict(data: Dictionary) -> bool:
 		championship_inventory["quick_claw"] = 1
 		psychic_duel_inventory["quick_claw"] = 1
 		celestial_flight_inventory["quick_claw"] = 1
+	if has_unlocked_wise_glasses:
+		campaign_inventory["wise_glasses"] = 1
+		adventure_inventory["wise_glasses"] = 1
+		chaos_inventory["wise_glasses"] = 1
+		championship_inventory["wise_glasses"] = 1
+		psychic_duel_inventory["wise_glasses"] = 1
+		celestial_flight_inventory["wise_glasses"] = 1
+		primal_call_inventory["wise_glasses"] = 1
 		
 	if campaign_gold > 0 or adventure_current_episode > 1 or adventure_current_stage > 1:
 		profile_welcome_claimed = true
@@ -10429,6 +10585,12 @@ func erase_profile() -> void:
 	celestial_flight_current_round = 1
 	celestial_flight_player_team_state.clear()
 	celestial_flight_inventory = DEFAULT_INVENTORY.duplicate()
+	primal_call_completed = false
+	primal_call_first_clear_claimed = false
+	has_unlocked_wise_glasses = false
+	primal_call_current_round = 1
+	primal_call_player_team_state.clear()
+	primal_call_inventory = DEFAULT_INVENTORY.duplicate()
 	
 	player_unlocked_ids.clear()
 	player_friends.clear()

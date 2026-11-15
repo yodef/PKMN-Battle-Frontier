@@ -498,3 +498,7 @@
 "496","150","Boss","Enraged Mewtwo","65","10","8","PSYCHIC","NONE","","5","150.png","Escalada Furiosa","Increases +1 DMG for each round the battle lasts.","Aura Sphere","Mind Bending","FALSE","Boss","","","","0","S+","Special"
 "497","249","Boss","Celestial Lugia","45","10","9","PSYCHIC","DARK","GROUND","6","249.png","Ira Celestial","If partner faints, becomes enraged and increases base DMG and Speed.","Aeroblast","Hydro Pump","FALSE","Boss","","","","0","S+","Special"
 "498","250","Boss","Celestial Ho-Oh","45","10","9","FIRE","WATER","GROUND","6","250.png","Ira Celestial","If partner faints, becomes enraged and increases base DMG and Speed.","Sacred Fire","Brave Bird","FALSE","Boss","","","","0","S+","Special"
+"499","382","Boss","Primal Kyogre","45","10","8","WATER","ELECTRIC","FIRE","6","382.png","Drizzle","Boosts WATER moves DMG by +2.","Water Spout","Hydro Pump","FALSE","Boss","","","","0","S+","Special"
+"500","383","Boss","Primal Groudon","45","10","8","GROUND","WATER","ELECTRIC","6","383.png","Drought","Boosts FIRE & GROUND moves DMG by +2.","Earthquake","Eruption","FALSE","Boss","","","","0","S+","Special"
+"501","384","Boss","Apex Rayquaza","50","10","9","NORMAL","WATER","GROUND","6","384.png","Air Lock","Cancels all weather and field effects.","Dragon Claw","Outrage","FALSE","Boss","","","","0","S+","Special"
+"502","386","Boss","Cosmic Deoxys","45","10","10","PSYCHIC","DARK","FIGHTING","6","386.png","Pressure","Forces opponent to expend energy quicker.","Psycho Boost","Psychic","FALSE","Boss","","","","0","S+","Special"

@@ -274,6 +274,18 @@ func get_enemy_trainer_name() -> String:
 					return "Señores Celestiales" if is_sp else "Celestial Lords"
 				_:
 					return "Señores Celestiales" if is_sp else "Celestial Lords"
+		elif GameData.campaign_submode == "PRIMAL_CALL":
+			match GameData.primal_call_current_round:
+				1:
+					return "Team Magma"
+				2:
+					return "Team Aqua"
+				3:
+					return "Titanes del Clima" if is_sp else "Weather Titans"
+				4:
+					return "Señores del Cosmos" if is_sp else "Cosmic Lords"
+				_:
+					return "Llamado Primigenio" if is_sp else "Primal Calling"
 		elif GameData.campaign_submode == "CHAOS":
 			var match_info = GameData.get_chaos_match_info(GameData.chaos_match_number)
 			if match_info.get("is_boss", false):
@@ -1198,6 +1210,10 @@ func _show_forfeit_confirmation_modal() -> void:
 			forfeit_title_lbl.text = "🪽 ¿ABANDONAR EL VUELO CELESTIAL?"
 			forfeit_body_lbl.text = "¿Seguro que deseas retirarte de El Vuelo Celestial?\nEl progreso de las rondas se reiniciará."
 			btn_confirm_forfeit.text = "🏳️ Abandonar Vuelo"
+		elif GameData.campaign_submode == "PRIMAL_CALL":
+			forfeit_title_lbl.text = "🌋 ¿ABANDONAR EL LLAMADO PRIMIGENIO?"
+			forfeit_body_lbl.text = "¿Seguro que deseas retirarte de El Llamado Primigenio?\nEl progreso de las rondas se reiniciará."
+			btn_confirm_forfeit.text = "🏳️ Abandonar Evento"
 		elif GameData.campaign_submode == "ADVENTURE":
 			forfeit_title_lbl.text = "⚠️ RETREAT FROM ADVENTURE?"
 			forfeit_body_lbl.text = "Are you sure you want to retreat?\nCurrent episode progress will be reset.\n(Your earned Gold and Diamonds are safe)."
@@ -1271,6 +1287,11 @@ func _on_return_to_menu() -> void:
 		GameData.is_campaign_mode = false
 		GameData.campaign_submode = "ADVENTURE"
 		GameData.save_profile()
+	elif not is_battle_over and GameData.is_campaign_mode and GameData.campaign_submode == "PRIMAL_CALL":
+		GameData.reset_primal_call_run()
+		GameData.is_campaign_mode = false
+		GameData.campaign_submode = "ADVENTURE"
+		GameData.save_profile()
 	elif not is_battle_over and GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
 		# Solo si se abandona a mitad de combate (forfeit):
 		# Si sales antes de terminar el combate, se reinicia el progreso del episodio conservando los recursos G y Diamonds
@@ -1319,7 +1340,7 @@ func get_pokemon_effective_speed(pkmn, opponent) -> int:
 	if pkmn and pkmn.has_passive and pkmn.passive_name in ["Chlorophyll", "Swift Swim", "Weather Rush", "Sand Rush"]:
 		if sandstorm_turns > 0 or grassy_terrain_turns > 0:
 			spd += 3
-	if pkmn and pkmn.get("celestial_enraged", false):
+	if pkmn and bool(pkmn.get("celestial_enraged")) :
 		spd += 3
 	return spd
 
@@ -1500,6 +1521,8 @@ func start_new_game() -> void:
 					GameData.init_psychic_duel_run([0, 1, 2])
 				elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
 					GameData.init_celestial_flight_run([0, 1, 2])
+				elif GameData.campaign_submode == "PRIMAL_CALL":
+					GameData.init_primal_call_run([0, 1, 2])
 				else:
 					GameData.init_campaign_team([0, 1, 2])
 				team_state = GameData.get_active_campaign_team_state()
@@ -1573,6 +1596,20 @@ func start_new_game() -> void:
 						battle_title_lbl.text = "🪽 EL VUELO CELESTIAL: BOSS FINAL (vs Lugia & Ho-Oh)"
 					_:
 						battle_title_lbl.text = "🪽 EL VUELO CELESTIAL"
+			elif GameData.campaign_submode == "PRIMAL_CALL":
+				rival_ids = GameData.get_primal_call_round_rival_team(GameData.primal_call_current_round)
+				enemy_super_potions = 0
+				match GameData.primal_call_current_round:
+					1:
+						battle_title_lbl.text = "🌋 LLAMADO PRIMIGENIO: RONDA 1/4 (vs Team Magma)"
+					2:
+						battle_title_lbl.text = "🌊 LLAMADO PRIMIGENIO: RONDA 2/4 (vs Team Aqua)"
+					3:
+						battle_title_lbl.text = "⚡ LLAMADO PRIMIGENIO: RONDA 3/4 (vs Kyogre & Groudon)"
+					4:
+						battle_title_lbl.text = "🌌 LLAMADO PRIMIGENIO: BOSS FINAL (vs Rayquaza & Deoxys)"
+					_:
+						battle_title_lbl.text = "🌋 EL LLAMADO PRIMIGENIO"
 			elif GameData.campaign_submode == "CHAMPIONSHIP":
 				rival_ids = GameData.get_championship_rival_team(GameData.championship_match_number)
 				var match_info = GameData.get_championship_match_info(GameData.championship_match_number)
@@ -1614,6 +1651,10 @@ func start_new_game() -> void:
 					enemy_team[last_idx].foil_type = "boss"
 			elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
 				if GameData.celestial_flight_current_round == 3:
+					for p_en in enemy_team:
+						p_en.foil_type = "boss"
+			elif GameData.campaign_submode == "PRIMAL_CALL":
+				if GameData.primal_call_current_round in [3, 4]:
 					for p_en in enemy_team:
 						p_en.foil_type = "boss"
 			elif GameData.campaign_submode == "CHAMPIONSHIP":
@@ -1692,6 +1733,8 @@ func start_new_game() -> void:
 			mode_str = "DUELO CONTRA LOS PSÍQUICOS (RONDA %d/3)" % GameData.psychic_duel_current_round
 		elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
 			mode_str = "EL VUELO CELESTIAL (RONDA %d/3)" % GameData.celestial_flight_current_round
+		elif GameData.campaign_submode == "PRIMAL_CALL":
+			mode_str = "EL LLAMADO PRIMIGENIO (RONDA %d/4)" % GameData.primal_call_current_round
 		elif GameData.campaign_submode == "ADVENTURE":
 			var total_stages = GameData.get_adventure_total_stages(GameData.adventure_current_episode)
 			var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
@@ -2991,10 +3034,10 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			note_text += " [color=yellow](Close Combat: -%d DMG for partial energy)[/color]" % (missing * 6)
 
 	# 8. Modificadores de daño del atacante
-	# Wise Glasses (Gafas Especiales: +1 DMG a movimientos especiales)
-	if attacker.held_item == "wise_glasses" and move.type in ["FIRE", "WATER", "GRASS", "ELECTRIC", "PSYCHIC", "ICE", "DRAGON", "GHOST", "DARK"]:
+	# Wise Glasses (Lentes Especiales: +1 DMG en cualquier Move que utilice)
+	if attacker.held_item in ["wise_glasses", "lentes_especiales", "gafas_especiales"] and raw_damage > 0:
 		raw_damage += 1
-		note_text += " [color=#80DEEA]Wise Glasses (+1 Sp. DMG)![/color]"
+		note_text += " [color=#80DEEA]Wise Glasses (+1 DMG)![/color]"
 
 	# Twisted Spoon (Cuchara Torcida: +2 DMG a movimientos de tipo Psíquico)
 	if attacker.held_item in ["twisted_spoon", "cuchara_torcida"] and move.type == "PSYCHIC" and raw_damage > 0:
@@ -3035,7 +3078,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			note_text += " [color=#CE93D8]Escalada Furiosa (+%d DMG)![/color]" % rage_bonus
 		
 	# Ira Celestial (Celestial Lugia & Celestial Ho-Oh: +3 DMG al caer su compañero)
-	if attacker.has_passive and (attacker.passive_name in ["Ira Celestial", "Celestial Wrath", "Vínculo Celestial"]) and attacker.get("celestial_enraged", false):
+	if attacker.has_passive and (attacker.passive_name in ["Ira Celestial", "Celestial Wrath", "Vínculo Celestial"]) and bool(attacker.get("celestial_enraged")):
 		if raw_damage > 0:
 			raw_damage += 3
 			note_text += " [color=#FFD700]Ira Celestial (+3 DMG)![/color]"
@@ -3984,8 +4027,8 @@ func _animate_faint_and_replacement(is_player: bool, fainted_pkmn, next_idx: int
 	# Ira Celestial: si un compañero cae, el superviviente con la habilidad se enfurece (+3 DMG y +3 SPD)
 	var team_to_check = player_team if is_player else enemy_team
 	for member in team_to_check:
-		if member != fainting_pkmn and member.current_hp > 0:
-			if member.has_passive and (member.passive_name in ["Ira Celestial", "Celestial Wrath", "Vínculo Celestial"]) and not member.get("celestial_enraged", false):
+		if member != fainted_pkmn and member.current_hp > 0:
+			if member.has_passive and (member.passive_name in ["Ira Celestial", "Celestial Wrath", "Vínculo Celestial"]) and not bool(member.get("celestial_enraged")):
 				member.set("celestial_enraged", true)
 				var side = "PLAYER" if is_player else "ENEMY"
 				log_action("⚡ [b]%s[/b] se enfurece por la caída de su compañero y entra en [color=gold]¡Ira Celestial![/color] (+3 DMG y +3 Velocidad permanente)!" % member.name, side)
@@ -4639,6 +4682,44 @@ func _resolve_battle_victory() -> void:
 						next_enemy_desc
 					]
 				)
+		elif GameData.campaign_submode == "PRIMAL_CALL":
+			var cur_round = GameData.primal_call_current_round
+			if cur_round >= 4:
+				var was_first_clear = not GameData.primal_call_first_clear_claimed
+				GameData.complete_primal_call()
+				GameData.is_campaign_mode = false
+				if was_first_clear:
+					show_game_over(
+						"🌋 ¡LLAMADO PRIMIGENIO SUPERADO!",
+						"¡Has derrotado a Rayquaza y Deoxys y conquistado las 4 rondas del evento!\n\n👑 ¡RECOMPENSAS DE PRIMERA VICTORIA!\n💎 +%d Diamantes (Total: %d)\n👓 Lentes Especiales (Wise Glasses): El PKMN que lleva este objeto aumenta +1 DMG en cualquier Move que utilice.\n\n¡Ambos premios han sido añadidos a tu colección e inventario!" % [
+							GameData.PRIMAL_CALL_REWARD_DIAMONDS,
+							GameData.player_diamonds
+						]
+					)
+				else:
+					show_game_over(
+						"🌋 ¡LLAMADO PRIMIGENIO SUPERADO!",
+						"¡Has vuelto a triunfar sobre las fuerzas primigenias de Hoenn!\n\n¡Victoria legendaria!"
+					)
+			else:
+				GameData.primal_call_player_team_state.clear()
+				for p in player_team:
+					GameData.primal_call_player_team_state.append({
+						"id": p.id,
+						"current_hp": max(0, p.current_hp),
+						"max_hp": p.max_hp,
+						"held_item": p.held_item
+					})
+				GameData.primal_call_current_round += 1
+				GameData.save_profile()
+				var next_enemy_desc = "Team Aqua" if cur_round == 1 else ("Dúo Primigenio: Kyogre & Groudon" if cur_round == 2 else "Señores del Cosmos: Rayquaza & Deoxys (Boss Final)")
+				show_game_over(
+					"🌋 ¡RONDA %d SUPERADA!" % cur_round,
+					"¡Has vencido en la Ronda %d de El Llamado Primigenio!\n\nTu equipo mantiene su vitalidad para el siguiente combate.\nPuedes usar objetos curativos en el campamento o continuar al combate contra: %s." % [
+						cur_round,
+						next_enemy_desc
+					]
+				)
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			var cur_match = GameData.championship_match_number
 			var phase_diamonds = GameData.CHAMPIONSHIP_DIAMOND_REWARDS[cur_match - 1]
@@ -4881,6 +4962,14 @@ func _resolve_battle_defeat(is_double_ko: bool = false) -> void:
 			show_game_over(
 				"💀 DERROTA EN EL VUELO CELESTIAL",
 				"Tu equipo no pudo resistir el poder del cielo.\nEl desafío se ha reiniciado a la Ronda 1.\n¡Reorganiza tu equipo e inténtalo de nuevo!"
+			)
+		elif GameData.campaign_submode == "PRIMAL_CALL":
+			GameData.reset_primal_call_run()
+			GameData.is_campaign_mode = false
+			GameData.save_profile()
+			show_game_over(
+				"💀 DERROTA EN EL LLAMADO PRIMIGENIO",
+				"Tu equipo no pudo contener el poder colosal de Hoenn.\nEl desafío se ha reiniciado a la Ronda 1.\n¡Reorganiza tu equipo e inténtalo de nuevo!"
 			)
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			GameData.reset_championship_league(false)
@@ -5227,7 +5316,7 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 		var rage_bonus = max(0, round_number - 1)
 		if rage_bonus > 0 and dmg > 0:
 			dmg += rage_bonus
-	if attacker.has_passive and (attacker.passive_name in ["Ira Celestial", "Celestial Wrath", "Vínculo Celestial"]) and attacker.get("celestial_enraged", false):
+	if attacker.has_passive and (attacker.passive_name in ["Ira Celestial", "Celestial Wrath", "Vínculo Celestial"]) and bool(attacker.get("celestial_enraged")):
 		if dmg > 0:
 			dmg += 3
 	if attacker.has_passive and attacker.passive_name == "Guts":
@@ -5328,8 +5417,8 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 	if move.effect_type == "BOOST_DMG_TYPE" and is_full_energy:
 		dmg += _get_boost_dmg_type_bonus(move, defender)
 
-	# Wise Glasses (Gafas Especiales: +1 DMG a movimientos especiales)
-	if attacker.held_item == "wise_glasses" and move.type in ["FIRE", "WATER", "GRASS", "ELECTRIC", "PSYCHIC", "ICE", "DRAGON", "GHOST", "DARK"]:
+	# Wise Glasses (Lentes Especiales: +1 DMG en cualquier Move que utilice)
+	if attacker.held_item in ["wise_glasses", "lentes_especiales", "gafas_especiales"] and dmg > 0:
 		dmg += 1
 
 	# Twisted Spoon (Cuchara Torcida: +2 DMG a movimientos de tipo Psíquico)
@@ -6467,7 +6556,7 @@ func _format_passive_display(pkmn, opponent) -> String:
 		var bonus = max(0, round_number - 1)
 		return " | ⚡ " + (GameData.tr_text("Enraged Escalation [+%d DMG]", "Escalada Furiosa [+%d DMG]") % bonus)
 	elif p_name in ["Ira Celestial", "Celestial Wrath", "Vínculo Celestial"]:
-		var is_enraged = pkmn.get("celestial_enraged", false)
+		var is_enraged = bool(pkmn.get("celestial_enraged"))
 		if is_enraged:
 			return " | ⚡ " + GameData.tr_text("Celestial Wrath [ACTIVE: +3 DMG, +3 SPD]", "Ira Celestial [ACTIVO: +3 DMG, +3 VEL]")
 		else:
@@ -7485,6 +7574,11 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 				btn_game_over_menu.text = "🗺️ Volver a Johto"
 			else:
 				btn_game_over_menu.text = "⛺ Campamento (Ronda %d/3)" % GameData.celestial_flight_current_round
+		elif GameData.campaign_submode == "PRIMAL_CALL":
+			if GameData.primal_call_current_round > 4 or (is_battle_over and not is_victory):
+				btn_game_over_menu.text = "🗺️ Volver a Hoenn"
+			else:
+				btn_game_over_menu.text = "⛺ Campamento (Ronda %d/4)" % GameData.primal_call_current_round
 		elif GameData.campaign_submode == "ADVENTURE":
 			btn_game_over_menu.text = "⛺ Camp / Shop"
 		elif GameData.campaign_submode == "CHAOS":

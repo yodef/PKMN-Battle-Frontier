@@ -118,6 +118,7 @@ var johto_routes_scroll_vbox: VBoxContainer = null
 var hoenn_episodes_modal: Control = null
 var hoenn_routes_modal: Control = null
 var hoenn_episode_cards: Dictionary = {}
+var hoenn_primal_call_card: Dictionary = {}
 var hoenn_routes_cards: Dictionary = {}
 var hoenn_current_routes_ep: int = 204
 var hoenn_routes_title_lbl: Label = null
@@ -851,6 +852,11 @@ func _ready() -> void:
 			GameData.is_campaign_mode = false
 			GameData.reset_celestial_flight_run()
 			_open_johto_episodes_modal()
+		elif GameData.campaign_submode == "PRIMAL_CALL":
+			GameData.campaign_submode = "ADVENTURE"
+			GameData.is_campaign_mode = false
+			GameData.reset_primal_call_run()
+			_open_hoenn_episodes_modal()
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			GameData.is_campaign_mode = false
 			update_adventure_regions_ui()
@@ -1269,6 +1275,20 @@ func _ready() -> void:
 				GameData.is_campaign_mode = false
 				GameData.campaign_submode = "ADVENTURE"
 				_open_johto_episodes_modal()
+			else:
+				update_campaign_ui()
+				campaign_modal.visible = true
+		elif GameData.campaign_submode == "PRIMAL_CALL":
+			var active_state = GameData.get_active_campaign_team_state()
+			var any_alive = false
+			for p in active_state:
+				if p.get("current_hp", 0) > 0:
+					any_alive = true
+					break
+			if GameData.primal_call_completed or not any_alive or active_state.is_empty():
+				GameData.is_campaign_mode = false
+				GameData.campaign_submode = "ADVENTURE"
+				_open_hoenn_episodes_modal()
 			else:
 				update_campaign_ui()
 				campaign_modal.visible = true
@@ -3903,6 +3923,75 @@ func _setup_hoenn_episodes_modal() -> void:
 			"is_branching": is_branching
 		}
 	
+	# Special Event: Llamado Primigenio (Hoenn Boss Event)
+	var primal_panel = PanelContainer.new()
+	primal_panel.name = "CardPrimalCall"
+	var primal_sb = StyleBoxFlat.new()
+	primal_sb.bg_color = Color(0.18, 0.10, 0.08, 0.95)
+	primal_sb.border_color = Color(0.85, 0.40, 0.20, 0.9)
+	primal_sb.set_border_width_all(2)
+	primal_sb.set_corner_radius_all(6)
+	primal_sb.content_margin_left = 12
+	primal_sb.content_margin_right = 12
+	primal_sb.content_margin_top = 8
+	primal_sb.content_margin_bottom = 8
+	primal_panel.add_theme_stylebox_override("panel", primal_sb)
+	ep_vbox.add_child(primal_panel)
+	
+	var primal_vbox = VBoxContainer.new()
+	primal_vbox.add_theme_constant_override("separation", 3)
+	primal_panel.add_child(primal_vbox)
+	
+	var primal_title = Label.new()
+	primal_title.text = "🌋 EVENTO ESPECIAL: EL LLAMADO PRIMIGENIO"
+	primal_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	primal_title.add_theme_font_size_override("font_size", 13)
+	primal_title.add_theme_color_override("font_color", Color(1.0, 0.65, 0.3))
+	primal_vbox.add_child(primal_title)
+	
+	var primal_desc = Label.new()
+	primal_desc.text = "¡Un combate colosal en 4 rondas! Desafía al Team Magma, al Team Aqua, a los titanes Primigenios Kyogre & Groudon, y en la cima a Rayquaza & Deoxys. Se permiten Legendarios y Evoluciones."
+	primal_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	primal_desc.add_theme_font_size_override("font_size", 11)
+	primal_desc.add_theme_color_override("font_color", Color(0.95, 0.90, 0.85))
+	primal_vbox.add_child(primal_desc)
+	
+	var primal_rew = Label.new()
+	primal_rew.text = "👑 Recompensa 1ª Victoria: 💎 %d Diamantes + 👓 Lentes Especiales (+1 DMG en cualquier Move)" % GameData.PRIMAL_CALL_REWARD_DIAMONDS
+	primal_rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	primal_rew.add_theme_font_size_override("font_size", 11)
+	primal_rew.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	primal_vbox.add_child(primal_rew)
+	
+	var primal_status = Label.new()
+	primal_status.text = "Status: Locked"
+	primal_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	primal_status.add_theme_font_size_override("font_size", 11)
+	primal_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+	primal_vbox.add_child(primal_status)
+	
+	var primal_btn = Button.new()
+	primal_btn.custom_minimum_size = Vector2(0, 36)
+	primal_btn.add_theme_font_size_override("font_size", 12)
+	primal_btn.text = "🔒 Bloqueado (Completa Hoenn)"
+	primal_btn.disabled = true
+	_apply_retro_button_style(primal_btn, Color(0.35, 0.25, 0.20), Color(0.45, 0.35, 0.30), false)
+	primal_btn.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		_start_primal_call_event()
+	)
+	primal_vbox.add_child(primal_btn)
+	
+	hoenn_primal_call_card = {
+		"panel": primal_panel,
+		"title": primal_title,
+		"desc": primal_desc,
+		"rewards": primal_rew,
+		"status": primal_status,
+		"btn": primal_btn
+	}
+	
 	hoenn_episodes_btn_close = Button.new()
 	hoenn_episodes_btn_close.name = "BtnCloseHoennEpisodes"
 	hoenn_episodes_btn_close.custom_minimum_size = Vector2(0, 36)
@@ -4093,6 +4182,55 @@ func _refresh_hoenn_episodes_ui() -> void:
 				btn.text = "⚔️ Iniciar Episodio ➜" if is_es else "⚔️ Launch Episode ➜"
 			btn.disabled = false
 			_apply_retro_button_style(btn, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+	# Update Primal Call Card
+	if not hoenn_primal_call_card.is_empty():
+		var p_status = hoenn_primal_call_card["status"] as Label
+		var p_btn = hoenn_primal_call_card["btn"] as Button
+		var p_panel = hoenn_primal_call_card["panel"] as PanelContainer
+		var has_8_badges = GameData.has_all_hoenn_gym_badges()
+		var is_primal_done = GameData.is_primal_call_completed()
+		
+		if not has_8_badges:
+			p_panel.modulate = Color(0.7, 0.7, 0.75, 0.8)
+			p_status.text = "Status: 🔒 Bloqueado (Requiere completar los 8 episodios de Hoenn [%d/8])" % GameData.get_hoenn_gym_badges_count()
+			p_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+			p_btn.text = "🔒 Bloqueado (Completa Hoenn)"
+			p_btn.disabled = true
+			_apply_retro_button_style(p_btn, Color(0.35, 0.25, 0.20), Color(0.45, 0.35, 0.30), false)
+		elif GameData.campaign_submode == "PRIMAL_CALL" and not GameData.primal_call_player_team_state.is_empty():
+			p_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			p_status.text = "Status: ⚔️ En curso (Ronda %d/4)" % GameData.primal_call_current_round
+			p_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			p_btn.text = "⛺ Continuar Llamado Primigenio (Ronda %d/4)" % GameData.primal_call_current_round
+			p_btn.disabled = false
+			_apply_retro_button_style(p_btn, Color(0.75, 0.35, 0.15), Color(0.95, 0.50, 0.25), true)
+		elif is_primal_done:
+			p_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			p_status.text = "Status: 🏆 COMPLETADO • Desafío Rejugable"
+			p_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+			p_btn.text = "🌋 Rejugar El Llamado Primigenio"
+			p_btn.disabled = false
+			_apply_retro_button_style(p_btn, Color(0.75, 0.35, 0.15), Color(0.95, 0.50, 0.25), true)
+		else:
+			p_panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			p_status.text = "Status: 🔓 DISPONIBLE • ¡Despierta a los Titanes!"
+			p_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+			p_btn.text = "🌋 Iniciar El Llamado Primigenio"
+			p_btn.disabled = false
+			_apply_retro_button_style(p_btn, Color(0.75, 0.35, 0.15), Color(0.95, 0.50, 0.25), true)
+
+func _start_primal_call_event() -> void:
+	if not GameData.is_primal_call_unlocked():
+		return
+	if hoenn_episodes_modal:
+		hoenn_episodes_modal.visible = false
+	GameData.campaign_submode = "PRIMAL_CALL"
+	if not GameData.primal_call_player_team_state.is_empty():
+		update_campaign_ui()
+		campaign_modal.visible = true
+	else:
+		open_team_select_for_campaign()
 
 func _on_select_hoenn_episode_pressed(episode_id: int) -> void:
 	if GameData.is_drag_scrolling():
@@ -5578,6 +5716,9 @@ func open_team_select_for_campaign() -> void:
 	elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
 		team_select_title.text = "🪽 EL VUELO CELESTIAL"
 		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Pokémon for Celestial Flight (Legendaries allowed).", "Elige 1 a 3 Pokémon para El Vuelo Celestial (Legendarios permitidos).")
+	elif GameData.campaign_submode == "PRIMAL_CALL":
+		team_select_title.text = "🌋 EL LLAMADO PRIMIGENIO"
+		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Pokémon for Primal Call (Legendaries allowed).", "Elige 1 a 3 Pokémon para El Llamado Primigenio (Legendarios permitidos).")
 	elif GameData.campaign_submode == "CHAOS":
 		team_select_title.text = "🌌 CHAOS ODYSSEY TEAM"
 		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Legendary or Dragon Pokémon.", "Elige 1 a 3 Pokémon Legendarios o Dragones.")
@@ -5619,7 +5760,7 @@ func open_team_select_for_campaign() -> void:
 						selected_player_ids.append(pid)
 						if selected_player_ids.size() - 1 < 3:
 							selected_player_held_items[selected_player_ids.size() - 1] = str(p.get("held_item", ""))
-				elif GameData.campaign_submode in ["PSYCHIC_DUEL", "CELESTIAL_FLIGHT"]:
+				elif GameData.campaign_submode in ["PSYCHIC_DUEL", "CELESTIAL_FLIGHT", "PRIMAL_CALL"]:
 					if pid not in GameData.ALL_BOSS_IDS:
 						selected_player_ids.append(pid)
 						if selected_player_ids.size() - 1 < 3:
@@ -5962,6 +6103,45 @@ func update_campaign_ui() -> void:
 		btn_start_campaign_battle.disabled = not any_alive
 		if campaign_track_diagram:
 			campaign_track_diagram.set_campaign_progress(3, cur_rnd, false, true)
+	elif GameData.campaign_submode == "PRIMAL_CALL":
+		btn_close_campaign.text = "⬅ Abandonar Llamado"
+		btn_change_campaign_team.visible = (GameData.primal_call_current_round == 1)
+		btn_reset_campaign.text = "🔄 Reiniciar El Llamado Primigenio"
+		if camp_title:
+			camp_title.text = "🌋 EL LLAMADO PRIMIGENIO"
+		if camp_desc:
+			camp_desc.text = GameData.tr_text("Boss Fight in 4 rounds: Team Magma, Team Aqua, Primal Titans and Apex Legendaries!", "Boss Fight en 4 rondas: Team Magma, Team Aqua, Titanes Primigenios y Señores del Cosmos.")
+		if camp_team_header:
+			camp_team_header.text = GameData.tr_text("👥 YOUR TEAM:", "👥 TU EQUIPO:")
+		
+		var cur_rnd = GameData.primal_call_current_round
+		var round_names = {
+			1: "Ronda 1/4: Team Magma (Mightyena, Crobat, Camerupt)",
+			2: "Ronda 2/4: Team Aqua (Mightyena, Crobat, Sharpedo)",
+			3: "Ronda 3/4: Titanes del Clima (Kyogre & Groudon Primigenios)",
+			4: "Ronda 4/4: Señores del Cosmos (Apex Rayquaza & Cosmic Deoxys)"
+		}
+		campaign_match_lbl.text = "🌋 " + round_names.get(cur_rnd, "Ronda %d/4" % cur_rnd)
+		match cur_rnd:
+			1:
+				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA 1 (vs Team Magma)"
+			2:
+				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA 2 (vs Team Aqua)"
+			3:
+				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA 3 (vs Kyogre & Groudon)"
+			4:
+				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA FINAL (vs Rayquaza & Deoxys)"
+			_:
+				btn_start_campaign_battle.text = "⚔️ INICIAR COMBATE"
+		
+		var any_alive = false
+		for p in cur_team:
+			if p["current_hp"] > 0:
+				any_alive = true
+				break
+		btn_start_campaign_battle.disabled = not any_alive
+		if campaign_track_diagram:
+			campaign_track_diagram.set_campaign_progress(4, cur_rnd, false, true)
 	else:
 		# Modo Pokémon Stadium
 		btn_close_campaign.text = "⬅ Exit Stadium Camp"
@@ -8176,6 +8356,8 @@ func _on_reset_campaign_pressed() -> void:
 		GameData.reset_psychic_duel_run()
 	elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
 		GameData.reset_celestial_flight_run()
+	elif GameData.campaign_submode == "PRIMAL_CALL":
+		GameData.reset_primal_call_run()
 	else:
 		GameData.reset_campaign()
 	open_team_select_for_campaign()
@@ -8285,6 +8467,22 @@ func _on_start_campaign_battle_pressed() -> void:
 		for p in GameData.celestial_flight_player_team_state:
 			GameData.player_team_ids.append(int(p["id"]))
 		GameData.enemy_team_ids = GameData.get_celestial_flight_round_rival_team(GameData.celestial_flight_current_round)
+	elif GameData.campaign_submode == "PRIMAL_CALL":
+		var call_invalid = false
+		for p in GameData.primal_call_player_team_state:
+			var pid = int(p.get("id", -1))
+			if not GameData.pokemon_catalog.has(pid) or not GameData.is_pokemon_unlocked(pid) or pid in GameData.ALL_BOSS_IDS:
+				call_invalid = true
+				break
+		if call_invalid or GameData.primal_call_current_round > 4 or GameData.primal_call_player_team_state.is_empty():
+			GameData.reset_primal_call_run()
+			open_team_select_for_campaign()
+			return
+		GameData.is_campaign_mode = true
+		GameData.player_team_ids.clear()
+		for p in GameData.primal_call_player_team_state:
+			GameData.player_team_ids.append(int(p["id"]))
+		GameData.enemy_team_ids = GameData.get_primal_call_round_rival_team(GameData.primal_call_current_round)
 	else:
 		var tourn_invalid = false
 		for p in GameData.campaign_player_team_state:
@@ -8445,6 +8643,11 @@ func _on_close_team_select_pressed() -> void:
 			GameData.is_campaign_mode = false
 			GameData.reset_celestial_flight_run()
 			_open_johto_episodes_modal()
+		elif GameData.campaign_submode == "PRIMAL_CALL":
+			GameData.campaign_submode = "ADVENTURE"
+			GameData.is_campaign_mode = false
+			GameData.reset_primal_call_run()
+			_open_hoenn_episodes_modal()
 			return
 		var state = GameData.get_active_campaign_team_state()
 		if state.size() > 0:
@@ -8544,7 +8747,7 @@ func build_team_select_cards_grid() -> void:
 				var ev_to = str(c.get("evolves_to", "")).strip_edges()
 				if not is_legendary and ev_to == "":
 					allowed_pool.append(c)
-		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT"]:
+		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT", "PRIMAL_CALL"]:
 			for c in cards_data:
 				var cid = int(c.get("id", -1))
 				if cid in GameData.ALL_BOSS_IDS or cid == GameData.CRYSTAL_ONIX_ID:
@@ -8585,7 +8788,7 @@ func build_team_select_cards_grid() -> void:
 			empty_lbl.text = "🔒 No tienes Pokémon Legendarios ni Dragones en tu colección.\n¡Consíguelos en sobres o evoluciona tus Pokémon para entrar en Chaos Odyssey!"
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			empty_lbl.text = GameData.tr_text("🔒 No fully evolved Pokémon in your collection.\n(Only final evolution stages allowed, no Legendaries).", "🔒 No tienes Pokémon en su fase final en tu colección.\n(Solo Pokémon en etapa final, no legendarios).")
-		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT"]:
+		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT", "PRIMAL_CALL"]:
 			empty_lbl.text = "🔒 No tienes Pokémon disponibles en tu colección."
 		else:
 			empty_lbl.text = "🔒 No tienes Pokémon Básicos disponibles en tu colección."
@@ -8859,7 +9062,7 @@ func toggle_pokemon_selection(pkmn_id: int) -> void:
 				var ev_to = str(cat_entry.get("evolves_to", "")).strip_edges()
 				if is_legendary or ev_to != "":
 					return
-			elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT"]:
+			elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT", "PRIMAL_CALL"]:
 				# All Pokémon unlocked in collection are allowed, boss cards excluded
 				pass
 			else:
@@ -8901,7 +9104,7 @@ func update_team_select_ui() -> void:
 			if GameData.campaign_submode == "CHAOS":
 				if (is_leg and ev_from == "") or GameData.is_line_legendary(cid):
 					clean_ids.append(cid)
-			elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT"]:
+			elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL", "CELESTIAL_FLIGHT", "PRIMAL_CALL"]:
 				clean_ids.append(cid)
 			else:
 				if st == "basic" and not is_leg:
@@ -9092,6 +9295,8 @@ func update_team_select_ui() -> void:
 				btn_start_battle.text = "🔮 INICIAR DUELO PSÍQUICO (%d PKMN)" % p_count
 			elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
 				btn_start_battle.text = "🪽 INICIAR VUELO CELESTIAL (%d PKMN)" % p_count
+			elif GameData.campaign_submode == "PRIMAL_CALL":
+				btn_start_battle.text = "🌋 INICIAR LLAMADO PRIMIGENIO (%d PKMN)" % p_count
 			else:
 				btn_start_battle.text = "✅ CONFIRM %s TEAM (%d PKMN)" % [mode_label, p_count]
 		else:
@@ -9101,6 +9306,8 @@ func update_team_select_ui() -> void:
 				btn_start_battle.text = "Elige de 1 a 3 Pokémon para el Duelo"
 			elif GameData.campaign_submode == "CELESTIAL_FLIGHT":
 				btn_start_battle.text = "Elige de 1 a 3 Pokémon para el Vuelo Celestial"
+			elif GameData.campaign_submode == "PRIMAL_CALL":
+				btn_start_battle.text = "Elige de 1 a 3 Pokémon para el Llamado Primigenio"
 			elif GameData.campaign_submode == "CHAOS":
 				btn_start_battle.text = "Choose 1 to 3 Legendary / Dragon Pokémon"
 			else:
@@ -9172,6 +9379,19 @@ func _on_start_battle_pressed() -> void:
 			GameData.player_team_ids = selected_player_ids.duplicate()
 			GameData.player_team_held_items = selected_player_held_items.duplicate()
 			GameData.init_celestial_flight_run(selected_player_ids, selected_player_held_items)
+			team_select_modal.visible = false
+			update_campaign_ui()
+			campaign_modal.visible = true
+			return
+		elif GameData.campaign_submode == "PRIMAL_CALL":
+			for pid in selected_player_ids:
+				var cid = int(pid)
+				if not GameData.is_pokemon_unlocked(cid) or cid in GameData.ALL_BOSS_IDS or cid == GameData.CRYSTAL_ONIX_ID:
+					return
+			GameData.is_campaign_mode = true
+			GameData.player_team_ids = selected_player_ids.duplicate()
+			GameData.player_team_held_items = selected_player_held_items.duplicate()
+			GameData.init_primal_call_run(selected_player_ids, selected_player_held_items)
 			team_select_modal.visible = false
 			update_campaign_ui()
 			campaign_modal.visible = true
