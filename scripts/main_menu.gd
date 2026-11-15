@@ -9678,10 +9678,23 @@ func _on_btn_championship_history_pressed() -> void:
 	for c in championship_history_list.get_children():
 		c.queue_free()
 	
+	if btn_close_championship_history:
+		btn_close_championship_history.text = GameData.tr_text("✖ Close History", "✖ Cerrar Historial")
+	
+	var hist_title = championship_history_modal.get_node_or_null("HistoryCard/Margin/HistoryVBox/HistoryTitle")
+	if hist_title:
+		hist_title.text = "🏆 " + GameData.tr_text("HALL OF FAME", "HALL OF FAME")
+	var hist_sub = championship_history_modal.get_node_or_null("HistoryCard/Margin/HistoryVBox/HistorySubtitle")
+	if hist_sub:
+		hist_sub.text = GameData.tr_text("History of teams consecrated as League Champions", "Historial de equipos consagrados Campeones de la Liga")
+	
 	var hof = GameData.championship_hall_of_fame
 	if hof.is_empty():
 		var empty_lbl = Label.new()
-		empty_lbl.text = "📜 No hay registros en el Hall of Fame todavía.\n¡Conquista la Liga de Campeonato para registrar tu equipo legendario!"
+		empty_lbl.text = GameData.tr_text(
+			"📜 No records in the Hall of Fame yet.\nConquer the Championship League to register your legendary team!",
+			"📜 No hay registros en el Hall of Fame todavía.\n¡Conquista la Liga de Campeonato para registrar tu equipo legendario!"
+		)
 		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		empty_lbl.custom_minimum_size = Vector2(0, 160)
@@ -9689,8 +9702,10 @@ func _on_btn_championship_history_pressed() -> void:
 		empty_lbl.add_theme_color_override("font_color", Color(0.65, 0.75, 0.85))
 		championship_history_list.add_child(empty_lbl)
 	else:
-		for idx in range(hof.size() - 1, -1, -1):
-			var entry = hof[idx]
+		# hof[0] es la victoria más reciente. Mostramos las más recientes primero con su correlativo correcto.
+		for i in range(hof.size()):
+			var entry = hof[i]
+			var run_number = hof.size() - i
 			var card_panel = PanelContainer.new()
 			var card_sb = StyleBoxFlat.new()
 			card_sb.bg_color = Color(0.08, 0.12, 0.18, 0.95)
@@ -9712,7 +9727,7 @@ func _on_btn_championship_history_pressed() -> void:
 			
 			var header_hbox = HBoxContainer.new()
 			var win_lbl = Label.new()
-			win_lbl.text = "👑 CAMPEÓN DE LA LIGA #%d" % (idx + 1)
+			win_lbl.text = "👑 " + GameData.tr_text("LEAGUE CHAMPION #%d", "CAMPEÓN DE LA LIGA #%d") % run_number
 			win_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			win_lbl.add_theme_font_size_override("font_size", 14)
 			win_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
@@ -9730,7 +9745,7 @@ func _on_btn_championship_history_pressed() -> void:
 			
 			var team_hbox = HBoxContainer.new()
 			team_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-			team_hbox.add_theme_constant_override("separation", 12)
+			team_hbox.add_theme_constant_override("separation", 10)
 			
 			var team_arr = entry.get("team", [])
 			for pkmn_info in team_arr:
@@ -9738,15 +9753,18 @@ func _on_btn_championship_history_pressed() -> void:
 				var cat = GameData.pokemon_catalog.get(pid, {})
 				var p_name = str(cat.get("name", pkmn_info.get("name", "Pokémon")))
 				var held_item = str(pkmn_info.get("held_item", ""))
+				var type_key = str(cat.get("type", "NORMAL")).to_upper()
+				var theme = AssembledCardScript.TYPE_THEMES.get(type_key, AssembledCardScript.TYPE_THEMES["NORMAL"])
 				
+				# Contenedor estilizado de mini carta Pokémon
 				var pkmn_panel = PanelContainer.new()
 				var pkmn_sb = StyleBoxFlat.new()
-				pkmn_sb.bg_color = Color(0.12, 0.16, 0.22, 0.9)
-				pkmn_sb.border_color = Color(0.3, 0.45, 0.6, 0.8)
-				pkmn_sb.set_border_width_all(1)
-				pkmn_sb.set_corner_radius_all(6)
+				pkmn_sb.bg_color = theme["bg"]
+				pkmn_sb.border_color = theme["border"]
+				pkmn_sb.set_border_width_all(2)
+				pkmn_sb.set_corner_radius_all(8)
 				pkmn_panel.add_theme_stylebox_override("panel", pkmn_sb)
-				pkmn_panel.custom_minimum_size = Vector2(100, 120)
+				pkmn_panel.custom_minimum_size = Vector2(108, 146)
 				
 				var pkmn_m = MarginContainer.new()
 				pkmn_m.add_theme_constant_override("margin_left", 6)
@@ -9756,33 +9774,98 @@ func _on_btn_championship_history_pressed() -> void:
 				pkmn_panel.add_child(pkmn_m)
 				
 				var pkmn_vbox = VBoxContainer.new()
-				pkmn_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+				pkmn_vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
 				pkmn_vbox.add_theme_constant_override("separation", 3)
 				pkmn_m.add_child(pkmn_vbox)
 				
-				var tex_rect = TextureRect.new()
-				tex_rect.custom_minimum_size = Vector2(60, 60)
-				tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				var tex_file = cat.get("texture", "")
-				if tex_file != "":
-					tex_rect.texture = GameData.get_pokemon_texture(tex_file)
-				pkmn_vbox.add_child(tex_rect)
+				# 1. Cabecera de la mini carta: Icono de Tipo + Nombre
+				var top_row = HBoxContainer.new()
+				top_row.add_theme_constant_override("separation", 3)
+				top_row.alignment = BoxContainer.ALIGNMENT_CENTER
+				
+				var type_ico = TextureRect.new()
+				type_ico.custom_minimum_size = Vector2(14, 14)
+				type_ico.texture = GameData.get_type_icon_texture(type_key)
+				type_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				type_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				top_row.add_child(type_ico)
 				
 				var name_lbl = Label.new()
 				name_lbl.text = p_name
+				name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 				name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-				name_lbl.add_theme_font_size_override("font_size", 11)
-				name_lbl.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
-				pkmn_vbox.add_child(name_lbl)
+				name_lbl.add_theme_font_size_override("font_size", 10)
+				name_lbl.add_theme_color_override("font_color", Color.WHITE)
+				name_lbl.clip_text = true
+				top_row.add_child(name_lbl)
+				pkmn_vbox.add_child(top_row)
 				
+				# 2. Marco del arte con el sprite del Pokémon
+				var art_frame = PanelContainer.new()
+				var art_sb = StyleBoxFlat.new()
+				art_sb.bg_color = theme["art_bg"]
+				art_sb.border_color = theme["border"].lerp(Color.WHITE, 0.25)
+				art_sb.set_border_width_all(1)
+				art_sb.set_corner_radius_all(6)
+				art_frame.add_theme_stylebox_override("panel", art_sb)
+				art_frame.custom_minimum_size = Vector2(94, 76)
+				art_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+				
+				var art_center = CenterContainer.new()
+				art_frame.add_child(art_center)
+				
+				var tex_rect = TextureRect.new()
+				tex_rect.custom_minimum_size = Vector2(68, 68)
+				tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				
+				# Búsqueda de textura (desde el catálogo o guardado previo)
+				var tex_file = str(cat.get("texture_path", cat.get("texture_file", "")))
+				if tex_file == "":
+					tex_file = str(pkmn_info.get("texture_path", pkmn_info.get("texture_file", pkmn_info.get("texture", ""))))
+				if tex_file == "":
+					var p_num = int(cat.get("pokedex_num", pid))
+					if p_num > 0:
+						tex_file = "%s.png" % str(p_num).pad_zeros(3)
+				
+				var pkmn_tex = GameData.get_pokemon_texture(tex_file)
+				if pkmn_tex:
+					tex_rect.texture = pkmn_tex
+				art_center.add_child(tex_rect)
+				pkmn_vbox.add_child(art_frame)
+				
+				# 3. Pie de la mini carta: Objeto equipado o HP
 				if held_item != "":
+					var item_row = HBoxContainer.new()
+					item_row.alignment = BoxContainer.ALIGNMENT_CENTER
+					item_row.add_theme_constant_override("separation", 3)
+					
+					var item_tex = GameData.get_item_texture(held_item)
+					if item_tex:
+						var item_ico = TextureRect.new()
+						item_ico.custom_minimum_size = Vector2(13, 13)
+						item_ico.texture = item_tex
+						item_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+						item_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+						item_row.add_child(item_ico)
+					
 					var item_lbl = Label.new()
-					item_lbl.text = "📦 " + GameData.get_item_display_name(held_item)
+					item_lbl.text = GameData.get_item_display_name(held_item)
 					item_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 					item_lbl.add_theme_font_size_override("font_size", 9)
-					item_lbl.add_theme_color_override("font_color", Color(1.0, 0.8, 0.4))
-					pkmn_vbox.add_child(item_lbl)
+					item_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+					item_lbl.clip_text = true
+					item_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+					item_row.add_child(item_lbl)
+					pkmn_vbox.add_child(item_row)
+				else:
+					var hp_lbl = Label.new()
+					var max_hp = int(cat.get("hp", pkmn_info.get("hp", 20)))
+					hp_lbl.text = "💚 %d HP" % max_hp
+					hp_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+					hp_lbl.add_theme_font_size_override("font_size", 9)
+					hp_lbl.add_theme_color_override("font_color", Color(0.75, 0.9, 1.0))
+					pkmn_vbox.add_child(hp_lbl)
 				
 				team_hbox.add_child(pkmn_panel)
 				

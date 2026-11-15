@@ -8871,12 +8871,15 @@ func record_championship_victory(winning_team: Array) -> void:
 		var pname = str(p.name if "name" in p else p.get("name", cat.get("name", "Unknown")))
 		var held = str(p.held_item if "held_item" in p else p.get("held_item", ""))
 		var hp = int(p.max_hp if "max_hp" in p else p.get("max_hp", 20))
+		var p_tex = str(cat.get("texture_path", cat.get("texture_file", "")))
 		team_records.append({
 			"id": pid,
 			"name": pname,
 			"hp": hp,
 			"held_item": held,
-			"texture": str(cat.get("texture", ""))
+			"texture": p_tex,
+			"texture_path": str(cat.get("texture_path", "")),
+			"texture_file": str(cat.get("texture_file", ""))
 		})
 	
 	var today = Time.get_date_string_from_system()
