@@ -49,5 +49,20 @@ func _ready() -> void:
 	assert(qb != null and om != null and cp != null, "All 3 combat buttons must exist")
 	print("Test 5 Passed: MainCombatStage with transparent logo and floating combat buttons verified.")
 	
+	# 6. Test Login Modal redesign
+	menu._show_login_screen()
+	var login_header = menu.find_child("LoginHeader", true, false)
+	assert(login_header == null, "LoginHeader must be removed to unblock Squirtle")
+	var login_badge = menu.find_child("ProfileDetectedLbl", true, false)
+	assert(login_badge == null, "ProfileDetectedLbl must not exist in login scene")
+	var login_logo = menu.find_child("LoginLogoRect", true, false)
+	assert(login_logo != null, "LoginLogoRect must exist inside LoginButtons")
+	var btn_play = menu.find_child("BtnLoginPlay", true, false)
+	var btn_cloud = menu.find_child("BtnLoginCloud", true, false)
+	var btn_signup = menu.find_child("BtnSignUpGoogle", true, false)
+	assert(btn_play != null and btn_cloud != null and btn_signup != null, "All 3 login buttons must exist")
+	assert(btn_play.custom_minimum_size.y >= 64, "BtnLoginPlay must have stylized mobile height")
+	print("Test 6 Passed: LoginModal unblocked top art and stylized glass buttons verified.")
+
 	print("=== ALL AVATAR & LOBBY REDESIGN TESTS PASSED! ===")
 	get_tree().quit(0)

@@ -2823,64 +2823,42 @@ grow_vertical = 2
 theme_override_constants/separation = 10
 
 [node name="TopSpacer" type="Control" parent="LoginModal/LoginBox"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-
-[node name="LoginHeader" type="VBoxContainer" parent="LoginModal/LoginBox"]
-layout_mode = 2
-theme_override_constants/separation = 6
-alignment = 1
-
-[node name="LoginSubtitle" type="Label" parent="LoginModal/LoginBox/LoginHeader"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.65, 0.8, 0.95, 1)
-theme_override_font_sizes/font_size = 13
-text = "TCG Mobile Edition • Cloud Sync"
-horizontal_alignment = 1
-
-[node name="ProfileDetectedLbl" type="Label" parent="LoginModal/LoginBox/LoginHeader"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 12
-text = "👤 Welcome to Battle Frontier!"
-horizontal_alignment = 1
-
-[node name="LoginHSeparator" type="HSeparator" parent="LoginModal/LoginBox"]
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 
 [node name="LoginButtons" type="VBoxContainer" parent="LoginModal/LoginBox"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 12
 alignment = 1
 
 [node name="LoginLogoRect" type="TextureRect" parent="LoginModal/LoginBox/LoginButtons"]
-custom_minimum_size = Vector2(0, 155)
+custom_minimum_size = Vector2(0, 175)
 layout_mode = 2
 texture = ExtResource("4_logo")
 expand_mode = 1
 stretch_mode = 5
 
 [node name="BtnLoginPlay" type="Button" parent="LoginModal/LoginBox/LoginButtons"]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.95, 0.5, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.45, 0.98, 0.6, 1)
+theme_override_font_sizes/font_size = 13
 text = "▶  PLAY AS GUEST
 (Direct to Lobby)"
 
 [node name="BtnLoginCloud" type="Button" parent="LoginModal/LoginBox/LoginButtons"]
-custom_minimum_size = Vector2(0, 56)
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_colors/font_color = Color(0.35, 0.88, 1, 1)
 theme_override_font_sizes/font_size = 13
 text = "🔑  LOG IN WITH GOOGLE
 (Restore Cloud Progress)"
 
 [node name="BtnSignUpGoogle" type="Button" parent="LoginModal/LoginBox/LoginButtons"]
-custom_minimum_size = Vector2(0, 56)
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
 theme_override_font_sizes/font_size = 13
 text = "🌐  REGISTER GOOGLE ACCOUNT
 (Cloud Sync & Backup)"

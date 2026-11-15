@@ -9320,6 +9320,18 @@ func _apply_pokemon_ui_theme() -> void:
 		btn_campaign.add_theme_stylebox_override("normal", make_glass_btn_style.call(Color(0.14, 0.11, 0.04, 0.82), Color(0.92, 0.75, 0.25), 10, 2))
 		btn_campaign.add_theme_stylebox_override("hover", make_glass_btn_style.call(Color(0.22, 0.17, 0.06, 0.92), Color(1.0, 0.88, 0.40), 10, 2))
 		btn_campaign.add_theme_stylebox_override("pressed", make_glass_btn_style.call(Color(0.10, 0.07, 0.03, 0.95), Color(1.0, 0.95, 0.55), 10, 2))
+	if btn_login_play:
+		btn_login_play.add_theme_stylebox_override("normal", make_glass_btn_style.call(Color(0.05, 0.15, 0.10, 0.82), Color(0.30, 0.85, 0.50), 10, 2))
+		btn_login_play.add_theme_stylebox_override("hover", make_glass_btn_style.call(Color(0.08, 0.24, 0.15, 0.92), Color(0.45, 1.0, 0.65), 10, 2))
+		btn_login_play.add_theme_stylebox_override("pressed", make_glass_btn_style.call(Color(0.04, 0.11, 0.07, 0.95), Color(0.60, 1.0, 0.75), 10, 2))
+	if btn_login_cloud:
+		btn_login_cloud.add_theme_stylebox_override("normal", make_glass_btn_style.call(Color(0.05, 0.12, 0.20, 0.82), Color(0.30, 0.75, 0.95), 10, 2))
+		btn_login_cloud.add_theme_stylebox_override("hover", make_glass_btn_style.call(Color(0.08, 0.18, 0.30, 0.92), Color(0.45, 0.90, 1.0), 10, 2))
+		btn_login_cloud.add_theme_stylebox_override("pressed", make_glass_btn_style.call(Color(0.04, 0.08, 0.15, 0.95), Color(0.60, 0.95, 1.0), 10, 2))
+	if btn_sign_up_google:
+		btn_sign_up_google.add_theme_stylebox_override("normal", make_glass_btn_style.call(Color(0.14, 0.11, 0.04, 0.82), Color(0.92, 0.75, 0.25), 10, 2))
+		btn_sign_up_google.add_theme_stylebox_override("hover", make_glass_btn_style.call(Color(0.22, 0.17, 0.06, 0.92), Color(1.0, 0.88, 0.40), 10, 2))
+		btn_sign_up_google.add_theme_stylebox_override("pressed", make_glass_btn_style.call(Color(0.10, 0.07, 0.03, 0.95), Color(1.0, 0.95, 0.55), 10, 2))
 	if btn_exit:
 		btn_exit.add_theme_stylebox_override("normal", make_btn_style.call(Color(0.16, 0.07, 0.07, 0.90), Color(0.68, 0.28, 0.28), 6, 1))
 		btn_exit.add_theme_stylebox_override("hover", make_btn_style.call(Color(0.24, 0.09, 0.09, 1.0), Color(0.92, 0.40, 0.40), 6, 2))
@@ -13311,16 +13323,21 @@ func _show_login_screen() -> void:
 		GameData.session_entered_lobby = true
 		return
 	login_modal.visible = true
+	var is_es: bool = (GameData.settings_language == "es")
 	var has_saved = GameData.has_saved_profile()
 	if has_saved:
-		var email_tag = ("  |  📧 " + GameData.profile_email) if not GameData.profile_email.is_empty() else " (Guest)"
-		profile_detected_lbl.text = "👤 %s%s  |  💎 %d  |  🍬 %d" % [
-			GameData.profile_name,
-			email_tag,
-			GameData.player_diamonds,
-			GameData.player_rare_candies
-		]
-		btn_login_play.text = "▶  CONTINUE AS %s\n(Enter Battle Frontier)" % GameData.profile_name.to_upper()
+		if is_instance_valid(profile_detected_lbl):
+			var email_tag = ("  |  📧 " + GameData.profile_email) if not GameData.profile_email.is_empty() else " (Guest)"
+			profile_detected_lbl.text = "👤 %s%s  |  💎 %d  |  🍬 %d" % [
+				GameData.profile_name,
+				email_tag,
+				GameData.player_diamonds,
+				GameData.player_rare_candies
+			]
+		if is_es:
+			btn_login_play.text = "▶  CONTINUAR COMO %s\n(Entrar a Battle Frontier)" % GameData.profile_name.to_upper()
+		else:
+			btn_login_play.text = "▶  CONTINUE AS %s\n(Enter Battle Frontier)" % GameData.profile_name.to_upper()
 	else:
 		# En Web: Si no hay perfil local en IndexedDB, verificar si localStorage recuerda la cuenta de Google
 		if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
@@ -13330,7 +13347,8 @@ func _show_login_screen() -> void:
 				if typeof(remembered_dict) == TYPE_DICTIONARY:
 					var rem_email = str(remembered_dict.get("email", "")).strip_edges()
 					if not rem_email.is_empty():
-						profile_detected_lbl.text = "☁️ Google Account: %s\n⏳ Restoring game save from cloud..." % rem_email
+						if is_instance_valid(profile_detected_lbl):
+							profile_detected_lbl.text = "☁️ Google Account: %s\n⏳ Restoring game save from cloud..." % rem_email
 						btn_login_play.disabled = true
 						CloudSync.load_profile_from_cloud(rem_email, func(ok: bool, data: Dictionary, _msg: String):
 							btn_login_play.disabled = false
@@ -13351,14 +13369,26 @@ func _show_login_screen() -> void:
 								refresh_cards_data_from_catalog()
 								print("[Main] Auto-restored cloud profile on Web for %s (%s)!" % [GameData.profile_name, rem_email])
 							else:
-								profile_detected_lbl.text = "👤 Welcome to Pokémon Battle Frontier!"
-								btn_login_play.text = "▶  PLAY AS GUEST\n(Direct to Lobby)"
+								if is_instance_valid(profile_detected_lbl):
+									profile_detected_lbl.text = "👤 Welcome to Pokémon Battle Frontier!"
+								if is_es:
+									btn_login_play.text = "▶  JUGAR COMO INVITADO\n(Entrar directo al Lobby)"
+								else:
+									btn_login_play.text = "▶  PLAY AS GUEST\n(Direct to Lobby)"
 						)
 						return
-		profile_detected_lbl.text = "👤 Welcome to Pokémon Battle Frontier!"
-		btn_login_play.text = "▶  PLAY AS GUEST\n(Direct to Lobby)"
-	btn_login_cloud.text = "🔑  LOG IN WITH CLOUD ACCOUNT\n(Restore Saved Progress)"
-	btn_sign_up_google.text = "🌐  REGISTER NEW PROFILE\n(Email Verification & Cloud Sync)"
+		if is_instance_valid(profile_detected_lbl):
+			profile_detected_lbl.text = "👤 Welcome to Pokémon Battle Frontier!"
+		if is_es:
+			btn_login_play.text = "▶  JUGAR COMO INVITADO\n(Entrar directo al Lobby)"
+		else:
+			btn_login_play.text = "▶  PLAY AS GUEST\n(Direct to Lobby)"
+	if is_es:
+		btn_login_cloud.text = "🔑  INICIAR SESIÓN CON GOOGLE\n(Restaurar Progreso Cloud)"
+		btn_sign_up_google.text = "🌐  REGISTRAR CUENTA GOOGLE\n(Sincronización y Respaldo Cloud)"
+	else:
+		btn_login_cloud.text = "🔑  LOG IN WITH GOOGLE\n(Restore Cloud Progress)"
+		btn_sign_up_google.text = "🌐  REGISTER GOOGLE ACCOUNT\n(Cloud Sync & Backup)"
 
 func _on_login_play_pressed() -> void:
 	var is_brand_new = not GameData.has_saved_profile()
