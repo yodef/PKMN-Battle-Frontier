@@ -306,6 +306,9 @@ const EXACT_EN_TO_ES: Dictionary = {
 	"⚠️ ERASE TRAINER PROFILE?": "⚠️ ¿BORRAR PERFIL DE ENTRENADOR?",
 	"❌ Cancel": "❌ Cancelar",
 	"Cancel": "Cancelar",
+	"ALL": "TODOS",
+	"All": "Todos",
+	"all": "todos",
 	"🗑️ Yes, Erase Profile": "🗑️ Sí, Borrar Perfil",
 	"☁️ CLOUD AUTHENTICATION": "☁️ AUTENTICACIÓN EN LA NUBE",
 	"🌐 Sign In with Google (Browser)": "🌐 Iniciar Sesión con Google (Navegador)",
@@ -1310,7 +1313,7 @@ const PHRASE_REPLACEMENTS: Array = [
 	[" of ", " de "],
 	["Req:", "Req:"],
 	["Day ", "Día "],
-	["ALL", "TODOS"],
+	[" ALL ", " TODOS "],
 ]
 
 static func translate_en_to_es(text: String) -> String:

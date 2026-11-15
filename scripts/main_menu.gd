@@ -403,6 +403,7 @@ var _pending_tutorial_after_settings: bool = false
 @onready var stat_collection_lbl: Label = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatCollectionLbl
 @onready var stat_packs_lbl: Label = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatPacksLbl
 @onready var stat_gold_lbl: Label = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatGoldLbl
+@onready var stat_championships_lbl: Label = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatChampionshipsLbl if has_node("ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatChampionshipsLbl") else null
 @onready var profile_feedback_lbl: Label = $ProfileModal/ProfileBox/ProfileFeedbackLbl
 @onready var btn_save_progress: Button = $ProfileModal/ProfileBox/BtnSaveProgress
 @onready var btn_logout: Button = $ProfileModal/ProfileBox/BtnLogout
@@ -588,8 +589,9 @@ var opt_col_tier: OptionButton = null
 var btn_col_reset_filters: Button = null
 var btn_col_fav_toggle: Button = null
 
-# Showcase de Favoritos y Perfil de Amigos
+# Showcase de Favoritos, Medallas y Perfil de Amigos
 var profile_showcase_card: PanelContainer = null
+var profile_badges_card: PanelContainer = null
 var showcase_picker_modal: Control = null
 var temp_showcase_selection: Array[int] = []
 var friend_profile_modal: Control = null
@@ -1511,6 +1513,10 @@ func update_campaign_hub_ui() -> void:
 			btn_hub_chaos.disabled = false
 
 func update_adventure_episodes_ui() -> void:
+	for i in range(1, 9):
+		var card = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp%d" % i)
+		_ensure_episode_card_badge_icon(card, i)
+
 	var ep_badge = adventure_episodes_modal.get_node_or_null("Box/EpisodesWalletBadge")
 	if ep_badge:
 		ep_badge.text = "💰 Campaign Gold: %d G  |  💎 %d Diamonds" % [
@@ -3064,6 +3070,7 @@ func _refresh_johto_episodes_ui() -> void:
 		var lbl_status = card["status"] as Label
 		var btn = card["btn"] as Button
 		var panel = card["panel"] as PanelContainer
+		_ensure_episode_card_badge_icon(panel, ep_id)
 		
 		if not is_unlocked:
 			panel.modulate = Color(0.7, 0.7, 0.75, 0.8)
@@ -3722,6 +3729,7 @@ func _refresh_hoenn_episodes_ui() -> void:
 		var lbl_status = card["status"] as Label
 		var btn = card["btn"] as Button
 		var panel = card["panel"] as PanelContainer
+		_ensure_episode_card_badge_icon(panel, ep_id)
 		var meta = episode_meta.get(ep_id, {})
 		
 		lbl_title.text = meta.get("title_es" if is_es else "title_en", "Episode %d" % ep_id)
@@ -4351,6 +4359,7 @@ func _refresh_sinnoh_episodes_ui() -> void:
 		var card = sinnoh_episode_cards[ep_id]
 		var meta = episode_meta.get(ep_id, {})
 		var panel: PanelContainer = card["panel"]
+		_ensure_episode_card_badge_icon(panel, ep_id)
 		var lbl_title: Label = card["title"]
 		var lbl_desc: Label = card["desc"]
 		var lbl_rewards: Label = card["rewards"]
@@ -14280,6 +14289,20 @@ func _on_profile_pressed() -> void:
 		
 	if stat_tournaments_lbl:
 		stat_tournaments_lbl.text = "🏆 Tournament Wins: %d" % GameData.stats_tournaments_won
+	
+	var is_es = GameData.is_spanish()
+	if not stat_championships_lbl:
+		var grid = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid
+		if grid:
+			stat_championships_lbl = grid.get_node_or_null("StatChampionshipsLbl") as Label
+			if not stat_championships_lbl:
+				stat_championships_lbl = Label.new()
+				stat_championships_lbl.name = "StatChampionshipsLbl"
+				stat_championships_lbl.add_theme_font_size_override("font_size", 12)
+				grid.add_child(stat_championships_lbl)
+	if stat_championships_lbl:
+		stat_championships_lbl.text = ("👑 Campeonatos ganados: %d" if is_es else "👑 Championships Won: %d") % GameData.get_championships_won_count()
+		
 	if stat_battles_lbl:
 		var win_rate = 0.0
 		if GameData.stats_battles_total > 0:
@@ -14295,6 +14318,7 @@ func _on_profile_pressed() -> void:
 	if profile_feedback_lbl:
 		profile_feedback_lbl.visible = false
 	_update_profile_showcase_ui()
+	_update_profile_badges_ui()
 	profile_modal.visible = true
 
 func _on_save_progress_pressed() -> void:
@@ -14551,6 +14575,161 @@ func _build_showcase_card_node(pokemon_id: int, slot_idx: int, is_editable: bool
 		container.move_child(foil_rect, container.get_child_count() - 1)
 		
 	return container
+
+func _update_profile_badges_ui() -> void:
+	var p_box = get_node_or_null("ProfileModal/ProfileBox")
+	if not p_box:
+		return
+		
+	if profile_badges_card == null:
+		profile_badges_card = PanelContainer.new()
+		profile_badges_card.name = "ProfileBadgesCard"
+		var sb_panel = StyleBoxFlat.new()
+		sb_panel.bg_color = Color(0.08, 0.12, 0.18, 0.95)
+		sb_panel.border_color = Color(0.25, 0.52, 0.60)
+		sb_panel.set_border_width_all(2)
+		sb_panel.set_corner_radius_all(8)
+		profile_badges_card.add_theme_stylebox_override("panel", sb_panel)
+		
+		var anchor_node = profile_showcase_card if (profile_showcase_card and profile_showcase_card.get_parent() == p_box) else p_box.get_node_or_null("StatsCard")
+		if anchor_node:
+			p_box.add_child(profile_badges_card)
+			p_box.move_child(profile_badges_card, anchor_node.get_index() + 1)
+		else:
+			p_box.add_child(profile_badges_card)
+			
+	for c in profile_badges_card.get_children():
+		profile_badges_card.remove_child(c)
+		c.queue_free()
+		
+	var is_es = GameData.is_spanish()
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_bottom", 8)
+	profile_badges_card.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 6)
+	margin.add_child(vbox)
+	
+	var title_lbl = Label.new()
+	title_lbl.name = "BadgesCardTitle"
+	title_lbl.text = "🎖️ MEDALLAS OBTENIDAS" if is_es else "🎖️ EARNED GYM BADGES"
+	title_lbl.add_theme_font_size_override("font_size", 13)
+	title_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title_lbl)
+	
+	var earned_by_region = GameData.get_earned_badges_by_region()
+	var total_badges = 0
+	for reg in earned_by_region:
+		total_badges += earned_by_region[reg].size()
+		
+	if total_badges == 0:
+		var empty_lbl = Label.new()
+		empty_lbl.text = "Sin medallas aún. ¡Derrota a Líderes de Gimnasio en el Modo Aventura!" if is_es else "No badges yet. Defeat Gym Leaders in Adventure Mode!"
+		empty_lbl.add_theme_font_size_override("font_size", 11)
+		empty_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vbox.add_child(empty_lbl)
+	else:
+		for reg in ["Kanto", "Johto", "Hoenn", "Sinnoh"]:
+			var badges = earned_by_region.get(reg, [])
+			if badges.is_empty():
+				continue # Mostrar SOLO las medallas obtenidas de cada región
+				
+			var row = HBoxContainer.new()
+			row.add_theme_constant_override("separation", 10)
+			row.alignment = BoxContainer.ALIGNMENT_BEGIN
+			vbox.add_child(row)
+			
+			var reg_lbl = Label.new()
+			reg_lbl.text = reg.to_upper() + ":"
+			reg_lbl.custom_minimum_size = Vector2(62, 0)
+			reg_lbl.add_theme_font_size_override("font_size", 11)
+			reg_lbl.add_theme_color_override("font_color", Color(0.4, 0.85, 1.0))
+			row.add_child(reg_lbl)
+			
+			var icons_row = HBoxContainer.new()
+			icons_row.add_theme_constant_override("separation", 6)
+			icons_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.add_child(icons_row)
+			
+			for b in badges:
+				var b_tex = b.get("texture")
+				if b_tex:
+					var icon_rect = TextureRect.new()
+					icon_rect.custom_minimum_size = Vector2(28, 28)
+					icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+					icon_rect.texture = b_tex
+					icon_rect.tooltip_text = str(b.get("name_es" if is_es else "name", "Badge"))
+					icons_row.add_child(icon_rect)
+
+func _ensure_episode_card_badge_icon(card_panel: Control, ep_id: int) -> void:
+	if not card_panel:
+		return
+	var badge_info = GameData.get_badge_info_for_episode(ep_id)
+	if badge_info.is_empty() or not badge_info.get("texture"):
+		return
+		
+	var vbox: VBoxContainer = null
+	for child in card_panel.find_children("*", "VBoxContainer", true, false):
+		if child is VBoxContainer and child.name != "EpisodesVBox" and child.name != "RegionsVBox":
+			vbox = child
+			break
+	if not vbox:
+		return
+		
+	var is_es = GameData.is_spanish()
+	var b_name = str(badge_info.get("name_es" if is_es else "name", "Badge"))
+	var is_cleared = GameData.is_adventure_episode_completed(ep_id)
+	
+	var badge_row = vbox.get_node_or_null("EpBadgeRow") as HBoxContainer
+	if not badge_row:
+		badge_row = HBoxContainer.new()
+		badge_row.name = "EpBadgeRow"
+		badge_row.add_theme_constant_override("separation", 8)
+		badge_row.alignment = BoxContainer.ALIGNMENT_BEGIN
+		vbox.add_child(badge_row)
+		if vbox.get_child_count() > 1:
+			vbox.move_child(badge_row, 1)
+			
+		var icon_rect = TextureRect.new()
+		icon_rect.name = "BadgeIcon"
+		icon_rect.custom_minimum_size = Vector2(30, 30)
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon_rect.texture = badge_info["texture"]
+		badge_row.add_child(icon_rect)
+		
+		var badge_lbl = Label.new()
+		badge_lbl.name = "BadgeLbl"
+		badge_lbl.add_theme_font_size_override("font_size", 11)
+		badge_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		badge_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		badge_row.add_child(badge_lbl)
+		
+	var icon_node = badge_row.get_node_or_null("BadgeIcon") as TextureRect
+	var lbl_node = badge_row.get_node_or_null("BadgeLbl") as Label
+	if icon_node:
+		icon_node.texture = badge_info["texture"]
+		if is_cleared:
+			icon_node.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			icon_node.tooltip_text = ("🏆 %s (¡Conseguida!)" if is_es else "🏆 %s (Earned!)") % b_name
+		else:
+			icon_node.modulate = Color(1.0, 1.0, 1.0, 0.75)
+			icon_node.tooltip_text = ("🎖️ %s (Recompensa de Líder)" if is_es else "🎖️ %s (Gym Leader Reward)") % b_name
+			
+	if lbl_node:
+		if is_cleared:
+			lbl_node.text = ("🏆 Medalla de Gimnasio: %s (¡Conseguida!)" if is_es else "🏆 Gym Badge: %s (Earned!)") % b_name
+			lbl_node.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		else:
+			lbl_node.text = ("🎖️ Medalla de Gimnasio: %s" if is_es else "🎖️ Gym Badge: %s") % b_name
+			lbl_node.add_theme_color_override("font_color", Color(0.4, 0.85, 1.0))
 
 func _open_showcase_picker_modal() -> void:
 	temp_showcase_selection = GameData.get_profile_showcase().duplicate()

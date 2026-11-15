@@ -3100,7 +3100,6 @@ text = "🌐 Connect with Google Account"
 
 [node name="StatsCard" type="PanelContainer" parent="ProfileModal/ProfileBox"]
 layout_mode = 2
-size_flags_vertical = 3
 
 [node name="StatsVBox" type="VBoxContainer" parent="ProfileModal/ProfileBox/StatsCard"]
 layout_mode = 2
@@ -3134,6 +3133,11 @@ text = "🏆 Tournaments Won: 0"
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "⚔️ Battles: 0 / 0 (0%)"
+
+[node name="StatChampionshipsLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "👑 Championships Won: 0"
 
 [node name="StatCollectionLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
 layout_mode = 2

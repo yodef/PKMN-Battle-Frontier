@@ -363,6 +363,7 @@ func remove_friend(identifier: String) -> bool:
 
 # Estadísticas personales registradas
 var stats_tournaments_won: int = 0
+var stats_championships_won: int = 0
 var stats_battles_won: int = 0
 var stats_battles_total: int = 0
 var stats_packs_opened: int = 0
@@ -8864,6 +8865,7 @@ func change_championship_team(selected_ids: Array, selected_held_items: Array = 
 	init_championship_team(selected_ids, selected_held_items)
 
 func record_championship_victory(winning_team: Array) -> void:
+	stats_championships_won += 1
 	var team_records: Array[Dictionary] = []
 	for p in winning_team:
 		if not p: continue
@@ -9012,6 +9014,77 @@ func get_badge_texture(region: String, badge_name: String) -> Texture2D:
 					if img:
 						return ImageTexture.create_from_image(img)
 	return null
+
+func get_championships_won_count() -> int:
+	return maxi(stats_championships_won, championship_hall_of_fame.size())
+
+const REGION_BADGES_DATA: Dictionary = {
+	"Kanto": [
+		{"id": 1, "name": "Boulder Badge", "name_es": "Medalla Roca", "file_key": "boulder"},
+		{"id": 2, "name": "Cascade Badge", "name_es": "Medalla Cascada", "file_key": "cascade"},
+		{"id": 3, "name": "Thunder Badge", "name_es": "Medalla Trueno", "file_key": "thunder"},
+		{"id": 4, "name": "Rainbow Badge", "name_es": "Medalla Arcoíris", "file_key": "rainbow"},
+		{"id": 5, "name": "Soul Badge", "name_es": "Medalla Alma", "file_key": "soul"},
+		{"id": 6, "name": "Marsh Badge", "name_es": "Medalla Pantano", "file_key": "marsh"},
+		{"id": 7, "name": "Volcano Badge", "name_es": "Medalla Volcán", "file_key": "volcano"},
+		{"id": 8, "name": "Earth Badge", "name_es": "Medalla Tierra", "file_key": "earth"}
+	],
+	"Johto": [
+		{"id": 101, "name": "Zephyr Badge", "name_es": "Medalla Céfiro", "file_key": "zephyr"},
+		{"id": 102, "name": "Hive Badge", "name_es": "Medalla Colmena", "file_key": "hive"},
+		{"id": 103, "name": "Plain Badge", "name_es": "Medalla Planicie", "file_key": "plain"},
+		{"id": 104, "name": "Fog Badge", "name_es": "Medalla Niebla", "file_key": "fog"},
+		{"id": 105, "name": "Storm Badge", "name_es": "Medalla Tormenta", "file_key": "storm"},
+		{"id": 106, "name": "Mineral Badge", "name_es": "Medalla Mineral", "file_key": "mineral"},
+		{"id": 107, "name": "Glacier Badge", "name_es": "Medalla Glaciar", "file_key": "glacier"},
+		{"id": 108, "name": "Rising Badge", "name_es": "Medalla Dragón", "file_key": "rising"}
+	],
+	"Hoenn": [
+		{"id": 201, "name": "Stone Badge", "name_es": "Medalla Piedra", "file_key": "stone"},
+		{"id": 202, "name": "Knuckle Badge", "name_es": "Medalla Puño", "file_key": "knuckle"},
+		{"id": 203, "name": "Dynamo Badge", "name_es": "Medalla Dinamo", "file_key": "dynamo"},
+		{"id": 204, "name": "Heat Badge", "name_es": "Medalla Calor", "file_key": "heat"},
+		{"id": 205, "name": "Balance Badge", "name_es": "Medalla Equilibrio", "file_key": "balance"},
+		{"id": 206, "name": "Feather Badge", "name_es": "Medalla Pluma", "file_key": "feather"},
+		{"id": 207, "name": "Mind Badge", "name_es": "Medalla Mente", "file_key": "mind"},
+		{"id": 208, "name": "Rain Badge", "name_es": "Medalla Lluvia", "file_key": "rain"}
+	],
+	"Sinnoh": [
+		{"id": 301, "name": "Coal Badge", "name_es": "Medalla Lignito", "file_key": "coal"},
+		{"id": 302, "name": "Forest Badge", "name_es": "Medalla Bosque", "file_key": "forest"},
+		{"id": 303, "name": "Cobble Badge", "name_es": "Medalla Adoquín", "file_key": "cobble"},
+		{"id": 304, "name": "Fen Badge", "name_es": "Medalla Ciénaga", "file_key": "fen"},
+		{"id": 305, "name": "Relic Badge", "name_es": "Medalla Reliquia", "file_key": "relic"},
+		{"id": 306, "name": "Mine Badge", "name_es": "Medalla Mina", "file_key": "mine"},
+		{"id": 307, "name": "Icicle Badge", "name_es": "Medalla Carámbano", "file_key": "icicle"},
+		{"id": 308, "name": "Beacon Badge", "name_es": "Medalla Faro", "file_key": "beacon"}
+	]
+}
+
+func get_earned_badges_by_region() -> Dictionary:
+	var result: Dictionary = {
+		"Kanto": [],
+		"Johto": [],
+		"Hoenn": [],
+		"Sinnoh": []
+	}
+	for reg in REGION_BADGES_DATA:
+		for b_info in REGION_BADGES_DATA[reg]:
+			if int(b_info.id) in adventure_completed_episodes:
+				var info_copy = b_info.duplicate()
+				info_copy["texture"] = get_badge_texture(reg, b_info.file_key)
+				result[reg].append(info_copy)
+	return result
+
+func get_badge_info_for_episode(episode_id: int) -> Dictionary:
+	for reg in REGION_BADGES_DATA:
+		for b_info in REGION_BADGES_DATA[reg]:
+			if int(b_info.id) == episode_id:
+				var info_copy = b_info.duplicate()
+				info_copy["region"] = reg
+				info_copy["texture"] = get_badge_texture(reg, b_info.file_key)
+				return info_copy
+	return {}
 
 var booster_textures_cache: Dictionary = {}
 
@@ -9451,6 +9524,7 @@ func get_save_dict() -> Dictionary:
 		"favorite_showcase": profile_showcase_ids.duplicate(),
 		"stats": {
 			"tournaments_won": stats_tournaments_won,
+			"championships_won": stats_championships_won,
 			"battles_won": stats_battles_won,
 			"battles_total": stats_battles_total,
 			"packs_opened": stats_packs_opened,
@@ -9625,6 +9699,7 @@ func apply_save_dict(data: Dictionary) -> bool:
 	# Cargar estadísticas con fusión (mantener el máximo progreso alcanzado)
 	var st = data.get("stats", {})
 	stats_tournaments_won = maxi(stats_tournaments_won, int(st.get("tournaments_won", 0)))
+	stats_championships_won = maxi(stats_championships_won, maxi(int(st.get("championships_won", 0)), championship_hall_of_fame.size()))
 	stats_battles_won = maxi(stats_battles_won, int(st.get("battles_won", 0)))
 	stats_battles_total = maxi(stats_battles_total, int(st.get("battles_total", 0)))
 	stats_packs_opened = maxi(stats_packs_opened, int(st.get("packs_opened", 0)))
@@ -9992,6 +10067,7 @@ func erase_profile() -> void:
 	profile_created_at = ""
 	profile_cloud_key = ""
 	stats_tournaments_won = 0
+	stats_championships_won = 0
 	stats_battles_won = 0
 	stats_battles_total = 0
 	stats_packs_opened = 0
