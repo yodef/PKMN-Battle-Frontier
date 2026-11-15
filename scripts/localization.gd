@@ -9,6 +9,7 @@ const EXACT_EN_TO_ES: Dictionary = {
 	"Non-profit fan project • v0.7.0": "Proyecto fan sin fines de lucro • v0.7.0",
 	"Non-profit fan project • v0.4": "Proyecto fan sin fines de lucro • v0.4",
 	"🏆  CAMPAIGN\n(Pokémon Tournament)": "🏆  CAMPAÑA\n(Torneo Pokémon)",
+	"🏆 CAMPAIGN\n(Tournament & Story) 💎": "🏆 CAMPAÑA\n(Torneo e Historia) 💎",
 	"🏟️  CAMPAIGN\nTournament & Story Adventure": "🏟️  CAMPAÑA\nTorneo y Modo Aventura",
 	"⚔️  QUICK BATTLE\n(1 to 3 PKMN Battle)": "⚔️  COMBATE RÁPIDO\n(Combate de 1 a 3 PKMN)",
 	"⚔️  QUICK BATTLE\nFree 3 vs 3 Match": "⚔️  COMBATE RÁPIDO\nPartida Libre 3 vs 3",

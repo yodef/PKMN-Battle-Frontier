@@ -99,8 +99,6 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Rival"
-clip_text = true
-text_overrun_behavior = 3
 
 [node name="EnemyNameSpacer" type="Control" parent="MainContainer/EnemySection/HBox/Info/EnemyNameRow"]
 layout_mode = 2
@@ -112,8 +110,6 @@ theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 11
 text = "Quick Battle (3 vs 3)"
 horizontal_alignment = 2
-clip_text = true
-text_overrun_behavior = 3
 
 [node name="EnemyType" type="Label" parent="MainContainer/EnemySection/HBox/Info" unique_id=1947913316]
 layout_mode = 2
@@ -311,8 +307,6 @@ show_percentage = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Energy: ⚡⚡⚡ (3/3)"
-clip_text = true
-text_overrun_behavior = 3
 
 [node name="EnemyCard" type="PanelContainer" parent="MainContainer/EnemySection/HBox" unique_id=921709843]
 custom_minimum_size = Vector2(130, 200)
@@ -498,8 +492,6 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Player"
-clip_text = true
-text_overrun_behavior = 3
 
 [node name="PlayerNameSpacer" type="Control" parent="MainContainer/PlayerSection/HBox/Info/PlayerNameRow"]
 layout_mode = 2
@@ -751,10 +743,9 @@ theme_override_constants/separation = 6
 
 [node name="PlayerEnergyLbl" type="Label" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow" unique_id=1294222838]
 layout_mode = 2
+size_flags_vertical = 4
 theme_override_font_sizes/font_size = 13
 text = "Energy: ⚡⚡⚡ (3/3)"
-clip_text = true
-text_overrun_behavior = 3
 
 [node name="PlayerEnergySpacer" type="Control" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow"]
 layout_mode = 2

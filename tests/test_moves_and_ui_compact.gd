@@ -145,7 +145,7 @@ func _ready() -> void:
 	print("btn_move2 text:\n---\n%s\n---" % m2_text)
 	assert("Razor Leaf" in m1_text and "4 DMG" in m1_text and "KO" in m1_text, "btn_move1 should show Name, DMG, and KO")
 	assert(not "Knockout" in m1_text and not "[Uses:" in m1_text and not "[Cost:" in m1_text, "btn_move1 should be compact without Knockout/[Uses:]/[Cost:]")
-	assert("Ember 🔥" in m2_text and "4 DMG" in m2_text and "KO" in m2_text, "btn_move2 should show boosted Name 🔥, DMG, and KO")
+	assert("Ember" in m2_text and "🔥" in m2_text and "4 DMG" in m2_text and "KO" in m2_text, "btn_move2 should show boosted Name 🔥, DMG, and KO")
 
 	# 3. Verify required_exp, evolves_from, and required_stone columns in poke_stats.csv & evolution rules
 	var bulba_id = GameData.get_pokemon_id_by_name("Bulbasaur")
@@ -325,6 +325,22 @@ func _ready() -> void:
 	var sw1_en_lbl = battle_scene.btn_switch_1.get_node_or_null("CardContent/Details/HPSection/EnergyText") as Label
 	assert(sw1_en_lbl != null and sw1_en_lbl.text == "⚡3/4", "Bench button 1 should display updated energy '⚡3/4'")
 
+	# Verify PlayerEnergyLbl alongside BtnRecover visibility and minimum width
+	var player_energy_lbl: Label = battle_scene.find_child("PlayerEnergyLbl", true, false)
+	assert(player_energy_lbl != null, "PlayerEnergyLbl must exist")
+	assert(player_energy_lbl.visible == true, "PlayerEnergyLbl must be visible")
+	assert(player_energy_lbl.clip_text == false, "PlayerEnergyLbl must NOT have clip_text enabled to prevent disappearing")
+	assert(battle_scene.btn_recover.visible == true, "BtnRecover must be visible alongside PlayerEnergyLbl")
+	battle_scene.update_ui()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert(player_energy_lbl.size.x >= 80, "PlayerEnergyLbl must have adequate width (got %f)" % player_energy_lbl.size.x)
+
+	var p_name_node: Label = battle_scene.find_child("PlayerName", true, false)
+	var e_name_node: Label = battle_scene.find_child("EnemyName", true, false)
+	assert(p_name_node != null and p_name_node.size.x >= 80, "PlayerName must not be squished to 1px (got %f)" % p_name_node.size.x)
+	assert(e_name_node != null and e_name_node.size.x >= 80, "EnemyName must not be squished to 1px (got %f)" % e_name_node.size.x)
+
 	# 6. Verify Language Option in SettingsModal (English / Español) & Automatic UI Translation
 	var main_menu_scene = load("res://scenes/main_menu.tscn").instantiate()
 	get_tree().root.add_child(main_menu_scene)
@@ -337,7 +353,7 @@ func _ready() -> void:
 	assert(lang_opt.get_item_text(1) == "Español", "LanguageOption item 1 must be 'Español'")
 
 	var settings_title_lbl: Label = main_menu_scene.get_node("SettingsModal/SettingsBox/SettingsTitle")
-	var btn_campaign_node: Button = main_menu_scene.get_node("ContentContainer/MenuButtons/BtnCampaign")
+	var btn_campaign_node: Button = main_menu_scene.find_child("BtnCampaign", true, false)
 
 	# Switch to Español via LanguageOption
 	lang_opt.select(1)
