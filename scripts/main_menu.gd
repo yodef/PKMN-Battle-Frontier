@@ -5163,19 +5163,19 @@ func open_team_select_for_campaign() -> void:
 			301: "Sinnoh I", 302: "Sinnoh II", 303: "Sinnoh III", 304: "Sinnoh IV",
 			305: "Sinnoh V", 306: "Sinnoh VI", 307: "Sinnoh VII", 308: "Sinnoh VIII"
 		}.get(GameData.adventure_current_episode, str(GameData.adventure_current_episode))
-		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
+		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Basic Pokémon for Ep. %s (⏫ = Evolution ready).", "Elige 1 a 3 Básicos para el Ep. %s (⏫ = Evolución lista).") % ep_roman
 	elif GameData.campaign_submode == "LAKE_OF_RAGE":
 		team_select_title.text = "🌊 EL LAGO DE LA FURIA"
-		team_select_subtitle.text = "Choose 1 to 3 Pokémon for the Red Gyarados Boss Event!\n(Legendary Pokémon and all Evolutions allowed!)"
+		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Pokémon for the Boss Event (All allowed).", "Elige 1 a 3 Pokémon para el Jefe (Todos permitidos).")
 	elif GameData.campaign_submode == "CHAOS":
 		team_select_title.text = "🌌 CHAOS ODYSSEY TEAM"
-		team_select_subtitle.text = "Choose 1 to 3 Legendary or Dragon Pokémon from your collection for the Chaos Gauntlet!\nTest your strength against extreme rivals and the Crystal Onix Boss!"
+		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Legendary or Dragon Pokémon.", "Elige 1 a 3 Pokémon Legendarios o Dragones.")
 	elif GameData.campaign_submode == "CHAMPIONSHIP":
-		team_select_title.text = "🏆 EQUIPO LIGA DE CAMPEONATO"
-		team_select_subtitle.text = "Elige tu equipo definitivo de 1 a 3 Pokémon de tu colección.\n¡Desafía al Alto Mando y al Campeón Rival!"
+		team_select_title.text = "🏆 " + GameData.tr_text("CHAMPIONSHIP LEAGUE TEAM", "EQUIPO LIGA DE CAMPEONATO")
+		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Pokémon from your collection.", "Elige tu equipo definitivo de 1 a 3 Pokémon.")
 	else:
 		team_select_title.text = "🏟️ POKÉMON STADIUM TEAM"
-		team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Pokémon Stadium (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
+		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Basic Pokémon (⏫ = Evolution ready).", "Elige 1 a 3 Pokémon Básicos (⏫ = Evolución lista).")
 	team_select_tabs.visible = false
 	
 	# Cargar selección del equipo de la campaña activa
@@ -5358,7 +5358,7 @@ func update_campaign_ui() -> void:
 			if camp_desc:
 				camp_desc.text = ep_info.get("subtitle", "Story adventure")
 		if camp_team_header:
-			camp_team_header.text = "👥 YOUR ADVENTURE TEAM:"
+			camp_team_header.text = GameData.tr_text("👥 YOUR TEAM:", "👥 TU EQUIPO:")
 			
 		if cur_stage > total_stages:
 			var badge_name = "Badge"
@@ -5403,9 +5403,9 @@ func update_campaign_ui() -> void:
 		if camp_title:
 			camp_title.text = "🌌 CHAOS ODYSSEY"
 		if camp_desc:
-			camp_desc.text = "Legendary Gauntlet: 6 brutal trials leading up to Boss Crystal Onix (900 HP)!"
+			camp_desc.text = GameData.tr_text("6 brutal trials leading to Boss Crystal Onix (900 HP)!", "6 pruebas extremas hasta el Boss Crystal Onix (900 HP).")
 		if camp_team_header:
-			camp_team_header.text = "👥 YOUR CHAOS SQUAD:"
+			camp_team_header.text = GameData.tr_text("👥 YOUR TEAM:", "👥 TU EQUIPO:")
 		
 		var cur_match = GameData.chaos_match_number
 		var total_matches = GameData.CHAOS_TOTAL_MATCHES
@@ -5435,9 +5435,9 @@ func update_campaign_ui() -> void:
 		if camp_title:
 			camp_title.text = "🏆 LIGA DE CAMPEONATO"
 		if camp_desc:
-			camp_desc.text = "Desafía a 4 miembros aleatorios del Alto Mando y al Campeón Rival. ¡1 victoria al día!"
+			camp_desc.text = GameData.tr_text("Face 4 Elite Four members and the Champion Rival.", "Vence a 4 miembros del Alto Mando y al Campeón Rival.")
 		if camp_team_header:
-			camp_team_header.text = "👥 TU EQUIPO DE CAMPEONATO:"
+			camp_team_header.text = GameData.tr_text("👥 YOUR TEAM:", "👥 TU EQUIPO:")
 			
 		var cur_match = GameData.championship_match_number
 		var total_matches = GameData.CHAMPIONSHIP_TOTAL_MATCHES
@@ -5481,9 +5481,9 @@ func update_campaign_ui() -> void:
 		if camp_title:
 			camp_title.text = "🏟️ POKÉMON STADIUM"
 		if camp_desc:
-			camp_desc.text = "Arcade adventure: manage your team and purchase battle items between rounds!"
+			camp_desc.text = GameData.tr_text("Compete across 3 phases (9 battles). HP does not restore automatically.", "Compite en 3 fases (9 combates). El HP no se cura entre rondas.")
 		if camp_team_header:
-			camp_team_header.text = "👥 YOUR STADIUM TEAM:"
+			camp_team_header.text = GameData.tr_text("👥 YOUR TEAM:", "👥 TU EQUIPO:")
 			
 		if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES:
 			campaign_match_lbl.text = "🎉 STADIUM CHAMPION!"

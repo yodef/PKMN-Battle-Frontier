@@ -225,7 +225,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
 theme_override_font_sizes/font_size = 12
-text = "Configure your team and the rival team (1st Leader, 2nd & 3rd Bench)."
+text = "Choose your team and rival (1st Active, 2nd & 3rd Bench)."
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -451,7 +451,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.85, 0.9, 1)
 theme_override_font_sizes/font_size = 12
-text = "Choose your path: compete in the Tournament or embark on Story Adventure!"
+text = "Choose your game mode."
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -490,7 +490,7 @@ text = "🎓 Battle Tutorial"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
 theme_override_font_sizes/font_size = 12
-text = "Master combat fundamentals: HP, Energy costs, Speed priority, Type advantages, and Recharging in a guided 1v1 battle (Charmander vs Bulbasaur)."
+text = "Learn combat fundamentals in a guided 1v1 battle."
 autowrap_mode = 2
 
 [node name="TutorialStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTutorial/Margin/TutorialVBox"]
@@ -530,7 +530,7 @@ text = "🗺️ Adventure Mode"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 12
-text = "Embark on an episodic Pokémon journey across regions! Battle gym leaders, level up your party, and conquer regional badges."
+text = "Journey across regions, battle Gym Leaders and earn Badges!"
 autowrap_mode = 2
 
 [node name="AdvStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardAdventure/Margin/AdvVBox"]
@@ -570,7 +570,7 @@ text = "🏟️ Pokémon Stadium"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
 theme_override_font_sizes/font_size = 12
-text = "Arcade adventure tournament: battle through challenging trainer rounds, manage your camp inventory, and claim victory!"
+text = "9 rounds across 3 phases. Manage items and claim the trophy!"
 autowrap_mode = 2
 
 [node name="TournStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardTournament/Margin/TournVBox"]
@@ -617,7 +617,7 @@ text = "🌌 Chaos Odyssey"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
 theme_override_font_sizes/font_size = 12
-text = "High-stakes Gauntlet for Legendary & Dragon Pokémon! Battle 6 extreme trials and challenge the legendary Crystal Onix (900 HP)! Push your limits and mine diamonds (1 attempt per day)."
+text = "Gauntlet for Legendary & Dragon Pokémon against Boss Crystal Onix (900 HP)."
 autowrap_mode = 2
 
 [node name="ChaosStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChaosOdyssey/Margin/ChaosVBox"]
@@ -664,7 +664,7 @@ text = "🏆 Liga de Campeonato"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
 theme_override_font_sizes/font_size = 12
-text = "Enfrenta a 4 miembros aleatorios del Alto Mando de las 4 generaciones y derrota al Campeón Rival. Cada fase da mejores recompensas de Diamantes (sin dar oro). 1 intento completable al día."
+text = "Face 4 random Elite Four members and the Champion Rival. 1 clear per day."
 autowrap_mode = 2
 
 [node name="ChampionshipStatus" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardChampionship/Margin/ChampionshipVBox"]
@@ -698,13 +698,13 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 theme_override_font_sizes/font_size = 15
-text = "🎁 Combat Loot Rates (Per Pokémon Defeated)"
+text = "🎁 Combat Loot Rates"
 
 [node name="LootDesc" type="Label" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 12
-text = "In Campaign battles (Adventure & Stadium), defeating rival Pokémon drops dynamic Gold (G) and Diamonds (💎) according to their Tier / Rarity & Stage:"
+text = "Defeating rival Pokémon in Campaign drops Gold (G) and Diamonds (💎):"
 autowrap_mode = 2
 
 [node name="LootGrid" type="GridContainer" parent="CampaignHubModal/Box/ModesScroll/ModesVBox/CardLootRates/Margin/LootVBox"]
@@ -1725,8 +1725,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.85, 0.9, 1)
 theme_override_font_sizes/font_size = 12
-text = "Compete across 3 phases (9 battles total) to become the Tournament Champion!
-⚠️ Pokémon do NOT heal automatically between battles. Use potions before fighting."
+text = "Compete across 3 phases (9 battles). HP does not restore automatically."
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -1755,7 +1754,7 @@ horizontal_alignment = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 13
-text = "👥 YOUR TOURNAMENT TEAM:"
+text = "👥 YOUR TEAM:"
 
 [node name="TeamScroll" type="ScrollContainer" parent="CampaignModal/Box"]
 custom_minimum_size = Vector2(0, 310)
@@ -2579,14 +2578,14 @@ text = "Price: 💎 10 Diamonds"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
 theme_override_font_sizes/font_size = 11
-text = "Contains 6 random cards based on Rarity. Expand your collection and unlock powerful Pokémon!"
+text = "Contains 6 random cards from this region."
 autowrap_mode = 2
 
 [node name="PackEarnHint" type="Label" parent="ShopModal/Box/PackPanel/VBox/PackHeaderRow/PackHeaderInfo"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.75, 0.95, 1)
 theme_override_font_sizes/font_size = 10
-text = "💡 Earn Diamonds in Tournament Mode!"
+text = "💡 Earn Diamonds in Battles, Missions & Achievements!"
 
 [node name="RatesPanel" type="PanelContainer" parent="ShopModal/Box/PackPanel/VBox"]
 layout_mode = 2
@@ -2599,7 +2598,7 @@ theme_override_constants/separation = 4
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 theme_override_font_sizes/font_size = 11
-text = "🎲 RARITY DROP RATES (PER CARD):"
+text = "🎲 Rarity Drop Rates:"
 horizontal_alignment = 1
 
 [node name="RatesGrid" type="GridContainer" parent="ShopModal/Box/PackPanel/VBox/RatesPanel/RatesVBox"]
@@ -2617,7 +2616,7 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 theme_override_font_sizes/font_size = 11
-text = "✨ FEATURED FOIL CARDS (EPIC & LEGENDARY):"
+text = "✨ Featured Foil Cards:"
 horizontal_alignment = 1
 
 [node name="ShowcaseRow" type="HBoxContainer" parent="ShopModal/Box/PackPanel/VBox/ShowcaseVBox"]
@@ -3181,10 +3180,10 @@ theme_override_constants/separation = 12
 alignment = 1
 
 [node name="BtnCancelErase" type="Button" parent="EraseConfirmModal/EraseCard/EraseVBox/EraseActions"]
-custom_minimum_size = Vector2(130, 40)
+custom_minimum_size = Vector2(80, 40)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "❌ Cancel"
+theme_override_font_sizes/font_size = 14
+text = "✖"
 
 [node name="BtnConfirmErase" type="Button" parent="EraseConfirmModal/EraseCard/EraseVBox/EraseActions"]
 custom_minimum_size = Vector2(160, 40)
@@ -3413,14 +3412,14 @@ theme_override_constants/separation = 4
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "💎 +25 GEMS & 🍬 50 RARE CANDIES!"
+text = "💎 25 DIAMONDS & 🍬 50 RARE CANDIES!"
 horizontal_alignment = 1
 
 [node name="GiftDescLbl" type="Label" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox/WelcomeGiftPanel/GiftMargin/GiftVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 13
-text = "Welcome to Pokémon Battle Frontier!\nAs a special welcome gift, we have granted 25 Gems and 50 Rare Candies so you can open packs and evolve your first Pokémon!"
+text = "Welcome gift to open booster packs and evolve your first Pokémon!"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -3428,7 +3427,9 @@ autowrap_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 12
-text = "• Open Booster Packs in the Shop (10 💎 each) to build your roster!\n• Use your 50 Rare Candies to unlock a Stage 1 evolution!\n• Progress and records are saved automatically."
+text = "• Open Booster Packs in the PokéMart (10 💎 each).
+• Use Rare Candies in My Collection to evolve Pokémon.
+• Progress saves automatically."
 autowrap_mode = 2
 
 [node name="WelcomeActions" type="VBoxContainer" parent="WelcomeModal/WelcomeBox/WelcomeCard/WelcomeMargin/WelcomeVBox"]

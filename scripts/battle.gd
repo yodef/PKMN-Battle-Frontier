@@ -5768,38 +5768,41 @@ func _setup_battle_hud_theme() -> void:
 		
 	# Marcos independientes con estilo retro para los 3 Battle Logs
 	var enemy_log_box = StyleBoxFlat.new()
-	enemy_log_box.bg_color = Color(0.12, 0.05, 0.06, 0.88) # Tinte vino/rojo oscuro
-	enemy_log_box.border_color = Color(0.72, 0.28, 0.30, 0.8) # Borde rojo carmesí
+	enemy_log_box.bg_color = Color(0.12, 0.05, 0.06, 0.92) # Tinte vino/rojo oscuro
+	enemy_log_box.border_color = Color(0.85, 0.32, 0.35, 0.95) # Borde rojo carmesí nítido
 	enemy_log_box.set_border_width_all(1)
-	enemy_log_box.set_corner_radius_all(5)
-	enemy_log_box.content_margin_left = 6
-	enemy_log_box.content_margin_right = 6
-	enemy_log_box.content_margin_top = 2
-	enemy_log_box.content_margin_bottom = 2
+	enemy_log_box.border_width_left = 3 # Acento lateral rojo
+	enemy_log_box.set_corner_radius_all(6)
+	enemy_log_box.content_margin_left = 8
+	enemy_log_box.content_margin_right = 8
+	enemy_log_box.content_margin_top = 4
+	enemy_log_box.content_margin_bottom = 4
 	if enemy_log_panel:
 		enemy_log_panel.add_theme_stylebox_override("panel", enemy_log_box)
 
 	var neutral_log_box = StyleBoxFlat.new()
-	neutral_log_box.bg_color = Color(0.08, 0.11, 0.17, 0.92) # Azul medianoche titanio
-	neutral_log_box.border_color = Color(0.75, 0.60, 0.25, 0.85) # Borde dorado/ámbar suave
+	neutral_log_box.bg_color = Color(0.08, 0.11, 0.17, 0.94) # Azul medianoche titanio
+	neutral_log_box.border_color = Color(0.85, 0.70, 0.28, 0.95) # Borde dorado/ámbar suave
 	neutral_log_box.set_border_width_all(1)
-	neutral_log_box.set_corner_radius_all(5)
-	neutral_log_box.content_margin_left = 6
-	neutral_log_box.content_margin_right = 6
-	neutral_log_box.content_margin_top = 3
-	neutral_log_box.content_margin_bottom = 3
+	neutral_log_box.border_width_left = 3 # Acento lateral dorado
+	neutral_log_box.set_corner_radius_all(6)
+	neutral_log_box.content_margin_left = 8
+	neutral_log_box.content_margin_right = 8
+	neutral_log_box.content_margin_top = 4
+	neutral_log_box.content_margin_bottom = 4
 	if neutral_log_panel:
 		neutral_log_panel.add_theme_stylebox_override("panel", neutral_log_box)
 
 	var player_log_box = StyleBoxFlat.new()
-	player_log_box.bg_color = Color(0.05, 0.12, 0.07, 0.88) # Tinte verde bosque oscuro
-	player_log_box.border_color = Color(0.28, 0.70, 0.38, 0.8) # Borde verde esmeralda
+	player_log_box.bg_color = Color(0.05, 0.12, 0.07, 0.92) # Tinte verde bosque oscuro
+	player_log_box.border_color = Color(0.32, 0.82, 0.45, 0.95) # Borde verde esmeralda nítido
 	player_log_box.set_border_width_all(1)
-	player_log_box.set_corner_radius_all(5)
-	player_log_box.content_margin_left = 6
-	player_log_box.content_margin_right = 6
-	player_log_box.content_margin_top = 2
-	player_log_box.content_margin_bottom = 2
+	player_log_box.border_width_left = 3 # Acento lateral verde
+	player_log_box.set_corner_radius_all(6)
+	player_log_box.content_margin_left = 8
+	player_log_box.content_margin_right = 8
+	player_log_box.content_margin_top = 4
+	player_log_box.content_margin_bottom = 4
 	if player_log_panel:
 		player_log_panel.add_theme_stylebox_override("panel", player_log_box)
 		
@@ -6236,7 +6239,7 @@ func update_ui() -> void:
 	var e_res_str = ", ".join(e_resists) if not e_resists.is_empty() else "NONE"
 	enemy_type_lbl.text = "Type: %s | Weak: %s | Res: %s%s" % [active_e.type, active_e.weakness, e_res_str, e_pas]
 	
-	enemy_bench_lbl.text = "👥 RIVAL'S BENCH:" if not enemy_benched_idx.is_empty() else "👥 RIVAL'S BENCH: (No reserves)"
+	enemy_bench_lbl.text = ("👥 " + GameData.tr_text("RIVAL'S BENCH:", "BANCA RIVAL:")) if not enemy_benched_idx.is_empty() else ("👥 " + GameData.tr_text("RIVAL'S BENCH: (Empty)", "BANCA RIVAL: (Vacía)"))
 	_update_enemy_bench_card(enemy_bench_1, enemy_team, enemy_benched_idx, 0)
 	_update_enemy_bench_card(enemy_bench_2, enemy_team, enemy_benched_idx, 1)
 	
@@ -6270,7 +6273,7 @@ func update_ui() -> void:
 	var active_benched_idx = enemy_benched_idx if is_p2 else player_benched_idx
 	var active_bench_team = enemy_team if is_p2 else player_team
 	
-	player_bench_lbl.text = "👥 YOUR BENCH (SWITCH POKÉMON):" if not active_benched_idx.is_empty() else "👥 YOUR BENCH: (No reserves)"
+	player_bench_lbl.text = ("👥 " + GameData.tr_text("YOUR BENCH:", "TU BANCA:")) if not active_benched_idx.is_empty() else ("👥 " + GameData.tr_text("YOUR BENCH: (Empty)", "TU BANCA: (Vacía)"))
 	
 	_update_bench_button(btn_switch_1, active_bench_team, active_benched_idx, 0)
 	_update_bench_button(btn_switch_2, active_bench_team, active_benched_idx, 1)
@@ -7834,37 +7837,37 @@ func refresh_bag_items_ui() -> void:
 			{
 				"id": "potion",
 				"name": "Potion",
-				"desc": "Restores up to 10 HP to an active or benched Pokémon.",
+				"desc": GameData.tr_text("Restores +10 HP (Active or Bench).", "Cura +10 PS (Activo o Banca)."),
 				"icon": "potion"
 			},
 			{
 				"id": "super_potion",
 				"name": "Super Potion",
-				"desc": "Restores up to 25 HP to an active or benched Pokémon.",
+				"desc": GameData.tr_text("Restores +25 HP (Active or Bench).", "Cura +25 PS (Activo o Banca)."),
 				"icon": "super_potion"
 			},
 			{
 				"id": "hyper_potion",
 				"name": "Hyper Potion",
-				"desc": "Restores 100% HP (Full Max HP) to an active or benched Pokémon.",
+				"desc": GameData.tr_text("Restores 100% max HP.", "Restaura el 100% de PS."),
 				"icon": "hyper_potion"
 			},
 			{
 				"id": "ether",
 				"name": "Ether",
-				"desc": "Restores 100% Energy (⚡) to an active or benched Pokémon.",
+				"desc": GameData.tr_text("Restores 100% Energy (⚡).", "Restaura el 100% de Energía (⚡)."),
 				"icon": "ether"
 			},
 			{
 				"id": "remedy",
 				"name": "Remedy",
-				"desc": "Cures all negative status conditions (Burn, Poison, Flinch, etc).",
+				"desc": GameData.tr_text("Cures Burn, Poison & Statuses.", "Cura Quemadura, Veneno y Estados."),
 				"icon": "remedy"
 			},
 			{
 				"id": "revive",
 				"name": "Revive",
-				"desc": "Revives a fainted Pokémon with 50% max HP.",
+				"desc": GameData.tr_text("Revives a defeated PKMN at 50% HP.", "Revive a un PKMN con 50% de PS."),
 				"icon": "revive"
 			}
 		]
@@ -7924,12 +7927,13 @@ func refresh_bag_items_ui() -> void:
 				if p_m and p_m.held_item == item_id:
 					holder = p_m.name
 					break
+			var disp_name = GameData.get_item_display_name(item_id)
 			if holder != "":
-				name_lbl.text = "%s  [Held by %s]" % [item["name"], holder]
+				name_lbl.text = "%s  %s" % [disp_name, GameData.tr_text("[Equipped on %s]", "[Equipado en %s]") % holder]
 			else:
-				name_lbl.text = "%s  [Not Held by Team]" % item["name"]
+				name_lbl.text = "%s  %s" % [disp_name, GameData.tr_text("[Not Equipped]", "[No equipado]")]
 		else:
-			name_lbl.text = "%s  (Stock: %d)" % [item["name"], stock]
+			name_lbl.text = "%s  (x%d)" % [GameData.get_item_display_name(item_id), stock]
 		name_lbl.add_theme_font_size_override("font_size", 14)
 		if stock > 0:
 			if item_id == "remedy":

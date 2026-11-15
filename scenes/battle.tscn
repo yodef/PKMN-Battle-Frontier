@@ -126,7 +126,7 @@ theme_override_constants/separation = 3
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.8, 1, 1)
 theme_override_font_sizes/font_size = 10
-text = "• BANCA RIVAL:"
+text = "👥 RIVAL'S BENCH:"
 
 [node name="EnemyBenchCards" type="HBoxContainer" parent="MainContainer/EnemySection/HBox/Info/EnemyBenchRow" unique_id=1629388661]
 layout_mode = 2
@@ -322,7 +322,7 @@ theme_override_constants/margin_bottom = 4
 
 [node name="VBox" type="VBoxContainer" parent="MainContainer/CenterLog/Margin" unique_id=1377476126]
 layout_mode = 2
-theme_override_constants/separation = 5
+theme_override_constants/separation = 6
 
 [node name="EnemyLogPanel" type="PanelContainer" parent="MainContainer/CenterLog/Margin/VBox" unique_id=884102940]
 layout_mode = 2
@@ -345,8 +345,8 @@ layout_mode = 2
 [node name="EnemyHeaderLbl" type="Label" parent="MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox/HeaderRow" unique_id=884102944]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.55, 0.55, 0.85)
-theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(1, 0.65, 0.65, 1)
+theme_override_font_sizes/font_size = 10
 text = "🔴 RIVAL"
 clip_text = true
 text_overrun_behavior = 3
@@ -412,8 +412,8 @@ layout_mode = 2
 [node name="PlayerHeaderLbl" type="Label" parent="MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox/HeaderRow" unique_id=1582049105]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.5, 0.9, 0.6, 0.85)
-theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(0.55, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 10
 text = "🟢 JUGADOR"
 clip_text = true
 text_overrun_behavior = 3
@@ -477,7 +477,7 @@ theme_override_constants/separation = 3
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.8, 1, 1)
 theme_override_font_sizes/font_size = 10
-text = "• YOUR BENCH (SWITCH POKÉMON):"
+text = "👥 YOUR BENCH:"
 
 [node name="SwitchButtons" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info/BenchRow" unique_id=771472066]
 layout_mode = 2
@@ -943,7 +943,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
 theme_override_font_sizes/font_size = 12
-text = "Choose how much energy to spend for this attack:"
+text = "Choose energy to spend:"
 horizontal_alignment = 1
 
 [node name="OptionsList" type="VBoxContainer" parent="EnergyModal/CenterBox/Panel/Margin/VBox" unique_id=618634224]
@@ -953,8 +953,8 @@ theme_override_constants/separation = 8
 [node name="BtnCancelEnergy" type="Button" parent="EnergyModal/CenterBox/Panel/Margin/VBox" unique_id=429011294]
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "✖ Cancel (Choose another action)"
+theme_override_font_sizes/font_size = 14
+text = "✖"
 
 [node name="BagModal" type="Control" parent="." unique_id=2052886283]
 visible = false
@@ -1012,7 +1012,7 @@ text = "🎒 TRAINER'S BAG"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 12
-text = "⚠️ Using an item will consume your turn."
+text = "⚠️ Using an item consumes your turn."
 horizontal_alignment = 1
 
 [node name="ItemsList" type="VBoxContainer" parent="BagModal/CenterBox/Panel/Margin/VBox" unique_id=539248441]
@@ -1038,8 +1038,8 @@ theme_override_constants/separation = 6
 [node name="BtnCancelBag" type="Button" parent="BagModal/CenterBox/Panel/Margin/VBox" unique_id=2002251228]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "✖ Close Bag (Don't spend turn)"
+theme_override_font_sizes/font_size = 14
+text = "✖"
 
 [node name="TypeChartModal" type="Control" parent="." unique_id=348402561]
 visible = false
