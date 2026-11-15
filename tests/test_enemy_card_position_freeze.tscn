@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c3x7enemyposfrz"]
+
+[ext_resource type="Script" path="res://tests/test_enemy_card_position_freeze.gd" id="1_test"]
+
+[node name="TestEnemyCardPos" type="Node"]
+script = ExtResource("1_test")

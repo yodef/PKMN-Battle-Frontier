@@ -497,13 +497,9 @@ func _ready() -> void:
 	if enemy_card_img:
 		enemy_card_img.custom_minimum_size = Vector2(130, 200)
 		enemy_card_img.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		if not enemy_card_img.has_meta("original_pos"):
-			enemy_card_img.set_meta("original_pos", enemy_card_img.position)
 	if player_card_img:
 		player_card_img.custom_minimum_size = Vector2(130, 200)
 		player_card_img.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		if not player_card_img.has_meta("original_pos"):
-			player_card_img.set_meta("original_pos", player_card_img.position)
 	
 	_setup_status_overlays()
 	_setup_details_inspector_modal()
@@ -1355,12 +1351,12 @@ func start_new_game() -> void:
 	
 	if enemy_card_img:
 		enemy_card_img.modulate = Color.WHITE
-		if enemy_card_img.has_meta("original_pos"):
-			enemy_card_img.position = enemy_card_img.get_meta("original_pos")
+		if enemy_card_img.get_parent() is Container:
+			enemy_card_img.get_parent().queue_sort()
 	if player_card_img:
 		player_card_img.modulate = Color.WHITE
-		if player_card_img.has_meta("original_pos"):
-			player_card_img.position = player_card_img.get_meta("original_pos")
+		if player_card_img.get_parent() is Container:
+			player_card_img.get_parent().queue_sort()
 	
 	if player_status_overlay:
 		player_status_overlay.clear_all()
@@ -2506,11 +2502,6 @@ func enemy_do_switch(target_idx: int) -> void:
 	GameData.play_combat_sfx("switch")
 	
 	var orig_e_pos = enemy_card_img.position
-	if enemy_card_img.has_meta("original_pos"):
-		orig_e_pos = enemy_card_img.get_meta("original_pos")
-	else:
-		enemy_card_img.set_meta("original_pos", orig_e_pos)
-		
 	update_ui()
 	set_controls_enabled(false)
 	enemy_card_img.position = orig_e_pos + Vector2(0, -35.0)
@@ -2521,7 +2512,10 @@ func enemy_do_switch(target_idx: int) -> void:
 	sw_tween.tween_property(enemy_card_img, "modulate:a", 1.0, 0.3)
 	sw_tween.chain().finished.connect(func():
 		if is_instance_valid(enemy_card_img):
-			enemy_card_img.position = orig_e_pos
+			if enemy_card_img.get_parent() is Container:
+				enemy_card_img.get_parent().queue_sort()
+			else:
+				enemy_card_img.position = orig_e_pos
 			enemy_card_img.modulate = Color.WHITE
 	)
 	
@@ -3891,10 +3885,6 @@ func _animate_faint_and_replacement(is_player: bool, fainted_pkmn, next_idx: int
 		process_defeated_enemies()
 		
 	var orig_pos = card_node.position
-	if card_node.has_meta("original_pos"):
-		orig_pos = card_node.get_meta("original_pos")
-	else:
-		card_node.set_meta("original_pos", orig_pos)
 		
 	# 1. Animación clásica y dramática de caída / desmayo (faint):
 	# Destello sutil rojizo de derrota, hundimiento hacia abajo (sliding down) y desvanecimiento a opacidad 0
@@ -3941,7 +3931,10 @@ func _animate_faint_and_replacement(is_player: bool, fainted_pkmn, next_idx: int
 			enter_tween.tween_property(card_node, "modulate:a", 1.0, 0.32)
 			enter_tween.chain().finished.connect(func():
 				if is_instance_valid(card_node):
-					card_node.position = orig_pos
+					if card_node.get_parent() is Container:
+						card_node.get_parent().queue_sort()
+					else:
+						card_node.position = orig_pos
 					card_node.modulate = Color.WHITE
 				if is_player:
 					is_player_fainting = false
@@ -5510,9 +5503,6 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 		log_action("🔵 Player 2 called back [b]%s[/b] and sent out [b]%s[/b]!" % [current.name, target_pkmn.name])
 		
 		var orig_e_pos = enemy_card_img.position
-		if enemy_card_img.has_meta("original_pos"): orig_e_pos = enemy_card_img.get_meta("original_pos")
-		else: enemy_card_img.set_meta("original_pos", orig_e_pos)
-		
 		update_ui()
 		set_controls_enabled(false)
 		enemy_card_img.position = orig_e_pos + Vector2(0, -35.0)
@@ -5523,7 +5513,10 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 		sw_tween.tween_property(enemy_card_img, "modulate:a", 1.0, 0.3)
 		sw_tween.chain().finished.connect(func():
 			if is_instance_valid(enemy_card_img):
-				enemy_card_img.position = orig_e_pos
+				if enemy_card_img.get_parent() is Container:
+					enemy_card_img.get_parent().queue_sort()
+				else:
+					enemy_card_img.position = orig_e_pos
 				enemy_card_img.modulate = Color.WHITE
 		)
 		
@@ -5542,9 +5535,6 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 		log_action("[b]Tactical switch![/b] [b]%s[/b] withdraws [b]%s[/b] and sends out [b]%s[/b]!" % [get_player_trainer_name(), current.name, target_pkmn.name])
 		
 		var orig_p_pos = player_card_img.position
-		if player_card_img.has_meta("original_pos"): orig_p_pos = player_card_img.get_meta("original_pos")
-		else: player_card_img.set_meta("original_pos", orig_p_pos)
-		
 		update_ui()
 		set_controls_enabled(false)
 		player_card_img.position = orig_p_pos + Vector2(0, -35.0)
@@ -5555,7 +5545,10 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 		sw_p_tween.tween_property(player_card_img, "modulate:a", 1.0, 0.3)
 		sw_p_tween.chain().finished.connect(func():
 			if is_instance_valid(player_card_img):
-				player_card_img.position = orig_p_pos
+				if player_card_img.get_parent() is Container:
+					player_card_img.get_parent().queue_sort()
+				else:
+					player_card_img.position = orig_p_pos
 				player_card_img.modulate = Color.WHITE
 		)
 		
@@ -5702,9 +5695,6 @@ func _execute_opponent_action(action: Dictionary) -> void:
 			log_action("🌐 %s withdraws [b]%s[/b] and sends out [b]%s[/b]!" % [GameData.online_rival_name, current.name, target_pkmn.name])
 			
 			var orig_e_pos = enemy_card_img.position
-			if enemy_card_img.has_meta("original_pos"): orig_e_pos = enemy_card_img.get_meta("original_pos")
-			else: enemy_card_img.set_meta("original_pos", orig_e_pos)
-			
 			update_ui()
 			set_controls_enabled(false)
 			enemy_card_img.position = orig_e_pos + Vector2(0, -35.0)
@@ -5716,7 +5706,10 @@ func _execute_opponent_action(action: Dictionary) -> void:
 			sw_tween.tween_property(enemy_card_img, "modulate:a", 1.0, 0.3)
 			sw_tween.chain().finished.connect(func():
 				if is_instance_valid(enemy_card_img):
-					enemy_card_img.position = orig_e_pos
+					if enemy_card_img.get_parent() is Container:
+						enemy_card_img.get_parent().queue_sort()
+					else:
+						enemy_card_img.position = orig_e_pos
 					enemy_card_img.modulate = Color.WHITE
 			)
 			
@@ -7446,10 +7439,11 @@ func play_damage_hit(node: Control, attack_type: String, damage: int = 2) -> voi
 		node.modulate = Color.WHITE
 
 	var original_pos = node.position
-	if node.has_meta("original_pos"):
-		original_pos = node.get_meta("original_pos")
+	if node.has_meta("active_shake_base_pos"):
+		original_pos = node.get_meta("active_shake_base_pos")
+		node.position = original_pos
 	else:
-		node.set_meta("original_pos", original_pos)
+		node.set_meta("active_shake_base_pos", original_pos)
 
 	var orig_scale = Vector2.ONE
 	if node.has_meta("original_scale"):
@@ -7490,7 +7484,11 @@ func play_damage_hit(node: Control, attack_type: String, damage: int = 2) -> voi
 	shake_tween.tween_property(node, "position", original_pos, 0.03)
 	shake_tween.finished.connect(func():
 		if is_instance_valid(node):
-			node.position = original_pos
+			node.remove_meta("active_shake_base_pos")
+			if node.get_parent() is Container:
+				node.get_parent().queue_sort()
+			else:
+				node.position = original_pos
 			node.scale = orig_scale
 	)
 
@@ -7534,10 +7532,11 @@ func shake_node(node: Control, attack_type: String = "", damage: int = 0) -> voi
 		return
 		
 	var original_pos = node.position
-	if node.has_meta("original_pos"):
-		original_pos = node.get_meta("original_pos")
+	if node.has_meta("active_shake_base_pos"):
+		original_pos = node.get_meta("active_shake_base_pos")
+		node.position = original_pos
 	else:
-		node.set_meta("original_pos", original_pos)
+		node.set_meta("active_shake_base_pos", original_pos)
 		
 	var shake_px = clampf(6.0 + float(damage) * 1.5, 6.0, 24.0) if damage > 0 else 7.0
 	var tween = create_tween()
@@ -7548,15 +7547,28 @@ func shake_node(node: Control, attack_type: String = "", damage: int = 0) -> voi
 	tween.tween_property(node, "position", original_pos, 0.03)
 	tween.finished.connect(func():
 		if is_instance_valid(node):
-			node.position = original_pos
+			node.remove_meta("active_shake_base_pos")
+			if node.get_parent() is Container:
+				node.get_parent().queue_sort()
+			else:
+				node.position = original_pos
 	)
 
 func lunge_card(node: Control, is_upward: bool) -> void:
+	if not node:
+		return
 	var original_pos = node.position
 	var offset = Vector2(0, -25 if is_upward else 25)
 	var tween = create_tween()
 	tween.tween_property(node, "position", original_pos + offset, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(node, "position", original_pos, 0.15).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.finished.connect(func():
+		if is_instance_valid(node):
+			if node.get_parent() is Container:
+				node.get_parent().queue_sort()
+			else:
+				node.position = original_pos
+	)
 
 # Genera números saltarines flotantes de daño (rojo/dorado), curación (verde) o energía (ámbar)
 func spawn_floating_combat_number(target_node: Control, amount: int, is_heal: bool, is_crit_or_weakness: bool = false, is_energy: bool = false, custom_text: String = "", delay_sec: float = 0.0, hit_index: int = 0) -> void:
