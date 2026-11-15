@@ -223,6 +223,7 @@ var profile_is_logged_in: bool = false
 var profile_created_at: String = ""
 var profile_cloud_key: String = ""
 var profile_welcome_claimed: bool = false
+var profile_avatar: String = "leaf"
 var profile_last_activity_at: String = ""
 var profile_last_active_unix: int = 0
 
@@ -9433,6 +9434,7 @@ func get_save_dict() -> Dictionary:
 		"version": 1,
 		"profile": {
 			"name": profile_name,
+			"avatar": profile_avatar,
 			"trainer_alias": profile_name,
 			"email": profile_email,
 			"id": profile_id,
@@ -9580,6 +9582,7 @@ func apply_save_dict(data: Dictionary) -> bool:
 			profile_name = "Trainer"
 	
 	profile_email = prof.get("email", "")
+	profile_avatar = str(prof.get("avatar", "leaf"))
 	profile_id = prof.get("id", "")
 	profile_auth_provider = prof.get("auth_provider", "Guest")
 	profile_is_logged_in = prof.get("is_logged_in", false)
@@ -9981,6 +9984,7 @@ func erase_profile() -> void:
 		JavaScriptBridge.eval("if (window.godotSyncFS) { window.godotSyncFS(); } else if (window.FS && FS.syncfs) { FS.syncfs(false, function(err){}); }")
 		
 	profile_name = "Trainer"
+	profile_avatar = "leaf"
 	profile_email = ""
 	profile_id = ""
 	profile_auth_provider = "Guest"
@@ -10060,3 +10064,14 @@ func erase_profile() -> void:
 	battle_log_font_size = "medium"
 	apply_language_to_scene_tree()
 	print("Profile erased. Starting fresh!")
+
+func set_profile_avatar(new_avatar: String) -> void:
+	profile_avatar = new_avatar
+	save_profile(true, false)
+
+func get_avatar_texture(avatar_id: String = "") -> Texture2D:
+	var aid = avatar_id if avatar_id != "" else profile_avatar
+	var path = "res://assets/ui/avatars/avatar_%s.png" % aid
+	if ResourceLoader.exists(path):
+		return load(path)
+	return load("res://assets/ui/avatars/avatar_leaf.png")

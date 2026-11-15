@@ -13,6 +13,14 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var btn_settings: Button = find_child("BtnSettings", true, false)
 @onready var btn_exit: Button = find_child("BtnExit", true, false)
 
+# --- REFERENCIAS DE AVATARES ---
+@onready var btn_avatar_leaf: Button = find_child("BtnAvatarLeaf", true, false)
+@onready var btn_avatar_red: Button = find_child("BtnAvatarRed", true, false)
+@onready var btn_more_avatars: Button = find_child("BtnMoreAvatars", true, false)
+@onready var avatar_modal: Control = find_child("AvatarModal", true, false)
+@onready var avatar_grid: GridContainer = find_child("AvatarGrid", true, false)
+@onready var btn_close_avatar_modal: Button = find_child("BtnCloseAvatarModal", true, false)
+
 # --- MODAL SELECCIÓN DE EQUIPO (COMBATE LIBRE Y CAMPAÑA) ---
 @onready var team_select_modal: Control = $TeamSelectModal
 @onready var team_select_title: Label = $TeamSelectModal/Box/Title
@@ -623,6 +631,17 @@ func _ready() -> void:
 	btn_collection.pressed.connect(_on_collection_pressed)
 	btn_shop.pressed.connect(_on_shop_pressed)
 	btn_exit.pressed.connect(_on_exit_pressed)
+	
+	# Selector de Avatar
+	if btn_avatar_leaf:
+		btn_avatar_leaf.pressed.connect(func(): _on_avatar_selected("leaf"))
+	if btn_avatar_red:
+		btn_avatar_red.pressed.connect(func(): _on_avatar_selected("red"))
+	if btn_more_avatars:
+		btn_more_avatars.pressed.connect(_open_avatar_modal)
+	if btn_close_avatar_modal:
+		btn_close_avatar_modal.pressed.connect(func(): if avatar_modal: avatar_modal.visible = false)
+	_update_avatar_ui()
 	
 	# Modal Selección de Equipo
 	btn_tab_player.pressed.connect(_on_tab_player_pressed)
@@ -9191,15 +9210,15 @@ func _apply_pokemon_ui_theme() -> void:
 	if btn_shop:
 		_configure_dock_medallion_button(btn_shop, tex_pokemart, "ShopHoverPill", "PokéMart", 7)
 	
-	# LeftArtPanel decorative frame styling
-	var left_art_panel = find_child("LeftArtPanel", true, false)
-	if left_art_panel:
-		var art_sb = StyleBoxFlat.new()
-		art_sb.bg_color = Color(0.04, 0.07, 0.11, 0.95)
-		art_sb.border_color = Color(0.24, 0.50, 0.70, 0.85)
-		art_sb.set_border_width_all(2)
-		art_sb.set_corner_radius_all(10)
-		left_art_panel.add_theme_stylebox_override("panel", art_sb)
+	# MainCombatStage decorative card panel styling
+	var stage_panel = find_child("MainCombatStage", true, false)
+	if stage_panel:
+		var stage_sb = StyleBoxFlat.new()
+		stage_sb.bg_color = Color(0.04, 0.07, 0.11, 0.95)
+		stage_sb.border_color = Color(0.24, 0.52, 0.72, 0.85)
+		stage_sb.set_border_width_all(2)
+		stage_sb.set_corner_radius_all(12)
+		stage_panel.add_theme_stylebox_override("panel", stage_sb)
 
 	var make_btn_style = func(bg_c: Color, border_c: Color, corner: int = 8, bw: int = 2) -> StyleBoxFlat:
 		var sb = StyleBoxFlat.new()
@@ -9211,6 +9230,21 @@ func _apply_pokemon_ui_theme() -> void:
 		sb.content_margin_right = 14
 		sb.content_margin_top = 6
 		sb.content_margin_bottom = 6
+		return sb
+
+	var make_glass_btn_style = func(bg_c: Color, border_c: Color, corner: int = 10, bw: int = 2) -> StyleBoxFlat:
+		var sb = StyleBoxFlat.new()
+		sb.bg_color = bg_c
+		sb.border_color = border_c
+		sb.set_border_width_all(bw)
+		sb.set_corner_radius_all(corner)
+		sb.content_margin_left = 14
+		sb.content_margin_right = 14
+		sb.content_margin_top = 8
+		sb.content_margin_bottom = 8
+		sb.shadow_color = Color(0, 0, 0, 0.55)
+		sb.shadow_size = 4
+		sb.shadow_offset = Vector2(0, 2)
 		return sb
 
 	# Apply pokeball bullet icons and styling to Lobby & Login buttons
@@ -9271,23 +9305,33 @@ func _apply_pokemon_ui_theme() -> void:
 		btn.add_theme_stylebox_override("hover", hover_sb)
 		btn.add_theme_stylebox_override("pressed", hover_sb)
 
-	# Dedicated combat button accents
+	# Dedicated glassmorphism floating combat buttons
 	if btn_quick_battle:
-		btn_quick_battle.add_theme_stylebox_override("normal", make_btn_style.call(Color(0.07, 0.15, 0.11, 0.95), Color(0.28, 0.72, 0.44), 8, 2))
-		btn_quick_battle.add_theme_stylebox_override("hover", make_btn_style.call(Color(0.11, 0.23, 0.16, 1.0), Color(0.40, 0.95, 0.58), 8, 2))
-		btn_quick_battle.add_theme_stylebox_override("pressed", make_btn_style.call(Color(0.05, 0.10, 0.08, 1.0), Color(0.50, 1.0, 0.70), 8, 2))
-	if btn_campaign:
-		btn_campaign.add_theme_stylebox_override("normal", make_btn_style.call(Color(0.16, 0.13, 0.07, 0.95), Color(0.82, 0.65, 0.22), 8, 2))
-		btn_campaign.add_theme_stylebox_override("hover", make_btn_style.call(Color(0.23, 0.19, 0.09, 1.0), Color(1.0, 0.85, 0.35), 8, 2))
-		btn_campaign.add_theme_stylebox_override("pressed", make_btn_style.call(Color(0.10, 0.08, 0.04, 1.0), Color(1.0, 0.92, 0.50), 8, 2))
+		btn_quick_battle.add_theme_stylebox_override("normal", make_glass_btn_style.call(Color(0.05, 0.14, 0.09, 0.82), Color(0.30, 0.85, 0.50), 10, 2))
+		btn_quick_battle.add_theme_stylebox_override("hover", make_glass_btn_style.call(Color(0.08, 0.22, 0.14, 0.92), Color(0.45, 1.0, 0.65), 10, 2))
+		btn_quick_battle.add_theme_stylebox_override("pressed", make_glass_btn_style.call(Color(0.04, 0.10, 0.07, 0.95), Color(0.60, 1.0, 0.75), 10, 2))
 	if btn_online_multiplayer:
-		btn_online_multiplayer.add_theme_stylebox_override("normal", make_btn_style.call(Color(0.07, 0.13, 0.20, 0.95), Color(0.26, 0.62, 0.85), 8, 2))
-		btn_online_multiplayer.add_theme_stylebox_override("hover", make_btn_style.call(Color(0.10, 0.20, 0.30, 1.0), Color(0.42, 0.88, 1.0), 8, 2))
-		btn_online_multiplayer.add_theme_stylebox_override("pressed", make_btn_style.call(Color(0.05, 0.09, 0.14, 1.0), Color(0.55, 0.95, 1.0), 8, 2))
+		btn_online_multiplayer.add_theme_stylebox_override("normal", make_glass_btn_style.call(Color(0.05, 0.12, 0.18, 0.82), Color(0.30, 0.75, 0.95), 10, 2))
+		btn_online_multiplayer.add_theme_stylebox_override("hover", make_glass_btn_style.call(Color(0.08, 0.18, 0.28, 0.92), Color(0.45, 0.90, 1.0), 10, 2))
+		btn_online_multiplayer.add_theme_stylebox_override("pressed", make_glass_btn_style.call(Color(0.04, 0.08, 0.14, 0.95), Color(0.60, 0.95, 1.0), 10, 2))
+	if btn_campaign:
+		btn_campaign.add_theme_stylebox_override("normal", make_glass_btn_style.call(Color(0.14, 0.11, 0.04, 0.82), Color(0.92, 0.75, 0.25), 10, 2))
+		btn_campaign.add_theme_stylebox_override("hover", make_glass_btn_style.call(Color(0.22, 0.17, 0.06, 0.92), Color(1.0, 0.88, 0.40), 10, 2))
+		btn_campaign.add_theme_stylebox_override("pressed", make_glass_btn_style.call(Color(0.10, 0.07, 0.03, 0.95), Color(1.0, 0.95, 0.55), 10, 2))
 	if btn_exit:
 		btn_exit.add_theme_stylebox_override("normal", make_btn_style.call(Color(0.16, 0.07, 0.07, 0.90), Color(0.68, 0.28, 0.28), 6, 1))
 		btn_exit.add_theme_stylebox_override("hover", make_btn_style.call(Color(0.24, 0.09, 0.09, 1.0), Color(0.92, 0.40, 0.40), 6, 2))
 		btn_exit.add_theme_stylebox_override("pressed", make_btn_style.call(Color(0.10, 0.04, 0.04, 1.0), Color(1.0, 0.50, 0.50), 6, 2))
+
+	# AvatarModal card frame
+	var avatar_card = find_child("AvatarCard", true, false)
+	if avatar_card:
+		var ac_sb = StyleBoxFlat.new()
+		ac_sb.bg_color = Color(0.06, 0.09, 0.14, 0.98)
+		ac_sb.border_color = Color(0.28, 0.58, 0.78)
+		ac_sb.set_border_width_all(2)
+		ac_sb.set_corner_radius_all(10)
+		avatar_card.add_theme_stylebox_override("panel", ac_sb)
 
 	# Trainer Status Badge with GBA border
 	var badge_sb = StyleBoxFlat.new()
@@ -13992,6 +14036,106 @@ func _update_lobby_header_badge() -> void:
 			btn_achievements.text = "🏆 ACHIEVEMENTS"
 			
 	_check_pending_achievement_notifications()
+	_update_avatar_ui()
+
+func _on_avatar_selected(aid: String) -> void:
+	GameData.set_profile_avatar(aid)
+	_update_avatar_ui()
+	if avatar_modal and avatar_modal.visible:
+		avatar_modal.visible = false
+	_update_lobby_header_badge()
+
+func _update_avatar_ui() -> void:
+	var cur_avatar = GameData.profile_avatar
+	var make_avatar_sb = func(is_active: bool) -> StyleBoxFlat:
+		var sb = StyleBoxFlat.new()
+		sb.bg_color = Color(0.06, 0.10, 0.16, 0.95)
+		sb.border_color = Color(1.0, 0.85, 0.35) if is_active else Color(0.24, 0.45, 0.60, 0.70)
+		sb.set_border_width_all(3 if is_active else 1)
+		sb.set_corner_radius_all(8)
+		sb.shadow_color = Color(1.0, 0.85, 0.35, 0.40) if is_active else Color(0, 0, 0, 0.3)
+		sb.shadow_size = 5 if is_active else 1
+		return sb
+		
+	if btn_avatar_leaf:
+		var is_leaf = (cur_avatar == "leaf")
+		btn_avatar_leaf.add_theme_stylebox_override("normal", make_avatar_sb.call(is_leaf))
+		btn_avatar_leaf.add_theme_stylebox_override("hover", make_avatar_sb.call(true))
+		btn_avatar_leaf.add_theme_stylebox_override("pressed", make_avatar_sb.call(true))
+	if btn_avatar_red:
+		var is_red = (cur_avatar == "red")
+		btn_avatar_red.add_theme_stylebox_override("normal", make_avatar_sb.call(is_red))
+		btn_avatar_red.add_theme_stylebox_override("hover", make_avatar_sb.call(true))
+		btn_avatar_red.add_theme_stylebox_override("pressed", make_avatar_sb.call(true))
+	if btn_more_avatars:
+		if cur_avatar != "leaf" and cur_avatar != "red":
+			btn_more_avatars.text = "🎨 AVATAR: %s" % cur_avatar.to_upper()
+		else:
+			btn_more_avatars.text = "🎨 MORE AVATARS"
+
+func _open_avatar_modal() -> void:
+	if not avatar_modal:
+		return
+	avatar_modal.visible = true
+	_populate_avatar_modal()
+
+func _populate_avatar_modal() -> void:
+	if not avatar_grid:
+		return
+	for c in avatar_grid.get_children():
+		c.queue_free()
+		
+	var avatar_list = [
+		{"id": "leaf", "name": "Trainer Leaf"},
+		{"id": "red", "name": "Trainer Red"},
+		{"id": "pikachu", "name": "Pikachu"},
+		{"id": "charizard", "name": "Charizard"},
+		{"id": "gengar", "name": "Gengar"},
+		{"id": "mewtwo", "name": "Mewtwo"},
+		{"id": "lucario", "name": "Lucario"},
+		{"id": "eevee", "name": "Eevee"}
+	]
+	
+	for av in avatar_list:
+		var av_id = av["id"]
+		var av_name = av["name"]
+		var is_selected = (GameData.profile_avatar == av_id)
+		
+		var card = VBoxContainer.new()
+		card.custom_minimum_size = Vector2(85, 110)
+		card.add_theme_constant_override("separation", 4)
+		card.alignment = BoxContainer.ALIGNMENT_CENTER
+		
+		var btn = Button.new()
+		btn.custom_minimum_size = Vector2(80, 80)
+		btn.icon = GameData.get_avatar_texture(av_id)
+		btn.expand_icon = true
+		btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		btn.tooltip_text = av_name
+		
+		var sb = StyleBoxFlat.new()
+		sb.bg_color = Color(0.08, 0.12, 0.18, 0.95)
+		sb.border_color = Color(1.0, 0.85, 0.35) if is_selected else Color(0.25, 0.50, 0.65)
+		sb.set_border_width_all(3 if is_selected else 1)
+		sb.set_corner_radius_all(8)
+		btn.add_theme_stylebox_override("normal", sb)
+		
+		var hsb = sb.duplicate()
+		hsb.border_color = Color(0.45, 0.90, 1.0)
+		hsb.set_border_width_all(2)
+		btn.add_theme_stylebox_override("hover", hsb)
+		
+		btn.pressed.connect(func(): _on_avatar_selected(av_id))
+		card.add_child(btn)
+		
+		var lbl = Label.new()
+		lbl.text = av_name
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.add_theme_font_size_override("font_size", 10)
+		lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35) if is_selected else Color(0.8, 0.9, 0.95))
+		card.add_child(lbl)
+		
+		avatar_grid.add_child(card)
 
 func _create_activity_status_button(is_active: bool, tooltip_info: String = "") -> Button:
 	var btn = Button.new()

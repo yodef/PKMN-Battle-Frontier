@@ -8,6 +8,8 @@
 [ext_resource type="Texture2D" path="res://assets/ui/login_art.jpg" id="6_login_art"]
 [ext_resource type="Texture2D" path="res://assets/ui/pokemart.png" id="7_pokemart"]
 [ext_resource type="Texture2D" path="res://assets/ui/pokedex.png" id="8_pokedex"]
+[ext_resource type="Texture2D" path="res://assets/ui/avatars/avatar_leaf.png" id="9_avatar_leaf"]
+[ext_resource type="Texture2D" path="res://assets/ui/avatars/avatar_red.png" id="10_avatar_red"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -44,12 +46,46 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="LogoRect" type="TextureRect" parent="ContentContainer/HeaderHBox"]
-custom_minimum_size = Vector2(175, 170)
+[node name="AvatarSection" type="VBoxContainer" parent="ContentContainer/HeaderHBox"]
+custom_minimum_size = Vector2(150, 140)
 layout_mode = 2
-texture = ExtResource("4_logo")
-expand_mode = 1
-stretch_mode = 5
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="AvatarTitle" type="Label" parent="ContentContainer/HeaderHBox/AvatarSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 10
+text = "TRAINER AVATAR"
+horizontal_alignment = 1
+
+[node name="AvatarCardsHBox" type="HBoxContainer" parent="ContentContainer/HeaderHBox/AvatarSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="BtnAvatarLeaf" type="Button" parent="ContentContainer/HeaderHBox/AvatarSection/AvatarCardsHBox"]
+custom_minimum_size = Vector2(66, 92)
+layout_mode = 2
+tooltip_text = "Select Leaf"
+icon = ExtResource("9_avatar_leaf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="BtnAvatarRed" type="Button" parent="ContentContainer/HeaderHBox/AvatarSection/AvatarCardsHBox"]
+custom_minimum_size = Vector2(66, 92)
+layout_mode = 2
+tooltip_text = "Select Red"
+icon = ExtResource("10_avatar_red")
+icon_alignment = 1
+expand_icon = true
+
+[node name="BtnMoreAvatars" type="Button" parent="ContentContainer/HeaderHBox/AvatarSection"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "🎨 MORE AVATARS"
 
 [node name="HeaderRightVBox" type="VBoxContainer" parent="ContentContainer/HeaderHBox"]
 layout_mode = 2
@@ -162,59 +198,75 @@ text = "🎁 DAILY MISSIONS"
 [node name="HSeparator" type="HSeparator" parent="ContentContainer"]
 layout_mode = 2
 
-[node name="MainBodyHBox" type="HBoxContainer" parent="ContentContainer"]
+[node name="MainCombatStage" type="PanelContainer" parent="ContentContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 12
-
-[node name="LeftArtPanel" type="PanelContainer" parent="ContentContainer/MainBodyHBox"]
-custom_minimum_size = Vector2(215, 0)
-layout_mode = 2
-size_flags_horizontal = 3
 clip_contents = true
 
-[node name="LobbyArt" type="TextureRect" parent="ContentContainer/MainBodyHBox/LeftArtPanel"]
+[node name="StageArtBackdrop" type="TextureRect" parent="ContentContainer/MainCombatStage"]
 layout_mode = 2
 texture = ExtResource("5_lobby_art")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="MenuButtons" type="VBoxContainer" parent="ContentContainer/MainBodyHBox"]
+[node name="StageOverlay" type="MarginContainer" parent="ContentContainer/MainCombatStage"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="StageHBox" type="HBoxContainer" parent="ContentContainer/MainCombatStage/StageOverlay"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LogoContainer" type="VBoxContainer" parent="ContentContainer/MainCombatStage/StageOverlay/StageHBox"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LogoRect" type="TextureRect" parent="ContentContainer/MainCombatStage/StageOverlay/StageHBox/LogoContainer"]
+custom_minimum_size = Vector2(195, 180)
+layout_mode = 2
+texture = ExtResource("4_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MenuButtons" type="VBoxContainer" parent="ContentContainer/MainCombatStage/StageOverlay/StageHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
-alignment = 1
 
-[node name="CombatHeader" type="Label" parent="ContentContainer/MainBodyHBox/MenuButtons"]
+[node name="CombatHeader" type="Label" parent="ContentContainer/MainCombatStage/StageOverlay/StageHBox/MenuButtons"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 13
 text = "— COMBAT! —"
 horizontal_alignment = 1
 
-[node name="BtnQuickBattle" type="Button" parent="ContentContainer/MainBodyHBox/MenuButtons"]
-custom_minimum_size = Vector2(0, 72)
+[node name="BtnQuickBattle" type="Button" parent="ContentContainer/MainCombatStage/StageOverlay/StageHBox/MenuButtons"]
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.95, 0.5, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.45, 0.98, 0.6, 1)
+theme_override_font_sizes/font_size = 13
 text = "⚔️ QUICK BATTLE
 (1 to 3 PKMN Battle)"
 
-[node name="BtnCampaign" type="Button" parent="ContentContainer/MainBodyHBox/MenuButtons"]
-custom_minimum_size = Vector2(0, 72)
+[node name="BtnOnlineMultiplayer" type="Button" parent="ContentContainer/MainCombatStage/StageOverlay/StageHBox/MenuButtons"]
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
-theme_override_font_sizes/font_size = 14
-text = "🏆 CAMPAIGN
-(Tournament & Story)"
-
-[node name="BtnOnlineMultiplayer" type="Button" parent="ContentContainer/MainBodyHBox/MenuButtons"]
-custom_minimum_size = Vector2(0, 72)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.35, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 13
 text = "🌐 ONLINE BATTLE
 (Cloud Duels & Rooms)"
+
+[node name="BtnCampaign" type="Button" parent="ContentContainer/MainCombatStage/StageOverlay/StageHBox/MenuButtons"]
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
+theme_override_font_sizes/font_size = 13
+text = "🏆 CAMPAIGN
+(Tournament & Story) 💎"
 
 [node name="FooterRow" type="HBoxContainer" parent="ContentContainer"]
 custom_minimum_size = Vector2(0, 32)
@@ -4399,6 +4451,81 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 text = "⬅ Cerrar Historial"
+
+[node name="AvatarModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AvatarBg" type="ColorRect" parent="AvatarModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.06, 0.1, 0.85)
+
+[node name="AvatarCenter" type="CenterContainer" parent="AvatarModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AvatarCard" type="PanelContainer" parent="AvatarModal/AvatarCenter"]
+custom_minimum_size = Vector2(440, 520)
+layout_mode = 2
+
+[node name="AvatarMargin" type="MarginContainer" parent="AvatarModal/AvatarCenter/AvatarCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="AvatarVBox" type="VBoxContainer" parent="AvatarModal/AvatarCenter/AvatarCard/AvatarMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="AvatarModalTitle" type="Label" parent="AvatarModal/AvatarCenter/AvatarCard/AvatarMargin/AvatarVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "🎨 CHOOSE YOUR AVATAR"
+horizontal_alignment = 1
+
+[node name="AvatarModalSubtitle" type="Label" parent="AvatarModal/AvatarCenter/AvatarCard/AvatarMargin/AvatarVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.78, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Personaliza tu imagen de perfil como Entrenador"
+horizontal_alignment = 1
+
+[node name="AvatarHSep" type="HSeparator" parent="AvatarModal/AvatarCenter/AvatarCard/AvatarMargin/AvatarVBox"]
+layout_mode = 2
+
+[node name="AvatarScroll" type="ScrollContainer" parent="AvatarModal/AvatarCenter/AvatarCard/AvatarMargin/AvatarVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="AvatarGrid" type="GridContainer" parent="AvatarModal/AvatarCenter/AvatarCard/AvatarMargin/AvatarVBox/AvatarScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 14
+columns = 4
+
+[node name="BtnCloseAvatarModal" type="Button" parent="AvatarModal/AvatarCenter/AvatarCard/AvatarMargin/AvatarVBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "⬅ Cerrar"
 
 [node name="BGMPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_bgm")
