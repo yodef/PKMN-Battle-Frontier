@@ -771,39 +771,39 @@ theme_override_constants/separation = 4
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Move1Row" type="HBoxContainer" parent="MainContainer/ActionsSection/MoveButtons" unique_id=1650386107]
+[node name="Move1Col" type="VBoxContainer" parent="MainContainer/ActionsSection/MoveButtons" unique_id=1650386107]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 6
+theme_override_constants/separation = 3
 
-[node name="Move1Slots" type="VBoxContainer" parent="MainContainer/ActionsSection/MoveButtons/Move1Row" unique_id=149853625]
-layout_mode = 2
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="BtnMove1" type="Button" parent="MainContainer/ActionsSection/MoveButtons/Move1Row" unique_id=1455442833]
-custom_minimum_size = Vector2(0, 58)
+[node name="BtnMove1" type="Button" parent="MainContainer/ActionsSection/MoveButtons/Move1Col" unique_id=1455442833]
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "Attack 1"
 
-[node name="Move2Row" type="HBoxContainer" parent="MainContainer/ActionsSection/MoveButtons" unique_id=731620319]
+[node name="Move1Slots" type="HBoxContainer" parent="MainContainer/ActionsSection/MoveButtons/Move1Col" unique_id=149853625]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 6
-
-[node name="Move2Slots" type="VBoxContainer" parent="MainContainer/ActionsSection/MoveButtons/Move2Row" unique_id=101037986]
-layout_mode = 2
-theme_override_constants/separation = 2
+theme_override_constants/separation = 4
 alignment = 1
 
-[node name="BtnMove2" type="Button" parent="MainContainer/ActionsSection/MoveButtons/Move2Row" unique_id=1462428852]
-custom_minimum_size = Vector2(0, 58)
+[node name="Move2Col" type="VBoxContainer" parent="MainContainer/ActionsSection/MoveButtons" unique_id=731620319]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="BtnMove2" type="Button" parent="MainContainer/ActionsSection/MoveButtons/Move2Col" unique_id=1462428852]
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "Attack 2"
+
+[node name="Move2Slots" type="HBoxContainer" parent="MainContainer/ActionsSection/MoveButtons/Move2Col" unique_id=101037986]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
 
 [node name="FloatingNumbersLayer" type="Control" parent="." unique_id=1849204712]
 z_index = 10

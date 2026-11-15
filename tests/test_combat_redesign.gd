@@ -45,12 +45,12 @@ func _ready() -> void:
 	assert(energy_lbl != null and btn_recover != null and btn_bag != null, "Energy row must contain label, recharge and bag buttons")
 	print("Test 5 Passed: Recharge and Bag buttons integrated into PlayerEnergyRow.")
 	
-	# 6. Moves have vertical energy slots (VBoxContainer) beside move buttons
+	# 6. Moves have compact horizontal energy slots (HBoxContainer) beneath move buttons
 	var move1_slots = battle.find_child("Move1Slots", true, false)
 	var move2_slots = battle.find_child("Move2Slots", true, false)
-	assert(move1_slots is VBoxContainer, "Move1Slots must be a vertical VBoxContainer beside move button")
-	assert(move2_slots is VBoxContainer, "Move2Slots must be a vertical VBoxContainer beside move button")
-	print("Test 6 Passed: Vertical energy slots beside move buttons verified.")
+	assert(move1_slots is HBoxContainer, "Move1Slots must be an HBoxContainer horizontally below move button")
+	assert(move2_slots is HBoxContainer, "Move2Slots must be an HBoxContainer horizontally below move button")
+	print("Test 6 Passed: Compact horizontal energy slots below move buttons verified.")
 	
 	# 7. Combat logs expanded vertical space
 	var enemy_log_lbl = battle.find_child("EnemyLogLabel", true, false)

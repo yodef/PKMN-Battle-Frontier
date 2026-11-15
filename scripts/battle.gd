@@ -6532,7 +6532,7 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 
 func _create_slot_button(slot_val: int, current_selected: int, move_idx: int, is_affordable: bool, is_boost_slot: bool, label_text: String) -> Button:
 	var btn = Button.new()
-	btn.custom_minimum_size = Vector2(28, 28)
+	btn.custom_minimum_size = Vector2(26, 26)
 	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	btn.add_theme_font_size_override("font_size", 10)
@@ -6542,7 +6542,7 @@ func _create_slot_button(slot_val: int, current_selected: int, move_idx: int, is
 	var is_selected = (slot_val == current_selected)
 	
 	var sb = StyleBoxFlat.new()
-	sb.set_corner_radius_all(14)
+	sb.set_corner_radius_all(13)
 	sb.content_margin_left = 0
 	sb.content_margin_right = 0
 	sb.content_margin_top = 0
@@ -6611,7 +6611,7 @@ func update_single_move_ui(move_idx: int, move, slots_container: BoxContainer, b
 		return
 		
 	btn.icon = GameData.get_type_icon_texture(move.type)
-	btn.expand_icon = true
+	btn.expand_icon = false
 	
 	var base_cost = get_effective_move_cost(move, p, active_e)
 	var min_cost = min(move.min_energy_req, base_cost)
