@@ -2129,6 +2129,68 @@ const ADVENTURE_EPISODES: Dictionary = {
 			}
 		}
 	},
+	8: {
+		"id": 8,
+		"region": "Kanto",
+		"title": "Episode VIII: Viridian City Gym",
+		"title_es": "Episodio VIII: Gimnasio de Ciudad Verde",
+		"subtitle": "Challenge the final Gym Leader of Kanto, Boss Giovanni, to conquer the Earth Badge!",
+		"subtitle_es": "¡Desafía al último Líder de Gimnasio de Kanto, Giovanni, para conquistar la Medalla Tierra!",
+		"reward_diamonds_first_clear": 80,
+		"stages": [
+			{
+				"stage_num": 1,
+				"trainer_title": "Ace Trainer",
+				"trainer_title_es": "Entrenador Guay",
+				"trainer_name": "Ace Trainer Warren",
+				"trainer_name_es": "Entrenador Guay Warren",
+				"intro": "Welcome to the Viridian Gym! Only the finest trainers make it past our ground defenses!",
+				"intro_es": "¡Bienvenido al Gimnasio Verde! ¡Solo los mejores entrenadores superan nuestras defensas de tierra!",
+				"outro": "You cut right through my defense like it was nothing...",
+				"outro_es": "Atravesaste mi defensa como si nada...",
+				"team_pokemon_names": ["Rhyhorn", "Sandslash"]
+			},
+			{
+				"stage_num": 2,
+				"trainer_title": "Black Belt",
+				"trainer_title_es": "Karateka",
+				"trainer_name": "Black Belt Takashi",
+				"trainer_name_es": "Karateka Takashi",
+				"intro": "Feel the tremors underfoot! My Dugtrio and Machoke strike with seismic power!",
+				"intro_es": "¡Siente los temblores bajo tus pies! ¡Mi Dugtrio y Machoke atacan con fuerza sísmica!",
+				"outro": "Our seismic power was shattered!",
+				"outro_es": "¡Nuestra fuerza sísmica fue destrozada!",
+				"team_pokemon_names": ["Dugtrio", "Machoke"]
+			},
+			{
+				"stage_num": 3,
+				"trainer_title": "Cooltrainer",
+				"trainer_title_es": "Entrenador Guay",
+				"trainer_name": "Cooltrainer Yuji",
+				"trainer_name_es": "Entrenador Guay Yuji",
+				"intro": "The Leader awaits. But you won't get past my hardened Sandslash and Nidoking!",
+				"intro_es": "El Líder te espera. ¡Pero no pasarás sobre mi Sandslash y Nidoking endurecidos!",
+				"outro": "Splendid technique! Proceed to the master of this gym!",
+				"outro_es": "¡Espléndida técnica! ¡Avanza hacia el maestro de este gimnasio!",
+				"team_pokemon_names": ["Sandslash", "Nidoking"]
+			},
+			{
+				"stage_num": 4,
+				"trainer_title": "Gym Leader Giovanni",
+				"trainer_title_es": "Líder Giovanni",
+				"trainer_name": "Gym Leader Giovanni",
+				"trainer_name_es": "Líder Giovanni",
+				"is_boss": true,
+				"badge_name": "Earth Badge",
+				"badge_name_es": "Medalla Tierra",
+				"intro": "Fwahaha! So you've made it here! Yes, I am Giovanni, the Viridian Gym Leader! All Pokémon bow before my overwhelming ground force! Nidoqueen, Nidoking, Rhydon... crush them to dust!",
+				"intro_es": "¡Jajaja! ¡Conque has llegado hasta aquí! ¡Así es, soy Giovanni, el Líder de Ciudad Verde! ¡Todos los Pokémon se inclinan ante el poder de la tierra! ¡Nidoqueen, Nidoking, Rhydon... háganlo polvo!",
+				"outro": "Ha... Truly astonishing! Such raw talent and tactical brilliance. I accept my defeat. Take the Earth Badge, the ultimate symbol of Kanto mastery!",
+				"outro_es": "Ja... ¡Verdaderamente asombroso! Qué talento puro y brillo táctico. Acepto mi derrota. ¡Toma la Medalla Tierra, el símbolo definitivo de la maestría de Kanto!",
+				"team_pokemon_names": ["Nidoqueen", "Nidoking", "Rhydon"]
+			}
+		]
+	},
 	101: {
 		"id": 101,
 		"region": "Johto",
@@ -2676,11 +2738,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"trainer_title_es": "Recluta Team Aqua",
 				"trainer_name": "Aqua Grunt",
 				"trainer_name_es": "Recluta Aqua",
-				"intro": "Hand over the Devon Goods if you know what's good for you! Poochyena, bite!",
-				"intro_es": "¡Entrégame las piezas Devon si no quieres problemas! ¡Poochyena, muerde!",
+				"intro": "Hand over the Devon Goods if you know what's good for you! Poochyena and Carvanha, bite!",
+				"intro_es": "¡Entrégame las piezas Devon si no quieres problemas! ¡Poochyena y Carvanha, muerdan!",
 				"outro": "Leader Archie won't be pleased with this failure!",
 				"outro_es": "¡El Jefe Archie no estará contento con esto!",
-				"team_pokemon_names": ["Poochyena", "Poochyena"]
+				"team_pokemon_names": ["Poochyena", "Carvanha"]
 			},
 			{
 				"stage_num": 4,
@@ -2691,11 +2753,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"is_boss": true,
 				"badge_name": "Stone Badge",
 				"badge_name_es": "Medalla Piedra",
-				"intro": "I am Roxanne, top graduate of the Rustboro Trainers' School! My Rock-type Pokémon possess unbreakable defense. Show me your tactical knowledge!",
-				"intro_es": "¡Soy Petra, graduada con honores de la Academia de Entrenadores! Mis Pokémon de roca tienen una defensa inquebrantable. ¡Demuéstrame tus conocimientos!",
-				"outro": "A brilliant strategy! You have mastered both theory and practice. I proudly award you the Stone Badge!",
-				"outro_es": "¡Una estrategia brillante! Veo que has dominado la teoría y la práctica. ¡Te entrego con honor la Medalla Piedra!",
-				"team_pokemon_names": ["Geodude", "Nosepass"]
+				"intro": "I am Roxanne, the Rustboro Gym Leader! I became a Leader so I could apply what I learned at the Pokémon Trainer's School! Aron, Nosepass, rock solid defense!",
+				"intro_es": "¡Soy Petra, la Líder de Gimnasio de Ciudad Férrica! ¡Aplico en combate todo lo que aprendí en la Escuela de Entrenadores! ¡Aron, Nosepass, defensa de roca sólida!",
+				"outro": "It seems that an education is not enough to secure victory... You are worthy of the Stone Badge!",
+				"outro_es": "Parece que la teoría no es suficiente para asegurar la victoria... ¡Eres digno de la Medalla Piedra!",
+				"team_pokemon_names": ["Aron", "Nosepass"]
 			}
 		]
 	},
@@ -2706,19 +2768,19 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title_es": "Episodio II: Medalla Puño (Pueblo Azuliza)",
 		"subtitle": "Cross the ocean with Mr. Briney, enter Granite Cave & face Gym Leader Brawly!",
 		"subtitle_es": "¡Navega junto al Sr. Arenque, explora la Cueva Granito y enfrenta al Líder Marcial!",
-		"reward_diamonds_first_clear": 18,
+		"reward_diamonds_first_clear": 15,
 		"stages": [
 			{
 				"stage_num": 1,
-				"trainer_title": "Coastal Fisherman",
-				"trainer_title_es": "Pescador Costero",
+				"trainer_title": "Fisherman",
+				"trainer_title_es": "Pescador",
 				"trainer_name": "Fisherman Ned",
 				"trainer_name_es": "Pescador Ned",
-				"intro": "The waters of Dewford are bursting with ocean life! Tentacool, Poison Sting!",
-				"intro_es": "¡Las aguas de Azuliza están llenas de vida marina! ¡Tentacool, picotazo venenoso!",
-				"outro": "I reeled in a formidable trainer!",
-				"outro_es": "¡Pesqué a un entrenador formidable!",
-				"team_pokemon_names": ["Tentacool", "Tentacool"]
+				"intro": "Dewford's coast is brimming with hardy sea life! Corphish and Wingull, show your sea breeze!",
+				"intro_es": "¡La costa de Azuliza está llena de vida marina! ¡Corphish y Wingull, muestren su brisa marina!",
+				"outro": "Washed right off my boots!",
+				"outro_es": "¡Me arrastró la corriente!",
+				"team_pokemon_names": ["Corphish", "Wingull"]
 			},
 			{
 				"stage_num": 2,
@@ -2726,22 +2788,22 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"trainer_title_es": "Marinero",
 				"trainer_name": "Sailor Huey",
 				"trainer_name_es": "Marinero Huey",
-				"intro": "I've sailed the seven seas of Hoenn! Wingull and Machop, prepare to board!",
-				"intro_es": "¡He surcado los siete mares de Hoenn! ¡Wingull y Machop, al abordaje!",
-				"outro": "Got seasick right here on dry land!",
-				"outro_es": "¡Me mareé en tierra firme!",
-				"team_pokemon_names": ["Wingull", "Machop"]
+				"intro": "I brave turbulent swells day in and out! Wingull and Makuhita, drop anchor!",
+				"intro_es": "¡Navego entre olas gigantescas todos los días! ¡Wingull y Makuhita, suelten el ancla!",
+				"outro": "Captains never back down... but you caught me in a whirlwind!",
+				"outro_es": "Un marinero nunca retrocede... ¡pero me atrapaste en un remolino!",
+				"team_pokemon_names": ["Wingull", "Makuhita"]
 			},
 			{
 				"stage_num": 3,
-				"trainer_title": "Black Belt Fighter",
-				"trainer_title_es": "Luchador Cinturón Negro",
+				"trainer_title": "Black Belt",
+				"trainer_title_es": "Karateka",
 				"trainer_name": "Black Belt Nob",
-				"trainer_name_es": "Cinturón Negro Nob",
-				"intro": "Training in the pitch-black Granite Cave forges muscles of steel! Makuhita, Arm Thrust!",
-				"intro_es": "¡Entrenar en la oscuridad de la Cueva Granito forja músculos de acero! ¡Makuhita, empuje!",
-				"outro": "Your balance and stance are flawless!",
-				"outro_es": "¡Tu balance es impecable!",
+				"trainer_name_es": "Karateka Nob",
+				"intro": "Feel the crushing momentum of Dewford wave training! Meditite, Makuhita, strike!",
+				"intro_es": "¡Siente la fuerza del entrenamiento en las olas de Azuliza! ¡Meditite, Makuhita, golpeen!",
+				"outro": "Your stance has no blind spots!",
+				"outro_es": "¡Tu guardia no tiene puntos débiles!",
 				"team_pokemon_names": ["Meditite", "Makuhita"]
 			},
 			{
@@ -2753,11 +2815,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"is_boss": true,
 				"badge_name": "Knuckle Badge",
 				"badge_name_es": "Medalla Puño",
-				"intro": "I ride the giant waves of Dewford and temper my spirit through fighting! Feel the crashing tide of my Makuhita!",
-				"intro_es": "¡Surfeo las olas gigantes de Azuliza y entreno el espíritu del combate! ¡Siente la marea de mis puños con Makuhita!",
-				"outro": "What a tidal wave of power! You wiped me completely out. You have earned the Knuckle Badge!",
-				"outro_es": "¡Vaya ola de poder! Me has dejado boquiabierto. ¡Eres digno de la Medalla Puño!",
-				"team_pokemon_names": ["Machop", "Meditite", "Makuhita"]
+				"intro": "I'm Brawly, Dewford's Gym Leader! The raging waves of the ocean tempered my body and soul! Meditite, Makuhita, Hariyama... ride this tidal wave!",
+				"intro_es": "¡Soy Marcial, Líder de Azuliza! ¡Las olas embravecidas forjaron mi cuerpo y espíritu! ¡Meditite, Makuhita, Hariyama... monten esta marea!",
+				"outro": "Whoa, awesome! You rode against my biggest wave and came out on top! Take the Knuckle Badge!",
+				"outro_es": "¡Guau, increíble! ¡Surfeaste contra mi ola más colosal y saliste vencedor! ¡Toma la Medalla Puño!",
+				"team_pokemon_names": ["Meditite", "Makuhita", "Hariyama"]
 			}
 		]
 	},
@@ -2773,38 +2835,38 @@ const ADVENTURE_EPISODES: Dictionary = {
 			{
 				"stage_num": 1,
 				"trainer_title": "Guitarist",
-				"trainer_title_es": "Guitarrista Rockero",
+				"trainer_title_es": "Guitarrista",
 				"trainer_name": "Guitarist Kirk",
 				"trainer_name_es": "Guitarrista Kirk",
-				"intro": "The voltage of my guitar riffs will electrify your whole deck! Electrike, rock spark!",
-				"intro_es": "¡El voltaje de mi música electrizará todo tu mazo! ¡Electrike, chispa rockera!",
-				"outro": "Snapped my high-E string during the solo!",
-				"outro_es": "¡Se me rompió la cuerda del solo!",
-				"team_pokemon_names": ["Electrike", "Magnemite"]
+				"intro": "My electric riffs reverberate through the whole city! Electrike and Plusle, amplify!",
+				"intro_es": "¡Mis acordes eléctricos retumban en toda la ciudad! ¡Electrike y Plusle, amplifiquen!",
+				"outro": "Unplugged in mid-solo!",
+				"outro_es": "¡Me desconectaron en pleno solo!",
+				"team_pokemon_names": ["Electrike", "Plusle"]
 			},
 			{
 				"stage_num": 2,
-				"trainer_title": "Triathlete Cyclist",
-				"trainer_title_es": "Triatleta Ciclista",
+				"trainer_title": "Triathlete",
+				"trainer_title_es": "Triatleta",
 				"trainer_name": "Triathlete Dylan",
 				"trainer_name_es": "Triatleta Dylan",
-				"intro": "Full speed down Seaside Cycling Road! Magnemite and Voltorb, overdrive!",
-				"intro_es": "¡A toda velocidad por la ciclovía! ¡Magnemite y Voltorb, aceleración máxima!",
-				"outro": "Popped a tire right on your counter-strategy!",
-				"outro_es": "¡Pinché neumático con tu estrategia!",
-				"team_pokemon_names": ["Magnemite", "Voltorb"]
+				"intro": "I pedal at lightning speeds across Route 110! Electrike and Minun, pedal to the metal!",
+				"intro_es": "¡Pedaleo a velocidad relámpago por la Ruta 110! ¡Electrike y Minun, a fondo!",
+				"outro": "Blown tire! Your velocity was superior!",
+				"outro_es": "¡Pinché rueda! ¡Tu velocidad fue superior!",
+				"team_pokemon_names": ["Electrike", "Minun"]
 			},
 			{
 				"stage_num": 3,
-				"trainer_title": "Mauville Scientist",
-				"trainer_title_es": "Científico de Malvalona",
+				"trainer_title": "Scientist",
+				"trainer_title_es": "Científico",
 				"trainer_name": "Scientist Ted",
 				"trainer_name_es": "Científico Ted",
-				"intro": "Mauville's electromagnetic grid generates limitless energy! Manectric, overload!",
-				"intro_es": "¡La energía electromagnética de Malvalona es infinita! ¡Manectric, sobrecarga!",
-				"outro": "Blew a fuse in my calculations!",
-				"outro_es": "¡Circuito quemado!",
-				"team_pokemon_names": ["Electrike", "Manectric"]
+				"intro": "Wattson's electrical switches channel sheer energy! Plusle and Minun, positive and negative charge!",
+				"intro_es": "¡Los interruptores de Erico canalizan pura energía! ¡Plusle y Minun, carga positiva y negativa!",
+				"outro": "A short circuit in my calculation!",
+				"outro_es": "¡Un cortocircuito en mis cálculos!",
+				"team_pokemon_names": ["Plusle", "Minun", "Electrike"]
 			},
 			{
 				"stage_num": 4,
@@ -2815,11 +2877,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"is_boss": true,
 				"badge_name": "Dynamo Badge",
 				"badge_name_es": "Medalla Dinamo",
-				"intro": "Wahahaha! Laughter and electricity spark vitality! Prepare to be shocked by my Magneton and Manectric!",
-				"intro_es": "¡Jajaja! ¡La risa y los rayos dan salud! ¡Prepárate para quedar electrificado ante mi Magneton y Manectric!",
-				"outro": "Wahahaha! Brilliant! You've left sparks in my mustache! Take the Dynamo Badge with pride!",
-				"outro_es": "¡Jajaja! ¡Brillante! ¡Me has dejado chispas en el bigote! ¡Toma la Medalla Dinamo!",
-				"team_pokemon_names": ["Voltorb", "Electrike", "Magneton"]
+				"intro": "Wahahaha! I'm Wattson, Leader of Mauville Gym! Electric traps, high-voltage laughs... Electrike, Plusle, Manectric! Let's see if you can handle this thunderstorm!",
+				"intro_es": "¡Jajajaja! ¡Soy Erico, Líder de Malvalona! Trampas eléctricas y risas de alto voltaje... ¡Electrike, Plusle, Manectric! ¡Veamos si soportas esta tormenta de rayos!",
+				"outro": "Wahahaha! Now that was electrifying! My power completely shorted out! Here, take the Dynamo Badge!",
+				"outro_es": "¡Jajajaja! ¡Eso sí que fue electrizante! ¡Mi energía se fundió por completo! ¡Toma la Medalla Dinamo!",
+				"team_pokemon_names": ["Electrike", "Plusle", "Manectric"]
 			}
 		]
 	},
@@ -2845,50 +2907,111 @@ const ADVENTURE_EPISODES: Dictionary = {
 						"stage_num": 1,
 						"trainer_title": "Team Magma Grunt",
 						"trainer_title_es": "Recluta Team Magma",
-						"trainer_name": "Magma Grunt",
-						"trainer_name_es": "Recluta Magma",
-						"intro": "We shall expand the landmass to create a better world! Numel, Mud-Slap!",
-						"intro_es": "¡Expandiremos la tierra firme para crear un nuevo mundo! ¡Numel, bofetón lodo!",
+						"trainer_name": "Magma Grunt 1",
+						"trainer_name_es": "Recluta Magma 1",
+						"intro": "We shall expand the landmass to create a better world! Numel and Poochyena, Mud-Slap!",
+						"intro_es": "¡Expandiremos la tierra firme para crear un nuevo mundo! ¡Numel y Poochyena, bofetón lodo!",
 						"outro": "Curse it, our volcanic heat wasn't enough!",
 						"outro_es": "¡Maldición, el calor no fue suficiente!",
 						"team_pokemon_names": ["Numel", "Poochyena"]
 					},
 					{
 						"stage_num": 2,
+						"trainer_title": "Team Magma Grunt",
+						"trainer_title_es": "Recluta Team Magma",
+						"trainer_name": "Magma Grunt 2",
+						"trainer_name_es": "Recluta Magma 2",
+						"intro": "No intruder bypasses the Magma crater perimeter! Baltoy and Mightyena, lock them down!",
+						"intro_es": "¡Ningún intruso pasa el perímetro del cráter! ¡Baltoy y Mightyena, aseguren la zona!",
+						"outro": "My defense broke down!",
+						"outro_es": "¡Mi defensa se desmoronó!",
+						"team_pokemon_names": ["Baltoy", "Mightyena"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Magma Specialist",
+						"trainer_title_es": "Especialista Magma",
+						"trainer_name": "Magma Specialist Ethan",
+						"trainer_name_es": "Especialista Magma Ethan",
+						"intro": "The volcanic core pulses with magma! Camerupt, Eruption!",
+						"intro_es": "¡El núcleo volcánico pulsa con magma ardiente! ¡Camerupt, Estallido!",
+						"outro": "Cooled down in an instant!",
+						"outro_es": "¡Nos enfriaste al instante!",
+						"team_pokemon_names": ["Camerupt"]
+					},
+					{
+						"stage_num": 4,
 						"trainer_title": "Magma Admin",
 						"trainer_title_es": "Comandante Magma",
 						"trainer_name": "Admin Tabitha",
 						"trainer_name_es": "Comandante Tabitha",
-						"intro": "I cannot allow you to tamper with Leader Maxie's grand design! Camerupt and Koffing, volcanic haze!",
-						"intro_es": "¡No permitiré que interfieras en los planes del Líder Maxie! ¡Camerupt y Koffing, niebla volcánica!",
-						"outro": "The volcano's pressure... it has stabilized! Fall back to Lavaridge!",
-						"outro_es": "¡El volcán... se ha estabilizado! ¡Nos retiramos a Lavacalda!",
-						"team_pokemon_names": ["Koffing", "Numel"]
+						"intro": "Hahaha! Leader Maxie's ambition won't be foiled by a wandering trainer! Numel, Camerupt, Mightyena, incinerate their hopes!",
+						"intro_es": "¡Jajaja! ¡La ambición del Líder Magno no será frustrada por un novato! ¡Numel, Camerupt, Mightyena, calcinen sus esperanzas!",
+						"outro": "Impossible... Team Magma forced into retreat?!",
+						"outro_es": "Imposible... ¡¿El Team Magma obligado a replegarse?!",
+						"team_pokemon_names": ["Numel", "Camerupt", "Mightyena"]
+					},
+					{
+						"stage_num": 5,
+						"trainer_title": "Team Magma Leader",
+						"trainer_title_es": "Líder Team Magma",
+						"trainer_name": "Leader Maxie",
+						"trainer_name_es": "Líder Magno",
+						"is_boss": true,
+						"intro": "So you have climbed to the caldera. Humanity requires land to flourish! Camerupt, Mightyena, Torkoal, feel the supreme fire of earth!",
+						"intro_es": "Conque has subido a la caldera. ¡La humanidad necesita tierra firme para prosperar! ¡Camerupt, Mightyena, Torkoal, sientan el fuego de la tierra!",
+						"outro": "Fascinating... We shall withdraw for now, but our vision is far from over!",
+						"outro_es": "Fascinante... Nos retiraremos por ahora, ¡pero nuestra visión jamás morirá!",
+						"team_pokemon_names": ["Camerupt", "Mightyena", "Torkoal"]
 					}
 				]
 			},
 			"lavaridge_gym": {
 				"id": "lavaridge_gym",
 				"name": "Lavaridge Hot Springs Gym",
-				"name_es": "Gimnasio de Aguas Termales de Lavacalda",
-				"desc": "Navigate steam geysers and defeat Gym Leader Flannery to earn the Heat Badge.",
-				"desc_es": "Atraviesa las chimeneas de vapor caliente y vence a la Líder Candela para obtener la Medalla Calor.",
+				"name_es": "Gimnasio Termal de Lavacalda",
+				"desc": "Drop through hot spring steam traps and challenge the passionate Gym Leader Flannery.",
+				"desc_es": "Desciende por las trampas de vapor termal y desafía a la apasionada Líder Candela.",
 				"reward_diamonds_first_clear": 15,
 				"stages": [
 					{
 						"stage_num": 1,
 						"trainer_title": "Kindler",
-						"trainer_title_es": "Chica Fuego",
+						"trainer_title_es": "Fogonero",
 						"trainer_name": "Kindler Sadie",
-						"trainer_name_es": "Chica Caliente Sadie",
-						"intro": "The hot springs crank up the combat temperature! Slugma, Ember!",
-						"intro_es": "¡Las aguas termales aumentan la temperatura de combate! ¡Slugma, ascuas!",
-						"outro": "You completely stifled my flames!",
-						"outro_es": "¡Me sofocaste por completo!",
-						"team_pokemon_names": ["Slugma", "Slugma"]
+						"trainer_name_es": "Fogonera Sadie",
+						"intro": "The steam in this gym is boiling hot! Numel and Torkoal, turn up the temperature!",
+						"intro_es": "¡El vapor de este gimnasio está hirviendo! ¡Numel y Torkoal, aumenten la temperatura!",
+						"outro": "Phew! Too hot even for me!",
+						"outro_es": "¡Uf! ¡Demasiado caliente incluso para mí!",
+						"team_pokemon_names": ["Numel", "Torkoal"]
 					},
 					{
 						"stage_num": 2,
+						"trainer_title": "Kindler",
+						"trainer_title_es": "Fogonero",
+						"trainer_name": "Kindler Bernie",
+						"trainer_name_es": "Fogonero Bernie",
+						"intro": "Watch your step in the hot sand! Numel and Camerupt, burn bright!",
+						"intro_es": "¡Cuidado con la arena ardiente! ¡Numel y Camerupt, ardan con fuerza!",
+						"outro": "Our flames flickered out!",
+						"outro_es": "¡Nuestras llamas se extinguieron!",
+						"team_pokemon_names": ["Numel", "Camerupt"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Beauty",
+						"trainer_title_es": "Bella",
+						"trainer_name": "Beauty Cole",
+						"trainer_name_es": "Bella Cole",
+						"intro": "The relaxing thermal baths only make my Pokémon fiercer! Torkoal and Numel, Flare Blitz!",
+						"intro_es": "¡Los baños termales solo hacen a mis Pokémon más fieros! ¡Torkoal y Numel, Envite Ígneo!",
+						"outro": "Oh dear, my composure melted away!",
+						"outro_es": "¡Vaya, mi calma se evaporó!",
+						"team_pokemon_names": ["Torkoal", "Numel"]
+					},
+					{
+						"stage_num": 4,
 						"trainer_title": "Gym Leader Flannery",
 						"trainer_title_es": "Líder Candela",
 						"trainer_name": "Gym Leader Flannery",
@@ -2896,11 +3019,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 						"is_boss": true,
 						"badge_name": "Heat Badge",
 						"badge_name_es": "Medalla Calor",
-						"intro": "I only recently became Gym Leader, but my burning passion blazes hotter than Mt. Chimney's magma! Torkoal, Overheat!",
-						"intro_es": "¡Apenas asumí el liderazgo del gimnasio, pero mi pasión arde como el magma del Monte Cenizo! ¡Torkoal, Sofoco!",
-						"outro": "Phew... deep breaths...! What a fiery clash! You have rightfully earned the Heat Badge!",
-						"outro_es": "¡Uff... respirar hondo...! ¡Qué batalla tan encendida! Te has ganado con creces la Medalla Calor.",
-						"team_pokemon_names": ["Slugma", "Numel", "Torkoal"]
+						"intro": "Welcome... Uh, no, wait! Puny trainer, how dare you challenge me, Flannery! Numel, Camerupt, and my scorching Torkoal... Overheat!",
+						"intro_es": "¡Bienvenido... eh, espera! ¡Insolente entrenador, cómo te atreves a retar a Candela! ¡Numel, Camerupt y mi ardiente Torkoal... Sofoco!",
+						"outro": "Phew... I tried so hard to act intimidating, but you blew my fiery spirit away! You've earned the Heat Badge!",
+						"outro_es": "Uf... Intenté actuar ruda, ¡pero apagaste mi fuego con maestría! ¡Te has ganado la Medalla Calor!",
+						"team_pokemon_names": ["Numel", "Camerupt", "Torkoal"]
 					}
 				]
 			}
@@ -2917,38 +3040,38 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"stages": [
 			{
 				"stage_num": 1,
-				"trainer_title": "Precision Trainer",
-				"trainer_title_es": "Entrenador de Precisión",
+				"trainer_title": "Cooltrainer",
+				"trainer_title_es": "Entrenador Guay",
 				"trainer_name": "Cooltrainer Randall",
-				"trainer_name_es": "Chico Guay Randall",
-				"intro": "In this room we hone pinpoint critical accuracy! Spinda, Teeter Dance!",
-				"intro_es": "¡En esta sala del gimnasio entrenamos el golpe crítico certero! ¡Spinda, danza confusa!",
-				"outro": "Your focus outmatched mine!",
-				"outro_es": "¡Tu puntería superó la mía!",
-				"team_pokemon_names": ["Spinda", "Spinda"]
+				"trainer_name_es": "Entrenador Guay Randall",
+				"intro": "This is the Speed Room! Spinda and Slakoth, strike with precision!",
+				"intro_es": "¡Esta es la Sala de Velocidad! ¡Spinda y Slakoth, ataquen con precisión!",
+				"outro": "Your reflexes were faster than ours!",
+				"outro_es": "¡Tus reflejos fueron más rápidos!",
+				"team_pokemon_names": ["Spinda", "Slakoth"]
 			},
 			{
 				"stage_num": 2,
-				"trainer_title": "Speed Trainer",
-				"trainer_title_es": "Entrenadora de Velocidad",
+				"trainer_title": "Cooltrainer",
+				"trainer_title_es": "Entrenadora Guay",
 				"trainer_name": "Cooltrainer Mary",
-				"trainer_name_es": "Chica Guay Mary",
-				"intro": "Pace and agility dictate the rhythm of battle! Delcatty, elegant Feint Attack!",
-				"intro_es": "¡La velocidad y el estilo son la clave de la victoria! ¡Delcatty, finta elegante!",
-				"outro": "Breathtaking agility!",
-				"outro_es": "¡Impresionante agilidad!",
-				"team_pokemon_names": ["Delcatty"]
+				"trainer_name_es": "Entrenadora Guay Mary",
+				"intro": "This is the Defense Room! Delcatty and Zangoose, protect and counter!",
+				"intro_es": "¡Esta es la Sala de Defensa! ¡Delcatty y Zangoose, protejan y contraataquen!",
+				"outro": "Our guard couldn't withstand your momentum!",
+				"outro_es": "¡Nuestra guardia no resistió tu empuje!",
+				"team_pokemon_names": ["Delcatty", "Zangoose"]
 			},
 			{
 				"stage_num": 3,
-				"trainer_title": "Gym Ace",
-				"trainer_title_es": "As del Gimnasio",
+				"trainer_title": "Ace Trainer",
+				"trainer_title_es": "Entrenador Guay",
 				"trainer_name": "Ace Trainer Berke",
-				"trainer_name_es": "Veterano Berke",
-				"intro": "Norman taught us that patience and restraint are the deadliest weapons! Zangoose and Vigoroth, Fury Swipes!",
-				"intro_es": "¡Norman nos enseñó que la paciencia es el arma definitiva! ¡Zangoose y Vigoroth, garras furiosas!",
-				"outro": "You are ready to stand before your father!",
-				"outro_es": "¡Estás listo para enfrentar a tu padre!",
+				"trainer_name_es": "Entrenador Guay Berke",
+				"intro": "This is the One-Hit Room! Zangoose and Vigoroth, Slash with all your might!",
+				"intro_es": "¡Esta es la Sala del Golpe Crítico! ¡Zangoose y Vigoroth, Cuchillada con todo su poder!",
+				"outro": "Norman taught us well, but you are something else!",
+				"outro_es": "¡Norman nos entrenó bien, pero tú estás a otro nivel!",
 				"team_pokemon_names": ["Zangoose", "Vigoroth"]
 			},
 			{
@@ -2960,10 +3083,10 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"is_boss": true,
 				"badge_name": "Balance Badge",
 				"badge_name_es": "Medalla Equilibrio",
-				"intro": "You have grown remarkably since leaving Littleroot Town... But as a Gym Leader, I will hold nothing back. Vigoroth, Slaking, let us show the true essence of balance!",
-				"intro_es": "Has crecido enormemente desde que saliste de Villa Raíz... Pero como Líder de Gimnasio, no contendré ningún golpe. ¡Vigoroth, Slaking, demostremos el verdadero poder del equilibrio!",
-				"outro": "I can scarcely believe this day has come... You have surpassed your own father! Wear the Balance Badge with pride.",
-				"outro_es": "No puedo creer que este día haya llegado... ¡Has superado a tu propio padre! Lleva con orgullo la Medalla Equilibrio.",
+				"intro": "You've grown so much since leaving Littleroot Town. But as a Gym Leader, I must test your true conviction! Spinda, Vigoroth, and the unstoppable colossus Slaking... Show me your bond!",
+				"intro_es": "Has crecido tanto desde que saliste de Villa Raíz. ¡Pero como Líder de Gimnasio, debo medir tu verdadera convicción! Spinda, Vigoroth y el coloso imparable Slaking... ¡Demuéstrame tu lazo!",
+				"outro": "Splendid! I have never felt prouder as both a father and a trainer. Take the Balance Badge!",
+				"outro_es": "¡Espléndido! Jamás me sentí más orgulloso como padre y como entrenador. ¡Toma la Medalla Equilibrio!",
 				"team_pokemon_names": ["Spinda", "Vigoroth", "Slaking"]
 			}
 		]
@@ -2975,65 +3098,126 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title": "Episode VI: Feather Badge (Fortree City)",
 		"title_es": "Episodio VI: Medalla Pluma (Ciudad Arborada)",
 		"subtitle": "Uncover hidden Kecleon with the Devon Scope & battle Gym Leader Winona in the treetops!",
-		"subtitle_es": "¡Revela a los Kecleon con el Detector Devon y desafía a la Líder Alana en las copas de los árboles!",
+		"subtitle_es": "¡Revela a los Kecleon con el Detector Devon y enfrenta a la Líder Alana en las copas de los árboles!",
 		"reward_diamonds_first_clear": 30,
 		"routes": {
 			"weather_institute": {
 				"id": "weather_institute",
-				"name": "Weather Institute & Route 119",
-				"name_es": "Instituto Meteorológico y Ruta 119",
-				"desc": "Rescue researchers studying extreme weather anomalies from villainous infiltrators.",
-				"desc_es": "Rescata a los científicos del clima en la Ruta 119 y enfrenta a los guardias camuflados.",
-				"reward_diamonds_first_clear": 12,
+				"name": "Route 119 & Weather Institute",
+				"name_es": "Ruta 119 e Instituto Meteorológico",
+				"desc": "Repel Team Aqua infiltrators besieging the meteorological institute amidst torrential squalls.",
+				"desc_es": "Repele a los invasores del Team Aqua que asedian el centro de investigación climática.",
+				"reward_diamonds_first_clear": 15,
 				"stages": [
 					{
 						"stage_num": 1,
-						"trainer_title": "Infiltrator Grunt",
-						"trainer_title_es": "Recluta Hostil",
-						"trainer_name": "Infiltration Grunt",
-						"trainer_name_es": "Recluta de Asalto",
-						"intro": "The Weather Institute belongs to us! Castform and Poochyena, Weather Ball!",
-						"intro_es": "¡El Instituto Meteorológico nos pertenece! ¡Castform y Poochyena, golpe meteorológico!",
-						"outro": "The forecast definitely turned against us!",
-						"outro_es": "¡El clima no jugó a nuestro favor!",
-						"team_pokemon_names": ["Castform", "Poochyena"]
+						"trainer_title": "Team Aqua Grunt",
+						"trainer_title_es": "Recluta Team Aqua",
+						"trainer_name": "Aqua Grunt 1",
+						"trainer_name_es": "Recluta Aqua 1",
+						"intro": "The weather data is ours! Poochyena and Carvanha, Bite down!",
+						"intro_es": "¡Los datos climáticos nos pertenecen! ¡Poochyena y Carvanha, muerdan!",
+						"outro": "Our rain front failed!",
+						"outro_es": "¡Nuestro frente de lluvia colapsó!",
+						"team_pokemon_names": ["Poochyena", "Carvanha"]
 					},
 					{
 						"stage_num": 2,
-						"trainer_title": "Hoenn Ranger",
-						"trainer_title_es": "Ranger de Hoenn",
+						"trainer_title": "Aqua Infiltrator",
+						"trainer_title_es": "Infiltrado Aqua",
+						"trainer_name": "Aqua Infiltrator Luke",
+						"trainer_name_es": "Infiltrado Aqua Luke",
+						"intro": "The ocean shall claim the lands! Corphish and Mightyena, sweep them away!",
+						"intro_es": "¡El océano reclamará la tierra! ¡Corphish y Mightyena, barran con ellos!",
+						"outro": "Pushed back against the river!",
+						"outro_es": "¡Me empujaron de vuelta al río!",
+						"team_pokemon_names": ["Corphish", "Mightyena"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Aqua Admin",
+						"trainer_title_es": "Comandante Aqua",
+						"trainer_name": "Admin Shelly",
+						"trainer_name_es": "Comandante Silvina",
+						"intro": "You're meddling where you don't belong! Sharpedo and Mightyena, tear through them with Crunch!",
+						"intro_es": "¡Te estás metiendo donde nadie te llamó! ¡Sharpedo y Mightyena, destrócenlos con Triturar!",
+						"outro": "Tch... What overwhelming skill! Retreat, fall back!",
+						"outro_es": "¡Tch... Qué habilidad abrumadora! ¡Retirada, reagrúpense!",
+						"team_pokemon_names": ["Sharpedo", "Mightyena"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Institute Researcher",
+						"trainer_title_es": "Investigador del Instituto",
+						"trainer_name": "Scientist Ray",
+						"trainer_name_es": "Científico Ray",
+						"intro": "Thank you for saving us! Let me test the weather adaptability of our Castform in battle!",
+						"intro_es": "¡Gracias por rescatarnos! ¡Permíteme probar la adaptación climática de nuestro Castform en combate!",
+						"outro": "Remarkable versatility!",
+						"outro_es": "¡Una versatilidad admirable!",
+						"team_pokemon_names": ["Castform"]
+					},
+					{
+						"stage_num": 5,
+						"trainer_title": "Pokémon Ranger",
+						"trainer_title_es": "Soldado Forestal",
 						"trainer_name": "Ranger Catherine",
 						"trainer_name_es": "Ranger Catherine",
-						"intro": "The Devon Scope revealed an invisible Kecleon on the suspension bridge! Tropius, Razor Leaf!",
-						"intro_es": "¡El Detector Devon reveló un Kecleon invisible en el puente colgante! ¡Tropius, hoja afilada!",
-						"outro": "The canopy path to Fortree is clear!",
-						"outro_es": "¡El camino hacia Arborada está despejado!",
-						"team_pokemon_names": ["Kecleon", "Tropius"]
+						"is_boss": true,
+						"intro": "Route 119's dense grass hides wonders! Devon Scope revealed us: Tropius and Kecleon, camouflage strike!",
+						"intro_es": "¡La densa hierba de la Ruta 119 esconde maravillas! El Detector nos reveló: ¡Tropius y Kecleon, golpe camuflado!",
+						"outro": "You perceive nature itself! Fortree Gym awaits you above the canopy!",
+						"outro_es": "¡Percibes la naturaleza con claridad! ¡El Gimnasio Arborada te espera en las alturas!",
+						"team_pokemon_names": ["Tropius", "Kecleon"]
 					}
 				]
 			},
 			"fortree_gym": {
 				"id": "fortree_gym",
-				"name": "Fortree Treetop Gym",
-				"name_es": "Gimnasio Arborada en las Copas",
-				"desc": "Ascend the rope bridges to challenge Gym Leader Winona and her aerial squadron.",
-				"desc_es": "Asciende por los puentes de cuerda para enfrentar a la Líder Alana y su escuadrón aéreo.",
-				"reward_diamonds_first_clear": 18,
+				"name": "Fortree Treehouse Gym",
+				"name_es": "Gimnasio Arbóreo de Arborada",
+				"desc": "Solve revolving turnstile gates suspended in treehouse heights to challenge Gym Leader Winona.",
+				"desc_es": "Cruza las puertas giratorias colgantes en las copas arbóreas y desafía a la Líder Alana.",
+				"reward_diamonds_first_clear": 15,
 				"stages": [
 					{
 						"stage_num": 1,
 						"trainer_title": "Bird Keeper",
-						"trainer_title_es": "Ornitólogo de Élite",
+						"trainer_title_es": "Ornitólogo",
 						"trainer_name": "Bird Keeper Jared",
 						"trainer_name_es": "Ornitólogo Jared",
-						"intro": "My birds harness every current in the sky! Swellow, Wing Attack!",
-						"intro_es": "¡Mis aves dominan las corrientes de viento! ¡Swellow, ataque ala!",
-						"outro": "Lost the wind beneath my wings!",
-						"outro_es": "¡Perdí el viento bajo las alas!",
-						"team_pokemon_names": ["Swellow", "Skarmory"]
+						"intro": "The wind sings high up here! Swellow and Taillow, Wing Attack!",
+						"intro_es": "¡El viento canta aquí arriba! ¡Swellow y Taillow, Ataque Ala!",
+						"outro": "Our altitude dropped like a stone!",
+						"outro_es": "¡Nuestra altura cayó en picada!",
+						"team_pokemon_names": ["Swellow", "Taillow"]
 					},
 					{
 						"stage_num": 2,
+						"trainer_title": "Picnicker",
+						"trainer_title_es": "Dominguera",
+						"trainer_name": "Picnicker Ashley",
+						"trainer_name_es": "Dominguera Ashley",
+						"intro": "Our fluffy cloud wings glide smoothly! Swablu and Pelipper, Water Gun!",
+						"intro_es": "¡Nuestras alas de nube planean suaves! ¡Swablu y Pelipper, Pistola Agua!",
+						"outro": "Down we go gently!",
+						"outro_es": "¡Caímos suavemente!",
+						"team_pokemon_names": ["Swablu", "Pelipper"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Camper",
+						"trainer_title_es": "Campista",
+						"trainer_name": "Camper Flint",
+						"trainer_name_es": "Campista Flint",
+						"intro": "You must maneuver through the spinning turnstiles! Swellow and Tropius, Gust!",
+						"intro_es": "¡Debes superar los molinillos giratorios! ¡Swellow y Tropius, Tornado!",
+						"outro": "Pushed right past my turnstile!",
+						"outro_es": "¡Pasaste mi compuerta sin frenar!",
+						"team_pokemon_names": ["Swellow", "Tropius"]
+					},
+					{
+						"stage_num": 4,
 						"trainer_title": "Gym Leader Winona",
 						"trainer_title_es": "Líder Alana",
 						"trainer_name": "Gym Leader Winona",
@@ -3041,11 +3225,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 						"is_boss": true,
 						"badge_name": "Feather Badge",
 						"badge_name_es": "Medalla Pluma",
-						"intro": "I have become one with the bird Pokémon of the sky and the gentle breezes of Fortree. My wings shall never be grounded! Altaria, Dragon Dance!",
-						"intro_es": "He sentido la elegancia del viento y la libertad de los cielos. ¡Mis alas jamás serán derribadas! ¡Altaria, Danza Dragón!",
-						"outro": "Though my flight has ceased, your passion soared far higher. I present to you the Feather Badge!",
-						"outro_es": "Aunque mi vuelo terminó, tu pasión voló aún más alto. ¡Te confiero la Medalla Pluma!",
-						"team_pokemon_names": ["Swellow", "Skarmory", "Altaria"]
+						"intro": "I am Winona, Leader of Fortree Gym! I have become one with bird Pokémon and have taken to the skies... Swellow, Pelipper, Tropius, Altaria... Behold our graceful aerial dance!",
+						"intro_es": "¡Soy Alana, Líder de Arborada! Me he vuelto una con los Pokémon pájaro y he volado por los cielos... Swellow, Pelipper, Tropius, Altaria... ¡Observa nuestra elegante danza aérea!",
+						"outro": "Never before have I witnessed a trainer command with such boundless wind. I bestow upon you the Feather Badge!",
+						"outro_es": "Jamás vi un entrenador comandar con un viento tan libre. ¡Te otorgo con honor la Medalla Pluma!",
+						"team_pokemon_names": ["Swellow", "Pelipper", "Tropius", "Altaria"]
 					}
 				]
 			}
@@ -3062,54 +3246,54 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"stages": [
 			{
 				"stage_num": 1,
-				"trainer_title": "Astral Psychic",
-				"trainer_title_es": "Médium Astral",
+				"trainer_title": "Psychic",
+				"trainer_title_es": "Médium",
 				"trainer_name": "Psychic Preston",
 				"trainer_name_es": "Médium Preston",
-				"intro": "I foresaw your arrival through the cosmic alignment! Ralts and Kirlia, Confusion beam!",
-				"intro_es": "¡Percibí tu llegada a través de las estrellas! ¡Ralts y Kirlia, rayo de confusión!",
-				"outro": "Your mind is fortified with an impenetrable barrier!",
-				"outro_es": "¡Tu mente posee una barrera inquebrantable!",
+				"intro": "Telekinesis bends spoons and alters reality! Ralts and Kirlia, Confusion!",
+				"intro_es": "¡La telequinesis dobla cucharas y altera la realidad! ¡Ralts y Kirlia, Confusión!",
+				"outro": "My psychic waves were scattered!",
+				"outro_es": "¡Mis ondas psíquicas se disiparon!",
 				"team_pokemon_names": ["Ralts", "Kirlia"]
 			},
 			{
 				"stage_num": 2,
-				"trainer_title": "Shoal Explorer",
-				"trainer_title_es": "Explorador Polar",
-				"trainer_name": "Hiker Trent",
-				"trainer_name_es": "Montañero Trent",
-				"intro": "Low tide in Shoal Cave unveiled frozen secrets! Snorunt and Spheal, Aurora Beam!",
-				"intro_es": "¡La marea baja en la Cueva Cardumen reveló secretos árticos! ¡Snorunt y Spheal, rayo aurora!",
-				"outro": "The arctic freeze couldn't halt your momentum!",
-				"outro_es": "¡El frío no pudo congelar tu avance!",
-				"team_pokemon_names": ["Snorunt", "Spheal"]
+				"trainer_title": "Hex Maniac",
+				"trainer_title_es": "Bruja",
+				"trainer_name": "Hex Maniac Patricia",
+				"trainer_name_es": "Bruja Patricia",
+				"intro": "Ghostly spirits whisper of cosmic orbits... Duskull and Shuppet, Night Shade!",
+				"intro_es": "¡Espíritus fantasmales susurran órbitas cósmicas... Duskull y Shuppet, Tinieblas!",
+				"outro": "The celestial alignment faded!",
+				"outro_es": "¡La alineación cósmica se apagó!",
+				"team_pokemon_names": ["Duskull", "Shuppet"]
 			},
 			{
 				"stage_num": 3,
-				"trainer_title": "Bay Sailor",
-				"trainer_title_es": "Marinero de la Bahía",
-				"trainer_name": "Sailor Ernest",
-				"trainer_name_es": "Marinero Ernest",
-				"intro": "The ocean waters embracing Mossdeep run deep and mysterious! Sealeo, Body Slam!",
-				"intro_es": "¡Las aguas que rodean Algaria son profundas y misteriosas! ¡Sealeo, golpe cuerpo!",
-				"outro": "Knocked straight down to the ocean floor!",
-				"outro_es": "¡Directo al fondo marino!",
-				"team_pokemon_names": ["Sealeo"]
+				"trainer_title": "Psychic",
+				"trainer_title_es": "Médium",
+				"trainer_name": "Psychic Blake",
+				"trainer_name_es": "Médium Blake",
+				"intro": "Floating stones reveal ancient secrets! Baltoy and Claydol, Psybeam!",
+				"intro_es": "¡Las piedras flotantes revelan secretos ancestrales! ¡Baltoy y Claydol, Psicorrayo!",
+				"outro": "Our levitation lost equilibrium!",
+				"outro_es": "¡Nuestra levitación perdió el equilibrio!",
+				"team_pokemon_names": ["Baltoy", "Claydol"]
 			},
 			{
 				"stage_num": 4,
-				"trainer_title": "Gym Leaders Tate & Liza",
-				"trainer_title_es": "Líderes Gemelos Vito y Leti",
+				"trainer_title": "Tate & Liza",
+				"trainer_title_es": "Vito y Leti",
 				"trainer_name": "Tate & Liza",
 				"trainer_name_es": "Vito y Leti",
 				"is_boss": true,
 				"badge_name": "Mind Badge",
 				"badge_name_es": "Medalla Mente",
-				"intro": "Our minds communicate in telepathic harmony! Sun and Moon, light and gravity... Solrock and Lunatone, twin psychic pulse!",
-				"intro_es": "¡Nuestras mentes están conectadas en una sola sincronía perfecta! Sol y Luna, luz y gravedad... ¡Solrock y Lunatone, telequinesis combinada!",
-				"outro": "Our twin synchronization... was surpassed by your bond with your team! Receive the Mind Badge!",
-				"outro_es": "¡Nuestra sincronía... ha sido superada por tu lazo con tu equipo! ¡Recibe la Medalla Mente!",
-				"team_pokemon_names": ["Lunatone", "Solrock"]
+				"intro": "Our minds communicate in telepathic harmony! Sun and Moon, light and gravity... Solrock, Lunatone, Claydol... Twin psychic pulse!",
+				"intro_es": "¡Nuestras mentes están conectadas en una sola sincronía perfecta! Sol y Luna, luz y gravedad... ¡Solrock, Lunatone, Claydol... telequinesis combinada!",
+				"outro": "Our telepathic link... It couldn't overcome the power of your teamwork! Take the Mind Badge!",
+				"outro_es": "Nuestro enlace telepático... ¡No pudo superar el poder de tu equipo! ¡Tomen la Medalla Mente!",
+				"team_pokemon_names": ["Lunatone", "Solrock", "Claydol"]
 			}
 		]
 	},
@@ -3120,87 +3304,197 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title": "Episode VIII: Rain Badge & Primal Awakening (Sootopolis City)",
 		"title_es": "Episodio VIII: Medalla Lluvia y el Despertar Primigenio (Arrecípolis)",
 		"subtitle": "Halt the cataclysm inside the Cave of Origin and conquer the final Gym of Hoenn!",
-		"subtitle_es": "¡Detén la catástrofe en la Cueva del Origen y conquista el último Gimnasio de Hoenn!",
-		"reward_diamonds_first_clear": 35,
+		"subtitle_es": "¡Detén el cataclismo ancestral en la Cueva del Origen y conquista el último Gimnasio de Hoenn!",
+		"reward_diamonds_first_clear": 40,
 		"routes": {
 			"cave_of_origin": {
 				"id": "cave_of_origin",
-				"name": "Cave of Origin (Primal Crisis)",
-				"name_es": "Cueva del Origen (Crisis Primigenia)",
-				"desc": "Confront the titans of land and sea whose primordial clash threatens to engulf Hoenn.",
-				"desc_es": "Enfrenta a los titanes primigenios de tierra y mar cuyo choque sacude a toda Hoenn.",
-				"reward_diamonds_first_clear": 15,
+				"name": "Cave of Origin: Primal Crisis",
+				"name_es": "Cueva del Origen: Crisis Primigenia",
+				"desc": "Dive into the subterranean caldera where ancient weather legends clash in raging cataclysm.",
+				"desc_es": "Desciende a la caldera donde los titanes del clima desatan un choque cataclísmico.",
+				"reward_diamonds_first_clear": 20,
 				"stages": [
 					{
 						"stage_num": 1,
-						"trainer_title": "Guardian of the Earth",
-						"trainer_title_es": "Guardián de la Tierra",
-						"trainer_name": "Apparition of Groudon",
-						"trainer_name_es": "Aparición de Groudon",
-						"intro": "The earth fractures as scorching magma surges through the cavern! The continent titan roars!",
-						"intro_es": "¡La tierra se quiebra y un calor abrasador invade la caverna! ¡El titán de los continentes ruge!",
-						"outro": "The suffocating heat begins to recede!",
-						"outro_es": "¡El calor sofocante comienza a menguar!",
-						"team_pokemon_names": ["Camerupt", "Groudon"]
+						"trainer_title": "Magma Infiltrator",
+						"trainer_title_es": "Infiltrado Magma",
+						"trainer_name": "Magma Infiltrator Vance",
+						"trainer_name_es": "Infiltrado Magma Vance",
+						"intro": "The ground splits beneath our boots! Camerupt and Mightyena, incinerate the intruder!",
+						"intro_es": "¡La tierra se quiebra a nuestro paso! ¡Camerupt y Mightyena, incineren al intruso!",
+						"outro": "The tremors overwhelmed us!",
+						"outro_es": "¡Los temblores nos superaron!",
+						"team_pokemon_names": ["Camerupt", "Mightyena"]
 					},
 					{
 						"stage_num": 2,
-						"trainer_title": "Guardian of the Deep",
-						"trainer_title_es": "Guardián del Océano",
-						"trainer_name": "Apparition of Kyogre",
-						"trainer_name_es": "Aparición de Kyogre",
-						"intro": "Colossal torrents submerge the sacred chamber! The ocean titan awakens!",
-						"intro_es": "¡Torrentes gigantescos inundan la cámara sagrada! ¡El titán de los océanos despierta!",
-						"outro": "The raging tempest calms before your courage!",
-						"outro_es": "¡La tormenta marina se calma ante tu valor!",
-						"team_pokemon_names": ["Walrein", "Kyogre"]
+						"trainer_title": "Aqua Infiltrator",
+						"trainer_title_es": "Infiltrado Aqua",
+						"trainer_name": "Aqua Infiltrator Boris",
+						"trainer_name_es": "Infiltrado Aqua Boris",
+						"intro": "Torrential waters flood the cavern! Sharpedo and Crawdaunt, Crabhammer!",
+						"intro_es": "¡Las aguas torrenciales inundan la caverna! ¡Sharpedo y Crawdaunt, Martillazo!",
+						"outro": "Swept away by the counter-wave!",
+						"outro_es": "¡Barridos por la contramarea!",
+						"team_pokemon_names": ["Sharpedo", "Crawdaunt"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Magma Leader Maxie",
+						"trainer_title_es": "Líder Magno",
+						"trainer_name": "Leader Maxie",
+						"trainer_name_es": "Líder Magno",
+						"intro": "The Blue Orb has awakened the Continent Titan! Camerupt and Mightyena, clear our path!",
+						"intro_es": "¡La Esfera Azul despertó al Titán de los Continentes! ¡Camerupt y Mightyena, despejen el camino!",
+						"outro": "The power of Groudon is beyond my control...",
+						"outro_es": "El poder de Groudon está fuera de mi control...",
+						"team_pokemon_names": ["Camerupt", "Mightyena"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Aqua Leader Archie",
+						"trainer_title_es": "Líder Aquiles",
+						"trainer_name": "Leader Archie",
+						"trainer_name_es": "Líder Aquiles",
+						"intro": "The Red Orb commands the oceans! Sharpedo and Walrein, drown all opposition in the abyss!",
+						"intro_es": "¡La Esfera Roja comanda los océanos! ¡Sharpedo y Walrein, hundan toda oposición en el abismo!",
+						"outro": "Kyogre's storm threatens everything... What have we done?!",
+						"outro_es": "La tormenta de Kyogre lo destruirá todo... ¡¿Qué hemos hecho?!",
+						"team_pokemon_names": ["Sharpedo", "Walrein"]
+					},
+					{
+						"stage_num": 5,
+						"trainer_title": "Primal Titans",
+						"trainer_title_es": "Titanes Primigenios",
+						"trainer_name": "Primal Titans Clash",
+						"trainer_name_es": "Choque Primigenio",
+						"is_boss": true,
+						"intro": "Drought and Deluge collide in catastrophic fury! Groudon and Kyogre, unleash the prehistoric cataclysm!",
+						"intro_es": "¡Sequía y Diluvio colisionan en furia catastrófica! ¡Groudon y Kyogre, desaten el cataclismo prehistórico!",
+						"outro": "A celestial roar from the ozone layer calms the sea and sun! The crisis is averted!",
+						"outro_es": "¡Un rugido celestial desde la capa de ozono calma el mar y el sol! ¡La crisis fue contenida!",
+						"team_pokemon_names": ["Groudon", "Kyogre"]
 					}
 				]
 			},
 			"sky_pillar": {
 				"id": "sky_pillar",
-				"name": "Sky Pillar Apex",
-				"name_es": "Cima del Pilar Celeste",
-				"desc": "Ascend the crumbling ancient tower above the clouds to witness the dragon mediator.",
-				"desc_es": "Asciende la milenaria torre sobre las nubes para presenciar al dragón mediador de los cielos.",
-				"reward_diamonds_first_clear": 15,
+				"name": "Sky Pillar: Dragon Ascent",
+				"name_es": "Pilar Celeste: Ascenso del Dragón",
+				"desc": "Climb through the crumbly, cracked floors of the ancient monolith to awaken the ozone dragon Rayquaza.",
+				"desc_es": "Escala los pisos agrietados del antiguo monolito para despertar al dragón del ozono Rayquaza.",
+				"reward_diamonds_first_clear": 20,
 				"stages": [
 					{
 						"stage_num": 1,
-						"trainer_title": "Ancient Sky Guardian",
-						"trainer_title_es": "Guardián Ancestral",
+						"trainer_title": "Dragon Tamer",
+						"trainer_title_es": "Domadragones",
+						"trainer_name": "Dragon Tamer Nicolas",
+						"trainer_name_es": "Domadragones Nicolas",
+						"intro": "Only worthy trainers can ascend the sacred pillar! Swablu and Bagon, Dragon Breath!",
+						"intro_es": "¡Solo los elegidos pueden subir al pilar sagrado! ¡Swablu y Bagon, Dragoaliento!",
+						"outro": "Your dragon spirit shines brighter than mine!",
+						"outro_es": "¡Tu espíritu dragón brilla más que el mío!",
+						"team_pokemon_names": ["Swablu", "Bagon"]
+					},
+					{
+						"stage_num": 2,
+						"trainer_title": "Dragon Tamer",
+						"trainer_title_es": "Domadragones",
+						"trainer_name": "Dragon Tamer Aaron",
+						"trainer_name_es": "Domadragones Aaron",
+						"intro": "The wind grows harsher with each floor! Shelgon and Vibrava, Dragon Pulse!",
+						"intro_es": "¡El viento ruge más fuerte en cada piso! ¡Shelgon y Vibrava, Pulso Dragón!",
+						"outro": "Blown off course by your ferocity!",
+						"outro_es": "¡Desviados por tu feroz ataque!",
+						"team_pokemon_names": ["Shelgon", "Vibrava"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Dragon Master",
+						"trainer_title_es": "Maestro Dragón",
+						"trainer_name": "Veteran Grant",
+						"trainer_name_es": "Veterano Grant",
+						"intro": "We have guarded the Sky Pillar for generations! Flygon and Altaria, Dragon Dance!",
+						"intro_es": "¡Custodiamos el Pilar Celeste desde hace generaciones! ¡Flygon y Altaria, Danza Dragón!",
+						"outro": "Our aerial defense was breached!",
+						"outro_es": "¡Nuestra defensa aérea fue quebrada!",
+						"team_pokemon_names": ["Flygon", "Altaria"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Sky Pillar Guardian",
+						"trainer_title_es": "Guardián del Pilar",
 						"trainer_name": "Elder of Sky Pillar",
-						"trainer_name_es": "Venerable del Pilar",
-						"intro": "Only one of pure spirit may witness the flight of the emerald dragon! Altaria, Dragon Breath!",
-						"intro_es": "¡Solo quien posea un espíritu puro puede contemplar el vuelo del dragón esmeralda! ¡Altaria, aliento dragón!",
-						"outro": "Rayquaza has heard your resolve across the stratosphere!",
-						"outro_es": "¡Rayquaza ha escuchado tu llamada desde la estratosfera!",
-						"team_pokemon_names": ["Altaria", "Rayquaza"]
+						"trainer_name_es": "Anciano del Pilar",
+						"intro": "Above these clouds rests the protector of Hoenn! Altaria and Salamence, test this challenger!",
+						"intro_es": "¡Sobre estas nubes reposa el protector de Hoenn! ¡Altaria y Salamence, prueben su temple!",
+						"outro": "The skies part before you. Gaze upon the apex of the sky!",
+						"outro_es": "Los cielos se abren ante ti. ¡Contempla la cúspide del firmamento!",
+						"team_pokemon_names": ["Altaria", "Salamence"]
+					},
+					{
+						"stage_num": 5,
+						"trainer_title": "Dragon Apex",
+						"trainer_title_es": "Ápice del Cielo",
+						"trainer_name": "Rayquaza",
+						"trainer_name_es": "Rayquaza",
+						"is_boss": true,
+						"intro": "A draconic roar shakes the ozone layer! Rayquaza descends with blinding emerald velocity! Dragon Ascent!",
+						"intro_es": "¡Un rugido dragón sacude la atmósfera! ¡Rayquaza desciende a velocidad esmeralda cegadora! ¡Ascenso Draco!",
+						"outro": "The emerald dragon yields to your heroic bond and blesses your journey across Hoenn!",
+						"outro_es": "¡El dragón esmeralda reconoce tu lazo heroico y bendice tu travesía por Hoenn!",
+						"team_pokemon_names": ["Rayquaza"]
 					}
 				]
 			},
 			"sootopolis_gym": {
 				"id": "sootopolis_gym",
 				"name": "Sootopolis Water Gym",
-				"name_es": "Gimnasio Arrecípolis de Plubio",
-				"desc": "Walk across delicate ice tiles and conquer Gym Leader Wallace to claim the Rain Badge!",
-				"desc_es": "Camina sobre frágiles baldosas de hielo y vence al Líder Plubio para reclamar la Medalla Lluvia.",
-				"reward_diamonds_first_clear": 20,
+				"name_es": "Gimnasio Acuático de Arrecípolis",
+				"desc": "Cross the treacherous thin ice tiles to face the artistic aquatic master, Gym Leader Wallace.",
+				"desc_es": "Atraviesa el suelo de hielo quebradizo y desafía al maestro acuático de la elegancia, el Líder Plubio.",
+				"reward_diamonds_first_clear": 25,
 				"stages": [
 					{
 						"stage_num": 1,
-						"trainer_title": "Artistic Swimmer",
-						"trainer_title_es": "Nadador Artístico",
+						"trainer_title": "Swimmer",
+						"trainer_title_es": "Nadador",
 						"trainer_name": "Swimmer Tony",
 						"trainer_name_es": "Nadador Tony",
-						"intro": "Swimming within Sootopolis crater is an art form! Luvdisc and Sealeo, Water Pulse!",
-						"intro_es": "¡Nadar en el cráter de Arrecípolis es un arte! ¡Luvdisc y Sealeo, hidropulso!",
-						"outro": "Your technique was utterly immaculate!",
-						"outro_es": "¡Tu técnica fue impecable!",
-						"team_pokemon_names": ["Luvdisc", "Sealeo"]
+						"intro": "The pure waters of Sootopolis are pristine! Luvdisc and Corphish, Bubble Beam!",
+						"intro_es": "¡Las aguas de Arrecípolis son las más cristalinas! ¡Luvdisc y Corphish, Rayo Burbuja!",
+						"outro": "Washed right back to shore!",
+						"outro_es": "¡Me devolvieron a la orilla!",
+						"team_pokemon_names": ["Luvdisc", "Corphish"]
 					},
 					{
 						"stage_num": 2,
+						"trainer_title": "Beauty",
+						"trainer_title_es": "Bella",
+						"trainer_name": "Beauty Connie",
+						"trainer_name_es": "Bella Connie",
+						"intro": "Graceful ice and shell defense! Clamperl and Sealeo, Aurora Beam!",
+						"intro_es": "¡Elegancia en hielo y concha! ¡Clamperl y Sealeo, Rayo Aurora!",
+						"outro": "Our slippery steps gave out!",
+						"outro_es": "¡Nos resbalamos en el hielo!",
+						"team_pokemon_names": ["Clamperl", "Sealeo"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Swimmer",
+						"trainer_title_es": "Nadadora",
+						"trainer_name": "Swimmer Grace",
+						"trainer_name_es": "Nadadora Grace",
+						"intro": "The deep crater pool holds giants! Wailmer and Whiscash, Water Pulse!",
+						"intro_es": "¡El cráter acuático alberga gigantes! ¡Wailmer y Whiscash, Hidropulso!",
+						"outro": "A spectacular counter-current!",
+						"outro_es": "¡Una contracorriente espectacular!",
+						"team_pokemon_names": ["Wailmer", "Whiscash"]
+					},
+					{
+						"stage_num": 4,
 						"trainer_title": "Gym Leader Wallace",
 						"trainer_title_es": "Líder Plubio",
 						"trainer_name": "Gym Leader Wallace",
@@ -3208,11 +3502,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 						"is_boss": true,
 						"badge_name": "Rain Badge",
 						"badge_name_es": "Medalla Lluvia",
-						"intro": "Welcome to the most magnificent aquatic stage in Hoenn! The beauty, power, and grace of water will flow as one. Milotic, Rain Dance!",
-						"intro_es": "¡Bienvenido al escenario acuático más sublime de Hoenn! La elegancia y el poder del agua fluirán en perfecta armonía. ¡Milotic, Danza Lluvia!",
-						"outro": "A performance of pure elegance and dazzling prowess! You have conquered every trial across Hoenn. With highest respect, I award you the Rain Badge!",
-						"outro_es": "¡Qué espectáculo tan deslumbrante y conmovedor! Has conquistado todos los desafíos de Hoenn. ¡Te entrego con el más profundo respeto la Medalla Lluvia!",
-						"team_pokemon_names": ["Luvdisc", "Whiscash", "Milotic"]
+						"intro": "Welcome to the most magnificent aquatic stage in Hoenn! The beauty, power, and grace of water will flow as one. Luvdisc, Whiscash, Sealeo, Milotic... Rain Dance!",
+						"intro_es": "¡Bienvenido al escenario acuático más sublime de Hoenn! La elegancia y el poder del agua fluirán en perfecta armonía. Luvdisc, Whiscash, Sealeo, Milotic... ¡Danza Lluvia!",
+						"outro": "Truly breathtaking! The elegance of your battle choreography has left me spellbound. Take the Rain Badge, the crown jewel of Hoenn!",
+						"outro_es": "¡Verdaderamente deslumbrante! La elegancia de tu combate me ha cautivado. ¡Toma la Medalla Lluvia, la joya definitiva de Hoenn!",
+						"team_pokemon_names": ["Luvdisc", "Whiscash", "Sealeo", "Milotic"]
 					}
 				]
 			}
@@ -3229,30 +3523,42 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"stages": [
 			{
 				"stage_num": 1,
-				"trainer_title": "Youngster Tristan",
-				"trainer_title_es": "Joven Tristán",
+				"trainer_title": "Youngster",
+				"trainer_title_es": "Joven",
 				"trainer_name": "Youngster Tristan",
-				"trainer_name_es": "Joven Tristán",
-				"intro": "You came through Oreburgh Gate? Let's test your strength! Geodude, Rock Throw!",
-				"intro_es": "¡¿Cruzaste la Puerta Pirita?! ¡Probemos tu fuerza! ¡Geodude, Lanzarrocas!",
-				"outro": "You rock! You're ready for Roark's Gym!",
-				"outro_es": "¡Estuviste sólido como una roca! ¡Estás listo para el Gimnasio de Roco!",
-				"team_pokemon_names": ["Geodude"]
+				"trainer_name_es": "Joven Tristan",
+				"intro": "Sinnoh's coal country is tough! Bidoof and Starly, Tackle!",
+				"intro_es": "¡La región minera de Sinnoh es dura! ¡Bidoof y Starly, Placaje!",
+				"outro": "You chipped away our defense!",
+				"outro_es": "¡Derrumbaste nuestra defensa!",
+				"team_pokemon_names": ["Bidoof", "Starly"]
 			},
 			{
 				"stage_num": 2,
-				"trainer_title": "Worker Colin",
-				"trainer_title_es": "Operario Colin",
+				"trainer_title": "Worker",
+				"trainer_title_es": "Operario",
 				"trainer_name": "Worker Colin",
 				"trainer_name_es": "Operario Colin",
-				"intro": "Deep in the mine, our Pokémon work hard alongside us! Geodude and Onix, dig in!",
-				"intro_es": "¡En lo profundo de la mina nuestros Pokémon trabajan duro a nuestro lado! ¡Geodude y Onix, a luchar!",
-				"outro": "Hard hat crushed! Your technique is diamond-hard.",
-				"outro_es": "¡Casco roto! Tu técnica es dura como el diamante.",
-				"team_pokemon_names": ["Geodude", "Onix"]
+				"intro": "My shovel excavates ancient relics! Bonsly and Bronzor, Rock Throw!",
+				"intro_es": "¡Mi pala excava fósiles antiguos! ¡Bonsly y Bronzor, Lanzarrocas!",
+				"outro": "Our bedrock crumbled!",
+				"outro_es": "¡Nuestra roca madre se fracturó!",
+				"team_pokemon_names": ["Bonsly", "Bronzor"]
 			},
 			{
 				"stage_num": 3,
+				"trainer_title": "Hiker",
+				"trainer_title_es": "Montañero",
+				"trainer_name": "Hiker Kevin",
+				"trainer_name_es": "Montañero Kevin",
+				"intro": "The Oreburgh Gym tests true grit! Shieldon and Bonsly, Iron Defense!",
+				"intro_es": "¡El Gimnasio Pirita pone a prueba tu temple! ¡Shieldon y Bonsly, Defensa Férrea!",
+				"outro": "Punctured right through our shield!",
+				"outro_es": "¡Atravesaste nuestro escudo!",
+				"team_pokemon_names": ["Shieldon", "Bonsly"]
+			},
+			{
+				"stage_num": 4,
 				"trainer_title": "Gym Leader Roark",
 				"trainer_title_es": "Líder Roco",
 				"trainer_name": "Gym Leader Roark",
@@ -3260,11 +3566,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"is_boss": true,
 				"badge_name": "Coal Badge",
 				"badge_name_es": "Medalla Lenteja",
-				"intro": "I am Roark, the Oreburgh Gym Leader and supervisor of the coal mine! Feel the crushing impact of prehistoric stone! Cranidos, Headbutt!",
-				"intro_es": "¡Soy Roco, el Líder de Ciudad Pirita y supervisor de la mina! ¡Siente el impacto demoledor de la piedra prehistórica! ¡Cranidos, Cabezazo!",
-				"outro": "Remarkable! Your determination broke right through our stone wall. I award you the Coal Badge!",
-				"outro_es": "¡Extraordinario! Tu determinación pulverizó nuestro muro de piedra. ¡Te otorgo la Medalla Lenteja!",
-				"team_pokemon_names": ["Geodude", "Onix", "Cranidos"]
+				"intro": "I am Roark, the Oreburgh Gym Leader and supervisor of the coal mine! Feel the crushing impact of prehistoric stone! Bonsly, Shieldon, Cranidos... Headbutt!",
+				"intro_es": "¡Soy Roco, el Líder de Ciudad Pirita y supervisor de la mina! ¡Siente el impacto demoledor de la piedra prehistórica! Bonsly, Shieldon, Cranidos... ¡Cabezazo!",
+				"outro": "W-what power! My fossil team couldn't break your line... You've truly earned the Coal Badge!",
+				"outro_es": "¡Q-qué poder! Mi equipo fósil no pudo romper tu formación... ¡Te has ganado con creces la Medalla Lenteja!",
+				"team_pokemon_names": ["Bonsly", "Shieldon", "Cranidos"]
 			}
 		]
 	},
@@ -3279,30 +3585,42 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"stages": [
 			{
 				"stage_num": 1,
-				"trainer_title": "Lass Caroline",
-				"trainer_title_es": "Chica Carolina",
+				"trainer_title": "Lass",
+				"trainer_title_es": "Chica",
 				"trainer_name": "Lass Caroline",
-				"trainer_name_es": "Chica Carolina",
-				"intro": "Eterna Forest is filled with charming grass Pokémon! Cherubi, Tackle!",
-				"intro_es": "¡El Bosque Vetusto está lleno de adorables Pokémon planta! ¡Cherubi, Placaje!",
-				"outro": "Cherubi wilted... you're very strong!",
-				"outro_es": "Cherubi se marchitó... ¡eres muy fuerte!",
-				"team_pokemon_names": ["Cherubi"]
+				"trainer_name_es": "Chica Caroline",
+				"intro": "The flowers in Eterna bloom with fragrant power! Cherubi and Budew, Mega Drain!",
+				"intro_es": "¡Las flores de Vetusta florecen con vigor! ¡Cherubi y Budew, Megaagotar!",
+				"outro": "Our petals wilted!",
+				"outro_es": "¡Nuestros pétalos se marchitaron!",
+				"team_pokemon_names": ["Cherubi", "Budew"]
 			},
 			{
 				"stage_num": 2,
-				"trainer_title": "Aroma Lady Angela",
-				"trainer_title_es": "Señorita Aroma Ángela",
+				"trainer_title": "Aroma Lady",
+				"trainer_title_es": "Señorita Aroma",
 				"trainer_name": "Aroma Lady Angela",
-				"trainer_name_es": "Señorita Aroma Ángela",
-				"intro": "Breathe in the sweet fragrance of blooming flowers! Turtwig and Cherubi, Razor Leaf!",
-				"intro_es": "¡Inhala la dulce fragancia de las flores en brote! ¡Turtwig y Cherubi, Hoja Afilada!",
-				"outro": "Scattered petals... your offense was overwhelming!",
-				"outro_es": "Pétalos dispersos... ¡tu ofensiva fue arrolladora!",
+				"trainer_name_es": "Señorita Aroma Angela",
+				"intro": "Bask in the natural photosynthesis of Sinnoh! Turtwig and Cherubi, Razor Leaf!",
+				"intro_es": "¡Siente la fotosíntesis pura de Sinnoh! ¡Turtwig y Cherubi, Hoja Afilada!",
+				"outro": "Your tactics blossomed brighter than ours!",
+				"outro_es": "¡Tus tácticas florecieron con más fuerza!",
 				"team_pokemon_names": ["Turtwig", "Cherubi"]
 			},
 			{
 				"stage_num": 3,
+				"trainer_title": "Beauty",
+				"trainer_title_es": "Bella",
+				"trainer_name": "Beauty Lindsay",
+				"trainer_name_es": "Bella Lindsay",
+				"intro": "Follow the clock hand maze between the flowerbeds! Combee and Cherrim, Sweet Scent!",
+				"intro_es": "¡Sigue las manecillas del reloj entre los canteros! ¡Combee y Cherrim, Dulce Aroma!",
+				"outro": "You navigated straight to the center!",
+				"outro_es": "¡Llegaste directo al corazón del jardín!",
+				"team_pokemon_names": ["Combee", "Cherrim"]
+			},
+			{
+				"stage_num": 4,
 				"trainer_title": "Gym Leader Gardenia",
 				"trainer_title_es": "Líder Gardenia",
 				"trainer_name": "Gym Leader Gardenia",
@@ -3310,10 +3628,10 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"is_boss": true,
 				"badge_name": "Forest Badge",
 				"badge_name_es": "Medalla Bosque",
-				"intro": "I am Gardenia, Master of Grass-type Pokémon! You won't leave me waiting, will you? Roserade, whip up a storm with Grass Knot!",
-				"intro_es": "¡Soy Gardenia, la maestra de los Pokémon tipo Planta! No me harás esperar, ¿verdad? ¡Roserade, desata una tormenta con Hierba Lazo!",
-				"outro": "What passion! You conquered the thorns and blossomed in victory! Here is the Forest Badge!",
-				"outro_es": "¡Qué pasión! ¡Venciste a las espinas y floreciste con gloria! ¡Aquí tienes la Medalla Bosque!",
+				"intro": "I am Gardenia, Master of Grass-type Pokémon! You won't leave me waiting, will you? Cherubi, Turtwig, Roserade... Whip up a storm with Grass Knot!",
+				"intro_es": "¡Soy Gardenia, la maestra de los Pokémon tipo Planta! No me harás esperar, ¿verdad? Cherubi, Turtwig, Roserade... ¡Desaten una tormenta con Hierba Lazo!",
+				"outro": "Amazing... Your battling style is in full, radiant bloom! Take the Forest Badge!",
+				"outro_es": "Increíble... ¡Tu estilo de combate está en pleno florecimiento! ¡Toma la Medalla Bosque!",
 				"team_pokemon_names": ["Cherubi", "Turtwig", "Roserade"]
 			}
 		]
@@ -3329,30 +3647,42 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"stages": [
 			{
 				"stage_num": 1,
-				"trainer_title": "Black Belt Rafael",
-				"trainer_title_es": "Karateka Rafael",
+				"trainer_title": "Black Belt",
+				"trainer_title_es": "Karateka",
 				"trainer_name": "Black Belt Rafael",
 				"trainer_name_es": "Karateka Rafael",
-				"intro": "Meditation and discipline! Meditite, show them our inner focus!",
-				"intro_es": "¡Meditación y disciplina! ¡Meditite, muéstrales nuestro enfoque interior!",
-				"outro": "Broken concentration... well done!",
-				"outro_es": "Concentración rota... ¡bien hecho!",
-				"team_pokemon_names": ["Meditite"]
+				"intro": "We condition our fists against Veilstone's meteorites! Croagunk and Starly, Low Kick!",
+				"intro_es": "¡Endurecemos los puños contra los meteoritos de Rocavelo! ¡Croagunk y Starly, Patada Baja!",
+				"outro": "You broke through my low guard!",
+				"outro_es": "¡Superaste mi guardia baja!",
+				"team_pokemon_names": ["Croagunk", "Starly"]
 			},
 			{
 				"stage_num": 2,
-				"trainer_title": "Black Belt Colby",
-				"trainer_title_es": "Karateka Colby",
+				"trainer_title": "Black Belt",
+				"trainer_title_es": "Karateka",
 				"trainer_name": "Black Belt Colby",
 				"trainer_name_es": "Karateka Colby",
-				"intro": "Feel the iron punches of Veilstone Dojo! Machoke and Meditite, Cross Chop!",
-				"intro_es": "¡Siente los puños de hierro del Dojo Rocavelo! ¡Machoke y Meditite, Golpe Cruzado!",
-				"outro": "Our defense shattered! Maylene awaits you!",
-				"outro_es": "¡Nuestra defensa se quebró! ¡Brega te espera!",
-				"team_pokemon_names": ["Machoke", "Meditite"]
+				"intro": "Push through the sliding punching bags! Riolu and Monferno, Mach Punch!",
+				"intro_es": "¡Abre paso entre los sacos de boxeo colgantes! ¡Riolu y Monferno, Ultrapuño!",
+				"outro": "Knocked off balance completely!",
+				"outro_es": "¡Perdí el equilibrio por completo!",
+				"team_pokemon_names": ["Riolu", "Monferno"]
 			},
 			{
 				"stage_num": 3,
+				"trainer_title": "Black Belt",
+				"trainer_title_es": "Karateka",
+				"trainer_name": "Black Belt Darren",
+				"trainer_name_es": "Karateka Darren",
+				"intro": "Maylene's discipline inspires us all! Croagunk and Riolu, Force Palm!",
+				"intro_es": "¡La disciplina de Brega nos inspira a todos! ¡Croagunk y Riolu, Palmeo!",
+				"outro": "Your spirit is pure steel!",
+				"outro_es": "¡Tu espíritu es puro acero!",
+				"team_pokemon_names": ["Croagunk", "Riolu"]
+			},
+			{
+				"stage_num": 4,
 				"trainer_title": "Gym Leader Maylene",
 				"trainer_title_es": "Líder Brega",
 				"trainer_name": "Gym Leader Maylene",
@@ -3360,11 +3690,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"is_boss": true,
 				"badge_name": "Cobble Badge",
 				"badge_name_es": "Medalla Adoquín",
-				"intro": "I'm Maylene! I don't know what it means to be strong yet, but I battle with everything I have! Lucario, Aura Sphere!",
-				"intro_es": "¡Soy Brega! Aún no sé con certeza qué significa ser fuerte, ¡pero combato con todo mi ser! ¡Lucario, Esfera Aural!",
-				"outro": "That was true strength... You taught me so much. Please take the Cobble Badge!",
-				"outro_es": "Esa fue verdadera fuerza... Me enseñaste mucho. ¡Por favor toma la Medalla Adoquín!",
-				"team_pokemon_names": ["Meditite", "Machoke", "Lucario"]
+				"intro": "I'm Maylene! I don't know what it means to be truly strong yet, but I battle with everything I have! Monferno, Croagunk, Lucario... Aura Sphere!",
+				"intro_es": "¡Soy Brega! Aún no sé con certeza qué significa ser fuerte, ¡pero combato con todo mi ser! Monferno, Croagunk, Lucario... ¡Esfera Aural!",
+				"outro": "I understand now... True strength comes from heart and harmony. You have earned the Cobble Badge!",
+				"outro_es": "Ahora lo entiendo... La verdadera fuerza viene del corazón y la armonía. ¡Te has ganado la Medalla Adoquín!",
+				"team_pokemon_names": ["Monferno", "Croagunk", "Lucario"]
 			}
 		]
 	},
@@ -3375,77 +3705,126 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title": "Episode IV: Fen Badge & the Great Marsh (Pastoria City)",
 		"title_es": "Episodio IV: Medalla Ciénaga y el Gran Pantanal (Ciudad Pradera)",
 		"subtitle": "Search the Great Marsh wetland safari or dive straight into Gym Leader Crasher Wake's deluge!",
-		"subtitle_es": "¡Explora el safari silvestre del Gran Pantanal o sumérgete en el diluvio del Líder Mananti!",
+		"subtitle_es": "¡Explora el safari del Gran Pantanal o sumérgete en el diluvio del Líder Mananti!",
 		"reward_diamonds_first_clear": 25,
 		"routes": {
 			"great_marsh": {
 				"id": "great_marsh",
-				"name": "Great Marsh (Wetlands Safari)",
-				"name_es": "Gran Pantanal (Safari de Humedales)",
-				"desc": "Trek through the muddy waters of the Great Marsh and clash with elusive swamp predators and Galactic grunts.",
-				"desc_es": "Camina por el lodoso Gran Pantanal y combate depredadores de ciénaga y reclutas del Equipo Galaxia.",
+				"name": "The Great Marsh Safari",
+				"name_es": "Safari del Gran Pantanal",
+				"desc": "Track wild marsh dwellers through mud puddles and thwart a Team Galactic operative hiding in the wetlands.",
+				"desc_es": "Rastrea fauna pantanosa entre el lodo y captura a un fugitivo del Team Galactic.",
 				"reward_diamonds_first_clear": 10,
 				"stages": [
 					{
 						"stage_num": 1,
-						"trainer_title": "Poké Fan Beverly",
-						"trainer_title_es": "Pokéfan Beverly",
-						"trainer_name": "Poké Fan Beverly",
-						"trainer_name_es": "Pokéfan Beverly",
-						"intro": "The marsh is full of adorable slippery friends! Wooper, Mud Shot!",
-						"intro_es": "¡El pantanal está lleno de amigos resbaladizos y tiernos! ¡Wooper, Disparo Lodo!",
-						"outro": "So slippery, but you caught us!",
-						"outro_es": "¡Tan resbaladizo, pero nos atrapaste!",
-						"team_pokemon_names": ["Wooper"]
+						"trainer_title": "Pokémon Ranger",
+						"trainer_title_es": "Soldado Forestal",
+						"trainer_name": "Ranger Taylor",
+						"trainer_name_es": "Ranger Taylor",
+						"intro": "Step carefully, the mud will pull your boots right down! Carnivine and Budew, Vine Whip!",
+						"intro_es": "¡Cuidado al pisar, el lodo te atrapará las botas! ¡Carnivine y Budew, Látigo Cepa!",
+						"outro": "You navigated the swamp like a native!",
+						"outro_es": "¡Cruzaste el pantano como un experto!",
+						"team_pokemon_names": ["Carnivine", "Budew"]
 					},
 					{
 						"stage_num": 2,
+						"trainer_title": "Poké Fan",
+						"trainer_title_es": "Poké Fan",
+						"trainer_name": "Poké Fan Beverly",
+						"trainer_name_es": "Poké Fan Beverly",
+						"intro": "Aren't marsh Pokémon cute when they splash? Shellos and Buizel, Water Gun!",
+						"intro_es": "¡Los Pokémon de ciénaga son adorables cuando chapotean! ¡Shellos y Buizel, Pistola Agua!",
+						"outro": "Oh! Splashed right out!",
+						"outro_es": "¡Nos salpicaron con fuerza!",
+						"team_pokemon_names": ["Shellos", "Buizel"]
+					},
+					{
+						"stage_num": 3,
+						"trainer_title": "Safari Patrol",
+						"trainer_title_es": "Patrulla Safari",
+						"trainer_name": "Patrol Officer Dan",
+						"trainer_name_es": "Oficial de Patrulla Dan",
+						"intro": "The dam builders keep the water levels steady! Bidoof and Bibarel, Hyper Fang!",
+						"intro_es": "¡Nuestros constructores de presas vigilan el caudal! ¡Bidoof y Bibarel, Hipercolmillo!",
+						"outro": "Our beaver barrier was bypassed!",
+						"outro_es": "¡Superaste nuestra barrera de presas!",
+						"team_pokemon_names": ["Bidoof", "Bibarel"]
+					},
+					{
+						"stage_num": 4,
 						"trainer_title": "Galactic Grunt",
 						"trainer_title_es": "Recluta Galaxia",
 						"trainer_name": "Galactic Grunt",
 						"trainer_name_es": "Recluta Galaxia",
-						"intro": "What are you doing snooping around our marsh operation? Carnivine, Croagunk, eliminate this pest!",
-						"intro_es": "¡¿Qué haces husmeando en nuestra operación del pantano?! ¡Carnivine, Croagunk, eliminen a esta molestia!",
-						"outro": "Ugh! Team Galactic will remember this!",
-						"outro_es": "¡Ugh! ¡El Equipo Galaxia no olvidará esto!",
-						"team_pokemon_names": ["Carnivine", "Croagunk"]
+						"intro": "Hehehe! Why are you chasing me into the marsh?! Croagunk and Stunky, Sludge Bomb!",
+						"intro_es": "¡Jajaja! ¡¿Por qué me persigues hasta el pantano?! ¡Croagunk y Stunky, Bomba Lodo!",
+						"outro": "Curse it! Galactic bombs don't detonate in wet mud!",
+						"outro_es": "¡Maldición! ¡La bomba no explotó en el lodo!",
+						"team_pokemon_names": ["Croagunk", "Stunky"]
+					},
+					{
+						"stage_num": 5,
+						"trainer_title": "Galactic Executive",
+						"trainer_title_es": "Ejecutivo Galaxia",
+						"trainer_name": "Galactic Operative",
+						"trainer_name_es": "Agente Galaxia",
+						"is_boss": true,
+						"intro": "You caught up to us... but Commander Saturn's orders are absolute! Carnivine, Skuntank, Toxicroak, exterminate!",
+						"intro_es": "Nos alcanzaste... ¡pero las órdenes del Comandante Saturno son absolutas! ¡Carnivine, Skuntank, Toxicroak, exterminio!",
+						"outro": "The bomb detonator was lost in the swamp... We must retreat to Veilstone HQ!",
+						"outro_es": "¡El detonador se perdió en el fango... Debemos volver al Cuartel de Rocavelo!",
+						"team_pokemon_names": ["Carnivine", "Skuntank", "Toxicroak"]
 					}
 				]
 			},
 			"pastoria_gym": {
 				"id": "pastoria_gym",
-				"name": "Pastoria Gym (Crasher Wake)",
-				"name_es": "Gimnasio Pradera (Mananti el Destructor)",
-				"desc": "Operate the water pump switches and plunge into the ring with the tidal wrestler, Crasher Wake!",
-				"desc_es": "Activa los interruptores de nivel de agua y sube al ring contra el luchador de las mareas, ¡Mananti!",
+				"name": "Pastoria Water Gym",
+				"name_es": "Gimnasio Acuático de Pradera",
+				"desc": "Raise and lower aquatic drain switches to reach the tidal masked wrestler, Gym Leader Crasher Wake.",
+				"desc_es": "Ajusta las compuertas para regular el agua y retar al luchador acuático, el Líder Mananti.",
 				"reward_diamonds_first_clear": 15,
 				"stages": [
 					{
 						"stage_num": 1,
-						"trainer_title": "Sailor Damian",
-						"trainer_title_es": "Marinero Damian",
+						"trainer_title": "Sailor",
+						"trainer_title_es": "Marinero",
 						"trainer_name": "Sailor Damian",
 						"trainer_name_es": "Marinero Damian",
-						"intro": "Riding the waves inside Pastoria Gym! Buizel, Aqua Jet!",
-						"intro_es": "¡Surfeando las olas del Gimnasio Pradera! ¡Buizel, Acua Jet!",
-						"outro": "Washed ashore... solid attack!",
-						"outro_es": "¡Arrastrado a la orilla... sólido ataque!",
-						"team_pokemon_names": ["Buizel"]
+						"intro": "Watch the water level rise! Buizel and Shellos, Aqua Jet!",
+						"intro_es": "¡Mira cómo sube el agua con los botones! ¡Buizel y Shellos, Acua Jet!",
+						"outro": "I was washed away!",
+						"outro_es": "¡Fui arrastrado por la corriente!",
+						"team_pokemon_names": ["Buizel", "Shellos"]
 					},
 					{
 						"stage_num": 2,
-						"trainer_title": "Tuber Jacky",
-						"trainer_title_es": "Playero Jacky",
+						"trainer_title": "Tuber",
+						"trainer_title_es": "Playero",
 						"trainer_name": "Tuber Jacky",
 						"trainer_name_es": "Playero Jacky",
-						"intro": "The water level is rising! Shellos and Gastrodon, Mud Bomb!",
-						"intro_es": "¡El nivel del agua sigue subiendo! ¡Shellos y Gastrodon, Bomba Fango!",
-						"outro": "The tide reversed completely!",
-						"outro_es": "¡La marea cambió por completo!",
+						"intro": "Floating inner tubes keep me safe! Shellos and Gastrodon, Mud Bomb!",
+						"intro_es": "¡Mi flotador me mantiene a salvo! ¡Shellos y Gastrodon, Bomba Fango!",
+						"outro": "My inner tube popped!",
+						"outro_es": "¡Se me pinchó el flotador!",
 						"team_pokemon_names": ["Shellos", "Gastrodon"]
 					},
 					{
 						"stage_num": 3,
+						"trainer_title": "Fisherman",
+						"trainer_title_es": "Pescador",
+						"trainer_name": "Fisherman Walter",
+						"trainer_name_es": "Pescador Walter",
+						"intro": "The deepest basin hides rapid swimmers! Finneon and Buizel, Water Pulse!",
+						"intro_es": "¡El estanque más profundo oculta nadadores rápidos! ¡Finneon y Buizel, Hidropulso!",
+						"outro": "Reeled in completely!",
+						"outro_es": "¡Me pescaron a mí!",
+						"team_pokemon_names": ["Finneon", "Buizel"]
+					},
+					{
+						"stage_num": 4,
 						"trainer_title": "Gym Leader Crasher Wake",
 						"trainer_title_es": "Líder Mananti",
 						"trainer_name": "Gym Leader Crasher Wake",
@@ -3453,11 +3832,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 						"is_boss": true,
 						"badge_name": "Fen Badge",
 						"badge_name_es": "Medalla Ciénaga",
-						"intro": "Bwahahaha! I am Crasher Wake, the torrential torrent! The raging waves will crush you! Floatzel, Waterfall!",
-						"intro_es": "¡Jajajaja! ¡Soy Mananti, la marea torrencial! ¡Las olas rugientes te aplastarán! ¡Floatzel, Cascada!",
-						"outro": "Incredible! Your spirit was a crashing tsunami! Take the Fen Badge with pride!",
-						"outro_es": "¡Increíble! ¡Tu espíritu fue un tsunami implacable! ¡Toma con orgullo la Medalla Ciénaga!",
-						"team_pokemon_names": ["Quagsire", "Gyarados", "Floatzel"]
+						"intro": "Bwahahaha! I am Crasher Wake, the torrential torrent! The raging waves will crush you! Shellos, Gastrodon, Bibarel, Floatzel... Waterfall!",
+						"intro_es": "¡Jajajaja! ¡Soy Mananti, la marea torrencial! ¡Las olas rugientes te aplastarán! Shellos, Gastrodon, Bibarel, Floatzel... ¡Cascada!",
+						"outro": "Bwahahaha! Now that is a tidal wave! You wrestled through my greatest torrent! Take the Fen Badge!",
+						"outro_es": "¡Jajajaja! ¡Eso sí que es un tsunami! ¡Luchaste contra mi torrente más salvaje y ganaste! ¡Toma la Medalla Ciénaga!",
+						"team_pokemon_names": ["Shellos", "Gastrodon", "Bibarel", "Floatzel"]
 					}
 				]
 			}
@@ -3474,30 +3853,42 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"stages": [
 			{
 				"stage_num": 1,
-				"trainer_title": "Young Couple Ty & Sue",
-				"trainer_title_es": "Pareja Ty & Sue",
+				"trainer_title": "Young Couple",
+				"trainer_title_es": "Pareja Joven",
 				"trainer_name": "Young Couple Ty & Sue",
-				"trainer_name_es": "Pareja Ty & Sue",
-				"intro": "Our spectral bond glows in the dark! Drifloon, Ominous Wind!",
-				"intro_es": "¡Nuestro vínculo espectral brilla en la oscuridad! ¡Drifloon, Viento Aciago!",
-				"outro": "Blown away like autumn fog!",
-				"outro_es": "¡Dispersados como niebla de otoño!",
-				"team_pokemon_names": ["Drifloon"]
+				"trainer_name_es": "Pareja Ty y Sue",
+				"intro": "Our matching flashlights illuminate the dark! Drifloon and Buneary, Ominous Wind!",
+				"intro_es": "¡Nuestras linternas iluminan la penumbra! ¡Drifloon y Buneary, Viento Aciago!",
+				"outro": "Our beam flickered out!",
+				"outro_es": "¡Nuestra luz titiló y se apagó!",
+				"team_pokemon_names": ["Drifloon", "Buneary"]
 			},
 			{
 				"stage_num": 2,
-				"trainer_title": "Ace Trainer Allen",
-				"trainer_title_es": "Entrenador Guay Allen",
-				"trainer_name": "Ace Trainer Allen",
-				"trainer_name_es": "Entrenador Guay Allen",
-				"intro": "Can you see through these spectral illusions? Ghastly and Haunter, Shadow Ball!",
-				"intro_es": "¡¿Puedes ver a través de las ilusiones espectrales?! ¡Ghastly y Haunter, Bola Sombra!",
-				"outro": "The darkness shattered before your light!",
-				"outro_es": "¡La oscuridad se disipó ante tu luz!",
-				"team_pokemon_names": ["Ghastly", "Haunter"]
+				"trainer_title": "Medium",
+				"trainer_title_es": "Médium",
+				"trainer_name": "Medium Katelyn",
+				"trainer_name_es": "Médium Katelyn",
+				"intro": "The blue flames point toward the correct doorway... Chingling and Drifloon, Astonish!",
+				"intro_es": "¡Las llamas azules señalan la puerta correcta... Chingling y Drifloon, Impresionar!",
+				"outro": "A supernatural counter-curse!",
+				"outro_es": "¡Una maldición contrarrestada!",
+				"team_pokemon_names": ["Chingling", "Drifloon"]
 			},
 			{
 				"stage_num": 3,
+				"trainer_title": "Ace Trainer",
+				"trainer_title_es": "Entrenador Guay",
+				"trainer_name": "Ace Trainer Allen",
+				"trainer_name_es": "Entrenador Guay Allen",
+				"intro": "Fantina's spectral choreography is unmatched! Dusknoir and Drifblim, Shadow Ball!",
+				"intro_es": "¡La coreografía espectral de Fantina no tiene igual! ¡Dusknoir y Drifblim, Bola Sombra!",
+				"outro": "Our spectral stage shattered!",
+				"outro_es": "¡Nuestro escenario espectral se quebró!",
+				"team_pokemon_names": ["Dusknoir", "Drifblim"]
+			},
+			{
+				"stage_num": 4,
 				"trainer_title": "Gym Leader Fantina",
 				"trainer_title_es": "Líder Fantina",
 				"trainer_name": "Gym Leader Fantina",
@@ -3505,11 +3896,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"is_boss": true,
 				"badge_name": "Relic Badge",
 				"badge_name_es": "Medalla Reliquia",
-				"intro": "Ah! You have arrived, cheri! I am Fantina, the dancing maestro of spirits! Mismagius, dazzle this arena with Shadow Sneak!",
-				"intro_es": "¡Ah! ¡Has llegado, mon chéri! ¡Soy Fantina, la gran bailarina de los espíritus! ¡Mismagius, deslumbremos la pista con Sombra Vil!",
-				"outro": "Magnifique! C'est formidable! What a breathtaking performance! You have truly earned the Relic Badge!",
-				"outro_es": "¡Magnifique! ¡C'est formidable! ¡Qué combate tan sublime y deslumbrante! ¡Has ganado con honores la Medalla Reliquia!",
-				"team_pokemon_names": ["Drifblim", "Gengar", "Mismagius"]
+				"intro": "Ah! You have arrived, cheri! I am Fantina, the dancing maestro of spirits! Drifblim, Spiritomb, Mismagius... Dazzle this arena with Shadow Sneak!",
+				"intro_es": "¡Ah! ¡Has llegado, mon chéri! ¡Soy Fantina, la gran bailarina de los espíritus! Drifblim, Spiritomb, Mismagius... ¡Deslumbremos la pista con Sombra Vil!",
+				"outro": "Magnifique! Your soul dances with passion and brilliance! I gladly award you the Relic Badge!",
+				"outro_es": "¡Magnifique! ¡Tu alma baila con pasión y brillantez absoluta! ¡Te entrego con gran orgullo la Medalla Reliquia!",
+				"team_pokemon_names": ["Drifblim", "Spiritomb", "Mismagius"]
 			}
 		]
 	},
@@ -3520,89 +3911,126 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title": "Episode VI: Mine Badge & Iron Island (Canalave City)",
 		"title_es": "Episodio VI: Medalla Mina e Isla Hierro (Ciudad Canal)",
 		"subtitle": "Train with Aura Guardian Riley on Iron Island or pierce Gym Leader Byron's steel fortress!",
-		"subtitle_es": "¡Entrena junto a Quinoa en la Isla Hierro o penetra la fortaleza de acero del Líder Acerón!",
+		"subtitle_es": "¡Entrena con Quinoa en Isla Hierro o penetra la fortaleza de acero del Líder Acerón!",
 		"reward_diamonds_first_clear": 30,
 		"routes": {
 			"iron_island": {
 				"id": "iron_island",
-				"name": "Iron Island (Aura Expedition)",
-				"name_es": "Isla Hierro (Expedición del Aura)",
-				"desc": "Delve into the subterranean mine shafts with Riley, foil Team Galactic's excavation and awaken your aura bond.",
-				"desc_es": "Desciende a las galerías subterráneas junto a Quinoa, frustra la excavación del Equipo Galaxia y despierta el aura.",
+				"name": "Iron Island Mining Caverns",
+				"name_es": "Minas de Isla Hierro",
+				"desc": "Team up with Aura Guardian Riley to expel Team Galactic commanders stealing rare minerals.",
+				"desc_es": "Únete al guardián Quinoa para expulsar a los comandantes del Team Galaxia de las minas.",
 				"reward_diamonds_first_clear": 15,
 				"stages": [
 					{
 						"stage_num": 1,
-						"trainer_title": "Worker Jackson",
-						"trainer_title_es": "Operario Jackson",
+						"trainer_title": "Worker",
+						"trainer_title_es": "Operario",
 						"trainer_name": "Worker Jackson",
 						"trainer_name_es": "Operario Jackson",
-						"intro": "Iron Island is rich in steel ore! Bronzor, Iron Defense!",
-						"intro_es": "¡Isla Hierro es rica en minerales de acero! ¡Bronzor, Defensa Férrea!",
-						"outro": "Struck down cold! Good luck deeper in the caves.",
-						"outro_es": "¡Impacto directo! Buena suerte en lo profundo de las cuevas.",
-						"team_pokemon_names": ["Bronzor"]
+						"intro": "The mining carts lead deep into the ore veins! Bronzor and Hippopotas, Sand Tomb!",
+						"intro_es": "¡Las vagonetas bajan directo a las vetas de mineral! ¡Bronzor y Hippopotas, Bucle Arena!",
+						"outro": "Our rails broke down!",
+						"outro_es": "¡Se descarriló nuestra vagoneta!",
+						"team_pokemon_names": ["Bronzor", "Hippopotas"]
 					},
 					{
 						"stage_num": 2,
-						"trainer_title": "Galactic Commander Mars",
-						"trainer_title_es": "Comandante Galaxia Ceres",
-						"trainer_name": "Galactic Commander Mars",
-						"trainer_name_es": "Comandante Ceres",
-						"intro": "What is a kid doing interfering with Team Galactic's mining project? Golbat and Skuntank, toxic blast!",
-						"intro_es": "¡¿Qué hace un crío interfiriendo con el proyecto minero del Equipo Galaxia?! ¡Golbat y Skuntank, descarga tóxica!",
-						"outro": "Aaargh! Master Cyrus will hear about this!",
-						"outro_es": "¡Aaargh! ¡El jefe Helio sabrá de esto!",
-						"team_pokemon_names": ["Golbat", "Skuntank"]
+						"trainer_title": "Miner",
+						"trainer_title_es": "Minero",
+						"trainer_name": "Worker Gary",
+						"trainer_name_es": "Minero Gary",
+						"intro": "We found strange Galactic machinery humming in cavern B2! Shieldon and Riolu, Metal Sound!",
+						"intro_es": "¡Hay maquinaria extraña del Team Galaxia en el nivel B2! ¡Shieldon y Riolu, Eco Metálico!",
+						"outro": "The machinery went haywire!",
+						"outro_es": "¡La máquina se sobrecargó!",
+						"team_pokemon_names": ["Shieldon", "Riolu"]
 					},
 					{
 						"stage_num": 3,
+						"trainer_title": "Galactic Grunts",
+						"trainer_title_es": "Reclutas Galaxia",
+						"trainer_name": "Galactic Saboteurs",
+						"trainer_name_es": "Saboteadores Galaxia",
+						"intro": "We're siphoning all the electromagnetic ore for Cyrus! Stunky, Croagunk, Glameow, Acid Spray!",
+						"intro_es": "¡Estamos extrayendo el mineral electromagnético para Helio! ¡Stunky, Croagunk, Glameow, Bomba Ácida!",
+						"outro": "The ore extraction was halted!",
+						"outro_es": "¡Detuvieron la extracción de mineral!",
+						"team_pokemon_names": ["Stunky", "Croagunk", "Glameow"]
+					},
+					{
+						"stage_num": 4,
+						"trainer_title": "Galactic Commander Mars",
+						"trainer_title_es": "Comandante Venus",
+						"trainer_name": "Commander Mars",
+						"trainer_name_es": "Comandante Venus",
+						"intro": "You meddlesome brat! We won't let you disrupt our supreme machine! Purugly and Skuntank, Slash and Poison Jab!",
+						"intro_es": "¡Mocoso entrometido! ¡No dejaremos que arruines nuestra gran máquina! ¡Purugly y Skuntank, Cuchillada y Puya Nociva!",
+						"outro": "Ugh... Again?! Retreat to Mt. Coronet!",
+						"outro_es": "¡Ugh... ¿Otra vez tú?! ¡Retirada hacia el Monte Corona!",
+						"team_pokemon_names": ["Purugly", "Skuntank"]
+					},
+					{
+						"stage_num": 5,
 						"trainer_title": "Aura Guardian Riley",
-						"trainer_title_es": "Guardián del Aura Quinoa",
+						"trainer_title_es": "Guardián Quinoa",
 						"trainer_name": "Aura Guardian Riley",
-						"trainer_name_es": "Quinoa",
-						"intro": "Thank you for driving off Team Galactic! Before you leave, let our aura clash in a sparring match. Lucario, show our synchronized aura!",
-						"intro_es": "¡Gracias por ahuyentar al Equipo Galaxia! Antes de partir, permíteme medir tu aura en un combate amistoso. ¡Lucario, muestra nuestra sincronía!",
-						"outro": "Magnificent aura! Your spirit shines brighter than any diamond. May this strength guide your path!",
-						"outro_es": "¡Un aura magnífica! Tu espíritu brilla más que cualquier diamante. ¡Que esta fuerza guíe siempre tu camino!",
+						"trainer_name_es": "Guardián Quinoa",
+						"is_boss": true,
+						"intro": "The Aura pulses strongly within you. Allow me to test the full harmony of our connection! Riolu, Lucario... Aura Sphere!",
+						"intro_es": "El Aura resuena con vigor en tu corazón. ¡Permíteme medir la sincronía de tu espíritu! Riolu, Lucario... ¡Esfera Aural!",
+						"outro": "Unbelievable resonance! The future of Sinnoh is bright in your hands. Thank you, friend!",
+						"outro_es": "¡Una resonancia sublime! El futuro de Sinnoh está a salvo en tus manos. ¡Gracias, amigo!",
 						"team_pokemon_names": ["Riolu", "Lucario"]
 					}
 				]
 			},
 			"canalave_gym": {
 				"id": "canalave_gym",
-				"name": "Canalave Gym (Byron)",
-				"name_es": "Gimnasio Canal (Acerón)",
-				"desc": "Ride the moving girder platforms and shatter the unyielding steel bastion of Gym Leader Byron.",
-				"desc_es": "Sube por las plataformas móviles de vigas y desafía el bastión de acero inquebrantable del Líder Acerón.",
+				"name": "Canalave Steel Fortress Gym",
+				"name_es": "Gimnasio Fortaleza de Acero de Canal",
+				"desc": "Ride hydraulic steel elevator platforms and test your strength against Gym Leader Byron.",
+				"desc_es": "Sube en los elevadores hidráulicos de acero y desafía al veterano Líder Acerón.",
 				"reward_diamonds_first_clear": 15,
 				"stages": [
 					{
 						"stage_num": 1,
-						"trainer_title": "Black Belt Ricky",
-						"trainer_title_es": "Karateka Ricky",
+						"trainer_title": "Black Belt",
+						"trainer_title_es": "Karateka",
 						"trainer_name": "Black Belt Ricky",
 						"trainer_name_es": "Karateka Ricky",
-						"intro": "Steel and muscle forged into one! Steelix, Iron Tail!",
-						"intro_es": "¡Acero y músculo forjados en uno solo! ¡Steelix, Cola Férrea!",
-						"outro": "My steel cracked!",
-						"outro_es": "¡Mi acero se agrietó!",
-						"team_pokemon_names": ["Steelix"]
+						"intro": "Steel bends only under intense heat and martial pressure! Bronzor and Hippopotas, Iron Head!",
+						"intro_es": "¡El acero solo cede ante el calor y la presión marcial! ¡Bronzor y Hippopotas, Cabeza de Hierro!",
+						"outro": "Your pressure was insurmountable!",
+						"outro_es": "¡Tu presión quebró nuestro acero!",
+						"team_pokemon_names": ["Bronzor", "Hippopotas"]
 					},
 					{
 						"stage_num": 2,
-						"trainer_title": "Ace Trainer Cesar",
-						"trainer_title_es": "Entrenador Guay César",
+						"trainer_title": "Ace Trainer",
+						"trainer_title_es": "Entrenador Guay",
 						"trainer_name": "Ace Trainer Cesar",
-						"trainer_name_es": "Entrenador Guay César",
-						"intro": "Magnetism and heavy armor! Magneton and Bronzong, Flash Cannon!",
-						"intro_es": "¡Magnetismo y blindaje pesado! ¡Magneton y Bronzong, Foco Resplandor!",
-						"outro": "Overheating circuit... Byron awaits you at the summit!",
-						"outro_es": "¡Circuito sobrecalentado... Acerón te espera en la cima!",
-						"team_pokemon_names": ["Magneton", "Bronzong"]
+						"trainer_name_es": "Entrenador Guay Cesar",
+						"intro": "Hydraulic lifts raise us higher into the forge! Bronzor and Bronzong, Flash Cannon!",
+						"intro_es": "¡Las plataformas hidráulicas nos elevan en la forja! ¡Bronzor y Bronzong, Foco Resplandor!",
+						"outro": "Lift mechanism breached!",
+						"outro_es": "¡El elevador cedió!",
+						"team_pokemon_names": ["Bronzor", "Bronzong"]
 					},
 					{
 						"stage_num": 3,
+						"trainer_title": "Worker",
+						"trainer_title_es": "Operario",
+						"trainer_name": "Worker Gerardo",
+						"trainer_name_es": "Operario Gerardo",
+						"intro": "Byron's fortress is impenetrable! Shieldon and Bastiodon, Iron Defense!",
+						"intro_es": "¡La fortaleza de Acerón es infranqueable! ¡Shieldon y Bastiodon, Defensa Férrea!",
+						"outro": "Impenetrable wall broken down!",
+						"outro_es": "¡Nuestro muro de escudos cayó!",
+						"team_pokemon_names": ["Shieldon", "Bastiodon"]
+					},
+					{
+						"stage_num": 4,
 						"trainer_title": "Gym Leader Byron",
 						"trainer_title_es": "Líder Acerón",
 						"trainer_name": "Gym Leader Byron",
@@ -3610,11 +4038,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 						"is_boss": true,
 						"badge_name": "Mine Badge",
 						"badge_name_es": "Medalla Mina",
-						"intro": "Gahahahaha! I am Byron, father of Roark! My love for steel and fossils is unmatched in all of Sinnoh! Bastiodon, impenetrable shield wall!",
-						"intro_es": "¡Jajajajaja! ¡Soy Acerón, padre de Roco! ¡Mi pasión por el acero y los fósiles no tiene igual en todo Sinnoh! ¡Bastiodon, muro impenetrable!",
-						"outro": "Gwahahaha! You breached my impenetrable bulwark! Take the Mine Badge, worthy trainer!",
-						"outro_es": "¡Jajajajaja! ¡Lograste perforar mi baluarte impenetrable! ¡Toma la Medalla Mina, digno entrenador!",
-						"team_pokemon_names": ["Magneton", "Steelix", "Bastiodon"]
+						"intro": "Gahahahaha! I am Byron, father of Roark! My love for steel and fossils is unmatched in all of Sinnoh! Bronzor, Bronzong, Bastiodon, Rhyperior... Impenetrable shield wall!",
+						"intro_es": "¡Jajajajaja! ¡Soy Acerón, padre de Roco! ¡Mi pasión por el acero y los fósiles no tiene igual en todo Sinnoh! Bronzor, Bronzong, Bastiodon, Rhyperior... ¡Muro impenetrable!",
+						"outro": "Gahahaha! You smashed straight through my heavy steel defense! Roark was right about you! Take the Mine Badge!",
+						"outro_es": "¡Jajajaja! ¡Atravesaste directo mi blindaje más pesado! ¡Roco tenía toda la razón sobre ti! ¡Toma la Medalla Mina!",
+						"team_pokemon_names": ["Bronzor", "Bronzong", "Bastiodon", "Rhyperior"]
 					}
 				]
 			}
@@ -3631,30 +4059,42 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"stages": [
 			{
 				"stage_num": 1,
-				"trainer_title": "Ace Trainer Anton",
-				"trainer_title_es": "Entrenador Guay Anton",
+				"trainer_title": "Ace Trainer",
+				"trainer_title_es": "Entrenador Guay",
 				"trainer_name": "Ace Trainer Anton",
 				"trainer_name_es": "Entrenador Guay Anton",
-				"intro": "The frostbite in Snowpoint is biting! Snover, Powder Snow!",
-				"intro_es": "¡El frío polar de Puntaneva congela hasta los huesos! ¡Snover, Nieve Polvo!",
-				"outro": "Melted by your intense heat!",
-				"outro_es": "¡Derretido por tu intenso calor!",
-				"team_pokemon_names": ["Snover"]
+				"intro": "Route 217 blizzards freeze everything in their path! Snover and Buneary, Powder Snow!",
+				"intro_es": "¡La ventisca de la Ruta 217 congela todo a su paso! ¡Snover y Buneary, Nieve Polvo!",
+				"outro": "You thawed our blizzard!",
+				"outro_es": "¡Descongelaste nuestra ventisca!",
+				"team_pokemon_names": ["Snover", "Buneary"]
 			},
 			{
 				"stage_num": 2,
-				"trainer_title": "Ace Trainer Savanah",
-				"trainer_title_es": "Entrenadora Guay Savanah",
+				"trainer_title": "Ace Trainer",
+				"trainer_title_es": "Entrenadora Guay",
 				"trainer_name": "Ace Trainer Savanah",
 				"trainer_name_es": "Entrenadora Guay Savanah",
-				"intro": "Glide through the ice snowbanks! Sneasel and Piloswine, Blizzard!",
-				"intro_es": "¡Deslízate por los bancos de nieve! ¡Sneasel y Piloswine, Ventisca!",
-				"outro": "The blizzard stopped... you're unstoppable!",
-				"outro_es": "La ventisca se calmó... ¡eres imparable!",
-				"team_pokemon_names": ["Sneasel", "Piloswine"]
+				"intro": "Glide across the slippery ice ramps! Snover and Sneasel, Icy Wind!",
+				"intro_es": "¡Deslízate por las rampas de hielo quebradizo! ¡Snover y Sneasel, Viento Hielo!",
+				"outro": "Lost traction on the ice!",
+				"outro_es": "¡Perdí agarre en la curva!",
+				"team_pokemon_names": ["Snover", "Glaceon"]
 			},
 			{
 				"stage_num": 3,
+				"trainer_title": "Skier",
+				"trainer_title_es": "Esquiador",
+				"trainer_name": "Skier Edward",
+				"trainer_name_es": "Esquiador Edward",
+				"intro": "Smash the snowballs to open the path to Candice! Snover and Froslass, Blizzard!",
+				"intro_es": "¡Destruye las bolas de nieve gigantes para abrir paso! ¡Snover y Froslass, Ventisca!",
+				"outro": "Our slalom run ended!",
+				"outro_es": "¡Terminó nuestra carrera de nieve!",
+				"team_pokemon_names": ["Snover", "Froslass"]
+			},
+			{
+				"stage_num": 4,
 				"trainer_title": "Gym Leader Candice",
 				"trainer_title_es": "Líder Inverna",
 				"trainer_name": "Gym Leader Candice",
@@ -3662,11 +4102,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 				"is_boss": true,
 				"badge_name": "Icicle Badge",
 				"badge_name_es": "Medalla Carámbano",
-				"intro": "Hi there! I'm Candice, the Ice-type Gym Leader! You want focus? You want romance? I'll show you pure glacial passion! Abomasnow, Ice Beam!",
-				"intro_es": "¡Hola! ¡Soy Inverna, la Líder de Gimnasio tipo Hielo! ¿Quieres concentración? ¿Quieres pasión? ¡Te mostraré fuego en el hielo! ¡Abomasnow, Rayo Hielo!",
-				"outro": "Whoa, that was boiling hot! You completely thawed my ice! I proudly award you the Icicle Badge!",
-				"outro_es": "¡Uau, eso estuvo que arde! ¡Derretiste por completo mi hielo! ¡Te otorgo con gran orgullo la Medalla Carámbano!",
-				"team_pokemon_names": ["Snover", "Medicham", "Abomasnow"]
+				"intro": "Hi there! I'm Candice, the Ice-type Gym Leader! You want focus? You want romance? I'll show you pure glacial passion! Snover, Froslass, Glaceon, Abomasnow... Ice Beam!",
+				"intro_es": "¡Hola! ¡Soy Inverna, la Líder de Gimnasio tipo Hielo! ¿Quieres concentración? ¿Quieres pasión? ¡Te mostraré fuego en el hielo! Snover, Froslass, Glaceon, Abomasnow... ¡Rayo Hielo!",
+				"outro": "Warm... Your heart melted through my absolute zero! I proudly bestow upon you the Icicle Badge!",
+				"outro_es": "Cálido... ¡El calor de tu corazón derritió mi cero absoluto! ¡Te entrego con gran orgullo la Medalla Carámbano!",
+				"team_pokemon_names": ["Snover", "Froslass", "Glaceon", "Abomasnow"]
 			}
 		]
 	},
@@ -3677,102 +4117,138 @@ const ADVENTURE_EPISODES: Dictionary = {
 		"title": "Episode VIII: Beacon Badge & Spear Pillar (Sunyshore City & Mt. Coronet)",
 		"title_es": "Episodio VIII: Medalla Faro y Columna Lanza (Ciudad Marina y Monte Corona)",
 		"subtitle": "Ascend the Spear Pillar to thwart Cyrus & Dialga, then face Gym Leader Volkner's electric storm!",
-		"subtitle_es": "¡Asciende a la Columna Lanza para detener a Helio y Dialga, y enfrenta la tormenta eléctrica de Lectro!",
+		"subtitle_es": "¡Asciende a la Columna Lanza para detener a Helio y Dialga, y enfrenta la tormenta del Líder Lectro!",
 		"reward_diamonds_first_clear": 40,
 		"routes": {
 			"spear_pillar": {
 				"id": "spear_pillar",
-				"name": "Spear Pillar (Cataclysm of Time)",
-				"name_es": "Columna Lanza (Cataclismo del Tiempo)",
-				"desc": "Climb Mt. Coronet to the ancient Spear Pillar. Halt Cyrus's Red Chain and calm the legendary master of time, Dialga!",
-				"desc_es": "Sube al Monte Corona hasta la Columna Lanza. ¡Rompe la Cadena Roja de Helio y apacigua al señor del tiempo, Dialga!",
+				"name": "Spear Pillar: Temporal Climax",
+				"name_es": "Columna Lanza: Clímax Temporal",
+				"desc": "Scale Mount Coronet's summit to thwart Cyrus from bending the fabric of space-time with Dialga.",
+				"desc_es": "Escala la cima del Monte Corona para impedir que Helio someta el tiempo con Dialga.",
 				"reward_diamonds_first_clear": 20,
 				"stages": [
 					{
 						"stage_num": 1,
-						"trainer_title": "Galactic Admin Saturn",
-						"trainer_title_es": "Comandante Galaxia Saturno",
-						"trainer_name": "Galactic Admin Saturn",
-						"trainer_name_es": "Saturno",
-						"intro": "You will not interfere with Master Cyrus's grand design! Bronzor and Toxicroak, exterminate!",
-						"intro_es": "¡No permitiré que interfieras con el gran plan del jefe Helio! ¡Bronzor y Toxicroak, exterminio!",
-						"outro": "How could you be this powerful...?!",
-						"outro_es": "¡¿Cómo puedes tener semejante poder...?!",
-						"team_pokemon_names": ["Bronzor", "Toxicroak"]
+						"trainer_title": "Galactic Grunts",
+						"trainer_title_es": "Reclutas Galaxia",
+						"trainer_name": "Galactic Vanguard",
+						"trainer_name_es": "Vanguardia Galaxia",
+						"intro": "The Red Chain is complete! Stunky, Glameow, Purugly, stop the trespassers!",
+						"intro_es": "¡La Cadena Roja está completa! ¡Stunky, Glameow, Purugly, detengan a los intrusos!",
+						"outro": "The summit path was breached!",
+						"outro_es": "¡El paso a la cima fue quebrado!",
+						"team_pokemon_names": ["Stunky", "Glameow", "Purugly"]
 					},
 					{
 						"stage_num": 2,
-						"trainer_title": "Galactic Commanders Mars & Jupiter",
-						"trainer_title_es": "Comandantes Ceres & Venus",
-						"trainer_name": "Mars & Jupiter",
-						"trainer_name_es": "Ceres & Venus",
-						"intro": "A double offensive! Purugly and Skuntank, tear apart their composure!",
-						"intro_es": "¡Una ofensiva doble! ¡Purugly y Skuntank, destrocen su serenidad!",
-						"outro": "No! The Red Chain has already been cast!",
-						"outro_es": "¡No! ¡La Cadena Roja ya ha sido activada!",
-						"team_pokemon_names": ["Purugly", "Skuntank"]
+						"trainer_title": "Galactic Admin",
+						"trainer_title_es": "Comandante Galaxia",
+						"trainer_name": "Galactic Admin Saturn",
+						"trainer_name_es": "Comandante Saturno",
+						"intro": "The new universe needs no spirit or emotions! Bronzor and Toxicroak, poison their resolve!",
+						"intro_es": "¡El nuevo universo no necesita emociones ni espíritu! ¡Bronzor y Toxicroak, envenenen su voluntad!",
+						"outro": "Commander Cyrus... I have failed you!",
+						"outro_es": "¡Líder Helio... le he fallado!",
+						"team_pokemon_names": ["Bronzor", "Toxicroak"]
 					},
 					{
 						"stage_num": 3,
-						"trainer_title": "Galactic Boss Cyrus",
-						"trainer_title_es": "Líder Galaxia Helio",
-						"trainer_name": "Galactic Boss Cyrus",
-						"trainer_name_es": "Helio",
-						"intro": "Human emotions are incomplete, flawed, and ugly. I shall forge a new world devoid of heart! Honchkrow, Weavile, and Gyarados, eradicate this delusion!",
-						"intro_es": "Las emociones humanas son imperfectas, débiles y destructivas. ¡Crearé un universo puro sin corazón! ¡Honchkrow, Weavile y Gyarados, erradiquen esta ilusión!",
-						"outro": "Inconceivable... The spirit of a trainer can overcome the void... But the rift in spacetime is already torn!",
-						"outro_es": "Inconcebible... El espíritu de un entrenador puede sobreponerse a la nada... ¡Pero la grieta del tiempo ya está abierta!",
-						"team_pokemon_names": ["Honchkrow", "Weavile", "Gyarados"]
+						"trainer_title": "Galactic Duo",
+						"trainer_title_es": "Dúo Galaxia",
+						"trainer_name": "Mars & Jupiter",
+						"trainer_name_es": "Venus y Ceres",
+						"intro": "Together we are unstoppable! Purugly and Skuntank, twin devastation!",
+						"intro_es": "¡Juntas somos imparables! ¡Purugly y Skuntank, devastación combinada!",
+						"outro": "Both of us defeated simultaneously?!",
+						"outro_es": "¡¿Ambas derrotadas a la vez?!",
+						"team_pokemon_names": ["Purugly", "Skuntank"]
 					},
 					{
 						"stage_num": 4,
-						"trainer_title": "Temporal Sovereign Dialga",
-						"trainer_title_es": "Soberano del Tiempo Dialga",
+						"trainer_title": "Galactic Boss",
+						"trainer_title_es": "Líder Galaxia",
+						"trainer_name": "Galactic Boss Cyrus",
+						"trainer_name_es": "Líder Galaxia Helio",
+						"intro": "This world is incomplete and broken. I shall forge a universe free of human strife! Honchkrow, Weavile, Drapion... Night Slash!",
+						"intro_es": "Este mundo está incompleto y corrupto. ¡Forjaré un universo libre del imperfecto corazón humano! Honchkrow, Weavile, Drapion... ¡Tajo Umbrío!",
+						"outro": "My universe... vanished into the rift? Inconceivable!",
+						"outro_es": "Mi universo... ¿se desvaneció en la grieta? ¡Inconcebible!",
+						"team_pokemon_names": ["Honchkrow", "Weavile", "Drapion"]
+					},
+					{
+						"stage_num": 5,
+						"trainer_title": "Temporal Rift",
+						"trainer_title_es": "Falla Temporal",
+						"trainer_name": "Temporal Distortion",
+						"trainer_name_es": "Distorsión Temporal",
+						"intro": "Space-time warps into chaos! Shadow anomalies manifest! Bronzong, Spiritomb, Garchomp, strike across dimensions!",
+						"intro_es": "¡El espacio-tiempo colapsa en caos! ¡Anomalías dimensionales emergen! ¡Bronzong, Spiritomb, Garchomp, ataquen a través de las eras!",
+						"outro": "The rift stabilizes briefly!",
+						"outro_es": "¡La grieta se estabiliza por un instante!",
+						"team_pokemon_names": ["Bronzong", "Spiritomb", "Garchomp"]
+					},
+					{
+						"stage_num": 6,
+						"trainer_title": "Temporal Deity",
+						"trainer_title_es": "Deidad del Tiempo",
 						"trainer_name": "Dialga",
 						"trainer_name_es": "Dialga",
 						"is_boss": true,
-						"intro": "ROOOAAARRR! Time warps and ripples across the cosmos! The primordial dragon of time prepares to unleash Roar of Time!",
-						"intro_es": "¡ROOOAAARRR! ¡El flujo del tiempo se distorsiona en el cosmos! ¡El dragón primordial del tiempo prepara Distorsión!",
-						"outro": "The time ripples subside... Dialga acknowledges your indomitable willpower and returns peace to the Sinnoh cosmos!",
-						"outro_es": "Las ondas temporales se aquietan... ¡Dialga reconoce tu indomable voluntad y devuelve la calma al cosmos de Sinnoh!",
+						"intro": "The master of time descends upon the Spear Pillar! Dialga roars with eternal majesty! Roar of Time!",
+						"intro_es": "¡El amo del tiempo desciende sobre la Columna Lanza! ¡Dialga ruge con majestad eterna! ¡Distorsión!",
+						"outro": "Time returns to its rightful flow. The cosmos acknowledges your indomitable willpower!",
+						"outro_es": "El flujo temporal regresa a su curso natural. ¡El cosmos reconoce tu voluntad inquebrantable!",
 						"team_pokemon_names": ["Dialga"]
 					}
 				]
 			},
 			"sunyshore_gym": {
 				"id": "sunyshore_gym",
-				"name": "Sunyshore Gym (Volkner)",
-				"name_es": "Gimnasio Marina (Lectro)",
-				"desc": "Traverse the giant solar power gears and awaken the lost passion of Sinnoh's strongest Gym Leader, Volkner.",
-				"desc_es": "Cruza los engranajes solares gigantescos y despierta la pasión dormida del Líder más fuerte de Sinnoh, ¡Lectro!",
-				"reward_diamonds_first_clear": 20,
+				"name": "Sunyshore Gear Gym",
+				"name_es": "Gimnasio Engranaje de Marina",
+				"desc": "Rotate high-voltage electrical gears and battle the lightning prodigy, Gym Leader Volkner.",
+				"desc_es": "Gira los engranajes eléctricos de alta tensión y desafía al prodigio del trueno, el Líder Lectro.",
+				"reward_diamonds_first_clear": 25,
 				"stages": [
 					{
 						"stage_num": 1,
-						"trainer_title": "Guitarist Jerry",
-						"trainer_title_es": "Guitarrista Jerry",
+						"trainer_title": "Guitarist",
+						"trainer_title_es": "Guitarrista",
 						"trainer_name": "Guitarist Jerry",
 						"trainer_name_es": "Guitarrista Jerry",
-						"intro": "Riffing electric chords all over Sunyshore! Luxio, Spark!",
-						"intro_es": "¡Desatando acordes eléctricos por toda Marina! ¡Luxio, Chispa!",
-						"outro": "Amplifier blown! Electric solo ended!",
-						"outro_es": "¡Amplificador fundido! ¡Solo eléctrico terminado!",
-						"team_pokemon_names": ["Luxio"]
+						"intro": "Sunyshore's solar bridges power up our gear! Shinx and Luxio, Spark!",
+						"intro_es": "¡Los puentes solares de Marina cargan nuestra energía! ¡Shinx y Luxio, Chispa!",
+						"outro": "Lost my rhythm on the gears!",
+						"outro_es": "¡Perdí el compás en los engranajes!",
+						"team_pokemon_names": ["Shinx", "Luxio"]
 					},
 					{
 						"stage_num": 2,
-						"trainer_title": "Ace Trainer Destiny",
-						"trainer_title_es": "Entrenadora Guay Destiny",
+						"trainer_title": "Ace Trainer",
+						"trainer_title_es": "Entrenadora Guay",
 						"trainer_name": "Ace Trainer Destiny",
 						"trainer_name_es": "Entrenadora Guay Destiny",
-						"intro": "High voltage synchronized gears! Raichu and Ambipom, Thunderbolt!",
-						"intro_es": "¡Engranajes de alto voltaje sincronizados! ¡Raichu y Ambipom, Rayo!",
-						"outro": "Overcharged circuits! Volkner is waiting for a spark like yours!",
-						"outro_es": "¡Sobrecarga total! ¡Lectro lleva mucho tiempo esperando una chispa como la tuya!",
-						"team_pokemon_names": ["Raichu", "Ambipom"]
+						"intro": "Step onto the giant gear platforms! Pachirisu and Luxio, Discharge!",
+						"intro_es": "¡Sube a las plataformas de engranajes gigantes! ¡Pachirisu y Luxio, Chispazo!",
+						"outro": "Gears turned against us!",
+						"outro_es": "¡Los engranajes giraron en nuestra contra!",
+						"team_pokemon_names": ["Pachirisu", "Luxio"]
 					},
 					{
 						"stage_num": 3,
+						"trainer_title": "Scientist",
+						"trainer_title_es": "Científico",
+						"trainer_name": "Scientist Alberto",
+						"trainer_name_es": "Científico Alberto",
+						"intro": "Volkner's electrical mechanisms are a masterpiece! Rotom and Luxray, Thunderbolt!",
+						"intro_es": "¡La ingeniería eléctrica de Lectro es una obra de arte! ¡Rotom y Luxray, Rayo!",
+						"outro": "A sudden power surge overwhelmed us!",
+						"outro_es": "¡Una sobrecarga repentina nos dejó a oscuras!",
+						"team_pokemon_names": ["Rotom", "Luxray"]
+					},
+					{
+						"stage_num": 4,
 						"trainer_title": "Gym Leader Volkner",
 						"trainer_title_es": "Líder Lectro",
 						"trainer_name": "Gym Leader Volkner",
@@ -3780,11 +4256,11 @@ const ADVENTURE_EPISODES: Dictionary = {
 						"is_boss": true,
 						"badge_name": "Beacon Badge",
 						"badge_name_es": "Medalla Faro",
-						"intro": "I had grown bored of unchallenged battles... but your eyes burn with intensity. Show me everything you've got! Electivire, Luxray, Raichu, Thunder!",
-						"intro_es": "Me había aburrido de batallas sin emoción... pero tus ojos arden con intensidad. ¡Muéstrame todo lo que tienes! ¡Electivire, Luxray, Raichu, Trueno!",
-						"outro": "Incredible... My heart is pounding like thunder! You have conquered all 8 Sinnoh Gyms! Take the Beacon Badge, Champion!",
-						"outro_es": "Increíble... ¡Mi corazón vuelve a latir como un trueno! Has conquistado los 8 Gimnasios de Sinnoh. ¡Te entrego con el más alto honor la Medalla Faro!",
-						"team_pokemon_names": ["Raichu", "Luxray", "Electivire"]
+						"intro": "I had grown bored of unchallenged battles... but your eyes burn with intensity. Show me everything you've got! Pachirisu, Luxio, Luxray, Electivire... Thunder!",
+						"intro_es": "Me había aburrido de batallas sin emoción... pero tus ojos arden con intensidad. ¡Muéstrame todo lo que tienes! Pachirisu, Luxio, Luxray, Electivire... ¡Trueno!",
+						"outro": "Brilliant! You've rekindled the electric spark in my soul! Take the Beacon Badge, the final badge of Sinnoh!",
+						"outro_es": "¡Brillante! ¡Has vuelto a encender la chispa eléctrica en mi alma! ¡Toma la Medalla Faro, la última medalla de Sinnoh!",
+						"team_pokemon_names": ["Pachirisu", "Luxio", "Luxray", "Electivire"]
 					}
 				]
 			}
@@ -7052,9 +7528,9 @@ func is_adventure_episode_completed(episode_id: int) -> bool:
 func get_earned_gym_badges_count() -> int:
 	# Episodios de Kanto que otorgan medallas de gimnasio:
 	# Ep 1: Boulder, Ep 2: Cascade, Ep 3: Thunder, Ep 4: Rainbow,
-	# Ep 5: Soul, Ep 6: Marsh, Ep 7: Volcano
+	# Ep 5: Soul, Ep 6: Marsh, Ep 7: Volcano, Ep 8: Earth
 	var count = 0
-	for ep in [1, 2, 3, 4, 5, 6, 7]:
+	for ep in [1, 2, 3, 4, 5, 6, 7, 8]:
 		if ep in adventure_completed_episodes:
 			count += 1
 	return count
@@ -7085,11 +7561,11 @@ func complete_lake_of_rage() -> void:
 		save_profile()
 
 func has_all_gym_badges() -> bool:
-	return get_earned_gym_badges_count() >= 7
+	return get_earned_gym_badges_count() >= 8
 
 func has_all_regions_gym_badges() -> bool:
-	# La Liga de Campeonato requiere las medallas de todas las regiones (Kanto [7/7], Johto [8/8], Hoenn [8/8], Sinnoh [8/8]).
-	return get_earned_gym_badges_count() >= 7 and get_johto_gym_badges_count() >= 8 and get_hoenn_gym_badges_count() >= 8 and get_sinnoh_gym_badges_count() >= 8
+	# La Liga de Campeonato requiere las medallas de todas las regiones (Kanto [8/8], Johto [8/8], Hoenn [8/8], Sinnoh [8/8]).
+	return get_earned_gym_badges_count() >= 8 and get_johto_gym_badges_count() >= 8 and get_hoenn_gym_badges_count() >= 8 and get_sinnoh_gym_badges_count() >= 8
 
 func get_hoenn_gym_badges_count() -> int:
 	# Episodios de Hoenn que otorgan medallas de gimnasio:
@@ -7188,6 +7664,8 @@ func complete_adventure_episode(episode_id: int) -> int:
 			elif cur_route == "blaine_gym":
 				bonus = 35
 				player_diamonds += bonus
+				if not (8 in adventure_unlocked_episodes):
+					adventure_unlocked_episodes.append(8)
 				if not (7 in adventure_completed_episodes):
 					adventure_completed_episodes.append(7)
 		save_profile()
@@ -8469,6 +8947,66 @@ func get_item_texture(item_name: String) -> Texture2D:
 			var img = Image.load_from_file(p)
 			if img:
 				return ImageTexture.create_from_image(img)
+	return null
+
+func get_badge_texture(region: String, badge_name: String) -> Texture2D:
+	var reg_lower = region.strip_edges().to_lower()
+	var b_clean = badge_name.strip_edges().to_lower().replace(" badge", "").replace("medalla ", "").replace("medalla_", "")
+	var file_name = ""
+	var badge_files = {
+		# Kanto
+		"boulder": "Medalla_Roca.png", "roca": "Medalla_Roca.png",
+		"cascade": "Medalla_Cascada.png", "cascada": "Medalla_Cascada.png",
+		"thunder": "Medalla_Trueno.png", "trueno": "Medalla_Trueno.png",
+		"rainbow": "Medalla_Arcoíris.png", "arcoiris": "Medalla_Arcoíris.png", "arcoíris": "Medalla_Arcoíris.png",
+		"soul": "Medalla_Alma.png", "alma": "Medalla_Alma.png",
+		"marsh": "Medalla_Pantano.png", "pantano": "Medalla_Pantano.png",
+		"volcano": "Medalla_Volcán.png", "volcan": "Medalla_Volcán.png", "volcán": "Medalla_Volcán.png",
+		"earth": "Medalla_Tierra.png", "tierra": "Medalla_Tierra.png",
+		# Johto
+		"zephyr": "Medalla_Céfiro.png", "cefiro": "Medalla_Céfiro.png", "céfiro": "Medalla_Céfiro.png",
+		"hive": "Medalla_Colmena.png", "colmena": "Medalla_Colmena.png",
+		"plain": "Medalla_Planicie.png", "planicie": "Medalla_Planicie.png",
+		"fog": "Medalla_Niebla.png", "niebla": "Medalla_Niebla.png",
+		"storm": "Medalla_Tormenta.png", "tormenta": "Medalla_Tormenta.png",
+		"mineral": "Medalla_Mineral.png",
+		"glacier": "Medalla_Glaciar.png", "glaciar": "Medalla_Glaciar.png",
+		"rising": "Medalla_Dragón.png", "dragon": "Medalla_Dragón.png", "dragón": "Medalla_Dragón.png",
+		# Hoenn
+		"stone": "Medalla_Piedra.png", "piedra": "Medalla_Piedra.png",
+		"knuckle": "Medalla_Puño.png", "puno": "Medalla_Puño.png", "puño": "Medalla_Puño.png",
+		"dynamo": "Medalla_Dinamo.png", "dinamo": "Medalla_Dinamo.png",
+		"heat": "Medalla_Calor.png", "calor": "Medalla_Calor.png",
+		"balance": "Medalla_Equilibrio.png", "equilibrio": "Medalla_Equilibrio.png",
+		"feather": "Medalla_Pluma.png", "pluma": "Medalla_Pluma.png",
+		"mind": "Medalla_Mente.png", "mente": "Medalla_Mente.png",
+		"rain": "Medalla_Lluvia.png", "lluvia": "Medalla_Lluvia.png",
+		# Sinnoh
+		"coal": "Medalla_Lignito.png", "lenteja": "Medalla_Lignito.png", "lignito": "Medalla_Lignito.png",
+		"forest": "Medalla_Bosque.png", "bosque": "Medalla_Bosque.png",
+		"cobble": "Medalla_Adoquín.png", "adoquin": "Medalla_Adoquín.png", "adoquín": "Medalla_Adoquín.png",
+		"fen": "Medalla_Ciénaga.png", "cienaga": "Medalla_Ciénaga.png", "ciénaga": "Medalla_Ciénaga.png",
+		"relic": "Medalla_Reliquia.png", "reliquia": "Medalla_Reliquia.png",
+		"mine": "Medalla_Mina.png",
+		"icicle": "Medalla_Carámbano.png", "carambano": "Medalla_Carámbano.png", "carámbano": "Medalla_Carámbano.png",
+		"beacon": "Medalla_Faro.png", "faro": "Medalla_Faro.png"
+	}
+	if badge_files.has(b_clean):
+		file_name = badge_files[b_clean]
+	if file_name != "":
+		for folder in [reg_lower, "kanto", "johto", "hoenn", "sinnoh"]:
+			var res_path = "res://assets/items/medals/" + folder + "/" + file_name
+			if ResourceLoader.exists(res_path):
+				return load(res_path)
+			var paths = [
+				ProjectSettings.globalize_path(res_path),
+				"D:/Games/Pokemon Battle Frontier/ITEMS/medals/" + folder + "/" + file_name
+			]
+			for p in paths:
+				if FileAccess.file_exists(p):
+					var img = Image.load_from_file(p)
+					if img:
+						return ImageTexture.create_from_image(img)
 	return null
 
 var booster_textures_cache: Dictionary = {}

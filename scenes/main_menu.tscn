@@ -834,14 +834,14 @@ text = "🌲 Kanto Region"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 12
-text = "The classic journey! Battle 7 Gym Leaders across Pewter, Cerulean, Vermilion, Celadon, Fuchsia, Saffron, and Cinnabar Island."
+text = "The classic journey! Battle 8 Gym Leaders across Pewter, Cerulean, Vermilion, Celadon, Fuchsia, Saffron, Cinnabar Island, and Viridian City."
 autowrap_mode = 2
 
 [node name="KantoBadges" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin/KantoVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 12
-text = "Episodes: 7 Available  |  Gym Badges to Win: 8"
+text = "Episodes: 8 Available  |  Gym Badges to Win: 8"
 autowrap_mode = 2
 
 [node name="KantoStatus" type="Label" parent="AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto/Margin/KantoVBox"]
@@ -1473,6 +1473,58 @@ disabled = true
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 13
 text = "🔒 Locked (Clear Episode VI)"
+autowrap_mode = 2
+
+[node name="CardAdventureEp8" type="PanelContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox"]
+modulate = Color(0.7, 0.7, 0.75, 0.8)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Ep8VBox" type="VBoxContainer" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Ep8Title" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8/Margin/Ep8VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+text = "🔒 Episode VIII: Viridian City Gym"
+autowrap_mode = 2
+
+[node name="Ep8Desc" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8/Margin/Ep8VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "The 8th and final Gym of Kanto: Face Gym Leader Giovanni and claim the Earth Badge!"
+autowrap_mode = 2
+
+[node name="Ep8Rewards" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8/Margin/Ep8VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Battles: 4  |  Rewards: 💎 80 Diamonds & Earth Badge"
+autowrap_mode = 2
+
+[node name="Ep8Status" type="Label" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8/Margin/Ep8VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.5, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: 🔒 Locked (Complete Episode VII first)"
+autowrap_mode = 2
+
+[node name="BtnHubAdventureEp8" type="Button" parent="AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8/Margin/Ep8VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+disabled = true
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+text = "🔒 Locked (Clear Episode VII)"
 autowrap_mode = 2
 
 [node name="BtnCloseAdventureEpisodes" type="Button" parent="AdventureEpisodesModal/Box"]

@@ -80,6 +80,8 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var btn_hub_adventure_ep6: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6/Margin/Ep6VBox/BtnHubAdventureEp6
 @onready var ep7_status_lbl: Label = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin/Ep7VBox/Ep7Status
 @onready var btn_hub_adventure_ep7: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7/Margin/Ep7VBox/BtnHubAdventureEp7
+@onready var ep8_status_lbl: Label = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8/Margin/Ep8VBox/Ep8Status
+@onready var btn_hub_adventure_ep8: Button = $AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8/Margin/Ep8VBox/BtnHubAdventureEp8
 @onready var btn_close_adventure_episodes: Button = $AdventureEpisodesModal/Box/BtnCloseAdventureEpisodes
 
 var adventure_ep5_routes_modal: Control = null
@@ -719,6 +721,8 @@ func _ready() -> void:
 	btn_hub_adventure_ep5.pressed.connect(_on_select_adventure_ep5_pressed)
 	btn_hub_adventure_ep6.pressed.connect(_on_select_adventure_ep6_pressed)
 	btn_hub_adventure_ep7.pressed.connect(_on_select_adventure_ep7_pressed)
+	if btn_hub_adventure_ep8:
+		btn_hub_adventure_ep8.pressed.connect(_on_select_adventure_ep8_pressed)
 	btn_close_adventure_episodes.pressed.connect(func():
 		adventure_episodes_modal.visible = false
 		update_adventure_regions_ui()
@@ -753,6 +757,10 @@ func _ready() -> void:
 		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp2",
 		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp3",
 		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp4",
+		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp5",
+		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp6",
+		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp7",
+		"AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8",
 		"AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionKanto",
 		"AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionJohto",
 		"AdventureRegionsModal/Box/RegionsScroll/RegionsVBox/CardRegionHoenn",
@@ -1759,6 +1767,50 @@ func update_adventure_episodes_ui() -> void:
 		btn_hub_adventure_ep7.disabled = false
 		_apply_retro_button_style(btn_hub_adventure_ep7, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
 
+	# Estado del Episodio VIII (Viridian City Gym)
+	var ep8_unlocked = GameData.is_adventure_episode_unlocked(8)
+	var ep8_completed = GameData.is_adventure_episode_completed(8)
+	var card_ep8 = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8")
+	if card_ep8:
+		card_ep8.modulate = Color(1, 1, 1, 1) if ep8_unlocked else Color(0.7, 0.7, 0.75, 0.8)
+	var ep8_title_lbl = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8/Margin/Ep8VBox/Ep8Title") as Label
+	if ep8_title_lbl:
+		ep8_title_lbl.text = "Episode VIII: Viridian City Gym" if ep8_unlocked else "🔒 Episode VIII: Viridian City Gym"
+		ep8_title_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3) if ep8_completed else (Color(1, 1, 1) if ep8_unlocked else Color(0.5, 0.6, 0.7)))
+	var ep8_rewards_lbl = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardAdventureEp8/Margin/Ep8VBox/Ep8Rewards") as Label
+	if ep8_rewards_lbl:
+		ep8_rewards_lbl.text = "Battles: 4  |  Rewards: 💎 80 Diamonds & Earth Badge"
+		ep8_rewards_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65) if ep8_unlocked else Color(0.5, 0.6, 0.7))
+
+	if not ep8_unlocked:
+		ep8_status_lbl.text = "Status: 🔒 Locked (Complete Episode VII first)"
+		ep8_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+		btn_hub_adventure_ep8.text = "🔒 Locked (Clear Episode VII)"
+		btn_hub_adventure_ep8.disabled = true
+		_apply_retro_button_style(btn_hub_adventure_ep8, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	elif GameData.adventure_current_episode == 8 and not GameData.adventure_player_team_state.is_empty():
+		var total_stages8 = GameData.get_adventure_total_stages(8)
+		ep8_status_lbl.text = "Status: In Progress (Stage %d/%d)" % [
+			GameData.adventure_current_stage,
+			total_stages8
+		]
+		ep8_status_lbl.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		btn_hub_adventure_ep8.text = "⛺ Continue Episode VIII (Camp)"
+		btn_hub_adventure_ep8.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep8, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+	elif ep8_completed:
+		ep8_status_lbl.text = "Status: 🏅 COMPLETED (Earth Badge Won!) • Replayable"
+		ep8_status_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		btn_hub_adventure_ep8.text = "🗺️ Replay Episode VIII"
+		btn_hub_adventure_ep8.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep8, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+	else:
+		ep8_status_lbl.text = "Status: Ready to embark"
+		ep8_status_lbl.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+		btn_hub_adventure_ep8.text = "🗺️ Embark on Episode VIII"
+		btn_hub_adventure_ep8.disabled = false
+		_apply_retro_button_style(btn_hub_adventure_ep8, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
 func update_adventure_regions_ui() -> void:
 	if not is_inside_tree():
 		return
@@ -1852,7 +1904,7 @@ func update_adventure_regions_ui() -> void:
 		else:
 			if card_league:
 				card_league.modulate = Color(0.85, 0.85, 0.9, 0.8)
-			league_status_lbl.text = ("Estado: 🔒 Bloqueada (Requiere las medallas de todas las regiones: Kanto [%d/7], Johto [%d/8], Hoenn [%d/8], Sinnoh [%d/8])" if is_sp else "Status: 🔒 Locked (Requires all gym badges: Kanto [%d/7], Johto [%d/8], Hoenn [%d/8], Sinnoh [%d/8])") % [kanto_badges, johto_badges, hoenn_badges, sinnoh_badges]
+			league_status_lbl.text = ("Estado: 🔒 Bloqueada (Requiere las medallas de todas las regiones: Kanto [%d/8], Johto [%d/8], Hoenn [%d/8], Sinnoh [%d/8])" if is_sp else "Status: 🔒 Locked (Requires all gym badges: Kanto [%d/8], Johto [%d/8], Hoenn [%d/8], Sinnoh [%d/8])") % [kanto_badges, johto_badges, hoenn_badges, sinnoh_badges]
 			league_status_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
 			if btn_enter_league:
 				btn_enter_league.disabled = true
@@ -2679,6 +2731,11 @@ func _on_select_adventure_ep7_route_pressed(route_id: String) -> void:
 		GameData.reset_adventure_episode(7)
 		GameData.adventure_current_episode = 7
 		open_team_select_for_campaign()
+
+func _on_select_adventure_ep8_pressed() -> void:
+	if GameData.is_drag_scrolling():
+		return
+	_on_select_adventure_episode_pressed(8)
 
 # --- JOHTO CAMPAIGN MODAL & BRANCHING ROUTES ---
 

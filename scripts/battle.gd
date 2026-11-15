@@ -4207,10 +4207,18 @@ func _resolve_battle_victory() -> void:
 							victory_title = "🎉 POKÉMON MANSION EXPLORED!"
 							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds!\n🔓 Gimnasio de Blaine Unlocked!" % bonus_diamonds
 						elif cur_route == "blaine_gym":
-							victory_title = "🏆 CAMPAIGN CONQUERED! VOLCANO BADGE WON!"
-							first_clear_text = "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n👑 ¡HAS CONQUISTADO EL FINAL DE LA CAMPAÑA KANTO!" % [bonus_diamonds, badge_str]
+							var b_name = stage_info.get("badge_name_es" if is_es else "badge_name", badge_str)
+							victory_title = ("🎉 ¡EPISODIO CONQUISTADO! ¡%s OBTENIDA!" if is_es else "🎉 EPISODE CONQUERED! %s WON!") % b_name.to_upper()
+							first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes & 🏅 %s!\n🔓 ¡Episodio VIII (Gimnasio Verde) Desbloqueado!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n🔓 Episode VIII (Viridian Gym) Unlocked!") % [bonus_diamonds, b_name]
 					else:
 						first_clear_text = "\n(Route already cleared - replay completed!)"
+				elif ep_id == 8:
+					var b_name = stage_info.get("badge_name_es" if is_es else "badge_name", badge_str)
+					if bonus_diamonds > 0:
+						victory_title = ("🏆 ¡CAMPAÑA KANTO CONQUISTADA! ¡%s OBTENIDA!" if is_es else "🏆 CAMPAIGN KANTO CONQUERED! %s WON!") % b_name.to_upper()
+						first_clear_text = ("\n🎁 RECOMPENSA PRIMERA VICTORIA: +💎 %d Diamantes & 🏅 %s!\n👑 ¡HAS CONQUISTADO TODAS LAS MEDALLAS DE KANTO!" if is_es else "\n🎁 FIRST CLEAR BONUS: +💎 %d Diamonds & 🏅 %s!\n👑 YOU HAVE CONQUERED ALL KANTO BADGES!") % [bonus_diamonds, b_name]
+					else:
+						first_clear_text = "\n(Replay completed!)" if not is_es else "\n(¡Rejugado completado!)"
 				elif ep_id == 106:
 					var cur_route = GameData.adventure_ep106_selected_route
 					var r_info = GameData.get_adventure_route_info(106, cur_route)
