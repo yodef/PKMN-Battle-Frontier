@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/pokedex.png" id="8_pokedex"]
 [ext_resource type="Texture2D" path="res://assets/ui/avatars/avatar_leaf.png" id="9_avatar_leaf"]
 [ext_resource type="Texture2D" path="res://assets/ui/avatars/avatar_red.png" id="10_avatar_red"]
+[ext_resource type="Texture2D" path="res://assets/ui/camp_bg.png" id="11_camp_bg"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -520,6 +521,27 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.06, 0.08, 0.12, 1)
 
+[node name="CampHubArtBackdrop" type="TextureRect" parent="CampaignHubModal/CampaignHubBg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("11_camp_bg")
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(1, 1, 1, 0.38)
+
+[node name="CampHubArtOverlay" type="ColorRect" parent="CampaignHubModal/CampaignHubBg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.07, 0.12, 0.42)
+
 [node name="Box" type="VBoxContainer" parent="CampaignHubModal"]
 layout_mode = 1
 anchors_preset = 15
@@ -864,6 +886,27 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.06, 0.08, 0.12, 1)
 
+[node name="AdvRegionsArtBackdrop" type="TextureRect" parent="AdventureRegionsModal/AdventureRegionsBg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("11_camp_bg")
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(1, 1, 1, 0.38)
+
+[node name="AdvRegionsArtOverlay" type="ColorRect" parent="AdventureRegionsModal/AdventureRegionsBg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.07, 0.12, 0.42)
+
 [node name="Box" type="VBoxContainer" parent="AdventureRegionsModal"]
 layout_mode = 1
 anchors_preset = 15
@@ -1169,7 +1212,28 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.04, 0.07, 0.12, 0.95)
+color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="AdvEpisodesArtBackdrop" type="TextureRect" parent="AdventureEpisodesModal/AdventureEpisodesBg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("11_camp_bg")
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(1, 1, 1, 0.38)
+
+[node name="AdvEpisodesArtOverlay" type="ColorRect" parent="AdventureEpisodesModal/AdventureEpisodesBg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.07, 0.12, 0.42)
 
 [node name="Box" type="VBoxContainer" parent="AdventureEpisodesModal"]
 layout_mode = 1
@@ -1649,7 +1713,28 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.04, 0.07, 0.12, 0.95)
+color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="StadiumGuideArtBackdrop" type="TextureRect" parent="StadiumGuideModal/StadiumGuideBg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("11_camp_bg")
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(1, 1, 1, 0.38)
+
+[node name="StadiumGuideArtOverlay" type="ColorRect" parent="StadiumGuideModal/StadiumGuideBg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.07, 0.12, 0.42)
 
 [node name="Box" type="VBoxContainer" parent="StadiumGuideModal"]
 custom_minimum_size = Vector2(460, 0)
@@ -1823,6 +1908,27 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="CampArtBackdrop" type="TextureRect" parent="CampaignModal/CampaignBg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("11_camp_bg")
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(1, 1, 1, 0.38)
+
+[node name="CampArtOverlay" type="ColorRect" parent="CampaignModal/CampaignBg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.07, 0.12, 0.42)
 
 [node name="Box" type="VBoxContainer" parent="CampaignModal"]
 layout_mode = 1
