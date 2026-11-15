@@ -3,15 +3,15 @@ extends Control
 const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 
 # --- REFERENCIAS DE BOTONES DEL MENÚ ---
-@onready var trainer_status_badge: Label = $ContentContainer/HeaderContainer/TrainerStatusBadge
-@onready var btn_campaign: Button = $ContentContainer/MenuButtons/BtnCampaign
-@onready var btn_quick_battle: Button = $ContentContainer/MenuButtons/BtnQuickBattle
-@onready var btn_online_multiplayer: Button = $ContentContainer/MenuButtons/BtnOnlineMultiplayer
-@onready var btn_collection: Button = $ContentContainer/MenuButtons/FeatureIconsRow/BtnCollection
-@onready var btn_shop: Button = $ContentContainer/MenuButtons/FeatureIconsRow/BtnShop
-@onready var btn_profile: Button = $ContentContainer/MenuButtons/AuxButtonsRow/BtnProfile
-@onready var btn_settings: Button = $ContentContainer/MenuButtons/AuxButtonsRow/BtnSettings
-@onready var btn_exit: Button = $ContentContainer/MenuButtons/BtnExit
+@onready var trainer_status_badge: Label = find_child("TrainerStatusBadge", true, false)
+@onready var btn_campaign: Button = find_child("BtnCampaign", true, false)
+@onready var btn_quick_battle: Button = find_child("BtnQuickBattle", true, false)
+@onready var btn_online_multiplayer: Button = find_child("BtnOnlineMultiplayer", true, false)
+@onready var btn_collection: Button = find_child("BtnCollection", true, false)
+@onready var btn_shop: Button = find_child("BtnShop", true, false)
+@onready var btn_profile: Button = find_child("BtnProfile", true, false)
+@onready var btn_settings: Button = find_child("BtnSettings", true, false)
+@onready var btn_exit: Button = find_child("BtnExit", true, false)
 
 # --- MODAL SELECCIÓN DE EQUIPO (COMBATE LIBRE Y CAMPAÑA) ---
 @onready var team_select_modal: Control = $TeamSelectModal
@@ -497,8 +497,8 @@ var _pending_verify_password: String = ""
 @onready var btn_close_online_lobby: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/BtnCloseOnlineLobby
 
 # --- MODAL MISIONES Y RECOMPENSAS DIARIAS ---
-@onready var btn_daily_missions: Button = $ContentContainer/MenuButtons/ProgressRow/BtnDailyMissions
-@onready var btn_achievements: Button = $ContentContainer/MenuButtons/ProgressRow/BtnAchievements
+@onready var btn_daily_missions: Button = find_child("BtnDailyMissions", true, false)
+@onready var btn_achievements: Button = find_child("BtnAchievements", true, false)
 @onready var daily_modal: Control = $DailyModal
 @onready var daily_streak_badge: Label = $DailyModal/DailyBox/DailyHeaderRow/DailyStreakBadge
 @onready var calendar_grid: HBoxContainer = $DailyModal/DailyBox/DailyCalendarPanel/DailyCalendarMargin/DailyCalendarVBox/CalendarGrid
@@ -510,7 +510,7 @@ var _pending_verify_password: String = ""
 @onready var btn_close_daily: Button = $DailyModal/DailyBox/BtnCloseDaily
 
 # --- BOTÓN Y MODAL DE AMIGOS (FRIENDS SYSTEM) ---
-@onready var btn_friends: Button = $ContentContainer/MenuButtons/AuxButtonsRow/BtnFriends
+@onready var btn_friends: Button = find_child("BtnFriends", true, false)
 @onready var btn_online_friends: Button = $OnlineLobbyModal/OnlineCenter/OnlineCard/OnlineMargin/OnlineVBox/BtnOnlineFriends
 @onready var friends_modal: Control = $FriendsModal
 @onready var friends_count_badge: Label = $FriendsModal/FriendsBox/FriendsHeaderRow/FriendsCountBadge
@@ -9125,12 +9125,13 @@ func _configure_dock_medallion_button(btn: Button, icon_tex: Texture2D, pill_nam
 		pill.add_child(pill_lbl)
 		btn.add_child(pill)
 
+	var radius: int = int(btn.custom_minimum_size.x / 2.0) if btn.custom_minimum_size.x > 0 else 28
 	var make_round_sb = func(bg: Color, border: Color, bw: int, pad: int, shadow: int) -> StyleBoxFlat:
 		var sb = StyleBoxFlat.new()
 		sb.bg_color = bg
 		sb.border_color = border
 		sb.set_border_width_all(bw)
-		sb.set_corner_radius_all(37)
+		sb.set_corner_radius_all(radius)
 		sb.content_margin_left = pad
 		sb.content_margin_right = pad
 		sb.content_margin_top = pad
@@ -9147,13 +9148,15 @@ func _configure_dock_medallion_button(btn: Button, icon_tex: Texture2D, pill_nam
 
 	btn.mouse_entered.connect(func():
 		if btn:
-			btn.pivot_offset = Vector2(btn.size.x / 2.0 if btn.size.x > 0 else 37.0, btn.size.y / 2.0 if btn.size.y > 0 else 37.0)
+			var half_w = btn.size.x / 2.0 if btn.size.x > 0 else (btn.custom_minimum_size.x / 2.0 if btn.custom_minimum_size.x > 0 else 28.0)
+			var half_h = btn.size.y / 2.0 if btn.size.y > 0 else (btn.custom_minimum_size.y / 2.0 if btn.custom_minimum_size.y > 0 else 28.0)
+			btn.pivot_offset = Vector2(half_w, half_h)
 			var tw = btn.create_tween()
 			tw.tween_property(btn, "scale", Vector2(1.10, 1.10), 0.10).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 			if pill:
 				pill.visible = true
 				pill.reset_size()
-				var bw = btn.size.x if btn.size.x > 0 else 74.0
+				var bw = btn.size.x if btn.size.x > 0 else (btn.custom_minimum_size.x if btn.custom_minimum_size.x > 0 else 56.0)
 				var pw = pill.size.x if pill.size.x > 0 else 80.0
 				var ph = pill.size.y if pill.size.y > 0 else 26.0
 				pill.position = Vector2((bw - pw) * 0.5, -ph + 2.0)
@@ -9167,7 +9170,9 @@ func _configure_dock_medallion_button(btn: Button, icon_tex: Texture2D, pill_nam
 	)
 	btn.mouse_exited.connect(func():
 		if btn:
-			btn.pivot_offset = Vector2(btn.size.x / 2.0 if btn.size.x > 0 else 37.0, btn.size.y / 2.0 if btn.size.y > 0 else 37.0)
+			var half_w = btn.size.x / 2.0 if btn.size.x > 0 else (btn.custom_minimum_size.x / 2.0 if btn.custom_minimum_size.x > 0 else 28.0)
+			var half_h = btn.size.y / 2.0 if btn.size.y > 0 else (btn.custom_minimum_size.y / 2.0 if btn.custom_minimum_size.y > 0 else 28.0)
+			btn.pivot_offset = Vector2(half_w, half_h)
 			var tw = btn.create_tween()
 			tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 			if pill:
@@ -9186,6 +9191,28 @@ func _apply_pokemon_ui_theme() -> void:
 	if btn_shop:
 		_configure_dock_medallion_button(btn_shop, tex_pokemart, "ShopHoverPill", "PokéMart", 7)
 	
+	# LeftArtPanel decorative frame styling
+	var left_art_panel = find_child("LeftArtPanel", true, false)
+	if left_art_panel:
+		var art_sb = StyleBoxFlat.new()
+		art_sb.bg_color = Color(0.04, 0.07, 0.11, 0.95)
+		art_sb.border_color = Color(0.24, 0.50, 0.70, 0.85)
+		art_sb.set_border_width_all(2)
+		art_sb.set_corner_radius_all(10)
+		left_art_panel.add_theme_stylebox_override("panel", art_sb)
+
+	var make_btn_style = func(bg_c: Color, border_c: Color, corner: int = 8, bw: int = 2) -> StyleBoxFlat:
+		var sb = StyleBoxFlat.new()
+		sb.bg_color = bg_c
+		sb.border_color = border_c
+		sb.set_border_width_all(bw)
+		sb.set_corner_radius_all(corner)
+		sb.content_margin_left = 14
+		sb.content_margin_right = 14
+		sb.content_margin_top = 6
+		sb.content_margin_bottom = 6
+		return sb
+
 	# Apply pokeball bullet icons and styling to Lobby & Login buttons
 	var lobby_btns = [
 		btn_campaign,
@@ -9194,6 +9221,7 @@ func _apply_pokemon_ui_theme() -> void:
 		btn_daily_missions,
 		btn_achievements,
 		btn_profile,
+		btn_friends,
 		btn_settings,
 		btn_exit,
 		btn_login_play,
@@ -9203,11 +9231,13 @@ func _apply_pokemon_ui_theme() -> void:
 	for btn in lobby_btns:
 		if not btn:
 			continue
-		btn.icon = tex_pokeball
-		btn.expand_icon = false
+		if btn != btn_settings and btn != btn_profile and btn != btn_friends and btn != btn_exit:
+			btn.icon = tex_pokeball
+			btn.expand_icon = false
 		btn.mouse_entered.connect(func():
 			if btn and btn.icon:
 				btn.icon = tex_pokeball_active
+			if btn:
 				btn.pivot_offset = Vector2(24, btn.size.y / 2.0 if btn.size.y > 0 else 24.0)
 				var tw = btn.create_tween()
 				tw.tween_property(btn, "scale", Vector2(1.025, 1.025), 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -9215,6 +9245,7 @@ func _apply_pokemon_ui_theme() -> void:
 		btn.mouse_exited.connect(func():
 			if btn and btn.icon:
 				btn.icon = tex_pokeball
+			if btn:
 				btn.pivot_offset = Vector2(24, btn.size.y / 2.0 if btn.size.y > 0 else 24.0)
 				var tw = btn.create_tween()
 				tw.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -9225,20 +9256,38 @@ func _apply_pokemon_ui_theme() -> void:
 		normal_sb.border_color = Color(0.25, 0.52, 0.60)
 		normal_sb.set_border_width_all(2)
 		normal_sb.set_corner_radius_all(6)
-		normal_sb.content_margin_left = 14
-		normal_sb.content_margin_right = 14
+		normal_sb.content_margin_left = 12
+		normal_sb.content_margin_right = 12
 		
 		var hover_sb = StyleBoxFlat.new()
 		hover_sb.bg_color = Color(0.13, 0.22, 0.32, 1.0)
 		hover_sb.border_color = Color(0.40, 0.85, 0.95)
 		hover_sb.set_border_width_all(2)
 		hover_sb.set_corner_radius_all(6)
-		hover_sb.content_margin_left = 14
-		hover_sb.content_margin_right = 14
+		hover_sb.content_margin_left = 12
+		hover_sb.content_margin_right = 12
 		
 		btn.add_theme_stylebox_override("normal", normal_sb)
 		btn.add_theme_stylebox_override("hover", hover_sb)
 		btn.add_theme_stylebox_override("pressed", hover_sb)
+
+	# Dedicated combat button accents
+	if btn_quick_battle:
+		btn_quick_battle.add_theme_stylebox_override("normal", make_btn_style.call(Color(0.07, 0.15, 0.11, 0.95), Color(0.28, 0.72, 0.44), 8, 2))
+		btn_quick_battle.add_theme_stylebox_override("hover", make_btn_style.call(Color(0.11, 0.23, 0.16, 1.0), Color(0.40, 0.95, 0.58), 8, 2))
+		btn_quick_battle.add_theme_stylebox_override("pressed", make_btn_style.call(Color(0.05, 0.10, 0.08, 1.0), Color(0.50, 1.0, 0.70), 8, 2))
+	if btn_campaign:
+		btn_campaign.add_theme_stylebox_override("normal", make_btn_style.call(Color(0.16, 0.13, 0.07, 0.95), Color(0.82, 0.65, 0.22), 8, 2))
+		btn_campaign.add_theme_stylebox_override("hover", make_btn_style.call(Color(0.23, 0.19, 0.09, 1.0), Color(1.0, 0.85, 0.35), 8, 2))
+		btn_campaign.add_theme_stylebox_override("pressed", make_btn_style.call(Color(0.10, 0.08, 0.04, 1.0), Color(1.0, 0.92, 0.50), 8, 2))
+	if btn_online_multiplayer:
+		btn_online_multiplayer.add_theme_stylebox_override("normal", make_btn_style.call(Color(0.07, 0.13, 0.20, 0.95), Color(0.26, 0.62, 0.85), 8, 2))
+		btn_online_multiplayer.add_theme_stylebox_override("hover", make_btn_style.call(Color(0.10, 0.20, 0.30, 1.0), Color(0.42, 0.88, 1.0), 8, 2))
+		btn_online_multiplayer.add_theme_stylebox_override("pressed", make_btn_style.call(Color(0.05, 0.09, 0.14, 1.0), Color(0.55, 0.95, 1.0), 8, 2))
+	if btn_exit:
+		btn_exit.add_theme_stylebox_override("normal", make_btn_style.call(Color(0.16, 0.07, 0.07, 0.90), Color(0.68, 0.28, 0.28), 6, 1))
+		btn_exit.add_theme_stylebox_override("hover", make_btn_style.call(Color(0.24, 0.09, 0.09, 1.0), Color(0.92, 0.40, 0.40), 6, 2))
+		btn_exit.add_theme_stylebox_override("pressed", make_btn_style.call(Color(0.10, 0.04, 0.04, 1.0), Color(1.0, 0.50, 0.50), 6, 2))
 
 	# Trainer Status Badge with GBA border
 	var badge_sb = StyleBoxFlat.new()
