@@ -500,7 +500,7 @@ const CONSUMABLE_ITEM_IDS: Array[String] = [
 	"potion", "super_potion", "hyper_potion", "revive", "remedy", "ether"
 ]
 const KEY_ITEM_IDS: Array[String] = [
-	"poke_flute", "exp_share", "wise_glasses", "quick_claw", "leftovers", "dragon_fang"
+	"poke_flute", "exp_share", "wise_glasses", "quick_claw", "leftovers", "dragon_fang", "twisted_spoon"
 ]
 
 func get_item_display_name(item_id: String) -> String:
@@ -517,6 +517,8 @@ func get_item_display_name(item_id: String) -> String:
 			return tr_text("Leftovers", "Restos")
 		"dragon_fang":
 			return tr_text("Dragon Fang", "Colmillo Dragón")
+		"twisted_spoon":
+			return tr_text("Twisted Spoon", "Cuchara Torcida")
 		"diamonds":
 			return tr_text("Diamonds", "Diamantes")
 		"potion":
@@ -566,6 +568,11 @@ func get_held_item_desc(item_id: String) -> String:
 				"If the holding Pokémon is a Dragon, its attacks always deal damage as if having type advantage.",
 				"El PKMN que lo lleva, si es un Dragón siempre hace DMG como si tuviese ventaja de tipo."
 			)
+		"twisted_spoon":
+			return tr_text(
+				"The holding Pokémon deals +2 DMG with any Psychic-type move.",
+				"El PKMN que lleva este objeto, provoca +2 DMG con cualquier Move Psíquico."
+			)
 		_:
 			return ""
 
@@ -613,6 +620,13 @@ func get_key_items_definitions(inv: Dictionary = {}) -> Array[Dictionary]:
 			"desc": get_held_item_desc("dragon_fang"),
 			"icon": "dragon_fang",
 			"stock": int(cur_inv.get("dragon_fang", 0))
+		},
+		{
+			"id": "twisted_spoon",
+			"name": get_item_display_name("twisted_spoon"),
+			"desc": get_held_item_desc("twisted_spoon"),
+			"icon": "twisted_spoon",
+			"stock": int(cur_inv.get("twisted_spoon", 0))
 		}
 	]
 
@@ -643,7 +657,8 @@ const DEFAULT_INVENTORY: Dictionary = {
 	"wise_glasses": 0,
 	"quick_claw": 0,
 	"leftovers": 0,
-	"dragon_fang": 0
+	"dragon_fang": 0,
+	"twisted_spoon": 0
 }
 
 # --- SISTEMA DE ACHIEVEMENTS / LOGROS ---
@@ -1299,6 +1314,16 @@ var championship_first_clear_claimed: bool = false
 var championship_hall_of_fame: Array[Dictionary] = []
 var has_unlocked_leftovers: bool = false
 var has_unlocked_dragon_fang: bool = false
+var has_unlocked_twisted_spoon: bool = false
+
+# Evento Especial de Kanto: Duelo contra los Psíquicos
+const ENRAGED_MEWTWO_BOSS_ID: int = 496
+const PSYCHIC_DUEL_REWARD_DIAMONDS: int = 50
+var psychic_duel_completed: bool = false
+var psychic_duel_first_clear_claimed: bool = false
+var psychic_duel_current_round: int = 1
+var psychic_duel_inventory: Dictionary = DEFAULT_INVENTORY.duplicate()
+var psychic_duel_player_team_state: Array[Dictionary] = []
 
 const ELITE_FOUR_ROSTER: Dictionary = {
 	"lorelei": {
@@ -6522,7 +6547,7 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 	var candidate_ids: Array[int] = []
 	if target_region.to_lower() in ["all", "overall", "todas"]:
 		for id in all_pokemon_ids:
-			if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
+			if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
 				continue
 			var d = pokemon_catalog.get(id, {})
 			var r = str(d.get("rarity", "")).to_lower()
@@ -6530,7 +6555,7 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 				candidate_ids.append(id)
 	elif target_region != "":
 		for id in all_pokemon_ids:
-			if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
+			if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
 				continue
 			var d = pokemon_catalog.get(id, {})
 			if str(d.get("region", "")).to_lower() == target_region.to_lower():
@@ -6539,7 +6564,7 @@ func open_booster_pack(pack_type: String = "kanto", cost_diamonds: int = 0) -> A
 	if candidate_ids.size() < BOOSTER_PACK_CARD_COUNT:
 		candidate_ids = []
 		for id in all_pokemon_ids:
-			if not (id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]):
+			if not (id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]):
 				var d = pokemon_catalog.get(id, {})
 				var r = str(d.get("rarity", "")).to_lower()
 				if not (r in ["boss", "special"]):
@@ -6592,7 +6617,7 @@ func open_special_booster_pack() -> Array[Dictionary]:
 	var pool_epic_legendary: Array[int] = []
 	
 	for id in all_pokemon_ids:
-		if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
+		if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
 			continue
 		var d = pokemon_catalog.get(id, {})
 		var r = str(d.get("rarity", "")).strip_edges().to_lower()
@@ -6802,6 +6827,8 @@ func get_active_campaign_inventory() -> Dictionary:
 		return chaos_inventory
 	elif campaign_submode == "CHAMPIONSHIP":
 		return championship_inventory
+	elif campaign_submode == "PSYCHIC_DUEL":
+		return psychic_duel_inventory
 	return campaign_inventory
 
 func get_active_campaign_team_state() -> Array:
@@ -6813,6 +6840,8 @@ func get_active_campaign_team_state() -> Array:
 		return championship_player_team_state
 	elif campaign_submode == "LAKE_OF_RAGE":
 		return []
+	elif campaign_submode == "PSYCHIC_DUEL":
+		return psychic_duel_player_team_state
 	return campaign_player_team_state
 
 func swap_campaign_team_members(idx_a: int, idx_b: int) -> bool:
@@ -6850,6 +6879,8 @@ func reset_campaign(auto_save: bool = true) -> void:
 		campaign_inventory["leftovers"] = 1
 	if has_unlocked_dragon_fang:
 		campaign_inventory["dragon_fang"] = 1
+	if has_unlocked_twisted_spoon:
+		campaign_inventory["twisted_spoon"] = 1
 	campaign_player_team_state.clear()
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
@@ -6862,7 +6893,7 @@ func init_campaign_team(chosen_ids: Array, held_items: Array = []) -> void:
 		var pid = int(cid)
 		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
 			continue
-		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
 			continue
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
@@ -6929,6 +6960,8 @@ func init_campaign_team(chosen_ids: Array, held_items: Array = []) -> void:
 		campaign_inventory["leftovers"] = 1
 	if has_unlocked_dragon_fang:
 		campaign_inventory["dragon_fang"] = 1
+	if has_unlocked_twisted_spoon:
+		campaign_inventory["twisted_spoon"] = 1
 	current_tournament_rival_team.clear()
 	current_tournament_rival_match = -1
 	save_profile()
@@ -6953,7 +6986,7 @@ func change_campaign_team(chosen_ids: Array, held_items: Array = []) -> void:
 		var pid = int(cid)
 		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
 			continue
-		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
 			continue
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
@@ -7033,6 +7066,8 @@ func reset_adventure_episode(episode_id: int) -> void:
 		adventure_inventory["leftovers"] = 1
 	if has_unlocked_dragon_fang:
 		adventure_inventory["dragon_fang"] = 1
+	if has_unlocked_twisted_spoon:
+		adventure_inventory["twisted_spoon"] = 1
 	adventure_player_team_state.clear()
 
 func init_adventure_team(episode_id: int, chosen_ids: Array, held_items: Array = []) -> void:
@@ -7048,12 +7083,14 @@ func init_adventure_team(episode_id: int, chosen_ids: Array, held_items: Array =
 		adventure_inventory["leftovers"] = 1
 	if has_unlocked_dragon_fang:
 		adventure_inventory["dragon_fang"] = 1
+	if has_unlocked_twisted_spoon:
+		adventure_inventory["twisted_spoon"] = 1
 	adventure_player_team_state.clear()
 	for cid in chosen_ids:
 		var pid = int(cid)
 		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
 			continue
-		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
 			continue
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
@@ -7131,7 +7168,7 @@ func change_adventure_team(chosen_ids: Array, held_items: Array = []) -> void:
 		var pid = int(cid)
 		if not pokemon_catalog.has(pid) or not is_pokemon_unlocked(pid):
 			continue
-		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
 			continue
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
@@ -7564,6 +7601,78 @@ func complete_lake_of_rage() -> void:
 
 func has_all_gym_badges() -> bool:
 	return get_earned_gym_badges_count() >= 8
+
+func get_kanto_gym_badges_count() -> int:
+	return get_earned_gym_badges_count()
+
+func has_all_kanto_gym_badges() -> bool:
+	return get_kanto_gym_badges_count() >= 8
+
+func is_psychic_duel_unlocked() -> bool:
+	return has_all_kanto_gym_badges()
+
+func is_psychic_duel_completed() -> bool:
+	return psychic_duel_completed
+
+func complete_psychic_duel() -> void:
+	psychic_duel_completed = true
+	if not psychic_duel_first_clear_claimed:
+		psychic_duel_first_clear_claimed = true
+		has_unlocked_twisted_spoon = true
+		player_diamonds += PSYCHIC_DUEL_REWARD_DIAMONDS
+		campaign_inventory["twisted_spoon"] = 1
+		adventure_inventory["twisted_spoon"] = 1
+		chaos_inventory["twisted_spoon"] = 1
+		championship_inventory["twisted_spoon"] = 1
+		psychic_duel_inventory["twisted_spoon"] = 1
+	save_profile()
+
+func reset_psychic_duel_run(auto_save: bool = true) -> void:
+	psychic_duel_current_round = 1
+	psychic_duel_player_team_state.clear()
+	psychic_duel_inventory.clear()
+	if auto_save:
+		save_profile()
+
+func init_psychic_duel_run(chosen_ids: Array, held_items: Array = []) -> void:
+	psychic_duel_current_round = 1
+	psychic_duel_inventory.clear()
+	for k in DEFAULT_INVENTORY.keys():
+		psychic_duel_inventory[k] = DEFAULT_INVENTORY[k]
+	if has_unlocked_exp_share:
+		psychic_duel_inventory["exp_share"] = 1
+	if has_unlocked_leftovers:
+		psychic_duel_inventory["leftovers"] = 1
+	if has_unlocked_dragon_fang:
+		psychic_duel_inventory["dragon_fang"] = 1
+	if has_unlocked_twisted_spoon:
+		psychic_duel_inventory["twisted_spoon"] = 1
+	psychic_duel_player_team_state.clear()
+	for i in range(chosen_ids.size()):
+		var pid = int(chosen_ids[i])
+		var p_data = pokemon_catalog.get(pid, {})
+		var max_hp = int(p_data.get("hp", 20))
+		var h_item = ""
+		if i < held_items.size():
+			h_item = str(held_items[i])
+		psychic_duel_player_team_state.append({
+			"id": pid,
+			"current_hp": max_hp,
+			"max_hp": max_hp,
+			"held_item": h_item
+		})
+	save_profile()
+
+func get_psychic_duel_round_rival_team(round_num: int) -> Array[int]:
+	match round_num:
+		1:
+			return [7, 9, 5] # Charizard (7), Blastoise (9), Venusaur (5)
+		2:
+			return [166] # Mew (166)
+		3:
+			return [ENRAGED_MEWTWO_BOSS_ID] # Enraged Mewtwo (496)
+		_:
+			return [ENRAGED_MEWTWO_BOSS_ID]
 
 func has_all_regions_gym_badges() -> bool:
 	# La Liga de Campeonato requiere las medallas de todas las regiones (Kanto [8/8], Johto [8/8], Hoenn [8/8], Sinnoh [8/8]).
@@ -8247,7 +8356,7 @@ func claim_tournament_match_reward_today(match_num: int) -> void:
 		tournament_claimed_matches_today.append(match_num)
 
 func is_valid_tournament_rival_id(pkmn_id: int, allow_tier_s: bool = false) -> bool:
-	if pkmn_id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
+	if pkmn_id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
 		return false
 	var d = pokemon_catalog.get(pkmn_id, {})
 	if d.is_empty():
@@ -8461,7 +8570,7 @@ func is_line_legendary(pkmn_id: int) -> bool:
 func get_chaos_legendary_candidates() -> Array[int]:
 	var candidates: Array[int] = []
 	for id in all_pokemon_ids:
-		if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID]:
+		if id in [CRYSTAL_ONIX_ID, RED_GYARADOS_CARD_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
 			continue
 		var d = pokemon_catalog.get(id, {})
 		var r = str(d.get("rarity", "")).strip_edges().to_lower()
@@ -8494,6 +8603,8 @@ func reset_chaos_odyssey() -> void:
 		chaos_inventory["leftovers"] = 1
 	if has_unlocked_dragon_fang:
 		chaos_inventory["dragon_fang"] = 1
+	if has_unlocked_twisted_spoon:
+		chaos_inventory["twisted_spoon"] = 1
 	current_chaos_rival_team.clear()
 	current_chaos_rival_match = -1
 	save_profile()
@@ -8516,7 +8627,7 @@ func change_chaos_team(chosen_ids: Array, held_items: Array = []) -> void:
 	for cid in chosen_ids:
 		if not is_pokemon_unlocked(cid):
 			continue
-		if cid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+		if cid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
 			continue
 		var d = pokemon_catalog.get(cid, {})
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
@@ -8742,7 +8853,7 @@ func generate_championship_rival_team() -> Array[int]:
 	for pid in pokemon_catalog:
 		if pid == slot1_id or pid == slot2_id:
 			continue
-		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+		if pid in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID, ENRAGED_MEWTWO_BOSS_ID]:
 			continue
 		var cat = pokemon_catalog[pid]
 		var tier = str(cat.get("tier", "")).to_upper()
@@ -8769,6 +8880,8 @@ func reset_championship_league(keep_selection: bool = false) -> void:
 		championship_inventory["leftovers"] = 1
 	if has_unlocked_dragon_fang:
 		championship_inventory["dragon_fang"] = 1
+	if has_unlocked_twisted_spoon:
+		championship_inventory["twisted_spoon"] = 1
 	
 	if not keep_selection or championship_active_e4_keys.size() < 4:
 		championship_active_e4_keys = generate_championship_e4_selection()
@@ -8935,6 +9048,8 @@ func get_item_texture(item_name: String) -> Texture2D:
 		file_name = "Leftovers.png"
 	elif clean in ["dragon_fang", "dragonfang", "dragon fang", "colmillo_dragon", "colmillo dragon", "colmillo_de_dragon", "colmillo de dragon"]:
 		file_name = "Colmillo_de_Dragon.png"
+	elif clean in ["twisted_spoon", "twistedspoon", "twisted spoon", "cuchara_torcida", "cuchara torcida"]:
+		file_name = "Twisted_Spoon.png"
 	elif clean in ["diamonds", "diamond", "diamante", "diamantes"]:
 		file_name = "Diamante.png"
 	else:
@@ -9470,6 +9585,12 @@ func create_new_profile(p_name: String = "Trainer", provider: String = "Guest", 
 	adventure_ep306_cleared_routes.clear()
 	adventure_ep308_cleared_routes.clear()
 	lake_of_rage_completed = false
+	psychic_duel_completed = false
+	psychic_duel_first_clear_claimed = false
+	has_unlocked_twisted_spoon = false
+	psychic_duel_current_round = 1
+	psychic_duel_player_team_state.clear()
+	psychic_duel_inventory = DEFAULT_INVENTORY.duplicate()
 	
 	# Conservar cartas si ya existían cartas desbloqueadas en este dispositivo
 	if player_unlocked_ids.is_empty():
@@ -9601,6 +9722,12 @@ func get_save_dict() -> Dictionary:
 			"ep308_selected_route": adventure_ep308_selected_route,
 			"ep308_cleared_routes": adventure_ep308_cleared_routes.duplicate(),
 			"lake_of_rage_completed": lake_of_rage_completed,
+			"psychic_duel_completed": psychic_duel_completed,
+			"psychic_duel_first_clear_claimed": psychic_duel_first_clear_claimed,
+			"has_twisted_spoon": has_unlocked_twisted_spoon,
+			"psychic_duel_current_round": psychic_duel_current_round,
+			"psychic_duel_team_state": psychic_duel_player_team_state.duplicate(true),
+			"psychic_duel_inventory": psychic_duel_inventory.duplicate(true),
 			"selected_region": adventure_selected_region
 		},
 		"chaos_odyssey": {
@@ -9878,6 +10005,20 @@ func apply_save_dict(data: Dictionary) -> bool:
 		adventure_ep308_cleared_routes.append(str(r))
 		
 	lake_of_rage_completed = bool(adv.get("lake_of_rage_completed", false))
+	psychic_duel_completed = bool(adv.get("psychic_duel_completed", false))
+	psychic_duel_first_clear_claimed = bool(adv.get("psychic_duel_first_clear_claimed", false))
+	has_unlocked_twisted_spoon = bool(adv.get("has_twisted_spoon", false))
+	psychic_duel_current_round = int(adv.get("psychic_duel_current_round", 1))
+	psychic_duel_player_team_state.clear()
+	var raw_p_team = adv.get("psychic_duel_team_state", [])
+	if raw_p_team is Array:
+		for pt in raw_p_team:
+			if pt is Dictionary:
+				psychic_duel_player_team_state.append(pt)
+	psychic_duel_inventory = adv.get("psychic_duel_inventory", DEFAULT_INVENTORY.duplicate())
+	for k in DEFAULT_INVENTORY.keys():
+		if not psychic_duel_inventory.has(k):
+			psychic_duel_inventory[k] = 0
 	adventure_selected_region = str(adv.get("selected_region", "KANTO"))
 		
 	# Sanitizar: si el episodio ya fue completado o la etapa excede el total, reiniciar progreso del run
@@ -9937,6 +10078,12 @@ func apply_save_dict(data: Dictionary) -> bool:
 		adventure_inventory["dragon_fang"] = 1
 		chaos_inventory["dragon_fang"] = 1
 		championship_inventory["dragon_fang"] = 1
+	if has_unlocked_twisted_spoon:
+		campaign_inventory["twisted_spoon"] = 1
+		adventure_inventory["twisted_spoon"] = 1
+		chaos_inventory["twisted_spoon"] = 1
+		championship_inventory["twisted_spoon"] = 1
+		psychic_duel_inventory["twisted_spoon"] = 1
 		
 	if campaign_gold > 0 or adventure_current_episode > 1 or adventure_current_stage > 1:
 		profile_welcome_claimed = true
@@ -9999,6 +10146,8 @@ func apply_save_dict(data: Dictionary) -> bool:
 		campaign_inventory["leftovers"] = 1
 	if has_unlocked_dragon_fang:
 		campaign_inventory["dragon_fang"] = 1
+	if has_unlocked_twisted_spoon:
+		campaign_inventory["twisted_spoon"] = 1
 		adventure_inventory["exp_share"] = 1
 		chaos_inventory["exp_share"] = 1
 		
@@ -10123,6 +10272,12 @@ func erase_profile() -> void:
 	adventure_ep306_cleared_routes.clear()
 	adventure_ep308_cleared_routes.clear()
 	lake_of_rage_completed = false
+	psychic_duel_completed = false
+	psychic_duel_first_clear_claimed = false
+	has_unlocked_twisted_spoon = false
+	psychic_duel_current_round = 1
+	psychic_duel_player_team_state.clear()
+	psychic_duel_inventory = DEFAULT_INVENTORY.duplicate()
 	
 	player_unlocked_ids.clear()
 	player_friends.clear()

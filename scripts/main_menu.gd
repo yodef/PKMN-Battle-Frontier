@@ -839,6 +839,12 @@ func _ready() -> void:
 			GameData.campaign_submode = "ADVENTURE"
 			GameData.is_campaign_mode = false
 			_open_johto_episodes_modal()
+		elif GameData.campaign_submode == "PSYCHIC_DUEL":
+			GameData.campaign_submode = "ADVENTURE"
+			GameData.is_campaign_mode = false
+			GameData.reset_psychic_duel_run()
+			update_adventure_episodes_ui()
+			adventure_episodes_modal.visible = true
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			GameData.is_campaign_mode = false
 			update_adventure_regions_ui()
@@ -1231,6 +1237,21 @@ func _ready() -> void:
 			GameData.is_campaign_mode = false
 			GameData.campaign_submode = "ADVENTURE"
 			_open_johto_episodes_modal()
+		elif GameData.campaign_submode == "PSYCHIC_DUEL":
+			var active_state = GameData.get_active_campaign_team_state()
+			var any_alive = false
+			for p in active_state:
+				if p.get("current_hp", 0) > 0:
+					any_alive = true
+					break
+			if GameData.psychic_duel_completed or not any_alive or active_state.is_empty():
+				GameData.is_campaign_mode = false
+				GameData.campaign_submode = "ADVENTURE"
+				update_adventure_episodes_ui()
+				adventure_episodes_modal.visible = true
+			else:
+				update_campaign_ui()
+				campaign_modal.visible = true
 		else:
 			var active_state = GameData.get_active_campaign_team_state()
 			if active_state.size() > 0:
@@ -1845,6 +1866,140 @@ func update_adventure_episodes_ui() -> void:
 		btn_hub_adventure_ep8.text = "🗺️ Embark on Episode VIII"
 		btn_hub_adventure_ep8.disabled = false
 		_apply_retro_button_style(btn_hub_adventure_ep8, Color(0.19, 0.59, 0.58), Color(0.30, 0.85, 0.80), true)
+
+	# Estado del Evento Especial: Duelo contra los Psíquicos
+	_update_psychic_duel_card_ui()
+
+func _setup_psychic_duel_card() -> void:
+	var ep_vbox = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox")
+	if not ep_vbox:
+		return
+	if ep_vbox.has_node("CardPsychicDuel"):
+		return
+	
+	var duel_panel = PanelContainer.new()
+	duel_panel.name = "CardPsychicDuel"
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.14, 0.08, 0.22, 0.95)
+	sb.border_color = Color(0.75, 0.35, 0.95, 0.9)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(6)
+	sb.content_margin_left = 12
+	sb.content_margin_right = 12
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	duel_panel.add_theme_stylebox_override("panel", sb)
+	ep_vbox.add_child(duel_panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.name = "DuelVBox"
+	vbox.add_theme_constant_override("separation", 3)
+	duel_panel.add_child(vbox)
+	
+	var title = Label.new()
+	title.name = "DuelTitle"
+	title.text = "🔮 EVENTO ESPECIAL: DUELO CONTRA LOS PSÍQUICOS"
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title.add_theme_font_size_override("font_size", 13)
+	title.add_theme_color_override("font_color", Color(0.85, 0.55, 1.0))
+	vbox.add_child(title)
+	
+	var desc = Label.new()
+	desc.name = "DuelDesc"
+	desc.text = "Un desafío colosal en 3 rondas: ¡Vence a los Iniciales Clonados (Charizard, Blastoise, Venusaur), a Mew y al temible Mewtwo Enfurecido (65 HP - Escalada Furiosa)!"
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc.add_theme_font_size_override("font_size", 11)
+	desc.add_theme_color_override("font_color", Color(0.85, 0.8, 0.9))
+	vbox.add_child(desc)
+	
+	var rew = Label.new()
+	rew.name = "DuelRewards"
+	rew.text = "👑 Recompensa 1ª Victoria: 💎 %d Diamantes + 🥄 Cuchara Torcida (+2 DMG a Moves Psíquicos)" % GameData.PSYCHIC_DUEL_REWARD_DIAMONDS
+	rew.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	rew.add_theme_font_size_override("font_size", 11)
+	rew.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	vbox.add_child(rew)
+	
+	var status = Label.new()
+	status.name = "DuelStatus"
+	status.text = "Status: Locked"
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status.add_theme_font_size_override("font_size", 11)
+	status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+	vbox.add_child(status)
+	
+	var btn = Button.new()
+	btn.name = "BtnPsychicDuel"
+	btn.custom_minimum_size = Vector2(0, 36)
+	btn.add_theme_font_size_override("font_size", 12)
+	btn.text = "🔒 Bloqueado (Completa Kanto)"
+	btn.disabled = true
+	_apply_retro_button_style(btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	btn.pressed.connect(func():
+		if GameData.is_drag_scrolling():
+			return
+		_start_psychic_duel_event()
+	)
+	vbox.add_child(btn)
+
+func _update_psychic_duel_card_ui() -> void:
+	_setup_psychic_duel_card()
+	var duel_card = get_node_or_null("AdventureEpisodesModal/Box/EpisodesScroll/EpisodesVBox/CardPsychicDuel")
+	if not duel_card:
+		return
+	var d_status = duel_card.get_node_or_null("DuelVBox/DuelStatus") as Label
+	var d_btn = duel_card.get_node_or_null("DuelVBox/BtnPsychicDuel") as Button
+	var has_8_kanto = GameData.has_all_kanto_gym_badges()
+	var is_duel_done = GameData.is_psychic_duel_completed()
+	
+	if not has_8_kanto:
+		duel_card.modulate = Color(0.7, 0.7, 0.75, 0.8)
+		if d_status:
+			d_status.text = "Status: 🔒 Bloqueado (Requiere completar los 8 episodios de Kanto [%d/8])" % GameData.get_kanto_gym_badges_count()
+			d_status.add_theme_color_override("font_color", Color(0.9, 0.5, 0.4))
+		if d_btn:
+			d_btn.disabled = true
+			d_btn.text = "🔒 Bloqueado (Completa Kanto)"
+			_apply_retro_button_style(d_btn, Color(0.25, 0.35, 0.45), Color(0.35, 0.45, 0.55), false)
+	elif GameData.campaign_submode == "PSYCHIC_DUEL" and not GameData.psychic_duel_player_team_state.is_empty():
+		duel_card.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		if d_status:
+			d_status.text = "Status: ⚔️ En curso (Ronda %d/3)" % GameData.psychic_duel_current_round
+			d_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		if d_btn:
+			d_btn.disabled = false
+			d_btn.text = "⛺ Continuar Duelo Psíquico (Ronda %d/3)" % GameData.psychic_duel_current_round
+			_apply_retro_button_style(d_btn, Color(0.55, 0.20, 0.75), Color(0.75, 0.35, 0.95), true)
+	elif is_duel_done:
+		duel_card.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		if d_status:
+			d_status.text = "Status: 🏆 COMPLETADO • Desafío Rejugable"
+			d_status.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		if d_btn:
+			d_btn.disabled = false
+			d_btn.text = "🔮 Rejugar Duelo contra los Psíquicos"
+			_apply_retro_button_style(d_btn, Color(0.55, 0.20, 0.75), Color(0.75, 0.35, 0.95), true)
+	else:
+		duel_card.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		if d_status:
+			d_status.text = "Status: 🔓 DISPONIBLE • ¡Desafía a los Psíquicos!"
+			d_status.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+		if d_btn:
+			d_btn.disabled = false
+			d_btn.text = "🔮 Iniciar Duelo contra los Psíquicos"
+			_apply_retro_button_style(d_btn, Color(0.55, 0.20, 0.75), Color(0.75, 0.35, 0.95), true)
+
+func _start_psychic_duel_event() -> void:
+	if not GameData.is_psychic_duel_unlocked():
+		return
+	if adventure_episodes_modal:
+		adventure_episodes_modal.visible = false
+	GameData.campaign_submode = "PSYCHIC_DUEL"
+	if not GameData.psychic_duel_player_team_state.is_empty():
+		update_campaign_ui()
+		campaign_modal.visible = true
+	else:
+		open_team_select_for_campaign()
 
 func update_adventure_regions_ui() -> void:
 	if not is_inside_tree():
@@ -5586,6 +5741,42 @@ func update_campaign_ui() -> void:
 			
 		if campaign_track_diagram:
 			campaign_track_diagram.set_campaign_progress(total_matches, cur_match, false, true)
+	elif GameData.campaign_submode == "PSYCHIC_DUEL":
+		btn_close_campaign.text = "⬅ Abandonar Duelo"
+		btn_change_campaign_team.visible = (GameData.psychic_duel_current_round == 1)
+		btn_reset_campaign.text = "🔄 Reiniciar Duelo Psíquico"
+		if camp_title:
+			camp_title.text = "🔮 DUELO CONTRA LOS PSÍQUICOS"
+		if camp_desc:
+			camp_desc.text = GameData.tr_text("Boss Fight in 3 rounds: Cloned Starters, Mew, and Enraged Mewtwo!", "Boss Fight en 3 rondas: Trío de Iniciales Clonados, Mew y Mewtwo Enfurecido.")
+		if camp_team_header:
+			camp_team_header.text = GameData.tr_text("👥 YOUR TEAM:", "👥 TU EQUIPO:")
+		
+		var cur_rnd = GameData.psychic_duel_current_round
+		var round_names = {
+			1: "Ronda 1/3: Iniciales Clonados (Charizard, Blastoise, Venusaur)",
+			2: "Ronda 2/3: Mew Místico (Mew)",
+			3: "Ronda 3/3: Mewtwo Enfurecido (HP 65 - Escalada Furiosa)"
+		}
+		campaign_match_lbl.text = "🔮 " + round_names.get(cur_rnd, "Ronda %d/3" % cur_rnd)
+		match cur_rnd:
+			1:
+				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA 1 (vs Iniciales)"
+			2:
+				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA 2 (vs Mew)"
+			3:
+				btn_start_campaign_battle.text = "⚔️ INICIAR RONDA FINAL (vs Mewtwo Enfurecido)"
+			_:
+				btn_start_campaign_battle.text = "⚔️ INICIAR COMBATE"
+		
+		var any_alive = false
+		for p in cur_team:
+			if p["current_hp"] > 0:
+				any_alive = true
+				break
+		btn_start_campaign_battle.disabled = not any_alive
+		if campaign_track_diagram:
+			campaign_track_diagram.set_campaign_progress(3, cur_rnd, false, true)
 	else:
 		# Modo Pokémon Stadium
 		btn_close_campaign.text = "⬅ Exit Stadium Camp"
@@ -7796,6 +7987,8 @@ func _on_reset_campaign_pressed() -> void:
 		GameData.reset_chaos_odyssey()
 	elif GameData.campaign_submode == "CHAMPIONSHIP":
 		GameData.reset_championship_league(false)
+	elif GameData.campaign_submode == "PSYCHIC_DUEL":
+		GameData.reset_psychic_duel_run()
 	else:
 		GameData.reset_campaign()
 	open_team_select_for_campaign()
@@ -7873,6 +8066,22 @@ func _on_start_campaign_battle_pressed() -> void:
 		for p in GameData.championship_player_team_state:
 			GameData.player_team_ids.append(int(p["id"]))
 		GameData.enemy_team_ids = GameData.get_championship_rival_team(GameData.championship_match_number)
+	elif GameData.campaign_submode == "PSYCHIC_DUEL":
+		var duel_invalid = false
+		for p in GameData.psychic_duel_player_team_state:
+			var pid = int(p.get("id", -1))
+			if not GameData.pokemon_catalog.has(pid) or not GameData.is_pokemon_unlocked(pid) or pid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID, GameData.ENRAGED_MEWTWO_BOSS_ID]:
+				duel_invalid = true
+				break
+		if duel_invalid or GameData.psychic_duel_current_round > 3 or GameData.psychic_duel_player_team_state.is_empty():
+			GameData.reset_psychic_duel_run()
+			open_team_select_for_campaign()
+			return
+		GameData.is_campaign_mode = true
+		GameData.player_team_ids.clear()
+		for p in GameData.psychic_duel_player_team_state:
+			GameData.player_team_ids.append(int(p["id"]))
+		GameData.enemy_team_ids = GameData.get_psychic_duel_round_rival_team(GameData.psychic_duel_current_round)
 	else:
 		var tourn_invalid = false
 		for p in GameData.campaign_player_team_state:
@@ -8022,6 +8231,12 @@ func _on_close_team_select_pressed() -> void:
 			GameData.campaign_submode = "ADVENTURE"
 			GameData.is_campaign_mode = false
 			_open_johto_episodes_modal()
+		elif GameData.campaign_submode == "PSYCHIC_DUEL":
+			GameData.campaign_submode = "ADVENTURE"
+			GameData.is_campaign_mode = false
+			GameData.reset_psychic_duel_run()
+			update_adventure_episodes_ui()
+			adventure_episodes_modal.visible = true
 			return
 		var state = GameData.get_active_campaign_team_state()
 		if state.size() > 0:
@@ -8121,10 +8336,10 @@ func build_team_select_cards_grid() -> void:
 				var ev_to = str(c.get("evolves_to", "")).strip_edges()
 				if not is_legendary and ev_to == "":
 					allowed_pool.append(c)
-		elif GameData.campaign_submode == "LAKE_OF_RAGE":
+		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL"]:
 			for c in cards_data:
 				var cid = int(c.get("id", -1))
-				if cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+				if cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID, GameData.ENRAGED_MEWTWO_BOSS_ID]:
 					continue
 				if not GameData.is_pokemon_unlocked(cid):
 					continue
@@ -8162,7 +8377,7 @@ func build_team_select_cards_grid() -> void:
 			empty_lbl.text = "🔒 No tienes Pokémon Legendarios ni Dragones en tu colección.\n¡Consíguelos en sobres o evoluciona tus Pokémon para entrar en Chaos Odyssey!"
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			empty_lbl.text = GameData.tr_text("🔒 No fully evolved Pokémon in your collection.\n(Only final evolution stages allowed, no Legendaries).", "🔒 No tienes Pokémon en su fase final en tu colección.\n(Solo Pokémon en etapa final, no legendarios).")
-		elif GameData.campaign_submode == "LAKE_OF_RAGE":
+		elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL"]:
 			empty_lbl.text = "🔒 No tienes Pokémon disponibles en tu colección."
 		else:
 			empty_lbl.text = "🔒 No tienes Pokémon Básicos disponibles en tu colección."
@@ -8436,7 +8651,7 @@ func toggle_pokemon_selection(pkmn_id: int) -> void:
 				var ev_to = str(cat_entry.get("evolves_to", "")).strip_edges()
 				if is_legendary or ev_to != "":
 					return
-			elif GameData.campaign_submode == "LAKE_OF_RAGE":
+			elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL"]:
 				# All Pokémon unlocked in collection are allowed, boss cards excluded
 				pass
 			else:
@@ -8466,7 +8681,7 @@ func update_team_select_ui() -> void:
 		var clean_ids: Array[int] = []
 		for pid in selected_player_ids:
 			var cid = int(pid)
-			if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+			if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID, GameData.ENRAGED_MEWTWO_BOSS_ID]:
 				continue
 			var cat = GameData.pokemon_catalog.get(cid)
 			if not cat:
@@ -8478,7 +8693,7 @@ func update_team_select_ui() -> void:
 			if GameData.campaign_submode == "CHAOS":
 				if (is_leg and ev_from == "") or GameData.is_line_legendary(cid):
 					clean_ids.append(cid)
-			elif GameData.campaign_submode == "LAKE_OF_RAGE":
+			elif GameData.campaign_submode in ["LAKE_OF_RAGE", "PSYCHIC_DUEL"]:
 				clean_ids.append(cid)
 			else:
 				if st == "basic" and not is_leg:
@@ -8665,11 +8880,15 @@ func update_team_select_ui() -> void:
 		if p_count >= 1:
 			if GameData.campaign_submode == "LAKE_OF_RAGE":
 				btn_start_battle.text = "🌊 BATTLE RED GYARADOS (%d PKMN)!" % p_count
+			elif GameData.campaign_submode == "PSYCHIC_DUEL":
+				btn_start_battle.text = "🔮 INICIAR DUELO PSÍQUICO (%d PKMN)" % p_count
 			else:
 				btn_start_battle.text = "✅ CONFIRM %s TEAM (%d PKMN)" % [mode_label, p_count]
 		else:
 			if GameData.campaign_submode == "LAKE_OF_RAGE":
 				btn_start_battle.text = "Choose 1 to 3 Pokémon for Boss Fight"
+			elif GameData.campaign_submode == "PSYCHIC_DUEL":
+				btn_start_battle.text = "Elige de 1 a 3 Pokémon para el Duelo"
 			elif GameData.campaign_submode == "CHAOS":
 				btn_start_battle.text = "Choose 1 to 3 Legendary / Dragon Pokémon"
 			else:
@@ -8718,6 +8937,19 @@ func _on_start_battle_pressed() -> void:
 			if bgm_player and bgm_player.playing:
 				bgm_player.stop()
 			get_tree().change_scene_to_file("res://scenes/battle.tscn")
+			return
+		elif GameData.campaign_submode == "PSYCHIC_DUEL":
+			for pid in selected_player_ids:
+				var cid = int(pid)
+				if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID, GameData.ENRAGED_MEWTWO_BOSS_ID]:
+					return
+			GameData.is_campaign_mode = true
+			GameData.player_team_ids = selected_player_ids.duplicate()
+			GameData.player_team_held_items = selected_player_held_items.duplicate()
+			GameData.init_psychic_duel_run(selected_player_ids, selected_player_held_items)
+			team_select_modal.visible = false
+			update_campaign_ui()
+			campaign_modal.visible = true
 			return
 		elif GameData.campaign_submode == "ADVENTURE":
 			for pid in selected_player_ids:

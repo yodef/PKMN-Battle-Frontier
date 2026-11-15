@@ -254,6 +254,16 @@ func get_enemy_trainer_name() -> String:
 	if GameData.is_campaign_mode:
 		if GameData.campaign_submode == "LAKE_OF_RAGE":
 			return "Gyarados Rojo" if is_sp else "Red Gyarados"
+		elif GameData.campaign_submode == "PSYCHIC_DUEL":
+			match GameData.psychic_duel_current_round:
+				1:
+					return "Guardianes Clónicos" if is_sp else "Cloned Guardians"
+				2:
+					return "Mew Místico" if is_sp else "Mystic Mew"
+				3:
+					return "Mewtwo Enfurecido" if is_sp else "Enraged Mewtwo"
+				_:
+					return "Mewtwo Enfurecido" if is_sp else "Enraged Mewtwo"
 		elif GameData.campaign_submode == "CHAOS":
 			var match_info = GameData.get_chaos_match_info(GameData.chaos_match_number)
 			if match_info.get("is_boss", false):
@@ -1170,6 +1180,10 @@ func _show_forfeit_confirmation_modal() -> void:
 			forfeit_title_lbl.text = "🌊 ¿HUIR DEL LAGO DE LA FURIA?"
 			forfeit_body_lbl.text = "¿Seguro que deseas retirarte del combate contra Gyarados Rojo?\nPodrás volver a desafiarlo cuando tu equipo esté listo."
 			btn_confirm_forfeit.text = "🏳️ Huir del Lago"
+		elif GameData.campaign_submode == "PSYCHIC_DUEL":
+			forfeit_title_lbl.text = "🔮 ¿ABANDONAR EL DUELO PSÍQUICO?"
+			forfeit_body_lbl.text = "¿Seguro que deseas retirarte del Duelo contra los Psíquicos?\nEl progreso de las rondas se reiniciará."
+			btn_confirm_forfeit.text = "🏳️ Abandonar Duelo"
 		elif GameData.campaign_submode == "ADVENTURE":
 			forfeit_title_lbl.text = "⚠️ RETREAT FROM ADVENTURE?"
 			forfeit_body_lbl.text = "Are you sure you want to retreat?\nCurrent episode progress will be reset.\n(Your earned Gold and Diamonds are safe)."
@@ -1230,6 +1244,11 @@ func _on_return_to_menu() -> void:
 		OnlineManager.leave_or_delete_room()
 		GameData.is_online_pvp = false
 	if not is_battle_over and GameData.is_campaign_mode and GameData.campaign_submode == "LAKE_OF_RAGE":
+		GameData.is_campaign_mode = false
+		GameData.campaign_submode = "ADVENTURE"
+		GameData.save_profile()
+	elif not is_battle_over and GameData.is_campaign_mode and GameData.campaign_submode == "PSYCHIC_DUEL":
+		GameData.reset_psychic_duel_run()
 		GameData.is_campaign_mode = false
 		GameData.campaign_submode = "ADVENTURE"
 		GameData.save_profile()
@@ -1505,6 +1524,18 @@ func start_new_game() -> void:
 					battle_title_lbl.text = "💎 FINAL BOSS: CRYSTAL ONIX (900 HP)"
 				else:
 					battle_title_lbl.text = "🌌 Chaos Odyssey - Trial %d / %d" % [GameData.chaos_match_number, GameData.CHAOS_TOTAL_MATCHES]
+			elif GameData.campaign_submode == "PSYCHIC_DUEL":
+				rival_ids = GameData.get_psychic_duel_round_rival_team(GameData.psychic_duel_current_round)
+				enemy_super_potions = 0
+				match GameData.psychic_duel_current_round:
+					1:
+						battle_title_lbl.text = "🔮 DUELO PSÍQUICO: RONDA 1/3 (vs Iniciales Clonados)"
+					2:
+						battle_title_lbl.text = "🔮 DUELO PSÍQUICO: RONDA 2/3 (vs Mew Místico)"
+					3:
+						battle_title_lbl.text = "🔮 DUELO PSÍQUICO: BOSS FINAL (vs Mewtwo Enfurecido - 65 HP)"
+					_:
+						battle_title_lbl.text = "🔮 DUELO PSÍQUICO"
 			elif GameData.campaign_submode == "CHAMPIONSHIP":
 				rival_ids = GameData.get_championship_rival_team(GameData.championship_match_number)
 				var match_info = GameData.get_championship_match_info(GameData.championship_match_number)
@@ -1541,6 +1572,9 @@ func start_new_game() -> void:
 				elif is_e4:
 					enemy_team[last_idx].foil_type = "elite_four_ace"
 					enemy_team[last_idx].is_elite_four_ace = true
+			elif GameData.campaign_submode == "PSYCHIC_DUEL":
+				if GameData.psychic_duel_current_round == 3:
+					enemy_team[last_idx].foil_type = "boss"
 			elif GameData.campaign_submode == "CHAMPIONSHIP":
 				enemy_team[last_idx].foil_type = "elite_four_ace"
 				enemy_team[last_idx].is_elite_four_ace = true
@@ -1613,6 +1647,8 @@ func start_new_game() -> void:
 	elif GameData.is_campaign_mode:
 		if GameData.campaign_submode == "LAKE_OF_RAGE":
 			mode_str = "EL LAGO DE LA FURIA - GYARADOS ROJO (BOSS)"
+		elif GameData.campaign_submode == "PSYCHIC_DUEL":
+			mode_str = "DUELO CONTRA LOS PSÍQUICOS (RONDA %d/3)" % GameData.psychic_duel_current_round
 		elif GameData.campaign_submode == "ADVENTURE":
 			var total_stages = GameData.get_adventure_total_stages(GameData.adventure_current_episode)
 			var stage_info = GameData.get_adventure_stage_info(GameData.adventure_current_episode, GameData.adventure_current_stage)
@@ -2917,6 +2953,11 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		raw_damage += 1
 		note_text += " [color=#80DEEA]Wise Glasses (+1 Sp. DMG)![/color]"
 
+	# Twisted Spoon (Cuchara Torcida: +2 DMG a movimientos de tipo Psíquico)
+	if attacker.held_item in ["twisted_spoon", "cuchara_torcida"] and move.type == "PSYCHIC" and raw_damage > 0:
+		raw_damage += 2
+		note_text += " [color=#CE93D8]Twisted Spoon (+2 Psychic DMG)![/color]"
+
 	# Sinnoh Environmental bonuses (Ep 305 Eerie Mist & Ep 307 Hail Blizzard)
 	if GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
 		var cur_ep = GameData.adventure_current_episode
@@ -2942,6 +2983,13 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if attacker.has_passive and (attacker.passive_name in ["Furia Desatada", "Unbridled Rage"]):
 		raw_damage += 3
 		note_text += " [color=crimson]Furia Desatada (+3 DMG)![/color]"
+
+	# Escalada Furiosa (Enraged Mewtwo Boss: +1 DMG entre más rondas dure la pelea)
+	if attacker.has_passive and (attacker.passive_name in ["Escalada Furiosa", "Enraged Escalation"]):
+		var rage_bonus = max(0, round_number - 1)
+		if rage_bonus > 0 and raw_damage > 0:
+			raw_damage += rage_bonus
+			note_text += " [color=#CE93D8]Escalada Furiosa (+%d DMG)![/color]" % rage_bonus
 		
 	# Guts / Agallas (+3 DMG si sufre un estado alterado)
 	if attacker.has_passive and attacker.passive_name == "Guts":
@@ -4453,6 +4501,44 @@ func _resolve_battle_victory() -> void:
 				"🌊 ¡EL LAGO DE LA FURIA HA SIDO PACIFICADO!",
 				"¡Has derrotado al colosal Gyarados Rojo Enfurecido en una batalla legendaria!\n\n👑 RECOMPENSA EXCLUSIVA: ¡Carta de Gyarados Rojo (Legendary ⭐) añadida a tu colección!\n💎 +%d Diamantes de bonificación.\n\nEl evento ha quedado completado permanentemente." % lake_diamonds
 			)
+		elif GameData.campaign_submode == "PSYCHIC_DUEL":
+			var cur_round = GameData.psychic_duel_current_round
+			if cur_round >= 3:
+				var was_first_clear = not GameData.psychic_duel_first_clear_claimed
+				GameData.complete_psychic_duel()
+				GameData.is_campaign_mode = false
+				if was_first_clear:
+					show_game_over(
+						"🔮 ¡DUELO CONTRA LOS PSÍQUICOS SUPERADO!",
+						"¡Has derrotado a Mewtwo Enfurecido y conquistado las 3 rondas del evento!\n\n👑 ¡RECOMPENSAS DE PRIMERA VICTORIA!\n💎 +%d Diamantes (Total: %d)\n🥄 Cuchara Torcida (Twisted Spoon): El PKMN que lleva este objeto provoca +2 DMG con cualquier Move Psíquico.\n\n¡Ambos premios han sido añadidos a tu colección e inventario!" % [
+							GameData.PSYCHIC_DUEL_REWARD_DIAMONDS,
+							GameData.player_diamonds
+						]
+					)
+				else:
+					show_game_over(
+						"🔮 ¡DUELO CONTRA LOS PSÍQUICOS SUPERADO!",
+						"¡Has vuelto a derrotar al colosal Mewtwo Enfurecido y superado el desafío psíquico!\n\n¡Victoria legendaria!"
+					)
+			else:
+				GameData.psychic_duel_player_team_state.clear()
+				for p in player_team:
+					GameData.psychic_duel_player_team_state.append({
+						"id": p.id,
+						"current_hp": max(0, p.current_hp),
+						"max_hp": p.max_hp,
+						"held_item": p.held_item
+					})
+				GameData.psychic_duel_current_round += 1
+				GameData.save_profile()
+				var next_enemy_desc = "Mew Místico" if cur_round == 1 else "Mewtwo Enfurecido (Boss 65 HP)"
+				show_game_over(
+					"🔮 ¡RONDA %d SUPERADA!" % cur_round,
+					"¡Has vencido en la Ronda %d del Duelo Psíquico!\n\nTu equipo mantiene su vitalidad para el siguiente combate.\nPuedes usar objetos curativos en el campamento o continuar al combate contra: %s." % [
+						cur_round,
+						next_enemy_desc
+					]
+				)
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			var cur_match = GameData.championship_match_number
 			var phase_diamonds = GameData.CHAMPIONSHIP_DIAMOND_REWARDS[cur_match - 1]
@@ -4679,6 +4765,14 @@ func _resolve_battle_defeat(is_double_ko: bool = false) -> void:
 			show_game_over(
 				"💀 DERROTA EN EL LAGO DE LA FURIA",
 				"El Gyarados Rojo Enfurecido desató todo su poder y arrasó a tu equipo.\n\n¡Reorganiza tu escuadrón legendario e inténtalo de nuevo cuando estés listo!"
+			)
+		elif GameData.campaign_submode == "PSYCHIC_DUEL":
+			GameData.reset_psychic_duel_run()
+			GameData.is_campaign_mode = false
+			GameData.save_profile()
+			show_game_over(
+				"💀 DERROTA EN EL DUELO PSÍQUICO",
+				"Tu equipo ha sido superado por los poderes psíquicos.\nEl desafío se ha reiniciado a la Ronda 1.\n¡Reorganiza tu equipo e inténtalo de nuevo!"
 			)
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			GameData.reset_championship_league(false)
@@ -5021,6 +5115,10 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 	# Bonos del atacante
 	if attacker.has_passive and attacker.passive_name == "Focus Energy" and att_spd > def_spd:
 		dmg += 1
+	if attacker.has_passive and (attacker.passive_name in ["Escalada Furiosa", "Enraged Escalation"]):
+		var rage_bonus = max(0, round_number - 1)
+		if rage_bonus > 0 and dmg > 0:
+			dmg += rage_bonus
 	if attacker.has_passive and attacker.passive_name == "Guts":
 		if attacker.burn_turns > 0 or attacker.is_poisoned or attacker.is_paralyzed or attacker.is_asleep_turns > 0 or attacker.is_frozen:
 			dmg += 3
@@ -5122,6 +5220,10 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 	# Wise Glasses (Gafas Especiales: +1 DMG a movimientos especiales)
 	if attacker.held_item == "wise_glasses" and move.type in ["FIRE", "WATER", "GRASS", "ELECTRIC", "PSYCHIC", "ICE", "DRAGON", "GHOST", "DARK"]:
 		dmg += 1
+
+	# Twisted Spoon (Cuchara Torcida: +2 DMG a movimientos de tipo Psíquico)
+	if attacker.held_item in ["twisted_spoon", "cuchara_torcida"] and move.type == "PSYCHIC" and dmg > 0:
+		dmg += 2
 
 	# Sinnoh Environmental bonuses (Ep 305 Eerie Mist & Ep 307 Hail Blizzard)
 	if GameData.is_campaign_mode and GameData.campaign_submode == "ADVENTURE":
@@ -6250,6 +6352,9 @@ func _format_passive_display(pkmn, opponent) -> String:
 		return " | 🔥 " + (GameData.tr_text("Rage [ACTIVE: +2 DMG]", "Furia [ACTIVO: +2 DMG]") if is_act else GameData.tr_text("Rage [INACTIVE]", "Furia [INACTIVO]"))
 	elif p_name in ["Furia Desatada", "Unbridled Rage"]:
 		return " | 🔥 " + GameData.tr_text("Unbridled Rage [ACTIVE: +3 DMG]", "Furia Desatada [ACTIVO: +3 DMG]")
+	elif p_name in ["Escalada Furiosa", "Enraged Escalation"]:
+		var bonus = max(0, round_number - 1)
+		return " | ⚡ " + (GameData.tr_text("Enraged Escalation [+%d DMG]", "Escalada Furiosa [+%d DMG]") % bonus)
 	elif p_name == "Sturdy":
 		var is_full = (pkmn.current_hp == pkmn.max_hp)
 		return " | 🛡️ " + (GameData.tr_text("Sturdy [ACTIVE: Endure 1 HP]", "Robustez [ACTIVO: Aguanta 1 HP]") if is_full else GameData.tr_text("Sturdy [SPENT]", "Robustez [AGOTADO]"))
@@ -7253,6 +7358,11 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 		btn_restart.visible = false
 		if GameData.campaign_submode == "LAKE_OF_RAGE":
 			btn_game_over_menu.text = "🗺️ Return to Johto"
+		elif GameData.campaign_submode == "PSYCHIC_DUEL":
+			if GameData.psychic_duel_current_round > 3 or (is_battle_over and not is_victory):
+				btn_game_over_menu.text = "🗺️ Volver a Kanto"
+			else:
+				btn_game_over_menu.text = "⛺ Campamento (Ronda %d/3)" % GameData.psychic_duel_current_round
 		elif GameData.campaign_submode == "ADVENTURE":
 			btn_game_over_menu.text = "⛺ Camp / Shop"
 		elif GameData.campaign_submode == "CHAOS":
@@ -7961,7 +8071,7 @@ func refresh_bag_items_ui() -> void:
 				name_lbl.add_theme_color_override("font_color", Color("#CE93D8"))
 			elif item_id == "revive":
 				name_lbl.add_theme_color_override("font_color", Color("#FFE082"))
-			elif item_id in ["exp_share", "poke_flute", "wise_glasses", "quick_claw", "leftovers", "dragon_fang"]:
+			elif item_id in ["exp_share", "poke_flute", "wise_glasses", "quick_claw", "leftovers", "dragon_fang", "twisted_spoon"]:
 				name_lbl.add_theme_color_override("font_color", Color("#FFD54F"))
 			else:
 				name_lbl.add_theme_color_override("font_color", Color("#FFFFFF"))
@@ -7979,7 +8089,7 @@ func refresh_bag_items_ui() -> void:
 		var use_btn = Button.new()
 		use_btn.custom_minimum_size = Vector2(85, 36)
 		use_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		if item_id in ["exp_share", "wise_glasses", "quick_claw", "leftovers", "dragon_fang"]:
+		if item_id in ["exp_share", "wise_glasses", "quick_claw", "leftovers", "dragon_fang", "twisted_spoon"]:
 			use_btn.text = "Passive"
 			use_btn.disabled = true
 		elif item_id == "poke_flute":
