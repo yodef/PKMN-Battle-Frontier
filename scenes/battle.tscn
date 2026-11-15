@@ -101,15 +101,18 @@ theme_override_font_sizes/font_size = 17
 text = "Rival"
 
 [node name="EnemyNameSpacer" type="Control" parent="MainContainer/EnemySection/HBox/Info/EnemyNameRow"]
+custom_minimum_size = Vector2(6, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="BattleTitle" type="Label" parent="MainContainer/EnemySection/HBox/Info/EnemyNameRow" unique_id=1658137403]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 11
 text = "Quick Battle (3 vs 3)"
 horizontal_alignment = 2
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="EnemyType" type="Label" parent="MainContainer/EnemySection/HBox/Info" unique_id=1947913316]
 layout_mode = 2
@@ -744,7 +747,7 @@ theme_override_constants/separation = 6
 [node name="PlayerEnergyLbl" type="Label" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow" unique_id=1294222838]
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 11
 text = "Energy: ⚡⚡⚡ (3/3)"
 
 [node name="PlayerEnergySpacer" type="Control" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow"]
@@ -765,7 +768,7 @@ text = "🎒 Bag"
 
 [node name="BtnPassive" type="Button" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow" unique_id=350807335]
 visible = false
-custom_minimum_size = Vector2(100, 28)
+custom_minimum_size = Vector2(60, 28)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 10

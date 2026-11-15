@@ -6231,6 +6231,37 @@ func _format_status_list(pkmn) -> Array:
 	return list
 
 # --- ACTUALIZACIÓN DE INTERFAZ ---
+func _format_passive_display(pkmn, opponent) -> String:
+	if pkmn == null or not ("has_passive" in pkmn) or not pkmn.has_passive or pkmn.passive_name.is_empty():
+		return ""
+	var p_name = pkmn.passive_name
+	if p_name == "Focus Energy":
+		var my_spd = get_pokemon_effective_speed(pkmn, opponent)
+		var foe_spd = get_pokemon_effective_speed(opponent, pkmn)
+		if my_spd > foe_spd:
+			return " | ✨ " + GameData.tr_text("Focus Energy [ACTIVE: +1 DMG]", "Foco Energía [ACTIVO: +1 DMG]")
+		else:
+			return " | ✨ " + GameData.tr_text("Focus Energy [INACTIVE: SPD ≤ rival]", "Foco Energía [INACTIVO: VEL ≤ rival]")
+	elif p_name == "Guts":
+		var has_st = (pkmn.burn_turns > 0 or pkmn.is_poisoned or pkmn.is_paralyzed or pkmn.is_frozen or pkmn.is_asleep_turns > 0)
+		return " | 💪 " + (GameData.tr_text("Guts [ACTIVE: +3 DMG]", "Agallas [ACTIVO: +3 DMG]") if has_st else GameData.tr_text("Guts [INACTIVE]", "Agallas [INACTIVO]"))
+	elif p_name in ["Furia", "Rage"]:
+		var is_act = (pkmn.current_hp <= int(ceil(float(pkmn.max_hp) * 0.5)) or pkmn.took_damage_last_turn)
+		return " | 🔥 " + (GameData.tr_text("Rage [ACTIVE: +2 DMG]", "Furia [ACTIVO: +2 DMG]") if is_act else GameData.tr_text("Rage [INACTIVE]", "Furia [INACTIVO]"))
+	elif p_name in ["Furia Desatada", "Unbridled Rage"]:
+		return " | 🔥 " + GameData.tr_text("Unbridled Rage [ACTIVE: +3 DMG]", "Furia Desatada [ACTIVO: +3 DMG]")
+	elif p_name == "Sturdy":
+		var is_full = (pkmn.current_hp == pkmn.max_hp)
+		return " | 🛡️ " + (GameData.tr_text("Sturdy [ACTIVE: Endure 1 HP]", "Robustez [ACTIVO: Aguanta 1 HP]") if is_full else GameData.tr_text("Sturdy [SPENT]", "Robustez [AGOTADO]"))
+	elif p_name in ["Chlorophyll", "Swift Swim", "Weather Rush", "Sand Rush"]:
+		var weather_act = (sandstorm_turns > 0 or grassy_terrain_turns > 0)
+		return " | ⚡ %s [%s]" % [p_name, GameData.tr_text("ACTIVE: +2 SPD", "ACTIVO: +2 VEL") if weather_act else GameData.tr_text("INACTIVE", "INACTIVO")]
+	elif p_name == "Rock Head":
+		return " | 🪨 " + GameData.tr_text("Rock Head [No Recoil]", "Cabeza Roca [Sin Retroceso]")
+	elif p_name == "Levitate":
+		return " | 🌪️ " + GameData.tr_text("Levitate [Ground Immune]", "Levitación [Inmune a Tierra]")
+	return " | ✨ %s" % p_name
+
 func update_ui() -> void:
 	if player_team.is_empty() or enemy_team.is_empty():
 		return
@@ -6248,7 +6279,7 @@ func update_ui() -> void:
 			enemy_card_img.texture = e_tex
 			
 	var active_p_peek = get_active_player()
-	var e_pas = " | ✨ %s" % active_e.passive_name if ("has_passive" in active_e and active_e.has_passive) else ""
+	var e_pas = _format_passive_display(active_e, active_p_peek)
 	enemy_type_icon.texture = GameData.get_type_icon_texture(active_e.type)
 	enemy_name_lbl.text = "%s (SPD: %d)" % [active_e.name, get_pokemon_effective_speed(active_e, active_p_peek)]
 	var e_resists = GameData.get_effective_resistances(active_e.type, active_e.resistant)
@@ -6277,7 +6308,7 @@ func update_ui() -> void:
 		if p_tex and player_card_img.texture != p_tex:
 			player_card_img.texture = p_tex
 			
-	var p_pas = " | ✨ %s" % active_p.passive_name if active_p.has_passive else ""
+	var p_pas = _format_passive_display(active_p, active_e)
 	var p_held = " | 🎒 %s" % GameData.get_item_display_name(active_p.held_item) if ("held_item" in active_p and active_p.held_item != "") else ""
 	player_type_icon.texture = GameData.get_type_icon_texture(active_p.type)
 	player_name_lbl.text = "%s (SPD: %d)" % [active_p.name, get_pokemon_effective_speed(active_p, active_e)]
@@ -6298,7 +6329,10 @@ func update_ui() -> void:
 	player_hp_bar.value = active_p.current_hp
 	_apply_hp_bar_styles(player_hp_bar, active_p.current_hp, active_p.max_hp)
 	player_hp_lbl.text = "%d / %d" % [active_p.current_hp, active_p.max_hp]
-	player_energy_lbl.text = GameData.tr_text("Energy: ", "Energía: ") + get_energy_icons(active_p.current_energy, active_p.max_energy)
+	if active_p.max_energy > 6:
+		player_energy_lbl.text = get_energy_icons(active_p.current_energy, active_p.max_energy)
+	else:
+		player_energy_lbl.text = GameData.tr_text("Energy: ", "Energía: ") + get_energy_icons(active_p.current_energy, active_p.max_energy)
 	
 	# Barra de EXP en Campaña (oculta en Juego Libre)
 	if GameData.is_campaign_mode and player_exp_box:
@@ -6718,69 +6752,14 @@ func update_move_button_labels() -> void:
 	move1_slots.visible = true
 	move2_slots.visible = true
 	
-	# Botón Pasiva
-	if actor.has_passive:
+	# Botón Pasiva (Solo visible para habilidades reactivas/accionables por turno)
+	if actor.has_passive and actor.passive_name == "Turtle Shell":
 		btn_passive.visible = true
-		if actor.passive_name == "Turtle Shell":
-			if actor.took_damage_last_turn:
-				btn_passive.text = "🛡️ Shell (1⚡)\n[Counter]"
-				btn_passive.disabled = (actor.current_energy < 1) or not _is_turn_action_allowed()
-			else:
-				btn_passive.text = "🛡️ Shell\n[No damage taken]"
-				btn_passive.disabled = true
-		elif actor.passive_name == "Focus Energy":
-			var att_spd = get_pokemon_effective_speed(actor, defender)
-			var def_spd = get_pokemon_effective_speed(defender, actor)
-			if att_spd > def_spd:
-				btn_passive.text = "✨ Focus Energy\n[ACTIVE: +1 DMG]"
-			else:
-				btn_passive.text = "✨ Focus Energy\n[INACTIVE: SPD ≤ rival]"
-			btn_passive.disabled = true
-		elif actor.passive_name == "String Shot":
-			btn_passive.text = "✨ String Shot\n[Passive: -1 SPD rival]"
-			btn_passive.disabled = true
-		elif actor.passive_name == "Charm":
-			btn_passive.text = "✨ Charm\n[Passive: -1 DMG Normal]"
-			btn_passive.disabled = true
-		elif actor.passive_name in ["Furia", "Rage"]:
-			var is_active = (actor.current_hp <= int(ceil(float(actor.max_hp) * 0.5)) or actor.took_damage_last_turn)
-			btn_passive.text = "🔥 Furia\n[%s: +2 DMG]" % ("ACTIVE" if is_active else "INACTIVE")
-			btn_passive.disabled = true
-		elif actor.passive_name in ["Furia Desatada", "Unbridled Rage"]:
-			btn_passive.text = "🔥 Furia Desatada\n[ACTIVE: +3 DMG]"
-			btn_passive.disabled = true
-		elif actor.passive_name == "Rock Head":
-			btn_passive.text = "🪨 Rock Head\n[No Recoil]"
-			btn_passive.disabled = true
-		elif actor.passive_name == "Sturdy":
-			var is_full = (actor.current_hp == actor.max_hp)
-			btn_passive.text = "🛡️ Sturdy\n[%s: Endure 1 HP]" % ("ACTIVE" if is_full else "SPENT")
-			btn_passive.disabled = true
-		elif actor.passive_name == "Intimidate":
-			btn_passive.text = "🦁 Intimidate\n[Entry: -2 DMG foe]"
-			btn_passive.disabled = true
-		elif actor.passive_name == "Levitate":
-			btn_passive.text = "🌪️ Levitate\n[Ground & Sand Immune]"
-			btn_passive.disabled = true
-		elif actor.passive_name == "Synchronize":
-			btn_passive.text = "🔮 Synchronize\n[Mirrors Status]"
-			btn_passive.disabled = true
-		elif actor.passive_name == "Guts":
-			var has_status = (actor.burn_turns > 0 or actor.is_poisoned or actor.is_paralyzed or actor.is_frozen or actor.is_asleep_turns > 0)
-			btn_passive.text = "💪 Guts\n[%s: +3 DMG]" % ("ACTIVE" if has_status else "INACTIVE")
-			btn_passive.disabled = true
-		elif actor.passive_name == "Inner Focus":
-			btn_passive.text = "🧘 Inner Focus\n[Flinch Immune]"
-			btn_passive.disabled = true
-		elif actor.passive_name == "Natural Cure":
-			btn_passive.text = "🌿 Natural Cure\n[Cures on Bench]"
-			btn_passive.disabled = true
-		elif actor.passive_name in ["Chlorophyll", "Swift Swim", "Weather Rush", "Sand Rush"]:
-			var weather_active = (sandstorm_turns > 0 or grassy_terrain_turns > 0)
-			btn_passive.text = "⚡ %s\n[%s: +2 SPD]" % [actor.passive_name, "ACTIVE" if weather_active else "INACTIVE"]
-			btn_passive.disabled = true
+		if actor.took_damage_last_turn:
+			btn_passive.text = "🛡️ Shell (1⚡)"
+			btn_passive.disabled = (actor.current_energy < 1) or not _is_turn_action_allowed()
 		else:
-			btn_passive.text = "✨ %s\n[Passive]" % actor.passive_name
+			btn_passive.text = "🛡️ Shell"
 			btn_passive.disabled = true
 	else:
 		btn_passive.visible = false
@@ -6813,7 +6792,7 @@ func update_move_button_labels() -> void:
 		if p_is_asleep and has_flute:
 			btn_poke_flute.visible = true
 			btn_poke_flute.disabled = not _is_turn_action_allowed()
-			btn_poke_flute.text = "🎶 " + GameData.tr_text("Poké Flute (Wake Up)", "Poké Flauta (Despertar)")
+			btn_poke_flute.text = "🎶 " + GameData.tr_text("Flute", "Flauta")
 			btn_poke_flute.tooltip_text = GameData.tr_text(
 				"Consume your turn to awaken your active Pokémon with the Poké Flute.",
 				"Consume tu turno para despertar a tu Pokémon activo con la Poké Flauta."
@@ -7688,7 +7667,7 @@ func _setup_poke_flute_button() -> void:
 		return
 	btn_poke_flute = Button.new()
 	btn_poke_flute.name = "BtnPokeFlute"
-	btn_poke_flute.custom_minimum_size = Vector2(100, 28)
+	btn_poke_flute.custom_minimum_size = Vector2(56, 28)
 	btn_poke_flute.add_theme_font_size_override("font_size", 10)
 	
 	var sb = StyleBoxFlat.new()
@@ -7696,8 +7675,8 @@ func _setup_poke_flute_button() -> void:
 	sb.border_color = Color(0.95, 0.75, 0.20, 0.95)
 	sb.set_border_width_all(2)
 	sb.set_corner_radius_all(6)
-	sb.content_margin_left = 8
-	sb.content_margin_right = 8
+	sb.content_margin_left = 4
+	sb.content_margin_right = 4
 	sb.content_margin_top = 4
 	sb.content_margin_bottom = 4
 	btn_poke_flute.add_theme_stylebox_override("normal", sb)
