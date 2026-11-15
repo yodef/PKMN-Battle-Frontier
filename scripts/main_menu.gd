@@ -647,6 +647,14 @@ func _ready() -> void:
 		btn_close_avatar_modal.pressed.connect(func(): if avatar_modal: avatar_modal.visible = false)
 	_update_avatar_ui()
 	
+	# Versión dinámica en Lobby y Login
+	var footer_lbl = find_child("FooterLabel", true, false) as Label
+	var ver_str = GameData.tr_text("Non-profit fan project • %s" % GameData.GAME_VERSION, "Proyecto fan sin fines de lucro • %s" % GameData.GAME_VERSION)
+	if footer_lbl:
+		footer_lbl.text = ver_str
+	if login_feedback_lbl:
+		login_feedback_lbl.text = ver_str
+	
 	# Modal Selección de Equipo
 	btn_tab_player.pressed.connect(_on_tab_player_pressed)
 	btn_tab_enemy.pressed.connect(_on_tab_enemy_pressed)
