@@ -752,10 +752,10 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="BtnRecover" type="Button" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow" unique_id=1932070482]
-custom_minimum_size = Vector2(105, 28)
+custom_minimum_size = Vector2(56, 28)
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
-text = "🔋 Recharge (+1⚡)"
+text = "🔋 +1⚡"
 
 [node name="BtnBag" type="Button" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow" unique_id=1955096588]
 custom_minimum_size = Vector2(72, 28)

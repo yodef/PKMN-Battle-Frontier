@@ -23,7 +23,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	
 	var p = battle.get_active_player()
-	var expected_text = "🔋 Recargar (+%d⚡)" % p.recover_amount
+	var expected_text = "🔋 +%d⚡" % p.recover_amount
 	assert(battle.btn_recover.text == expected_text, "Botón de %s debe ser '%s', pero dice: '%s'" % [p.name, expected_text, battle.btn_recover.text])
 	print("✓ %s (recover = %d) muestra: '%s'" % [p.name, p.recover_amount, battle.btn_recover.text])
 	
@@ -34,7 +34,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	
 	p = battle.get_active_player()
-	expected_text = "🔋 Recargar (+%d⚡)" % p.recover_amount
+	expected_text = "🔋 +%d⚡" % p.recover_amount
 	assert(battle.btn_recover.text == expected_text, "Botón de %s debe ser '%s', pero dice: '%s'" % [p.name, expected_text, battle.btn_recover.text])
 	print("✓ %s (recover = %d) muestra: '%s'" % [p.name, p.recover_amount, battle.btn_recover.text])
 	
@@ -45,7 +45,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	
 	p = battle.get_active_player()
-	expected_text = "🔋 Recargar (+%d⚡)" % p.recover_amount
+	expected_text = "🔋 +%d⚡" % p.recover_amount
 	assert(battle.btn_recover.text == expected_text, "Botón de %s debe ser '%s', pero dice: '%s'" % [p.name, expected_text, battle.btn_recover.text])
 	print("✓ %s (recover = %d) muestra: '%s'" % [p.name, p.recover_amount, battle.btn_recover.text])
 	
@@ -56,7 +56,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	
 	p = battle.get_active_player()
-	expected_text = "🔋 Recargar (+%d⚡)" % p.recover_amount
+	expected_text = "🔋 +%d⚡" % p.recover_amount
 	assert(battle.btn_recover.text == expected_text, "Botón de %s debe ser '%s', pero dice: '%s'" % [p.name, expected_text, battle.btn_recover.text])
 	print("✓ %s (recover = %d) muestra: '%s'" % [p.name, p.recover_amount, battle.btn_recover.text])
 	

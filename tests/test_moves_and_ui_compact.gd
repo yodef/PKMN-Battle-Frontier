@@ -331,6 +331,14 @@ func _ready() -> void:
 	assert(player_energy_lbl.visible == true, "PlayerEnergyLbl must be visible")
 	assert(player_energy_lbl.clip_text == false, "PlayerEnergyLbl must NOT have clip_text enabled to prevent disappearing")
 	assert(battle_scene.btn_recover.visible == true, "BtnRecover must be visible alongside PlayerEnergyLbl")
+	assert("🔋 +" in battle_scene.btn_recover.text, "BtnRecover must only show icon and amount (got '%s')" % battle_scene.btn_recover.text)
+	
+	# Verify energy icons and dots for both low and high max energy (e.g. 4/10 shows 4 bolts and 6 dots)
+	var e_icons_4_10 = battle_scene.get_energy_icons(4, 10)
+	assert(e_icons_4_10 == "⚡⚡⚡⚡⚪⚪⚪⚪⚪⚪ (4/10)", "4/10 energy must show 4 lightning bolts and 6 dots (got '%s')" % e_icons_4_10)
+	var e_icons_3_3 = battle_scene.get_energy_icons(3, 3)
+	assert(e_icons_3_3 == "⚡⚡⚡ (3/3)", "3/3 energy must show 3 lightning bolts (got '%s')" % e_icons_3_3)
+	
 	battle_scene.update_ui()
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -361,7 +369,7 @@ func _ready() -> void:
 	assert(GameData.settings_language == "es", "Selecting index 1 must set GameData.settings_language to 'es'")
 	assert(settings_title_lbl.text == "⚙️ AJUSTES", "SettingsTitle must automatically translate to '⚙️ AJUSTES' (got '%s')" % settings_title_lbl.text)
 	assert("CAMPAÑA" in btn_campaign_node.text, "BtnCampaign must automatically translate to Spanish (got '%s')" % btn_campaign_node.text)
-	assert("Recargar" in battle_scene.btn_recover.text, "Battle Recharge button must automatically translate to Spanish (got '%s')" % battle_scene.btn_recover.text)
+	assert("Energía: " in player_energy_lbl.text, "PlayerEnergyLbl must automatically translate to Spanish (got '%s')" % player_energy_lbl.text)
 	assert(lang_opt.get_item_text(0) == "English" and lang_opt.get_item_text(1) == "Español", "LanguageOption items must remain 'English' and 'Español'")
 
 	# Verify save dictionary persistence
@@ -374,7 +382,7 @@ func _ready() -> void:
 	assert(GameData.settings_language == "en", "Selecting index 0 must set GameData.settings_language to 'en'")
 	assert(settings_title_lbl.text == "⚙️ SETTINGS", "SettingsTitle must automatically restore to '⚙️ SETTINGS' (got '%s')" % settings_title_lbl.text)
 	assert("CAMPAIGN" in btn_campaign_node.text, "BtnCampaign must automatically restore to English (got '%s')" % btn_campaign_node.text)
-	assert("Recharge" in battle_scene.btn_recover.text, "Battle Recharge button must automatically restore to English (got '%s')" % battle_scene.btn_recover.text)
+	assert("Energy: " in player_energy_lbl.text, "PlayerEnergyLbl must automatically restore to English (got '%s')" % player_energy_lbl.text)
 
 	print("=== ALL MOVES, COMPACT UI, REQUIRED_EXP, MULTI-HIT, BENCH RECHARGE, AND LANGUAGE TESTS PASSED! ===")
 	get_tree().quit(0)

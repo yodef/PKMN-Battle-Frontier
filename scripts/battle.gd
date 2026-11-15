@@ -6786,7 +6786,7 @@ func update_move_button_labels() -> void:
 		btn_passive.visible = false
 	
 	chk_boost.visible = false
-	btn_recover.text = "🔋 Recharge (+%d⚡)" % actor.recover_amount
+	btn_recover.text = "🔋 +%d⚡" % actor.recover_amount
 	btn_recover.disabled = not _is_turn_action_allowed() or (actor.current_energy >= actor.max_energy)
 	
 	if btn_bag:
@@ -6824,8 +6824,6 @@ func update_move_button_labels() -> void:
 		GameData.apply_language_to_scene_tree()
 
 func get_energy_icons(current: int, maximum: int) -> String:
-	if maximum > 5:
-		return "⚡ %d/%d" % [current, maximum]
 	var s = ""
 	for i in range(current):
 		s += "⚡"
