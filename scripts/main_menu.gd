@@ -14,9 +14,11 @@ const AssembledCardScript = preload("res://scripts/assembled_card.gd")
 @onready var btn_exit: Button = find_child("BtnExit", true, false)
 
 # --- REFERENCIAS DE AVATARES ---
-@onready var btn_avatar_leaf: Button = find_child("BtnAvatarLeaf", true, false)
-@onready var btn_avatar_red: Button = find_child("BtnAvatarRed", true, false)
-@onready var btn_more_avatars: Button = find_child("BtnMoreAvatars", true, false)
+@onready var btn_current_avatar: Button = find_child("BtnCurrentAvatar", true, false)
+@onready var btn_change_avatar: Button = find_child("BtnChangeAvatar", true, false)
+@onready var profile_avatar_preview: TextureRect = find_child("ProfileAvatarPreview", true, false)
+@onready var profile_avatar_name: Label = find_child("ProfileAvatarName", true, false)
+@onready var btn_profile_change_avatar: Button = find_child("BtnProfileChangeAvatar", true, false)
 @onready var avatar_modal: Control = find_child("AvatarModal", true, false)
 @onready var avatar_grid: GridContainer = find_child("AvatarGrid", true, false)
 @onready var btn_close_avatar_modal: Button = find_child("BtnCloseAvatarModal", true, false)
@@ -633,12 +635,12 @@ func _ready() -> void:
 	btn_exit.pressed.connect(_on_exit_pressed)
 	
 	# Selector de Avatar
-	if btn_avatar_leaf:
-		btn_avatar_leaf.pressed.connect(func(): _on_avatar_selected("leaf"))
-	if btn_avatar_red:
-		btn_avatar_red.pressed.connect(func(): _on_avatar_selected("red"))
-	if btn_more_avatars:
-		btn_more_avatars.pressed.connect(_open_avatar_modal)
+	if btn_current_avatar:
+		btn_current_avatar.pressed.connect(_open_avatar_modal)
+	if btn_change_avatar:
+		btn_change_avatar.pressed.connect(_open_avatar_modal)
+	if btn_profile_change_avatar:
+		btn_profile_change_avatar.pressed.connect(_open_avatar_modal)
 	if btn_close_avatar_modal:
 		btn_close_avatar_modal.pressed.connect(func(): if avatar_modal: avatar_modal.visible = false)
 	_update_avatar_ui()
@@ -14047,31 +14049,45 @@ func _on_avatar_selected(aid: String) -> void:
 
 func _update_avatar_ui() -> void:
 	var cur_avatar = GameData.profile_avatar
-	var make_avatar_sb = func(is_active: bool) -> StyleBoxFlat:
+	var tex = GameData.get_avatar_texture(cur_avatar)
+	
+	if btn_current_avatar:
+		btn_current_avatar.icon = tex
+		btn_current_avatar.tooltip_text = "Avatar: %s (Click to Change)" % cur_avatar.capitalize()
 		var sb = StyleBoxFlat.new()
 		sb.bg_color = Color(0.06, 0.10, 0.16, 0.95)
-		sb.border_color = Color(1.0, 0.85, 0.35) if is_active else Color(0.24, 0.45, 0.60, 0.70)
-		sb.set_border_width_all(3 if is_active else 1)
-		sb.set_corner_radius_all(8)
-		sb.shadow_color = Color(1.0, 0.85, 0.35, 0.40) if is_active else Color(0, 0, 0, 0.3)
-		sb.shadow_size = 5 if is_active else 1
-		return sb
+		sb.border_color = Color(1.0, 0.85, 0.35)
+		sb.set_border_width_all(2)
+		sb.set_corner_radius_all(10)
+		sb.shadow_color = Color(1.0, 0.85, 0.35, 0.35)
+		sb.shadow_size = 5
+		sb.content_margin_left = 6
+		sb.content_margin_right = 6
+		sb.content_margin_top = 6
+		sb.content_margin_bottom = 6
+		btn_current_avatar.add_theme_stylebox_override("normal", sb)
 		
-	if btn_avatar_leaf:
-		var is_leaf = (cur_avatar == "leaf")
-		btn_avatar_leaf.add_theme_stylebox_override("normal", make_avatar_sb.call(is_leaf))
-		btn_avatar_leaf.add_theme_stylebox_override("hover", make_avatar_sb.call(true))
-		btn_avatar_leaf.add_theme_stylebox_override("pressed", make_avatar_sb.call(true))
-	if btn_avatar_red:
-		var is_red = (cur_avatar == "red")
-		btn_avatar_red.add_theme_stylebox_override("normal", make_avatar_sb.call(is_red))
-		btn_avatar_red.add_theme_stylebox_override("hover", make_avatar_sb.call(true))
-		btn_avatar_red.add_theme_stylebox_override("pressed", make_avatar_sb.call(true))
-	if btn_more_avatars:
-		if cur_avatar != "leaf" and cur_avatar != "red":
-			btn_more_avatars.text = "🎨 AVATAR: %s" % cur_avatar.to_upper()
-		else:
-			btn_more_avatars.text = "🎨 MORE AVATARS"
+		var hsb = sb.duplicate()
+		hsb.border_color = Color(0.45, 0.92, 1.0)
+		hsb.shadow_color = Color(0.45, 0.92, 1.0, 0.45)
+		hsb.shadow_size = 7
+		btn_current_avatar.add_theme_stylebox_override("hover", hsb)
+		btn_current_avatar.add_theme_stylebox_override("pressed", hsb)
+
+	if profile_avatar_preview:
+		profile_avatar_preview.texture = tex
+		var sb_preview = StyleBoxFlat.new()
+		sb_preview.bg_color = Color(0.05, 0.08, 0.14, 0.95)
+		sb_preview.border_color = Color(0.28, 0.58, 0.78)
+		sb_preview.set_border_width_all(2)
+		sb_preview.set_corner_radius_all(8)
+	if profile_avatar_name:
+		var display_name = cur_avatar.capitalize()
+		if cur_avatar == "leaf":
+			display_name = "Trainer Leaf"
+		elif cur_avatar == "red":
+			display_name = "Trainer Red"
+		profile_avatar_name.text = "Avatar: %s" % display_name
 
 func _open_avatar_modal() -> void:
 	if not avatar_modal:
@@ -14174,6 +14190,7 @@ func _create_activity_status_button(is_active: bool, tooltip_info: String = "") 
 # --- PERFIL Y REGISTROS DEL ENTRENADOR ---
 func _on_profile_pressed() -> void:
 	refresh_cards_data_from_catalog()
+	_update_avatar_ui()
 	if trainer_name_input:
 		trainer_name_input.text = GameData.profile_name
 	if trainer_email_prompt:

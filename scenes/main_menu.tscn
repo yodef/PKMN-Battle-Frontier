@@ -47,7 +47,7 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="AvatarSection" type="VBoxContainer" parent="ContentContainer/HeaderHBox"]
-custom_minimum_size = Vector2(150, 140)
+custom_minimum_size = Vector2(105, 140)
 layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 1
@@ -59,33 +59,21 @@ theme_override_font_sizes/font_size = 10
 text = "TRAINER AVATAR"
 horizontal_alignment = 1
 
-[node name="AvatarCardsHBox" type="HBoxContainer" parent="ContentContainer/HeaderHBox/AvatarSection"]
+[node name="BtnCurrentAvatar" type="Button" parent="ContentContainer/HeaderHBox/AvatarSection"]
+custom_minimum_size = Vector2(96, 110)
 layout_mode = 2
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="BtnAvatarLeaf" type="Button" parent="ContentContainer/HeaderHBox/AvatarSection/AvatarCardsHBox"]
-custom_minimum_size = Vector2(66, 92)
-layout_mode = 2
-tooltip_text = "Select Leaf"
+size_flags_horizontal = 4
+tooltip_text = "Click to Change Avatar"
 icon = ExtResource("9_avatar_leaf")
 icon_alignment = 1
 expand_icon = true
 
-[node name="BtnAvatarRed" type="Button" parent="ContentContainer/HeaderHBox/AvatarSection/AvatarCardsHBox"]
-custom_minimum_size = Vector2(66, 92)
-layout_mode = 2
-tooltip_text = "Select Red"
-icon = ExtResource("10_avatar_red")
-icon_alignment = 1
-expand_icon = true
-
-[node name="BtnMoreAvatars" type="Button" parent="ContentContainer/HeaderHBox/AvatarSection"]
+[node name="BtnChangeAvatar" type="Button" parent="ContentContainer/HeaderHBox/AvatarSection"]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 9
-text = "🎨 MORE AVATARS"
+text = "🎨 CHANGE"
 
 [node name="HeaderRightVBox" type="VBoxContainer" parent="ContentContainer/HeaderHBox"]
 layout_mode = 2
@@ -2945,7 +2933,37 @@ layout_mode = 2
 
 [node name="TrainerInfoVBox" type="VBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
+
+[node name="ProfileAvatarRow" type="HBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ProfileAvatarPreview" type="TextureRect" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow"]
+custom_minimum_size = Vector2(70, 95)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ProfileAvatarDetails" type="VBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="ProfileAvatarName" type="Label" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow/ProfileAvatarDetails"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 14
+text = "Avatar: Trainer Leaf"
+
+[node name="BtnProfileChangeAvatar" type="Button" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow/ProfileAvatarDetails"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "🎨 Cambiar Avatar / Change Avatar"
 
 [node name="TrainerNameRow" type="HBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox"]
 layout_mode = 2
