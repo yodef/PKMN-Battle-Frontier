@@ -6270,7 +6270,7 @@ func update_ui() -> void:
 	enemy_hp_bar.value = active_e.current_hp
 	_apply_hp_bar_styles(enemy_hp_bar, active_e.current_hp, active_e.max_hp)
 	enemy_hp_lbl.text = "%d / %d" % [active_e.current_hp, active_e.max_hp]
-	enemy_energy_lbl.text = "Energy: " + get_energy_icons(active_e.current_energy, active_e.max_energy)
+	enemy_energy_lbl.text = GameData.tr_text("Energy: ", "Energía: ") + get_energy_icons(active_e.current_energy, active_e.max_energy)
 	enemy_status_lbl.text = " | ".join(_format_status_list(active_e))
 	
 	# Jugador
@@ -6305,7 +6305,7 @@ func update_ui() -> void:
 	player_hp_bar.value = active_p.current_hp
 	_apply_hp_bar_styles(player_hp_bar, active_p.current_hp, active_p.max_hp)
 	player_hp_lbl.text = "%d / %d" % [active_p.current_hp, active_p.max_hp]
-	player_energy_lbl.text = "Energy: " + get_energy_icons(active_p.current_energy, active_p.max_energy)
+	player_energy_lbl.text = GameData.tr_text("Energy: ", "Energía: ") + get_energy_icons(active_p.current_energy, active_p.max_energy)
 	
 	# Barra de EXP en Campaña (oculta en Juego Libre)
 	if GameData.is_campaign_mode and player_exp_box:
@@ -6831,6 +6831,8 @@ func update_move_button_labels() -> void:
 		GameData.apply_language_to_scene_tree()
 
 func get_energy_icons(current: int, maximum: int) -> String:
+	if maximum > 5:
+		return "⚡ %d/%d" % [current, maximum]
 	var s = ""
 	for i in range(current):
 		s += "⚡"

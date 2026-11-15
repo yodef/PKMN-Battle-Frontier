@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://gerqyenk2f6c" path="res://assets/ui/hp_badge.png" id="3_hpbadge"]
 [ext_resource type="Texture2D" uid="uid://bg8g3xvi7njnd" path="res://assets/ui/pokeball_normal.png" id="4_pokeball"]
 [ext_resource type="Script" path="res://scripts/combat_card_miniature.gd" id="5_card_mini"]
+[ext_resource type="Texture2D" path="res://assets/ui/battle_bg01.jpg" id="6_battle_bg"]
 
 [node name="Battle" type="Control" unique_id=2056984088]
 layout_mode = 3
@@ -15,8 +16,38 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_battle")
 
+[node name="BattleBaseBg" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.08, 0.12, 1)
+
+[node name="BattleBgArt" type="TextureRect" parent="."]
+modulate = Color(1, 1, 1, 0.38)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("6_battle_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BattleBgOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.07, 0.12, 0.42)
+
 [node name="Background" type="TextureRect" parent="." unique_id=2077039233]
-modulate = Color(0.07, 0.11, 0.16, 1)
+modulate = Color(1, 1, 1, 0.1)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -31,10 +62,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = 16.0
-offset_right = -16.0
-offset_bottom = -16.0
+offset_left = 12.0
+offset_top = 10.0
+offset_right = -12.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 8
@@ -68,6 +99,8 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Rival"
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="EnemyNameSpacer" type="Control" parent="MainContainer/EnemySection/HBox/Info/EnemyNameRow"]
 layout_mode = 2
@@ -278,6 +311,8 @@ show_percentage = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Energy: ⚡⚡⚡ (3/3)"
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="EnemyCard" type="PanelContainer" parent="MainContainer/EnemySection/HBox" unique_id=921709843]
 custom_minimum_size = Vector2(130, 200)
@@ -368,10 +403,12 @@ alignment = 1
 
 [node name="TurnBadge" type="Label" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/NeutralHBox/VBox" unique_id=370911321]
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 11
 text = "YOUR TURN"
 horizontal_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="GlobalLogLabel" type="RichTextLabel" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/NeutralHBox/VBox" unique_id=969458149]
 custom_minimum_size = Vector2(0, 16)
@@ -461,6 +498,8 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
 text = "Player"
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="PlayerNameSpacer" type="Control" parent="MainContainer/PlayerSection/HBox/Info/PlayerNameRow"]
 layout_mode = 2
@@ -714,6 +753,8 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Energy: ⚡⚡⚡ (3/3)"
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="PlayerEnergySpacer" type="Control" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow"]
 layout_mode = 2
