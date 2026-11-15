@@ -78,16 +78,12 @@ clip_text = true
 text_overrun_behavior = 3
 
 [node name="EnemySection" type="PanelContainer" parent="MainContainer" unique_id=566976687]
+custom_minimum_size = Vector2(0, 230)
 layout_mode = 2
 
 [node name="HBox" type="HBoxContainer" parent="MainContainer/EnemySection" unique_id=275771717]
 layout_mode = 2
 theme_override_constants/separation = 12
-
-[node name="EnemyCard" type="PanelContainer" parent="MainContainer/EnemySection/HBox" unique_id=921709843]
-custom_minimum_size = Vector2(130, 180)
-layout_mode = 2
-script = ExtResource("5_card_mini")
 
 [node name="Info" type="VBoxContainer" parent="MainContainer/EnemySection/HBox" unique_id=901678418]
 layout_mode = 2
@@ -308,6 +304,12 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Energy: ⚡⚡⚡ (3/3)"
 
+[node name="EnemyCard" type="PanelContainer" parent="MainContainer/EnemySection/HBox" unique_id=921709843]
+custom_minimum_size = Vector2(130, 200)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("5_card_mini")
+
 [node name="CenterLog" type="PanelContainer" parent="MainContainer" unique_id=775992375]
 custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
@@ -429,6 +431,7 @@ scroll_active = true
 scroll_following = true
 
 [node name="PlayerSection" type="PanelContainer" parent="MainContainer" unique_id=1799993231]
+custom_minimum_size = Vector2(0, 230)
 layout_mode = 2
 
 [node name="HBox" type="HBoxContainer" parent="MainContainer/PlayerSection" unique_id=1062902254]
@@ -436,8 +439,9 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="PlayerCard" type="PanelContainer" parent="MainContainer/PlayerSection/HBox" unique_id=2056547487]
-custom_minimum_size = Vector2(130, 180)
+custom_minimum_size = Vector2(130, 200)
 layout_mode = 2
+size_flags_vertical = 4
 script = ExtResource("5_card_mini")
 
 [node name="Info" type="VBoxContainer" parent="MainContainer/PlayerSection/HBox" unique_id=640751851]

@@ -20,11 +20,25 @@ func _ready() -> void:
 	var main_c = battle_scene.get_node("MainContainer")
 	print("MainContainer size: ", main_c.size, " min_size: ", main_c.get_combined_minimum_size())
 	print("TopBar size: ", battle_scene.get_node("MainContainer/TopBar").size, " min_size: ", battle_scene.get_node("MainContainer/TopBar").get_combined_minimum_size())
-	print("EnemySection size: ", battle_scene.get_node("MainContainer/EnemySection").size, " min_size: ", battle_scene.get_node("MainContainer/EnemySection").get_combined_minimum_size())
-	print("PlayerSection size: ", battle_scene.get_node("MainContainer/PlayerSection").size, " min_size: ", battle_scene.get_node("MainContainer/PlayerSection").get_combined_minimum_size())
+	var enemy_sec = battle_scene.get_node("MainContainer/EnemySection")
+	var player_sec = battle_scene.get_node("MainContainer/PlayerSection")
+	var enemy_card = battle_scene.enemy_card_img
+	var player_card = battle_scene.player_card_img
+	var enemy_info = battle_scene.get_node("MainContainer/EnemySection/HBox/Info")
+	var player_info = battle_scene.get_node("MainContainer/PlayerSection/HBox/Info")
+	
+	print("EnemySection size: ", enemy_sec.size, " min_size: ", enemy_sec.get_combined_minimum_size())
+	print("PlayerSection size: ", player_sec.size, " min_size: ", player_sec.get_combined_minimum_size())
+	print("EnemyCard size: ", enemy_card.size, " pos: ", enemy_card.position)
+	print("PlayerCard size: ", player_card.size, " pos: ", player_card.position)
 	
 	assert(main_c.size.x <= 508.0, "MainContainer width (%f) must fit within 508px (viewport - margins)!" % main_c.size.x)
-	print("Test 1 Passed: Battle UI fits perfectly within the viewport with no horizontal overflow.")
+	assert(abs(enemy_sec.size.y - player_sec.size.y) < 1.0, "EnemySection and PlayerSection must have identical height!")
+	assert(abs(enemy_card.size.y - player_card.size.y) < 1.0, "EnemyCard and PlayerCard must have identical height!")
+	assert(abs(enemy_card.size.x - player_card.size.x) < 1.0, "EnemyCard and PlayerCard must have identical width!")
+	assert(enemy_card.global_position.x > enemy_info.global_position.x, "Enemy card must be on the RIGHT side of its section!")
+	assert(player_card.global_position.x < player_info.global_position.x, "Player card must be on the LEFT side of its section!")
+	print("Test 1 Passed: Symmetrical section sizes, equal card sizes, and mirrored card positioning verified.")
 	
 	# Test 2: Simulate victory in Stage 1 and clicking "Camp / Shop"
 	print("\n--- Testing Adventure Stage 1 Victory & Progression ---")

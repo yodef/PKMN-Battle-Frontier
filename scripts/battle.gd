@@ -487,10 +487,16 @@ func _ready() -> void:
 		if not OnlineManager.opponent_left_or_surrendered.is_connected(_on_online_opponent_surrender):
 			OnlineManager.opponent_left_or_surrendered.connect(_on_online_opponent_surrender)
 	
-	if enemy_card_img and not enemy_card_img.has_meta("original_pos"):
-		enemy_card_img.set_meta("original_pos", enemy_card_img.position)
-	if player_card_img and not player_card_img.has_meta("original_pos"):
-		player_card_img.set_meta("original_pos", player_card_img.position)
+	if enemy_card_img:
+		enemy_card_img.custom_minimum_size = Vector2(130, 200)
+		enemy_card_img.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		if not enemy_card_img.has_meta("original_pos"):
+			enemy_card_img.set_meta("original_pos", enemy_card_img.position)
+	if player_card_img:
+		player_card_img.custom_minimum_size = Vector2(130, 200)
+		player_card_img.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		if not player_card_img.has_meta("original_pos"):
+			player_card_img.set_meta("original_pos", player_card_img.position)
 	
 	_setup_status_overlays()
 	_setup_details_inspector_modal()
@@ -5757,8 +5763,10 @@ func _setup_battle_hud_theme() -> void:
 	
 	if has_node("MainContainer/EnemySection"):
 		$MainContainer/EnemySection.add_theme_stylebox_override("panel", slate_box)
+		$MainContainer/EnemySection.custom_minimum_size = Vector2(0, 230)
 	if has_node("MainContainer/PlayerSection"):
 		$MainContainer/PlayerSection.add_theme_stylebox_override("panel", slate_box)
+		$MainContainer/PlayerSection.custom_minimum_size = Vector2(0, 230)
 		
 	var diag_box = StyleBoxTexture.new()
 	diag_box.texture = load("res://assets/ui/frlg_frame_dark_dialogue.png")

@@ -500,7 +500,6 @@ const EXACT_EN_TO_ES: Dictionary = {
 	"🌌 Enter Chaos Odyssey": "🌌 Entrar a Chaos Odyssey",
 	"📖 View Chaos Odyssey Guide (Trials & Boss Info)": "📖 Ver Guía de Chaos Odyssey (Pruebas y Jefe)",
 	"Status: Ready • Record damage on Boss: 0 HP": "Estado: Listo • Daño récord al Jefe: 0 HP",
-	"The classic journey! Battle 8 Gym Leaders across Pewter, Cerulean, Vermilion, Celadon, Fuchsia, Saffron, Cinnabar Island, and Viridian City.": "¡El viaje clásico! Enfréntate a 8 Líderes de Gimnasio en Plateada, Celeste, Carmín, Azulona, Fucsia, Azafrán, Isla Canela y Ciudad Verde.",
 	"Episodes: 8 Available  |  Gym Badges to Win: 8": "Episodios: 8 Disponibles  |  Medallas de Gimnasio por Ganar: 8",
 	"Episode VIII: Viridian City Gym": "Episodio VIII: Gimnasio de Ciudad Verde",
 	"🔒 Episode VIII: Viridian City Gym": "🔒 Episodio VIII: Gimnasio de Ciudad Verde",

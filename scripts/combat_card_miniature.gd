@@ -32,8 +32,9 @@ var texture: Texture2D:
 			art_sprite.texture = val
 
 func _init() -> void:
-	custom_minimum_size = Vector2(130, 180)
-	size = Vector2(130, 180)
+	custom_minimum_size = Vector2(130, 200)
+	size = Vector2(130, 200)
+	size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_build_card_ui()
@@ -129,7 +130,7 @@ func _build_card_ui() -> void:
 	# 3. Marco de Ilustración (ArtFrame con Sprite del Pokémon)
 	art_frame = PanelContainer.new()
 	art_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	art_frame.custom_minimum_size = Vector2(0, 120)
+	art_frame.custom_minimum_size = Vector2(0, 136)
 	art_frame.mouse_filter = Control.MOUSE_FILTER_PASS
 	art_frame.clip_contents = true
 	content_vbox.add_child(art_frame)
