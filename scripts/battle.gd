@@ -77,9 +77,9 @@ func is_crystal_onix_boss_battle() -> bool:
 	return false
 
 # --- REFERENCIAS A NODOS ---
-@onready var btn_back_menu: Button = $MainContainer/TopBar/BtnBackMenu
-@onready var btn_speed: Button = $MainContainer/TopBar/BtnSpeed
-@onready var battle_title_lbl: Label = $MainContainer/TopBar/BattleTitle
+@onready var btn_back_menu: Button = find_child("BtnBackMenu", true, false)
+@onready var btn_speed: Button = find_child("BtnSpeed", true, false)
+@onready var battle_title_lbl: Label = find_child("BattleTitle", true, false)
 @onready var floating_numbers_layer: Control = $FloatingNumbersLayer
 var bgm_player: AudioStreamPlayer = null
 var player_status_overlay: StatusFXOverlay = null
@@ -103,17 +103,17 @@ const SPEED_LABELS: Array[String] = ["⏩ 1x", "⏩ 1.5x", "⏩ 2x", "⏩ 3x"]
 @onready var enemy_energy_lbl: Label = $MainContainer/EnemySection/HBox/Info/EnemyEnergyLbl
 @onready var enemy_status_lbl: Label = $MainContainer/EnemySection/HBox/Info/HPBox/HPTopRow/EnemyStatusLbl
 
-@onready var enemy_log_panel: PanelContainer = $MainContainer/CenterLog/Margin/VBox/EnemyLogPanel if has_node("MainContainer/CenterLog/Margin/VBox/EnemyLogPanel") else null
-@onready var enemy_header_lbl: Label = $MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox/HeaderRow/EnemyHeaderLbl if has_node("MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox/HeaderRow/EnemyHeaderLbl") else null
-@onready var enemy_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox/EnemyLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox/EnemyLogLabel") else ($MainContainer/CenterLog/Margin/VBox/EnemyLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/EnemyLogLabel") else null)
+@onready var enemy_log_panel: PanelContainer = find_child("EnemyLogPanel", true, false)
+@onready var enemy_header_lbl: Label = find_child("EnemyHeaderLbl", true, false)
+@onready var enemy_log_label: RichTextLabel = find_child("EnemyLogLabel", true, false)
 
-@onready var neutral_log_panel: PanelContainer = $MainContainer/CenterLog/Margin/VBox/NeutralLogPanel if has_node("MainContainer/CenterLog/Margin/VBox/NeutralLogPanel") else null
-@onready var turn_badge: Label = $MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/VBox/TurnBadge if has_node("MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/VBox/TurnBadge") else ($MainContainer/CenterLog/Margin/VBox/TurnBadge if has_node("MainContainer/CenterLog/Margin/VBox/TurnBadge") else null)
-@onready var global_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/VBox/GlobalLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/VBox/GlobalLogLabel") else ($MainContainer/CenterLog/Margin/VBox/GlobalLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/GlobalLogLabel") else null)
+@onready var neutral_log_panel: PanelContainer = find_child("NeutralLogPanel", true, false)
+@onready var turn_badge: Label = find_child("TurnBadge", true, false)
+@onready var global_log_label: RichTextLabel = find_child("GlobalLogLabel", true, false)
 
-@onready var player_log_panel: PanelContainer = $MainContainer/CenterLog/Margin/VBox/PlayerLogPanel if has_node("MainContainer/CenterLog/Margin/VBox/PlayerLogPanel") else null
-@onready var player_header_lbl: Label = $MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox/HeaderRow/PlayerHeaderLbl if has_node("MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox/HeaderRow/PlayerHeaderLbl") else null
-@onready var player_log_label: RichTextLabel = $MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox/PlayerLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox/PlayerLogLabel") else ($MainContainer/CenterLog/Margin/VBox/PlayerLogLabel if has_node("MainContainer/CenterLog/Margin/VBox/PlayerLogLabel") else null)
+@onready var player_log_panel: PanelContainer = find_child("PlayerLogPanel", true, false)
+@onready var player_header_lbl: Label = find_child("PlayerHeaderLbl", true, false)
+@onready var player_log_label: RichTextLabel = find_child("PlayerLogLabel", true, false)
 @onready var log_label: RichTextLabel = player_log_label
 
 @onready var player_card_img: Control = $MainContainer/PlayerSection/HBox/PlayerCard
@@ -127,22 +127,22 @@ const SPEED_LABELS: Array[String] = ["⏩ 1x", "⏩ 1.5x", "⏩ 2x", "⏩ 3x"]
 
 @onready var player_hp_bar: ProgressBar = $MainContainer/PlayerSection/HBox/Info/HPBox/HPBarRow/PlayerHPBar
 @onready var player_hp_lbl: Label = $MainContainer/PlayerSection/HBox/Info/HPBox/HPBarRow/PlayerHPLbl
-@onready var player_energy_lbl: Label = $MainContainer/PlayerSection/HBox/Info/PlayerEnergyLbl
+@onready var player_energy_lbl: Label = find_child("PlayerEnergyLbl", true, false)
 @onready var player_exp_box: VBoxContainer = $MainContainer/PlayerSection/HBox/Info/PlayerExpBox
 @onready var player_exp_bar: ProgressBar = $MainContainer/PlayerSection/HBox/Info/PlayerExpBox/PlayerExpBar
 @onready var player_exp_lbl: Label = $MainContainer/PlayerSection/HBox/Info/PlayerExpBox/PlayerExpLbl
 @onready var player_status_lbl: Label = $MainContainer/PlayerSection/HBox/Info/HPBox/HPTopRow/PlayerStatusLbl
 
-@onready var move1_slots: HBoxContainer = $MainContainer/ActionsSection/MoveButtons/Move1Col/Move1Slots
-@onready var btn_move1: Button = $MainContainer/ActionsSection/MoveButtons/Move1Col/BtnMove1
-@onready var move2_slots: HBoxContainer = $MainContainer/ActionsSection/MoveButtons/Move2Col/Move2Slots
-@onready var btn_move2: Button = $MainContainer/ActionsSection/MoveButtons/Move2Col/BtnMove2
+@onready var move1_slots: BoxContainer = find_child("Move1Slots", true, false)
+@onready var btn_move1: Button = find_child("BtnMove1", true, false)
+@onready var move2_slots: BoxContainer = find_child("Move2Slots", true, false)
+@onready var btn_move2: Button = find_child("BtnMove2", true, false)
 
 var selected_energy_move1: int = -1
 var selected_energy_move2: int = -1
-@onready var chk_boost: CheckBox = $MainContainer/ActionsSection/Options/ChkBoost
-@onready var btn_passive: Button = $MainContainer/ActionsSection/Options/BtnPassive
-@onready var btn_recover: Button = $MainContainer/ActionsSection/Options/BtnRecover
+@onready var chk_boost: CheckBox = find_child("ChkBoost", true, false)
+@onready var btn_passive: Button = find_child("BtnPassive", true, false)
+@onready var btn_recover: Button = find_child("BtnRecover", true, false)
 
 @onready var game_over_panel: Control = $GameOverOverlay
 @onready var game_over_card: PanelContainer = $GameOverOverlay/CenterBox/CardPanel
@@ -160,7 +160,7 @@ var selected_energy_move2: int = -1
 @onready var energy_modal_options: VBoxContainer = $EnergyModal/CenterBox/Panel/Margin/VBox/OptionsList
 @onready var btn_cancel_energy: Button = $EnergyModal/CenterBox/Panel/Margin/VBox/BtnCancelEnergy
 
-@onready var btn_bag: Button = $MainContainer/ActionsSection/Options/BtnBag
+@onready var btn_bag: Button = find_child("BtnBag", true, false)
 @onready var bag_modal: Control = $BagModal
 @onready var bag_panel: PanelContainer = $BagModal/CenterBox/Panel
 @onready var bag_items_list: VBoxContainer = $BagModal/CenterBox/Panel/Margin/VBox/ItemsList
@@ -186,7 +186,7 @@ func player_team_has_poke_flute() -> bool:
 	return get_poke_flute_holder() != null
 
 # --- TABLA DE EFECTIVIDADES POR TIPO ---
-@onready var btn_type_chart: Button = $MainContainer/TopBar/BtnTypeChart
+@onready var btn_type_chart: Button = find_child("BtnTypeChart", true, false)
 @onready var type_chart_modal: Control = $TypeChartModal
 @onready var type_chart_panel: PanelContainer = $TypeChartModal/CenterBox/Panel
 @onready var btn_close_type_chart_x: Button = $TypeChartModal/CenterBox/Panel/Margin/VBox/TitleRow/BtnCloseTypeChartX
@@ -212,7 +212,7 @@ func player_team_has_poke_flute() -> bool:
 @onready var evo_btn_continue: Button = $EvolutionModal/CenterBox/CardPanel/Margin/VBox/BtnContinueEvo
 
 # --- MODAL DE AJUSTES EN COMBATE (SETTINGS & BATTLE LOG) ---
-@onready var btn_settings: Button = $MainContainer/TopBar/BtnSettings
+@onready var btn_settings: Button = find_child("BtnSettings", true, false)
 @onready var battle_settings_modal: Control = $BattleSettingsModal
 @onready var settings_panel: PanelContainer = $BattleSettingsModal/CenterBox/Panel
 @onready var settings_title_lbl: Label = $BattleSettingsModal/CenterBox/Panel/Margin/VBox/TitleRow/TitleLbl
@@ -339,6 +339,13 @@ func _ready() -> void:
 	btn_cancel_bag.pressed.connect(func(): bag_modal.visible = false)
 	bag_modal.visible = false
 	_setup_poke_flute_button()
+	
+	if btn_back_menu:
+		btn_back_menu.text = "⬅ SALIR" if GameData.is_spanish() else "⬅ LEAVE"
+	if btn_type_chart:
+		btn_type_chart.text = "⚖️ Tipos" if GameData.is_spanish() else "⚖️ Types"
+	if btn_bag:
+		btn_bag.text = "🎒 Mochila" if GameData.is_spanish() else "🎒 Bag"
 	
 	if btn_type_chart:
 		btn_type_chart.pressed.connect(_on_type_chart_pressed)
@@ -6599,7 +6606,7 @@ func _create_slot_button(slot_val: int, current_selected: int, move_idx: int, is
 	)
 	return btn
 
-func update_single_move_ui(move_idx: int, move, slots_container: HBoxContainer, btn: Button, p, active_e, _is_boosted_unused: bool = false) -> void:
+func update_single_move_ui(move_idx: int, move, slots_container: BoxContainer, btn: Button, p, active_e, _is_boosted_unused: bool = false) -> void:
 	if not move or not btn:
 		return
 		
@@ -6646,10 +6653,11 @@ func update_single_move_ui(move_idx: int, move, slots_container: HBoxContainer, 
 		var req_cost_val = base_cost if base_cost > 0 else min_cost
 		var cost_lbl = Label.new()
 		cost_lbl.text = "Req: %d⚡" % req_cost_val
-		cost_lbl.add_theme_font_size_override("font_size", 11)
+		cost_lbl.add_theme_font_size_override("font_size", 9)
 		cost_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		var is_enough = (p.current_energy >= min_cost)
 		cost_lbl.add_theme_color_override("font_color", Color("#cbd5e1") if is_enough else Color("#f87171"))
+		cost_lbl.visible = false
 		slots_container.add_child(cost_lbl)
 		
 		if base_cost == 0:
@@ -6699,7 +6707,7 @@ func update_single_move_ui(move_idx: int, move, slots_container: HBoxContainer, 
 				type_tag = " (+%d)" % WEAKNESS_BONUS
 			elif GameData.is_attack_resisted(active_e.type, active_e.resistant, move.type):
 				type_tag = " (-%d)" % RESISTANCE_REDUCTION
-		var title_line = ("%s 🔥" % move.name) if is_boosted else move.name
+		var title_line = ("%s [BOOSTED 🔥]" % move.name) if is_boosted else move.name
 		btn.text = "%s\n%d DMG%s%s" % [title_line, dmg, type_tag, ko_tag]
 
 func update_move_button_labels() -> void:
@@ -7661,13 +7669,15 @@ func spawn_floating_combat_text(target_node: Control, msg: String, color: Color 
 func _setup_poke_flute_button() -> void:
 	if btn_poke_flute != null:
 		return
-	var options_node = get_node_or_null("MainContainer/ActionsSection/Options")
+	var options_node = find_child("PlayerEnergyRow", true, false)
+	if not options_node:
+		options_node = find_child("Options", true, false)
 	if not options_node:
 		return
 	btn_poke_flute = Button.new()
 	btn_poke_flute.name = "BtnPokeFlute"
-	btn_poke_flute.custom_minimum_size = Vector2(150, 36)
-	btn_poke_flute.add_theme_font_size_override("font_size", 12)
+	btn_poke_flute.custom_minimum_size = Vector2(100, 28)
+	btn_poke_flute.add_theme_font_size_override("font_size", 10)
 	
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = Color(0.12, 0.22, 0.14, 0.95)

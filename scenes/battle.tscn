@@ -37,48 +37,10 @@ offset_right = -16.0
 offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 10
-
-[node name="TopBar" type="HBoxContainer" parent="MainContainer" unique_id=1285804470]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="BtnBackMenu" type="Button" parent="MainContainer/TopBar" unique_id=1346424738]
-custom_minimum_size = Vector2(68, 30)
-layout_mode = 2
-theme_override_font_sizes/font_size = 11
-text = "⬅ Menu"
-
-[node name="BtnTypeChart" type="Button" parent="MainContainer/TopBar" unique_id=2109250054]
-custom_minimum_size = Vector2(76, 30)
-layout_mode = 2
-theme_override_font_sizes/font_size = 11
-text = "⚖️ Types"
-
-[node name="BtnSpeed" type="Button" parent="MainContainer/TopBar" unique_id=1459203810]
-custom_minimum_size = Vector2(64, 30)
-layout_mode = 2
-theme_override_font_sizes/font_size = 11
-text = "⏩ 1x"
-
-[node name="BtnSettings" type="Button" parent="MainContainer/TopBar" unique_id=1849201934]
-custom_minimum_size = Vector2(38, 30)
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "⚙️"
-
-[node name="BattleTitle" type="Label" parent="MainContainer/TopBar" unique_id=1658137403]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
-theme_override_font_sizes/font_size = 12
-text = "Quick Battle (3 vs 3)"
-horizontal_alignment = 2
-clip_text = true
-text_overrun_behavior = 3
+theme_override_constants/separation = 8
 
 [node name="EnemySection" type="PanelContainer" parent="MainContainer" unique_id=566976687]
-custom_minimum_size = Vector2(0, 230)
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 
 [node name="HBox" type="HBoxContainer" parent="MainContainer/EnemySection" unique_id=275771717]
@@ -104,8 +66,21 @@ stretch_mode = 5
 
 [node name="EnemyName" type="Label" parent="MainContainer/EnemySection/HBox/Info/EnemyNameRow" unique_id=1970867192]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
 text = "Rival"
+
+[node name="EnemyNameSpacer" type="Control" parent="MainContainer/EnemySection/HBox/Info/EnemyNameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BattleTitle" type="Label" parent="MainContainer/EnemySection/HBox/Info/EnemyNameRow" unique_id=1658137403]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 11
+text = "Quick Battle (3 vs 3)"
+horizontal_alignment = 2
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="EnemyType" type="Label" parent="MainContainer/EnemySection/HBox/Info" unique_id=1947913316]
 layout_mode = 2
@@ -311,7 +286,7 @@ size_flags_vertical = 4
 script = ExtResource("5_card_mini")
 
 [node name="CenterLog" type="PanelContainer" parent="MainContainer" unique_id=775992375]
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -324,7 +299,8 @@ theme_override_constants/margin_bottom = 4
 
 [node name="VBox" type="VBoxContainer" parent="MainContainer/CenterLog/Margin" unique_id=1377476126]
 layout_mode = 2
-theme_override_constants/separation = 6
+size_flags_vertical = 3
+theme_override_constants/separation = 4
 
 [node name="EnemyLogPanel" type="PanelContainer" parent="MainContainer/CenterLog/Margin/VBox" unique_id=884102940]
 layout_mode = 2
@@ -354,7 +330,7 @@ clip_text = true
 text_overrun_behavior = 3
 
 [node name="EnemyLogLabel" type="RichTextLabel" parent="MainContainer/CenterLog/Margin/VBox/EnemyLogPanel/Margin/VBox" unique_id=884102941]
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/line_separation = 1
@@ -368,23 +344,36 @@ layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel" unique_id=370911325]
 layout_mode = 2
-theme_override_constants/margin_left = 8
+theme_override_constants/margin_left = 6
 theme_override_constants/margin_top = 3
-theme_override_constants/margin_right = 8
+theme_override_constants/margin_right = 6
 theme_override_constants/margin_bottom = 3
 
-[node name="VBox" type="VBoxContainer" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin" unique_id=370911322]
+[node name="NeutralHBox" type="HBoxContainer" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 2
+theme_override_constants/separation = 6
 
-[node name="TurnBadge" type="Label" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/VBox" unique_id=370911321]
+[node name="BtnTypeChart" type="Button" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/NeutralHBox" unique_id=2109250054]
+custom_minimum_size = Vector2(74, 28)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 11
+text = "⚖️ Types"
+
+[node name="VBox" type="VBoxContainer" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/NeutralHBox" unique_id=370911322]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="TurnBadge" type="Label" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/NeutralHBox/VBox" unique_id=370911321]
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 11
 text = "YOUR TURN"
 horizontal_alignment = 1
 
-[node name="GlobalLogLabel" type="RichTextLabel" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/VBox" unique_id=969458149]
+[node name="GlobalLogLabel" type="RichTextLabel" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/NeutralHBox/VBox" unique_id=969458149]
 custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 theme_override_constants/line_separation = 1
@@ -392,6 +381,13 @@ bbcode_enabled = true
 text = "[center][color=#ffd54f][font_size=11]Battle Ready![/font_size][/color][/center]"
 fit_content = true
 scroll_active = false
+
+[node name="BtnSpeed" type="Button" parent="MainContainer/CenterLog/Margin/VBox/NeutralLogPanel/Margin/NeutralHBox" unique_id=1459203810]
+custom_minimum_size = Vector2(58, 28)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 11
+text = "⏩ 1x"
 
 [node name="PlayerLogPanel" type="PanelContainer" parent="MainContainer/CenterLog/Margin/VBox" unique_id=1582049101]
 layout_mode = 2
@@ -421,7 +417,7 @@ clip_text = true
 text_overrun_behavior = 3
 
 [node name="PlayerLogLabel" type="RichTextLabel" parent="MainContainer/CenterLog/Margin/VBox/PlayerLogPanel/Margin/VBox" unique_id=1582049102]
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/line_separation = 1
@@ -463,8 +459,24 @@ stretch_mode = 5
 
 [node name="PlayerName" type="Label" parent="MainContainer/PlayerSection/HBox/Info/PlayerNameRow" unique_id=1202298418]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
 text = "Player"
+
+[node name="PlayerNameSpacer" type="Control" parent="MainContainer/PlayerSection/HBox/Info/PlayerNameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnBackMenu" type="Button" parent="MainContainer/PlayerSection/HBox/Info/PlayerNameRow" unique_id=1346424738]
+custom_minimum_size = Vector2(66, 28)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "⬅ LEAVE"
+
+[node name="BtnSettings" type="Button" parent="MainContainer/PlayerSection/HBox/Info/PlayerNameRow" unique_id=1849201934]
+custom_minimum_size = Vector2(34, 28)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⚙️"
 
 [node name="PlayerType" type="Label" parent="MainContainer/PlayerSection/HBox/Info" unique_id=1751345577]
 layout_mode = 2
@@ -694,10 +706,45 @@ max_value = 10.0
 value = 10.0
 show_percentage = false
 
-[node name="PlayerEnergyLbl" type="Label" parent="MainContainer/PlayerSection/HBox/Info" unique_id=1294222838]
+[node name="PlayerEnergyRow" type="HBoxContainer" parent="MainContainer/PlayerSection/HBox/Info"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PlayerEnergyLbl" type="Label" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow" unique_id=1294222838]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Energy: ⚡⚡⚡ (3/3)"
+
+[node name="PlayerEnergySpacer" type="Control" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnRecover" type="Button" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow" unique_id=1932070482]
+custom_minimum_size = Vector2(105, 28)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "🔋 Recharge (+1⚡)"
+
+[node name="BtnBag" type="Button" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow" unique_id=1955096588]
+custom_minimum_size = Vector2(72, 28)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "🎒 Bag"
+
+[node name="BtnPassive" type="Button" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow" unique_id=350807335]
+visible = false
+custom_minimum_size = Vector2(100, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "🛡️ Passive"
+
+[node name="ChkBoost" type="CheckBox" parent="MainContainer/PlayerSection/HBox/Info/PlayerEnergyRow" unique_id=284451940]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "⚡ Boost"
 
 [node name="PlayerExpBox" type="VBoxContainer" parent="MainContainer/PlayerSection/HBox/Info" unique_id=1389619541]
 visible = false
@@ -718,74 +765,41 @@ text = "EXP: 0 / 10"
 
 [node name="ActionsSection" type="VBoxContainer" parent="MainContainer" unique_id=1168382364]
 layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Options" type="HBoxContainer" parent="MainContainer/ActionsSection" unique_id=1113340604]
-layout_mode = 2
-alignment = 1
-
-[node name="ChkBoost" type="CheckBox" parent="MainContainer/ActionsSection/Options" unique_id=284451940]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 13
-text = "⚡ Boost (+1⚡)"
-
-[node name="BtnPassive" type="Button" parent="MainContainer/ActionsSection/Options" unique_id=350807335]
-visible = false
-custom_minimum_size = Vector2(130, 36)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 12
-text = "🛡️ Passive"
-
-[node name="BtnRecover" type="Button" parent="MainContainer/ActionsSection/Options" unique_id=1932070482]
-custom_minimum_size = Vector2(150, 36)
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "🔋 Recharge (+1⚡)"
-
-[node name="BtnBag" type="Button" parent="MainContainer/ActionsSection/Options" unique_id=1955096588]
-custom_minimum_size = Vector2(95, 36)
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "🎒 Bag"
+theme_override_constants/separation = 4
 
 [node name="MoveButtons" type="HBoxContainer" parent="MainContainer/ActionsSection" unique_id=269014093]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Move1Col" type="VBoxContainer" parent="MainContainer/ActionsSection/MoveButtons" unique_id=1650386107]
+[node name="Move1Row" type="HBoxContainer" parent="MainContainer/ActionsSection/MoveButtons" unique_id=1650386107]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 4
-
-[node name="Move1Slots" type="HBoxContainer" parent="MainContainer/ActionsSection/MoveButtons/Move1Col" unique_id=149853625]
-custom_minimum_size = Vector2(0, 28)
-layout_mode = 2
 theme_override_constants/separation = 6
+
+[node name="Move1Slots" type="VBoxContainer" parent="MainContainer/ActionsSection/MoveButtons/Move1Row" unique_id=149853625]
+layout_mode = 2
+theme_override_constants/separation = 2
 alignment = 1
 
-[node name="BtnMove1" type="Button" parent="MainContainer/ActionsSection/MoveButtons/Move1Col" unique_id=1455442833]
-custom_minimum_size = Vector2(0, 56)
+[node name="BtnMove1" type="Button" parent="MainContainer/ActionsSection/MoveButtons/Move1Row" unique_id=1455442833]
+custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
 text = "Attack 1"
 
-[node name="Move2Col" type="VBoxContainer" parent="MainContainer/ActionsSection/MoveButtons" unique_id=731620319]
+[node name="Move2Row" type="HBoxContainer" parent="MainContainer/ActionsSection/MoveButtons" unique_id=731620319]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 4
-
-[node name="Move2Slots" type="HBoxContainer" parent="MainContainer/ActionsSection/MoveButtons/Move2Col" unique_id=101037986]
-custom_minimum_size = Vector2(0, 28)
-layout_mode = 2
 theme_override_constants/separation = 6
+
+[node name="Move2Slots" type="VBoxContainer" parent="MainContainer/ActionsSection/MoveButtons/Move2Row" unique_id=101037986]
+layout_mode = 2
+theme_override_constants/separation = 2
 alignment = 1
 
-[node name="BtnMove2" type="Button" parent="MainContainer/ActionsSection/MoveButtons/Move2Col" unique_id=1462428852]
-custom_minimum_size = Vector2(0, 56)
+[node name="BtnMove2" type="Button" parent="MainContainer/ActionsSection/MoveButtons/Move2Row" unique_id=1462428852]
+custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
