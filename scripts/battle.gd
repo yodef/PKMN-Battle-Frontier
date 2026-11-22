@@ -1481,13 +1481,14 @@ func start_new_game() -> void:
 				var has_illegal = false
 				for p_chk in team_state:
 					var chk_id = int(p_chk.get("id", -1))
-					if not GameData.pokemon_catalog.has(chk_id) or not GameData.is_pokemon_unlocked(chk_id) or chk_id in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
+					if not GameData.pokemon_catalog.has(chk_id) or chk_id in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID] or chk_id in GameData.ALL_BOSS_IDS:
 						has_illegal = true
 						break
 					var cat_c = GameData.pokemon_catalog[chk_id]
 					var r_c = str(cat_c.get("rarity", "Common")).strip_edges().to_lower()
 					var st_c = str(cat_c.get("stage", "Basic")).strip_edges().to_lower()
-					var is_leg_c = (r_c in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st_c == "legendary")
+					var ev_from_c = str(cat_c.get("evolves_from", "")).strip_edges()
+					var is_leg_c = ((r_c in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st_c == "legendary")) and ev_from_c == ""
 					if is_leg_c:
 						has_illegal = true
 						break
@@ -5206,6 +5207,8 @@ func _apply_pokemon_evolution(evo: Dictionary) -> void:
 		"to_name": target_inst.name,
 		"new_stage": target_inst.stage
 	})
+	GameData.unlock_pokemon(target_id)
+	GameData.player_card_stocks[target_id] = max(1, int(GameData.player_card_stocks.get(target_id, 0)))
 	
 	if GameData.is_campaign_mode:
 		var active_team = GameData.get_active_campaign_team_state()

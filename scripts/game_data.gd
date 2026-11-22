@@ -6944,7 +6944,8 @@ func init_campaign_team(chosen_ids: Array, held_items: Array = []) -> void:
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
 		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
-		var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+		var ev_from = str(d.get("evolves_from", "")).strip_edges()
+		var is_legendary = ((r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")) and ev_from == ""
 		if st == "basic" and not is_legendary:
 			var inst = create_pokemon_instance(pid)
 			if inst:
@@ -7037,7 +7038,8 @@ func change_campaign_team(chosen_ids: Array, held_items: Array = []) -> void:
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
 		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
-		var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+		var ev_from = str(d.get("evolves_from", "")).strip_edges()
+		var is_legendary = ((r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")) and ev_from == ""
 		if st == "basic" and not is_legendary:
 			var inst = create_pokemon_instance(pid)
 			if inst:
@@ -7141,7 +7143,8 @@ func init_adventure_team(episode_id: int, chosen_ids: Array, held_items: Array =
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
 		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
-		var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+		var ev_from = str(d.get("evolves_from", "")).strip_edges()
+		var is_legendary = ((r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")) and ev_from == ""
 		if st == "basic" and not is_legendary:
 			var inst = create_pokemon_instance(pid)
 			if inst:
@@ -7219,7 +7222,8 @@ func change_adventure_team(chosen_ids: Array, held_items: Array = []) -> void:
 		var d = pokemon_catalog[pid]
 		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
 		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
-		var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
+		var ev_from = str(d.get("evolves_from", "")).strip_edges()
+		var is_legendary = ((r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")) and ev_from == ""
 		if st == "basic" and not is_legendary:
 			var inst = create_pokemon_instance(pid)
 			if inst:
@@ -8171,6 +8175,8 @@ func apply_single_campaign_evolution(evo: Dictionary) -> void:
 	p["burn_turns"] = 0
 	p["is_poisoned"] = false
 	p["is_flinched"] = false
+	unlock_pokemon(target_id)
+	player_card_stocks[target_id] = max(1, int(player_card_stocks.get(target_id, 0)))
 	save_profile()
 
 func use_potion_on_campaign_pkmn(index: int) -> bool:
