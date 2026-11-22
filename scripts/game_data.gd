@@ -585,49 +585,49 @@ func get_key_items_definitions(inv: Dictionary = {}) -> Array[Dictionary]:
 			"name": get_item_display_name("poke_flute"),
 			"desc": get_held_item_desc("poke_flute"),
 			"icon": "poke_flute",
-			"stock": int(cur_inv.get("poke_flute", 0))
+			"stock": 1 if (int(cur_inv.get("poke_flute", 0)) > 0 or ("pokemon_tower" in adventure_ep5_cleared_routes)) else 0
 		},
 		{
 			"id": "exp_share",
 			"name": get_item_display_name("exp_share"),
 			"desc": get_held_item_desc("exp_share"),
 			"icon": "exp_share",
-			"stock": int(cur_inv.get("exp_share", 0))
+			"stock": 1 if (has_unlocked_exp_share or int(cur_inv.get("exp_share", 0)) > 0) else 0
 		},
 		{
 			"id": "wise_glasses",
 			"name": get_item_display_name("wise_glasses"),
 			"desc": get_held_item_desc("wise_glasses"),
 			"icon": "wise_glasses",
-			"stock": int(cur_inv.get("wise_glasses", 0))
+			"stock": 1 if (has_unlocked_wise_glasses or int(cur_inv.get("wise_glasses", 0)) > 0) else 0
 		},
 		{
 			"id": "quick_claw",
 			"name": get_item_display_name("quick_claw"),
 			"desc": get_held_item_desc("quick_claw"),
 			"icon": "quick_claw",
-			"stock": int(cur_inv.get("quick_claw", 0))
+			"stock": 1 if (has_unlocked_quick_claw or int(cur_inv.get("quick_claw", 0)) > 0) else 0
 		},
 		{
 			"id": "leftovers",
 			"name": get_item_display_name("leftovers"),
 			"desc": get_held_item_desc("leftovers"),
 			"icon": "leftovers",
-			"stock": int(cur_inv.get("leftovers", 0))
+			"stock": 1 if (has_unlocked_leftovers or int(cur_inv.get("leftovers", 0)) > 0) else 0
 		},
 		{
 			"id": "dragon_fang",
 			"name": get_item_display_name("dragon_fang"),
 			"desc": get_held_item_desc("dragon_fang"),
 			"icon": "dragon_fang",
-			"stock": int(cur_inv.get("dragon_fang", 0))
+			"stock": 1 if (has_unlocked_dragon_fang or int(cur_inv.get("dragon_fang", 0)) > 0) else 0
 		},
 		{
 			"id": "twisted_spoon",
 			"name": get_item_display_name("twisted_spoon"),
 			"desc": get_held_item_desc("twisted_spoon"),
 			"icon": "twisted_spoon",
-			"stock": int(cur_inv.get("twisted_spoon", 0))
+			"stock": 1 if (has_unlocked_twisted_spoon or int(cur_inv.get("twisted_spoon", 0)) > 0) else 0
 		}
 	]
 
@@ -6910,6 +6910,41 @@ func set_campaign_team_leader(index: int) -> bool:
 	team.insert(0, leader)
 	save_profile()
 	return true
+
+func set_campaign_team_held_item(slot_idx: int, item_id: String) -> bool:
+	var team = get_active_campaign_team_state()
+	if slot_idx < 0 or slot_idx >= team.size():
+		return false
+	var clean_item = item_id.strip_edges()
+	# Si otro miembro ya tenía este objeto equipado, se le desequipa (objeto único)
+	if clean_item != "":
+		for i in range(team.size()):
+			if i != slot_idx and str(team[i].get("held_item", "")) == clean_item:
+				team[i]["held_item"] = ""
+	team[slot_idx]["held_item"] = clean_item
+	player_team_held_items.clear()
+	for p in team:
+		player_team_held_items.append(str(p.get("held_item", "")))
+	save_profile()
+	return true
+
+func remove_campaign_team_held_item(slot_idx: int) -> bool:
+	return set_campaign_team_held_item(slot_idx, "")
+
+func get_campaign_team_held_item_holder(item_id: String) -> int:
+	if item_id == "":
+		return -1
+	var team = get_active_campaign_team_state()
+	for i in range(team.size()):
+		if str(team[i].get("held_item", "")) == item_id:
+			return i
+	return -1
+
+func unequip_campaign_held_item(item_id: String) -> bool:
+	var holder = get_campaign_team_held_item_holder(item_id)
+	if holder >= 0:
+		return remove_campaign_team_held_item(holder)
+	return false
 
 func reset_campaign(auto_save: bool = true) -> void:
 	is_campaign_mode = false
