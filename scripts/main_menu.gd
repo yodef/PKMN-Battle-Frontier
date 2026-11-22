@@ -393,24 +393,26 @@ var _pending_tutorial_after_settings: bool = false
 
 # --- MODAL PERFIL DEL ENTRENADOR ---
 @onready var profile_modal: Control = $ProfileModal
-@onready var trainer_name_input: LineEdit = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerNameRow/TrainerNameInput
-@onready var trainer_email_row: HBoxContainer = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow
-@onready var trainer_email_prompt: Label = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow/TrainerEmailPrompt
-@onready var trainer_email_value: Label = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow/TrainerEmailValue
-@onready var account_status_lbl: Label = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/AccountStatusLbl
-@onready var btn_link_google: Button = $ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/BtnLinkGoogle
-@onready var stat_diamonds_lbl: Label = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatDiamondsLbl
-@onready var stat_tournaments_lbl: Label = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatTournamentsLbl
-@onready var stat_battles_lbl: Label = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatBattlesLbl
-@onready var stat_collection_lbl: Label = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatCollectionLbl
-@onready var stat_packs_lbl: Label = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatPacksLbl
-@onready var stat_gold_lbl: Label = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatGoldLbl
-@onready var stat_championships_lbl: Label = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatChampionshipsLbl if has_node("ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid/StatChampionshipsLbl") else null
-@onready var profile_feedback_lbl: Label = $ProfileModal/ProfileBox/ProfileFeedbackLbl
-@onready var btn_save_progress: Button = $ProfileModal/ProfileBox/BtnSaveProgress
-@onready var btn_logout: Button = $ProfileModal/ProfileBox/BtnLogout
-@onready var btn_erase_profile: Button = $ProfileModal/ProfileBox/BtnEraseProfile
-@onready var btn_close_profile: Button = $ProfileModal/ProfileBox/BtnCloseProfile
+@onready var profile_scroll: ScrollContainer = find_child("ProfileScroll", true, false)
+@onready var profile_content: VBoxContainer = find_child("ProfileContent", true, false)
+@onready var trainer_name_input: LineEdit = find_child("TrainerNameInput", true, false)
+@onready var trainer_email_row: HBoxContainer = find_child("TrainerEmailRow", true, false)
+@onready var trainer_email_prompt: Label = find_child("TrainerEmailPrompt", true, false)
+@onready var trainer_email_value: Label = find_child("TrainerEmailValue", true, false)
+@onready var account_status_lbl: Label = find_child("AccountStatusLbl", true, false)
+@onready var btn_link_google: Button = find_child("BtnLinkGoogle", true, false)
+@onready var stat_diamonds_lbl: Label = find_child("StatDiamondsLbl", true, false)
+@onready var stat_tournaments_lbl: Label = find_child("StatTournamentsLbl", true, false)
+@onready var stat_battles_lbl: Label = find_child("StatBattlesLbl", true, false)
+@onready var stat_collection_lbl: Label = find_child("StatCollectionLbl", true, false)
+@onready var stat_packs_lbl: Label = find_child("StatPacksLbl", true, false)
+@onready var stat_gold_lbl: Label = find_child("StatGoldLbl", true, false)
+@onready var stat_championships_lbl: Label = find_child("StatChampionshipsLbl", true, false)
+@onready var profile_feedback_lbl: Label = find_child("ProfileFeedbackLbl", true, false)
+@onready var btn_save_progress: Button = find_child("BtnSaveProgress", true, false)
+@onready var btn_logout: Button = find_child("BtnLogout", true, false)
+@onready var btn_erase_profile: Button = find_child("BtnEraseProfile", true, false)
+@onready var btn_close_profile: Button = find_child("BtnCloseProfile", true, false)
 
 # --- MODAL AJUSTES / CONFIGURACIÓN ---
 @onready var settings_modal: Control = $SettingsModal
@@ -10538,10 +10540,10 @@ func _apply_pokemon_ui_theme() -> void:
 	var teal_sb = _create_pokemon_panel_stylebox()
 	
 	# Profile modal cards
-	var profile_info_card = get_node_or_null("ProfileModal/ProfileBox/TrainerInfoCard")
+	var profile_info_card = find_child("TrainerInfoCard", true, false)
 	if profile_info_card is PanelContainer:
 		profile_info_card.add_theme_stylebox_override("panel", teal_sb.duplicate())
-	var profile_stats_card = get_node_or_null("ProfileModal/ProfileBox/StatsCard")
+	var profile_stats_card = find_child("StatsCard", true, false)
 	if profile_stats_card is PanelContainer:
 		profile_stats_card.add_theme_stylebox_override("panel", teal_sb.duplicate())
 		
@@ -15415,7 +15417,7 @@ func _on_profile_pressed() -> void:
 		stat_diamonds_lbl.text = "💎 Diamonds: %d" % GameData.player_diamonds
 	
 	if not stat_candies_lbl:
-		var grid = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid
+		var grid = find_child("StatsGrid", true, false)
 		if grid:
 			stat_candies_lbl = Label.new()
 			stat_candies_lbl.name = "StatCandiesLbl"
@@ -15429,7 +15431,7 @@ func _on_profile_pressed() -> void:
 	
 	var is_es = GameData.is_spanish()
 	if not stat_championships_lbl:
-		var grid = $ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid
+		var grid = find_child("StatsGrid", true, false)
 		if grid:
 			stat_championships_lbl = grid.get_node_or_null("StatChampionshipsLbl") as Label
 			if not stat_championships_lbl:
@@ -15504,7 +15506,7 @@ func _on_confirm_erase_pressed() -> void:
 # --- SHOWCASE DE POKÉMON FAVORITOS Y PERFIL DE AMIGOS ---
 
 func _update_profile_showcase_ui() -> void:
-	var p_box = get_node_or_null("ProfileModal/ProfileBox")
+	var p_box = profile_content if profile_content else (get_node_or_null("ProfileModal/ProfileBox/ProfileScroll/ProfileContent") if has_node("ProfileModal/ProfileBox/ProfileScroll/ProfileContent") else get_node_or_null("ProfileModal/ProfileBox"))
 	if not p_box:
 		return
 		
@@ -15714,7 +15716,7 @@ func _build_showcase_card_node(pokemon_id: int, slot_idx: int, is_editable: bool
 	return container
 
 func _update_profile_badges_ui() -> void:
-	var p_box = get_node_or_null("ProfileModal/ProfileBox")
+	var p_box = profile_content if profile_content else (get_node_or_null("ProfileModal/ProfileBox/ProfileScroll/ProfileContent") if has_node("ProfileModal/ProfileBox/ProfileScroll/ProfileContent") else get_node_or_null("ProfileModal/ProfileBox"))
 	if not p_box:
 		return
 		
@@ -15741,29 +15743,36 @@ func _update_profile_badges_ui() -> void:
 		
 	var is_es = GameData.is_spanish()
 	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_top", 8)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_bottom", 8)
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_top", 6)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_bottom", 6)
 	profile_badges_card.add_child(margin)
 	
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 6)
 	margin.add_child(vbox)
 	
+	var earned_by_region = GameData.get_earned_badges_by_region()
+	var total_badges = 0
+	var regions_with_badges: Array[String] = []
+	for reg in ["Kanto", "Johto", "Hoenn", "Sinnoh"]:
+		var b_count = earned_by_region.get(reg, []).size()
+		total_badges += b_count
+		if b_count > 0:
+			regions_with_badges.append(reg)
+			
 	var title_lbl = Label.new()
 	title_lbl.name = "BadgesCardTitle"
-	title_lbl.text = "🎖️ MEDALLAS OBTENIDAS" if is_es else "🎖️ EARNED GYM BADGES"
-	title_lbl.add_theme_font_size_override("font_size", 13)
-	title_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	if total_badges > 0:
+		title_lbl.text = ("🎖️ MEDALLAS OBTENIDAS (%d/32)" if is_es else "🎖️ EARNED GYM BADGES (%d/32)") % total_badges
+	else:
+		title_lbl.text = "🎖️ MEDALLAS OBTENIDAS" if is_es else "🎖️ EARNED GYM BADGES"
+	title_lbl.add_theme_font_size_override("font_size", 12)
+	title_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3) if total_badges >= 32 else Color(0.9, 0.85, 0.6))
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title_lbl)
 	
-	var earned_by_region = GameData.get_earned_badges_by_region()
-	var total_badges = 0
-	for reg in earned_by_region:
-		total_badges += earned_by_region[reg].size()
-		
 	if total_badges == 0:
 		var empty_lbl = Label.new()
 		empty_lbl.text = "Sin medallas aún. ¡Derrota a Líderes de Gimnasio en el Modo Aventura!" if is_es else "No badges yet. Defeat Gym Leaders in Adventure Mode!"
@@ -15772,33 +15781,54 @@ func _update_profile_badges_ui() -> void:
 		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		vbox.add_child(empty_lbl)
 	else:
-		for reg in ["Kanto", "Johto", "Hoenn", "Sinnoh"]:
+		var grid = GridContainer.new()
+		grid.columns = 2 if regions_with_badges.size() >= 2 else 1
+		grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		grid.add_theme_constant_override("h_separation", 8)
+		grid.add_theme_constant_override("v_separation", 6)
+		vbox.add_child(grid)
+		
+		for reg in regions_with_badges:
 			var badges = earned_by_region.get(reg, [])
-			if badges.is_empty():
-				continue # Mostrar SOLO las medallas obtenidas de cada región
-				
-			var row = HBoxContainer.new()
-			row.add_theme_constant_override("separation", 10)
-			row.alignment = BoxContainer.ALIGNMENT_BEGIN
-			vbox.add_child(row)
+			var is_complete = badges.size() >= 8
+			
+			var reg_panel = PanelContainer.new()
+			reg_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var sb_reg = StyleBoxFlat.new()
+			sb_reg.bg_color = Color(0.05, 0.08, 0.12, 0.85)
+			sb_reg.border_color = Color(0.95, 0.75, 0.2, 0.9) if is_complete else Color(0.2, 0.4, 0.55, 0.7)
+			sb_reg.set_border_width_all(1)
+			sb_reg.set_corner_radius_all(6)
+			reg_panel.add_theme_stylebox_override("panel", sb_reg)
+			grid.add_child(reg_panel)
+			
+			var reg_margin = MarginContainer.new()
+			reg_margin.add_theme_constant_override("margin_left", 6)
+			reg_margin.add_theme_constant_override("margin_top", 4)
+			reg_margin.add_theme_constant_override("margin_right", 6)
+			reg_margin.add_theme_constant_override("margin_bottom", 4)
+			reg_panel.add_child(reg_margin)
+			
+			var reg_vbox = VBoxContainer.new()
+			reg_vbox.add_theme_constant_override("separation", 2)
+			reg_margin.add_child(reg_vbox)
 			
 			var reg_lbl = Label.new()
-			reg_lbl.text = reg.to_upper() + ":"
-			reg_lbl.custom_minimum_size = Vector2(62, 0)
-			reg_lbl.add_theme_font_size_override("font_size", 11)
-			reg_lbl.add_theme_color_override("font_color", Color(0.4, 0.85, 1.0))
-			row.add_child(reg_lbl)
+			reg_lbl.text = "%s: (%d/8)%s" % [reg.to_upper(), badges.size(), " 🌟" if is_complete else ""]
+			reg_lbl.add_theme_font_size_override("font_size", 10)
+			reg_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3) if is_complete else Color(0.4, 0.85, 1.0))
+			reg_vbox.add_child(reg_lbl)
 			
 			var icons_row = HBoxContainer.new()
-			icons_row.add_theme_constant_override("separation", 6)
-			icons_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			row.add_child(icons_row)
+			icons_row.add_theme_constant_override("separation", 3)
+			icons_row.alignment = BoxContainer.ALIGNMENT_BEGIN
+			reg_vbox.add_child(icons_row)
 			
 			for b in badges:
 				var b_tex = b.get("texture")
 				if b_tex:
 					var icon_rect = TextureRect.new()
-					icon_rect.custom_minimum_size = Vector2(28, 28)
+					icon_rect.custom_minimum_size = Vector2(20, 20)
 					icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 					icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 					icon_rect.texture = b_tex
@@ -16261,6 +16291,17 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	vbox.add_child(title)
 	
+	var f_scroll = ScrollContainer.new()
+	f_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	f_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	f_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	vbox.add_child(f_scroll)
+	
+	var f_body = VBoxContainer.new()
+	f_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	f_body.add_theme_constant_override("separation", 8)
+	f_scroll.add_child(f_body)
+	
 	# Trainer info card
 	var info_panel = PanelContainer.new()
 	var sb_info = StyleBoxFlat.new()
@@ -16269,7 +16310,7 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	sb_info.set_border_width_all(1)
 	sb_info.set_corner_radius_all(6)
 	info_panel.add_theme_stylebox_override("panel", sb_info)
-	vbox.add_child(info_panel)
+	f_body.add_child(info_panel)
 	
 	var info_margin = MarginContainer.new()
 	info_margin.add_theme_constant_override("margin_left", 10)
@@ -16345,7 +16386,7 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	sb_stats.set_border_width_all(1)
 	sb_stats.set_corner_radius_all(6)
 	stats_panel_node.add_theme_stylebox_override("panel", sb_stats)
-	vbox.add_child(stats_panel_node)
+	f_body.add_child(stats_panel_node)
 	
 	var stats_margin = MarginContainer.new()
 	stats_margin.add_theme_constant_override("margin_left", 10)
@@ -16414,8 +16455,12 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 		
 	var f_earned_by_region = GameData.get_earned_badges_by_region(f_completed_eps)
 	var f_total_badges = 0
-	for reg in f_earned_by_region:
-		f_total_badges += f_earned_by_region[reg].size()
+	var f_regions_with_badges: Array[String] = []
+	for reg in ["Kanto", "Johto", "Hoenn", "Sinnoh"]:
+		var b_count = f_earned_by_region.get(reg, []).size()
+		f_total_badges += b_count
+		if b_count > 0:
+			f_regions_with_badges.append(reg)
 		
 	var f_badges_panel = PanelContainer.new()
 	f_badges_panel.name = "FriendBadgesCard"
@@ -16425,13 +16470,13 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	sb_f_badges.set_border_width_all(1)
 	sb_f_badges.set_corner_radius_all(6)
 	f_badges_panel.add_theme_stylebox_override("panel", sb_f_badges)
-	vbox.add_child(f_badges_panel)
+	f_body.add_child(f_badges_panel)
 	
 	var f_badges_margin = MarginContainer.new()
 	f_badges_margin.add_theme_constant_override("margin_left", 10)
-	f_badges_margin.add_theme_constant_override("margin_top", 8)
+	f_badges_margin.add_theme_constant_override("margin_top", 6)
 	f_badges_margin.add_theme_constant_override("margin_right", 10)
-	f_badges_margin.add_theme_constant_override("margin_bottom", 8)
+	f_badges_margin.add_theme_constant_override("margin_bottom", 6)
 	f_badges_panel.add_child(f_badges_margin)
 	
 	var f_badges_vbox = VBoxContainer.new()
@@ -16441,9 +16486,12 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	var is_es = GameData.is_spanish()
 	var f_badges_title = Label.new()
 	f_badges_title.name = "FriendBadgesTitle"
-	f_badges_title.text = "🎖️ MEDALLAS OBTENIDAS" if is_es else "🎖️ EARNED GYM BADGES"
+	if f_total_badges > 0:
+		f_badges_title.text = ("🎖️ MEDALLAS OBTENIDAS (%d/32)" if is_es else "🎖️ EARNED GYM BADGES (%d/32)") % f_total_badges
+	else:
+		f_badges_title.text = "🎖️ MEDALLAS OBTENIDAS" if is_es else "🎖️ EARNED GYM BADGES"
 	f_badges_title.add_theme_font_size_override("font_size", 12)
-	f_badges_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	f_badges_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3) if f_total_badges >= 32 else Color(0.9, 0.85, 0.6))
 	f_badges_vbox.add_child(f_badges_title)
 	
 	if f_total_badges == 0:
@@ -16453,31 +16501,52 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 		empty_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
 		f_badges_vbox.add_child(empty_lbl)
 	else:
-		for reg in ["Kanto", "Johto", "Hoenn", "Sinnoh"]:
+		var f_grid = GridContainer.new()
+		f_grid.columns = 2 if f_regions_with_badges.size() >= 2 else 1
+		f_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		f_grid.add_theme_constant_override("h_separation", 8)
+		f_grid.add_theme_constant_override("v_separation", 6)
+		f_badges_vbox.add_child(f_grid)
+		
+		for reg in f_regions_with_badges:
 			var b_list = f_earned_by_region.get(reg, [])
-			if b_list.is_empty():
-				continue # Mostrar solo las medallas obtenidas de cada región
-				
-			var b_row = HBoxContainer.new()
-			b_row.add_theme_constant_override("separation", 8)
-			b_row.alignment = BoxContainer.ALIGNMENT_BEGIN
-			f_badges_vbox.add_child(b_row)
+			var is_complete = b_list.size() >= 8
+			
+			var reg_panel = PanelContainer.new()
+			reg_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var sb_reg = StyleBoxFlat.new()
+			sb_reg.bg_color = Color(0.05, 0.08, 0.12, 0.85)
+			sb_reg.border_color = Color(0.95, 0.75, 0.2, 0.9) if is_complete else Color(0.2, 0.4, 0.55, 0.7)
+			sb_reg.set_border_width_all(1)
+			sb_reg.set_corner_radius_all(6)
+			reg_panel.add_theme_stylebox_override("panel", sb_reg)
+			f_grid.add_child(reg_panel)
+			
+			var reg_margin = MarginContainer.new()
+			reg_margin.add_theme_constant_override("margin_left", 6)
+			reg_margin.add_theme_constant_override("margin_top", 4)
+			reg_margin.add_theme_constant_override("margin_right", 6)
+			reg_margin.add_theme_constant_override("margin_bottom", 4)
+			reg_panel.add_child(reg_margin)
+			
+			var reg_vbox = VBoxContainer.new()
+			reg_vbox.add_theme_constant_override("separation", 2)
+			reg_margin.add_child(reg_vbox)
 			
 			var reg_lbl = Label.new()
-			reg_lbl.text = reg.to_upper() + ":"
-			reg_lbl.custom_minimum_size = Vector2(58, 0)
-			reg_lbl.add_theme_font_size_override("font_size", 11)
-			reg_lbl.add_theme_color_override("font_color", Color(0.4, 0.85, 1.0))
-			b_row.add_child(reg_lbl)
+			reg_lbl.text = "%s: (%d/8)%s" % [reg.to_upper(), b_list.size(), " 🌟" if is_complete else ""]
+			reg_lbl.add_theme_font_size_override("font_size", 10)
+			reg_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3) if is_complete else Color(0.4, 0.85, 1.0))
+			reg_vbox.add_child(reg_lbl)
 			
 			var icons_row = HBoxContainer.new()
-			icons_row.add_theme_constant_override("separation", 6)
-			icons_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			b_row.add_child(icons_row)
+			icons_row.add_theme_constant_override("separation", 3)
+			icons_row.alignment = BoxContainer.ALIGNMENT_BEGIN
+			reg_vbox.add_child(icons_row)
 			
 			for b in b_list:
 				var icon_rect = TextureRect.new()
-				icon_rect.custom_minimum_size = Vector2(26, 26)
+				icon_rect.custom_minimum_size = Vector2(20, 20)
 				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 				icon_rect.texture = b.get("texture", null)
@@ -16487,7 +16556,7 @@ func _render_friend_profile_data(save_data: Dictionary, f_data: Dictionary) -> v
 	# Showcase Section con Foils
 	var showcase_box = VBoxContainer.new()
 	showcase_box.add_theme_constant_override("separation", 6)
-	vbox.add_child(showcase_box)
+	f_body.add_child(showcase_box)
 	
 	var sc_title = Label.new()
 	sc_title.text = "⭐ TOP 3 FAVORITE POKÉMON"

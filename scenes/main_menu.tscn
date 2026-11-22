@@ -2999,162 +2999,173 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 35.0
-offset_right = -24.0
-offset_bottom = -25.0
+offset_left = 20.0
+offset_top = 24.0
+offset_right = -20.0
+offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 12
-alignment = 1
+theme_override_constants/separation = 10
 
 [node name="ProfileTitle" type="Label" parent="ProfileModal/ProfileBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 text = "👤 TRAINER PROFILE"
 horizontal_alignment = 1
 
-[node name="TrainerInfoCard" type="PanelContainer" parent="ProfileModal/ProfileBox"]
+[node name="ProfileScroll" type="ScrollContainer" parent="ProfileModal/ProfileBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
+
+[node name="ProfileContent" type="VBoxContainer" parent="ProfileModal/ProfileBox/ProfileScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="TrainerInfoCard" type="PanelContainer" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent"]
 layout_mode = 2
 
-[node name="TrainerInfoVBox" type="VBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard"]
+[node name="TrainerInfoVBox" type="VBoxContainer" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ProfileAvatarRow" type="HBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox"]
+[node name="ProfileAvatarRow" type="HBoxContainer" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox"]
 layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="ProfileAvatarPreview" type="TextureRect" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow"]
+[node name="ProfileAvatarPreview" type="TextureRect" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow"]
 custom_minimum_size = Vector2(74, 74)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ProfileAvatarDetails" type="VBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow"]
+[node name="ProfileAvatarDetails" type="VBoxContainer" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
 alignment = 1
 
-[node name="ProfileAvatarName" type="Label" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow/ProfileAvatarDetails"]
+[node name="ProfileAvatarName" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow/ProfileAvatarDetails"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
 theme_override_font_sizes/font_size = 14
 text = "Avatar: Trainer Leaf"
 
-[node name="BtnProfileChangeAvatar" type="Button" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow/ProfileAvatarDetails"]
+[node name="BtnProfileChangeAvatar" type="Button" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox/ProfileAvatarRow/ProfileAvatarDetails"]
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 11
 text = "🎨 Cambiar Avatar / Change Avatar"
 
-[node name="TrainerNameRow" type="HBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox"]
+[node name="TrainerNameRow" type="HBoxContainer" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="TrainerNamePrompt" type="Label" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerNameRow"]
+[node name="TrainerNamePrompt" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox/TrainerNameRow"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Trainer Alias:"
 
-[node name="TrainerNameInput" type="LineEdit" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerNameRow"]
+[node name="TrainerNameInput" type="LineEdit" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox/TrainerNameRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 13
 placeholder_text = "Enter Trainer Alias..."
 
-[node name="TrainerEmailRow" type="HBoxContainer" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox"]
+[node name="TrainerEmailRow" type="HBoxContainer" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="TrainerEmailPrompt" type="Label" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow"]
+[node name="TrainerEmailPrompt" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "🕒 Last Activity:"
 
-[node name="TrainerEmailValue" type="Label" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow"]
+[node name="TrainerEmailValue" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox/TrainerEmailRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 12
 text = "Just now"
 
-[node name="AccountStatusLbl" type="Label" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox"]
+[node name="AccountStatusLbl" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 0.5, 1)
 theme_override_font_sizes/font_size = 11
 text = "Status: 🟢 Local Storage Active"
 
-[node name="BtnLinkGoogle" type="Button" parent="ProfileModal/ProfileBox/TrainerInfoCard/TrainerInfoVBox"]
+[node name="BtnLinkGoogle" type="Button" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/TrainerInfoCard/TrainerInfoVBox"]
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 theme_override_font_sizes/font_size = 12
 text = "🌐 Connect with Google Account"
 
-[node name="StatsCard" type="PanelContainer" parent="ProfileModal/ProfileBox"]
+[node name="StatsCard" type="PanelContainer" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent"]
 layout_mode = 2
 
-[node name="StatsVBox" type="VBoxContainer" parent="ProfileModal/ProfileBox/StatsCard"]
+[node name="StatsVBox" type="VBoxContainer" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/StatsCard"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="StatsHeader" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox"]
+[node name="StatsHeader" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/StatsCard/StatsVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 theme_override_font_sizes/font_size = 13
 text = "📊 PERSONAL RECORDS & STATS"
 horizontal_alignment = 1
 
-[node name="StatsGrid" type="GridContainer" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox"]
+[node name="StatsGrid" type="GridContainer" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/StatsCard/StatsVBox"]
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/h_separation = 24
 theme_override_constants/v_separation = 8
 columns = 2
 
-[node name="StatDiamondsLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+[node name="StatDiamondsLbl" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/StatsCard/StatsVBox/StatsGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "💎 Diamonds: 0"
 
-[node name="StatTournamentsLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+[node name="StatTournamentsLbl" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/StatsCard/StatsVBox/StatsGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "🏆 Tournaments Won: 0"
 
-[node name="StatBattlesLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+[node name="StatBattlesLbl" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/StatsCard/StatsVBox/StatsGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "⚔️ Battles: 0 / 0 (0%)"
 
-[node name="StatChampionshipsLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+[node name="StatChampionshipsLbl" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/StatsCard/StatsVBox/StatsGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "👑 Championships Won: 0"
 
-[node name="StatCollectionLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+[node name="StatCollectionLbl" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/StatsCard/StatsVBox/StatsGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "🎴 Cards: 4 / 167 (2%)"
 
-[node name="StatPacksLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+[node name="StatPacksLbl" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/StatsCard/StatsVBox/StatsGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "📦 Packs Opened: 0"
 
-[node name="StatGoldLbl" type="Label" parent="ProfileModal/ProfileBox/StatsCard/StatsVBox/StatsGrid"]
+[node name="StatGoldLbl" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/StatsCard/StatsVBox/StatsGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "💰 Campaign Gold: 0 G"
 
-[node name="ProfileFeedbackLbl" type="Label" parent="ProfileModal/ProfileBox"]
+[node name="ProfileFeedbackLbl" type="Label" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent"]
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
@@ -3162,25 +3173,31 @@ theme_override_font_sizes/font_size = 12
 text = "✅ Progress saved successfully!"
 horizontal_alignment = 1
 
-[node name="BtnSaveProgress" type="Button" parent="ProfileModal/ProfileBox"]
-custom_minimum_size = Vector2(0, 48)
+[node name="BtnSaveProgress" type="Button" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 1, 0.45, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 13
 text = "💾  SAVE PROGRESS (Local Storage)"
 
-[node name="BtnLogout" type="Button" parent="ProfileModal/ProfileBox"]
-custom_minimum_size = Vector2(0, 42)
+[node name="AccountActionsHBox" type="HBoxContainer" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent"]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnLogout" type="Button" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/AccountActionsHBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.7, 0.3, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 12
 text = "🚪  LOG OUT"
 
-[node name="BtnEraseProfile" type="Button" parent="ProfileModal/ProfileBox"]
-custom_minimum_size = Vector2(0, 42)
+[node name="BtnEraseProfile" type="Button" parent="ProfileModal/ProfileBox/ProfileScroll/ProfileContent/AccountActionsHBox"]
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 12
 text = "🗑️  Borrar Datos de Partida (Dispositivo)"
 
 [node name="BtnCloseProfile" type="Button" parent="ProfileModal/ProfileBox"]
