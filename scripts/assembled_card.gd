@@ -361,7 +361,7 @@ func setup(d: Dictionary, is_unlocked: bool = true) -> void:
 	var c1 = int(d.get("m1_cost", 1))
 	m1_cost.text = "⚡ %d" % c1 if c1 > 0 else "—"
 	m1_name.text = str(d.get("m1_name", "Attack 1"))
-	m1_dmg.text = "%d DMG" % int(d.get("m1_dmg", 0))
+	m1_dmg.text = "%d PWR" % int(d.get("m1_dmg", 0))
 
 	var m2_type = str(d.get("m2_type", "NORMAL")).to_upper()
 	m2_type_icon.visible = true
@@ -369,7 +369,7 @@ func setup(d: Dictionary, is_unlocked: bool = true) -> void:
 	var c2 = int(d.get("m2_cost", 1))
 	m2_cost.text = "⚡ %d" % c2 if c2 > 0 else "—"
 	m2_name.text = str(d.get("m2_name", "Attack 2"))
-	m2_dmg.text = "%d DMG" % int(d.get("m2_dmg", 0))
+	m2_dmg.text = "%d PWR" % int(d.get("m2_dmg", 0))
 
 	# 8. Pie de Carta (Debilidad, Resistencia, Velocidad) con Iconos Oficiales
 	var weak_key = str(d.get("weakness", "NONE")).to_upper()
@@ -390,7 +390,7 @@ func setup(d: Dictionary, is_unlocked: bool = true) -> void:
 		res_icon.visible = false
 		res_val.text = "—"
 
-	speed_label.text = "👟 %d SPD" % int(d.get("speed", 1))
+	speed_label.text = "👟%d ⚔️%d 🛡️%d" % [int(d.get("speed", 1)), int(d.get("attack", 10)), int(d.get("defense", 10))]
 	
 	# 9. Efecto Foil Holográfico según Rareza (Rare, Epic, Legendary, Boss, Gym Leader Ace, Elite Four Ace)
 	var card_rarity = str(d.get("rarity", "Common"))

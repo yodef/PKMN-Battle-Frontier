@@ -13821,7 +13821,7 @@ func show_collection_card(index: int) -> void:
 		var req_exp_val = GameData.get_pokemon_required_exp(int(card.get("id", -1)))
 		var evo_suffix = ("  |  ⏫ Evolves to %s (%d EXP)" % [evo_target, req_exp_val]) if (evo_target != "" and req_exp_val > 0) else ""
 		stats_hp.text = "❤️ Max HP: %d HP%s" % [int(card.get("hp", 10)), evo_suffix]
-		stats_spd.text = "👟 Speed: %d SPD (Determines turn order)" % int(card.get("speed", 1))
+		stats_spd.text = "👟 SPD: %d | ⚔️ ATK: %d | 🛡️ DEF: %d" % [int(card.get("speed", 1)), int(card.get("attack", 10)), int(card.get("defense", 10))]
 		stats_energy.text = "🔋 Recovery: +%d EN / turn (Max: %d)  |  🏆 Rank: Tier %s" % [int(card.get("recover", 1)), int(card.get("energy", 3)), tier_str]
 		
 		var weak_key = str(card.get("weakness", "NONE")).to_upper()
@@ -13867,6 +13867,7 @@ func show_collection_card(index: int) -> void:
 		move1_panel.visible = true
 		var m1_name_val = str(card.get("m1_name", "Attack 1"))
 		var m1_dmg_val = int(card.get("m1_dmg", 0))
+		var m1_acc_val = int(card.get("m1_acc", 100))
 		var m1_type_val = str(card.get("m1_type", "NORMAL")).to_upper()
 		var m1_cost_val = int(card.get("m1_cost", 1))
 		var m1_req_val = int(card.get("m1_req", 0))
@@ -13874,7 +13875,7 @@ func show_collection_card(index: int) -> void:
 		
 		m1_type_icon.visible = true
 		m1_type_icon.texture = GameData.get_type_icon_texture(m1_type_val)
-		m1_title.text = "%s (%d DMG)" % [m1_name_val, m1_dmg_val]
+		m1_title.text = "%s (PWR: %d | ACC: %d%%)" % [m1_name_val, m1_dmg_val, m1_acc_val]
 		var req_text1 = (" | Req: %d EN" % m1_req_val) if m1_req_val > m1_cost_val else ""
 		m1_sub.text = "Type: %s | Cost: ⚡ %d%s" % [m1_type_val, m1_cost_val, req_text1]
 		m1_desc.text = m1_desc_val if m1_desc_val != "" else "Basic attack with no secondary effect."
@@ -13883,6 +13884,7 @@ func show_collection_card(index: int) -> void:
 		move2_panel.visible = true
 		var m2_name_val = str(card.get("m2_name", "Attack 2"))
 		var m2_dmg_val = int(card.get("m2_dmg", 0))
+		var m2_acc_val = int(card.get("m2_acc", 100))
 		var m2_type_val = str(card.get("m2_type", "NORMAL")).to_upper()
 		var m2_cost_val = int(card.get("m2_cost", 1))
 		var m2_req_val = int(card.get("m2_req", 0))
@@ -13892,7 +13894,7 @@ func show_collection_card(index: int) -> void:
 		
 		m2_type_icon.visible = true
 		m2_type_icon.texture = GameData.get_type_icon_texture(m2_type_val)
-		m2_title.text = "%s (%d DMG)" % [m2_name_val, m2_dmg_val]
+		m2_title.text = "%s (PWR: %d | ACC: %d%%)" % [m2_name_val, m2_dmg_val, m2_acc_val]
 		var req_text2 = (" | Req: %d EN" % m2_req_val) if m2_req_val > m2_cost_val else ""
 		m2_sub.text = "Type: %s | Cost: ⚡ %d%s" % [m2_type_val, m2_cost_val, req_text2]
 		if m2_bcost > 0:

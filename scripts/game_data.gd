@@ -8,7 +8,11 @@ var update_direct_fallback_url: String = ""
 class MoveData:
 	var name: String
 	var type: String
-	var base_damage: int
+	var base_damage: int # Power
+	var power: int:
+		get: return base_damage
+		set(v): base_damage = v
+	var accuracy: int = 100
 	var cost: int
 	var min_energy_req: int
 	var can_boost: bool
@@ -22,7 +26,7 @@ class MoveData:
 	var causes_poison: bool = false
 	var description: String
 
-	func _init(p_name: String, p_type: String, p_dmg: int, p_cost: int, p_min_req: int, p_can_boost: bool, p_boost_cost: int, p_boost_dmg: int, p_burn: bool, p_desc: String):
+	func _init(p_name: String, p_type: String, p_dmg: int, p_cost: int, p_min_req: int, p_can_boost: bool, p_boost_cost: int, p_boost_dmg: int, p_burn: bool, p_desc: String, p_acc: int = 100):
 		name = p_name
 		type = p_type
 		base_damage = p_dmg
@@ -33,6 +37,7 @@ class MoveData:
 		boost_damage = p_boost_dmg
 		boost_applies_burn = p_burn
 		description = p_desc
+		accuracy = p_acc
 
 func format_move_boost_summary(b_cost: int, b_dmg: int, eff_type: String, desc: String) -> String:
 	if b_cost <= 0:
@@ -75,6 +80,10 @@ class PokemonData:
 	var name: String
 	var max_hp: int
 	var current_hp: int
+	var attack: int = 10
+	var defense: int = 10
+	var temp_attack_mod: int = 0
+	var temp_defense_mod: int = 0
 	var max_energy: int
 	var current_energy: int
 	var speed: int
@@ -164,6 +173,12 @@ class PokemonData:
 		if is_paralyzed or paralyze_turns > 0:
 			spd = max(1, spd - 3)
 		return spd
+
+	func get_effective_attack() -> int:
+		return max(1, attack + temp_attack_mod)
+
+	func get_effective_defense() -> int:
+		return max(1, defense + temp_defense_mod)
 
 # Base de datos de movimientos cargada desde poke_moves.csv
 var moves_catalog: Dictionary = {}
@@ -4633,7 +4648,7 @@ func load_moves_from_csv() -> void:
 				if idx < row.size():
 					var v = row[idx].strip_edges()
 					if v != "": return v
-			elif fallback_idx < row.size():
+			elif fallback_idx >= 0 and fallback_idx < row.size():
 				var v = row[fallback_idx].strip_edges()
 				if v != "": return v
 			return def_val
@@ -4643,7 +4658,8 @@ func load_moves_from_csv() -> void:
 		if m_name == "":
 			continue
 		var m_type = get_val.call("type", 2, "NORMAL").to_upper()
-		var m_dmg = int(get_val.call("base_dmg", 3, "3"))
+		var raw_pow = get_val.call("power", -1, "")
+		var m_dmg = int(raw_pow) if raw_pow != "" else int(get_val.call("base_dmg", 3, "3"))
 		var m_cost = int(get_val.call("cost", 4, "0"))
 		var m_req = int(get_val.call("min_energy_req", 5, "1"))
 		var m_boost_cost = int(get_val.call("boost_cost", 6, "0"))
@@ -4651,6 +4667,7 @@ func load_moves_from_csv() -> void:
 		var m_effect_type = get_val.call("effect_type", 8, "NONE").to_upper()
 		var m_desc = get_val.call("description", 9, "")
 		var m_sfx = get_val.call("sfx", 10, "")
+		var m_acc = int(get_val.call("accuracy", 11, "100"))
 		if m_boost_cost == 0:
 			var desc_low = m_desc.to_lower()
 			if "use 1 extra energy" in desc_low:
@@ -4663,13 +4680,15 @@ func load_moves_from_csv() -> void:
 			"name": m_name,
 			"type": m_type,
 			"dmg": m_dmg,
+			"power": m_dmg,
 			"cost": m_cost,
 			"req": m_req,
 			"boost_cost": m_boost_cost,
 			"boost_dmg": m_boost_dmg,
 			"effect_type": m_effect_type,
 			"desc": m_desc,
-			"sfx": m_sfx
+			"sfx": m_sfx,
+			"accuracy": m_acc
 		}
 		var clean_name = m_name.strip_edges().to_lower()
 		moves_catalog[clean_name] = move_entry
@@ -4691,13 +4710,15 @@ func get_move_data(identifier: String) -> Dictionary:
 		"name": identifier if identifier != "" else "Tackle",
 		"type": "NORMAL",
 		"dmg": 3,
+		"power": 3,
 		"cost": 0,
 		"req": 1,
 		"boost_cost": 0,
 		"boost_dmg": 0,
 		"effect_type": "NONE",
 		"desc": "",
-		"sfx": ""
+		"sfx": "",
+		"accuracy": 100
 	}
 
 func load_pokemon_from_csv() -> void:
@@ -4770,22 +4791,30 @@ func load_pokemon_from_csv() -> void:
 		var def_energy = 3
 		var def_speed = 2
 		var def_recover = 1
+		var def_atk = 10
+		var def_def = 10
 		
 		if st_low == "stage 1":
 			def_hp = 20
 			def_energy = 5
 			def_speed = 2
 			def_recover = 2
+			def_atk = 18
+			def_def = 18
 		elif st_low == "stage 2":
 			def_hp = 30
 			def_energy = 8
 			def_speed = 3
 			def_recover = 3
+			def_atk = 28
+			def_def = 28
 		elif st_low in ["legendary", "legendaria"]:
 			def_hp = 35
 			def_energy = 8
 			def_speed = 4
 			def_recover = 3
+			def_atk = 34
+			def_def = 32
 			
 		var raw_hp_val = get_val.call("hp", "")
 		var raw_m1_val = get_val.call("move1", "")
@@ -4793,6 +4822,12 @@ func load_pokemon_from_csv() -> void:
 		if raw_hp_val == "" or raw_m1_val == "":
 			continue
 		var p_hp = int(raw_hp_val) if raw_hp_val != "" and int(raw_hp_val) > 0 else def_hp
+		
+		var raw_atk_val = get_val.call("attack", "")
+		var p_atk = int(raw_atk_val) if raw_atk_val != "" and int(raw_atk_val) > 0 else def_atk
+		
+		var raw_def_val = get_val.call("defense", "")
+		var p_def = int(raw_def_val) if raw_def_val != "" and int(raw_def_val) > 0 else def_def
 		
 		var raw_energy_val = get_val.call("energy", "")
 		var p_energy = int(raw_energy_val) if raw_energy_val != "" and int(raw_energy_val) > 0 else def_energy
@@ -4905,6 +4940,8 @@ func load_pokemon_from_csv() -> void:
 			"required_exp": p_required_exp,
 			"name": p_name,
 			"hp": p_hp,
+			"attack": p_atk,
+			"defense": p_def,
 			"energy": p_energy,
 			"speed": p_spd,
 			"type": p_type,
@@ -4921,6 +4958,8 @@ func load_pokemon_from_csv() -> void:
 			"m1_name": m1_data["name"],
 			"m1_type": m1_data["type"],
 			"m1_dmg": m1_data["dmg"],
+			"m1_power": m1_data["dmg"],
+			"m1_acc": m1_data.get("accuracy", 100),
 			"m1_cost": m1_data["cost"],
 			"m1_req": m1_data["req"],
 			"m1_boost_cost": m1_data["boost_cost"],
@@ -4931,6 +4970,8 @@ func load_pokemon_from_csv() -> void:
 			"m2_name": m2_data["name"],
 			"m2_type": m2_data["type"],
 			"m2_dmg": m2_data["dmg"],
+			"m2_power": m2_data["dmg"],
+			"m2_acc": m2_data.get("accuracy", 100),
 			"m2_cost": m2_data["cost"],
 			"m2_req": m2_data["req"],
 			"m2_boost_cost": m2_data["boost_cost"],
@@ -6762,6 +6803,8 @@ func create_pokemon_instance(pkmn_id: int) -> PokemonData:
 	p.name = d["name"]
 	p.max_hp = d["hp"]
 	p.current_hp = d["hp"]
+	p.attack = d.get("attack", 10)
+	p.defense = d.get("defense", 10)
 	p.max_energy = d["energy"]
 	p.current_energy = d["energy"]
 	p.speed = d["speed"]
@@ -6816,23 +6859,27 @@ func create_pokemon_instance(pkmn_id: int) -> PokemonData:
 		p.speed += 1
 	
 	# Movimiento Activo 1
+	var m1_acc = int(d.get("m1_acc", 100))
 	var m1 = MoveData.new(
 		d["m1_name"], d["m1_type"], d["m1_dmg"], d["m1_cost"], d["m1_req"],
 		d["m1_boost_cost"] > 0, d["m1_boost_cost"], d["m1_boost_dmg"],
-		d["m1_effect_type"] == "BURN", d["m1_effect"]
+		d["m1_effect_type"] == "BURN", d["m1_effect"], m1_acc
 	)
 	m1.effect_type = d["m1_effect_type"]
+	m1.accuracy = m1_acc
 	m1.reduces_foe_speed = (m1.effect_type == "SLOW_FOE")
 	m1.is_pichu_shock = (m1.effect_type == "PICHU_SHOCK")
 	m1.causes_poison = (m1.effect_type == "POISON_IF_FASTER" or m1.effect_type == "POISON")
 		
 	# Movimiento Activo 2
+	var m2_acc = int(d.get("m2_acc", 100))
 	var m2 = MoveData.new(
 		d["m2_name"], d["m2_type"], d["m2_dmg"], d["m2_cost"], d["m2_req"],
 		d["m2_boost_cost"] > 0, d["m2_boost_cost"], d["m2_boost_dmg"],
-		d["m2_effect_type"] == "BURN", d["m2_effect"]
+		d["m2_effect_type"] == "BURN", d["m2_effect"], m2_acc
 	)
 	m2.effect_type = d["m2_effect_type"]
+	m2.accuracy = m2_acc
 	m2.reduces_foe_speed = (m2.effect_type == "SLOW_FOE")
 	m2.is_pichu_shock = (m2.effect_type == "PICHU_SHOCK")
 	m2.causes_poison = (m2.effect_type == "POISON_IF_FASTER" or m2.effect_type == "POISON")

@@ -808,11 +808,13 @@ func show_pokemon_details(pkmn, is_enemy: bool = false) -> void:
 	stage_lbl.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
 	name_row.add_child(stage_lbl)
 	
-	# HP & Energy
+	# HP & Energy & Attack & Defense & Speed
+	var eff_atk = pkmn.get_effective_attack() if pkmn.has_method("get_effective_attack") else (pkmn.get("attack", 10) if "attack" in pkmn else 10)
+	var eff_def = pkmn.get_effective_defense() if pkmn.has_method("get_effective_defense") else (pkmn.get("defense", 10) if "defense" in pkmn else 10)
 	var stats_lbl = Label.new()
-	stats_lbl.text = "❤️ HP: %d / %d   ⚡ Energy: %d / %d   👟 SPD: %d" % [
+	stats_lbl.text = "❤️ HP: %d / %d   ⚡ EN: %d / %d   👟 SPD: %d   ⚔️ ATK: %d   🛡️ DEF: %d" % [
 		pkmn.current_hp, pkmn.max_hp, pkmn.current_energy, pkmn.max_energy,
-		get_pokemon_effective_speed(pkmn, opponent)
+		get_pokemon_effective_speed(pkmn, opponent), eff_atk, eff_def
 	]
 	stats_lbl.add_theme_font_size_override("font_size", 11)
 	stats_lbl.add_theme_color_override("font_color", Color(0.85, 0.92, 1.0))
@@ -886,8 +888,9 @@ func show_pokemon_details(pkmn, is_enemy: bool = false) -> void:
 		
 		# Move Stats Line
 		var m_stats = Label.new()
-		var dmg_str = "%d DMG" % m.base_damage if m.effect_type != "MULTI_ATTACK" else "2-5 DMG / hit (25% Crit)"
-		m_stats.text = "💥 Base: %s  |  ⚡ Cost: %d⚡  |  ⚡ Req: %d⚡" % [dmg_str, m.cost, m.min_energy_req]
+		var dmg_str = "%d PWR" % m.base_damage if m.effect_type != "MULTI_ATTACK" else "Multi-Hit"
+		var acc_val = m.accuracy if ("accuracy" in m) else 100
+		m_stats.text = "💥 Power: %s  |  🎯 Acc: %d%%  |  ⚡ Cost: %d⚡  |  ⚡ Req: %d⚡" % [dmg_str, acc_val, m.cost, m.min_energy_req]
 		m_stats.add_theme_font_size_override("font_size", 10)
 		m_stats.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
 		m_vbox.add_child(m_stats)
@@ -1835,14 +1838,21 @@ func _get_snowball_bonus(move) -> int:
 		return 2
 	return 4
 
-func calculate_move_damage(move, energy_spent: int, eff_cost: int = -1) -> int:
+func calculate_move_damage(move, energy_spent: int, eff_cost: int = -1, attacker = null, defender = null) -> int:
 	if move.effect_type == "MULTI_ATTACK":
 		return 0
 	var c = eff_cost if eff_cost >= 0 else move.cost
-	if c <= 1 or energy_spent >= c:
-		return move.base_damage
-	var fraction = float(energy_spent) / float(c)
-	return int(round(move.base_damage * fraction))
+	var base_pow: float = float(move.base_damage)
+	if c > 1 and energy_spent < c:
+		var fraction = float(energy_spent) / float(c)
+		base_pow = base_pow * fraction
+	
+	if attacker != null and defender != null:
+		var atk_val: float = float(attacker.get_effective_attack() if attacker.has_method("get_effective_attack") else (attacker.get("attack", 10) if (attacker is Dictionary or "attack" in attacker) else 10))
+		var def_val: float = float(defender.get_effective_defense() if defender.has_method("get_effective_defense") else (defender.get("defense", 10) if (defender is Dictionary or "defense" in defender) else 10))
+		var ratio: float = atk_val / maxf(1.0, def_val)
+		return max(1, int(round(base_pow * ratio)))
+	return max(1, int(round(base_pow)))
 
 # --- CICLO DE RONDAS Y TURNOS BASADO EN SPEED ---
 func start_new_round() -> void:
@@ -2968,18 +2978,22 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		update_ui()
 		return
 
-	# 6. Movimientos con probabilidad de fallo (MISS / THUNDER)
-	if (move.effect_type in ["MISS", "THUNDER"] or move.name == "Thunder") and randf() < 0.33:
-		var refund_energy = move.cost
-		attacker.current_energy = min(attacker.max_energy, attacker.current_energy + refund_energy)
-		log_action("[b]%s[/b] used [color=cyan]%s[/color], but it [color=red]missed completely![/color] (Refunded %d Energy⚡)" % [attacker.name, move.name, refund_energy])
-		shake_node(defender_visual)
-		update_ui()
-		return
+	# 6. Chequeo de Precisión (Accuracy)
+	var move_acc = int(move.accuracy) if ("accuracy" in move) else 100
+	if move_acc < 100 and move.effect_type != "CANNOT_MISS":
+		var roll = randi_range(1, 100)
+		if roll > move_acc:
+			log_action("[b]%s[/b] used [color=cyan]%s[/color], but it [color=red]missed![/color] (🎯 ACC: %d%%)" % [attacker.name, move.name, move_acc])
+			shake_node(defender_visual)
+			update_ui()
+			return
 
 	# 7. Cálculo del daño base
 	var multi_hit_events: Array[Dictionary] = []
 	var single_hit_crit: bool = false
+	var att_atk_val: float = float(attacker.get_effective_attack() if attacker.has_method("get_effective_attack") else (attacker.get("attack", 10) if (attacker is Dictionary or "attack" in attacker) else 10))
+	var def_def_val: float = float(defender.get_effective_defense() if defender.has_method("get_effective_defense") else (defender.get("defense", 10) if (defender is Dictionary or "defense" in defender) else 10))
+	var ad_ratio: float = att_atk_val / maxf(1.0, def_def_val)
 	if move.effect_type == "MULTI_ATTACK":
 		var num_hits = max(1, energy_to_spend)
 		var hit_dmgs: Array[String] = []
@@ -2999,6 +3013,8 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				var crit_bonus = 3 if move.name in ["Bone Rush", "Icicle Spear"] else 2
 				base_roll += crit_bonus
 				crits_landed += 1
+			base_roll = max(1, int(round(float(base_roll) * ad_ratio)))
+			if is_crit:
 				hit_dmgs.append("%d!" % base_roll)
 			else:
 				hit_dmgs.append(str(base_roll))
@@ -3013,11 +3029,12 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		raw_damage = max(1, int(round(defender.current_hp * 0.5)))
 		note_text += " [color=yellow](Anti-Tank: 50%% foe's HP = %d DMG)[/color]" % raw_damage
 	else:
-		raw_damage = calculate_move_damage(move, energy_to_spend, eff_cost)
+		raw_damage = calculate_move_damage(move, energy_to_spend, eff_cost, attacker, defender)
 		if boosted:
-			raw_damage += move.boost_damage
-			if move.effect_type == "BOOST_DMG" and move.boost_damage == 0:
-				raw_damage += 4
+			var b_dmg: float = float(move.boost_damage)
+			if move.effect_type == "BOOST_DMG" and b_dmg == 0:
+				b_dmg = 4.0
+			raw_damage += max(1, int(round(b_dmg * ad_ratio)))
 		elif not is_full_energy and eff_cost > 1:
 			note_text += " [color=yellow](Partial Energy %d/%d⚡: scaled damage)[/color]" % [energy_to_spend, eff_cost]
 		
@@ -5295,13 +5312,20 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 		dmg = max(1, int(round(defender.current_hp * 0.5)))
 	elif move.effect_type == "MULTI_ATTACK":
 		var avg_hit = 5 if move.name == "Icicle Spear" else (4 if move.name in ["Bone Rush", "Fury Swipes"] else 3)
-		dmg = max(1, energy_spent) * avg_hit
+		var atk_val: float = float(attacker.get_effective_attack() if attacker.has_method("get_effective_attack") else (attacker.get("attack", 10) if (attacker is Dictionary or "attack" in attacker) else 10))
+		var def_val: float = float(defender.get_effective_defense() if defender.has_method("get_effective_defense") else (defender.get("defense", 10) if (defender is Dictionary or "defense" in defender) else 10))
+		var ratio: float = atk_val / maxf(1.0, def_val)
+		dmg = max(1, int(round(float(energy_spent * avg_hit) * ratio)))
 	else:
-		dmg = calculate_move_damage(move, energy_spent, eff_cost)
+		dmg = calculate_move_damage(move, energy_spent, eff_cost, attacker, defender)
 		if boosted:
-			dmg += move.boost_damage
-			if move.effect_type == "BOOST_DMG" and move.boost_damage == 0:
-				dmg += 4
+			var b_dmg: float = float(move.boost_damage)
+			if move.effect_type == "BOOST_DMG" and b_dmg == 0:
+				b_dmg = 4.0
+			var atk_val: float = float(attacker.get_effective_attack() if attacker.has_method("get_effective_attack") else (attacker.get("attack", 10) if (attacker is Dictionary or "attack" in attacker) else 10))
+			var def_val: float = float(defender.get_effective_defense() if defender.has_method("get_effective_defense") else (defender.get("defense", 10) if (defender is Dictionary or "defense" in defender) else 10))
+			var ratio: float = atk_val / maxf(1.0, def_val)
+			dmg += max(1, int(round(b_dmg * ratio)))
 		if move.effect_type == "MINIMIZE" and energy_spent < eff_cost:
 			dmg = max(1, dmg - ((eff_cost - energy_spent) * 6))
 
