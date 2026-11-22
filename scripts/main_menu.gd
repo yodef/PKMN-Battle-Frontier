@@ -5722,7 +5722,7 @@ func open_team_select_for_campaign() -> void:
 		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Pokémon for Primal Call (Legendaries allowed).", "Elige 1 a 3 Pokémon para El Llamado Primigenio (Legendarios permitidos).")
 	elif GameData.campaign_submode == "CHAOS":
 		team_select_title.text = "🌌 CHAOS ODYSSEY TEAM"
-		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Legendary or Dragon Pokémon.", "Elige 1 a 3 Pokémon Legendarios o Dragones.")
+		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Legendary or Stage 2 Dragon Pokémon (Preevolutions required).", "Elige 1 a 3 Pokémon Legendarios o Dragones Fase 2 (requiere anteevoluciones).")
 	elif GameData.campaign_submode == "CHAMPIONSHIP":
 		team_select_title.text = "🏆 " + GameData.tr_text("CHAMPIONSHIP LEAGUE TEAM", "EQUIPO LIGA DE CAMPEONATO")
 		team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 fully evolved Pokémon (Legendaries banned).", "Elige 1 a 3 Pokémon en su fase final (sin Legendarios).")
@@ -5751,7 +5751,7 @@ func open_team_select_for_campaign() -> void:
 				var ev_from = str(cat_entry.get("evolves_from", "")).strip_edges()
 				var is_legendary = ((r in ["legendary", "legendaria", "legendario", "ur", "ultra rare", "boss", "special"]) or (st in ["legendary", "boss", "special"])) and ev_from == ""
 				if GameData.campaign_submode == "CHAOS":
-					if (is_legendary and ev_from == "") or GameData.is_line_legendary(pid):
+					if GameData.is_valid_chaos_pokemon(pid):
 						selected_player_ids.append(pid)
 						if selected_player_ids.size() - 1 < 3:
 							selected_player_held_items[selected_player_ids.size() - 1] = str(p.get("held_item", ""))
@@ -6425,7 +6425,7 @@ func update_campaign_ui() -> void:
 		card_hbox.add_child(card_btns_vbox)
 		
 		# 3.0 Evolve Button (Interactive Camp Evolution with Stones)
-		if req_exp > 0 and not evo_opts.is_empty() and cur_exp >= req_exp and int(p.get("current_hp", 0)) > 0:
+		if GameData.campaign_submode != "CHAOS" and req_exp > 0 and not evo_opts.is_empty() and cur_exp >= req_exp and int(p.get("current_hp", 0)) > 0:
 			var btn_evo = Button.new()
 			btn_evo.custom_minimum_size = Vector2(104, 24)
 			btn_evo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -8513,6 +8513,10 @@ func _open_camp_evolution_selector(team_idx: int) -> void:
 	vbox.add_child(btn_back)
 
 func _check_and_run_camp_evolutions() -> void:
+	if GameData.campaign_submode == "CHAOS":
+		_camp_evo_queue.clear()
+		update_campaign_ui()
+		return
 	if _is_camp_evo_active:
 		return
 	if not _camp_evo_queue.is_empty():
@@ -8639,14 +8643,7 @@ func is_campaign_team_valid_for_battle(submode: String) -> bool:
 			return false
 		for p in GameData.chaos_player_team_state:
 			var pid = int(p.get("id", -1))
-			if not GameData.pokemon_catalog.has(pid) or pid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
-				return false
-			var cat_entry = GameData.pokemon_catalog[pid]
-			var r = str(cat_entry.get("rarity", "Common")).strip_edges().to_lower()
-			var st = str(cat_entry.get("stage", "Basic")).strip_edges().to_lower()
-			var ev_from = str(cat_entry.get("evolves_from", "")).strip_edges()
-			var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
-			if not ((is_leg and ev_from == "") or GameData.is_line_legendary(pid)):
+			if not GameData.is_valid_chaos_pokemon(pid):
 				return false
 		return true
 	elif submode == "CHAMPIONSHIP":
@@ -8965,15 +8962,7 @@ func build_team_select_cards_grid() -> void:
 		if GameData.campaign_submode == "CHAOS":
 			for c in cards_data:
 				var cid = int(c.get("id", -1))
-				if cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
-					continue
-				if not GameData.is_pokemon_unlocked(cid):
-					continue
-				var st = str(c.get("stage", "Basic")).strip_edges().to_lower()
-				var r = str(c.get("rarity", "Common")).strip_edges().to_lower()
-				var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
-				var ev_from = str(c.get("evolves_from", "")).strip_edges()
-				if (is_legendary and ev_from == "") or GameData.is_line_legendary(cid):
+				if GameData.is_valid_chaos_pokemon(cid):
 					allowed_pool.append(c)
 		elif GameData.campaign_submode == "CHAMPIONSHIP":
 			for c in cards_data:
@@ -9297,7 +9286,7 @@ func toggle_pokemon_selection(pkmn_id: int) -> void:
 			var is_legendary = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
 			var ev_from = str(cat_entry.get("evolves_from", "")).strip_edges()
 			if GameData.campaign_submode == "CHAOS":
-				if not ((is_legendary and ev_from == "") or GameData.is_line_legendary(pkmn_id)):
+				if not GameData.is_valid_chaos_pokemon(pkmn_id):
 					return
 			elif GameData.campaign_submode == "CHAMPIONSHIP":
 				var ev_to = str(cat_entry.get("evolves_to", "")).strip_edges()
@@ -9381,7 +9370,7 @@ func update_team_select_ui() -> void:
 			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Episode %s (Legendaries banned).\n⏫ icons show evolutions ready in your collection!" % ep_roman
 		elif GameData.campaign_submode == "CHAOS":
 			team_select_title.text = "🌌 CHAOS ODYSSEY TEAM"
-			team_select_subtitle.text = "Choose 1 to 3 Legendary or Pseudo-Legendary Basic Pokémon for the Chaos Gauntlet!\nTest your strength against extreme rivals and the Crystal Onix Boss!"
+			team_select_subtitle.text = GameData.tr_text("Choose 1 to 3 Legendary or Stage 2 Dragon Pokémon for the Chaos Gauntlet!\n(Requires owning all preevolutions for dragons).", "¡Elige 1 a 3 Pokémon Legendarios o Dragones Fase 2 para el Desafío Caos!\n(Requiere tener todas las anteevoluciones de los dragones).")
 		else:
 			team_select_title.text = "🏟️ POKÉMON STADIUM TEAM"
 			team_select_subtitle.text = "Choose 1 to 3 BASIC Pokémon for Pokémon Stadium (Legendaries banned).\n⏫ icons show evolutions ready in your collection!"
@@ -9661,16 +9650,7 @@ func _on_start_battle_pressed() -> void:
 		elif GameData.campaign_submode == "CHAOS":
 			for pid in selected_player_ids:
 				var cid = int(pid)
-				if not GameData.is_pokemon_unlocked(cid) or cid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
-					return
-				var cat = GameData.pokemon_catalog.get(cid)
-				if not cat:
-					return
-				var r = str(cat.get("rarity", "Common")).strip_edges().to_lower()
-				var st = str(cat.get("stage", "Basic")).strip_edges().to_lower()
-				var ev_from = str(cat.get("evolves_from", "")).strip_edges()
-				var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
-				if not ((is_leg and ev_from == "") or GameData.is_line_legendary(cid)):
+				if not GameData.is_valid_chaos_pokemon(cid):
 					return
 			GameData.player_team_held_items = selected_player_held_items.duplicate()
 			GameData.change_chaos_team(selected_player_ids, selected_player_held_items)

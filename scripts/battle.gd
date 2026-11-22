@@ -1505,14 +1505,7 @@ func start_new_game() -> void:
 				elif GameData.campaign_submode == "CHAOS":
 					var fallback_chaos_id = -1
 					for uid in GameData.player_unlocked_ids:
-						if uid in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID]:
-							continue
-						var cd = GameData.pokemon_catalog.get(uid, {})
-						var cr = str(cd.get("rarity", "Common")).strip_edges().to_lower()
-						var cst = str(cd.get("stage", "Basic")).strip_edges().to_lower()
-						var cev = str(cd.get("evolves_from", "")).strip_edges()
-						var is_leg = (cr in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (cst == "legendary")
-						if (is_leg and cev == "") or GameData.is_line_legendary(uid):
+						if GameData.is_valid_chaos_pokemon(uid):
 							fallback_chaos_id = uid
 							break
 					if fallback_chaos_id == -1:

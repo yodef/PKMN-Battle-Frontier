@@ -8815,6 +8815,50 @@ func get_campaign_rival_team(match_num: int) -> Array[int]:
 
 # --- MÉTODOS DE CHAOS ODYSSEY ---
 
+func has_all_preevolutions_unlocked(pkmn_id: int) -> bool:
+	if not pokemon_catalog.has(pkmn_id):
+		return false
+	var cur_id = pkmn_id
+	var visited: Array[int] = [cur_id]
+	while true:
+		var d = pokemon_catalog.get(cur_id, {})
+		var ev_from = str(d.get("evolves_from", "")).strip_edges().to_lower()
+		if ev_from == "":
+			break
+		var pre_id = -1
+		for check_id in all_pokemon_ids:
+			var td = pokemon_catalog.get(check_id, {})
+			if str(td.get("name", "")).strip_edges().to_lower() == ev_from:
+				pre_id = check_id
+				break
+		if pre_id == -1 or pre_id in visited:
+			break
+		if not is_pokemon_unlocked(pre_id):
+			return false
+		visited.append(pre_id)
+		cur_id = pre_id
+	return true
+
+func is_valid_chaos_pokemon(pkmn_id: int) -> bool:
+	if not pokemon_catalog.has(pkmn_id):
+		return false
+	if pkmn_id in ALL_BOSS_IDS or pkmn_id in [CRYSTAL_ONIX_ID, RED_GYARADOS_BOSS_ID]:
+		return false
+	if not is_pokemon_unlocked(pkmn_id):
+		return false
+	var cat = pokemon_catalog[pkmn_id]
+	var r = str(cat.get("rarity", "Common")).strip_edges().to_lower()
+	var st = str(cat.get("stage", "Basic")).strip_edges().to_lower()
+	var ev_from = str(cat.get("evolves_from", "")).strip_edges()
+	var is_legendary = ((r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")) and ev_from == ""
+	var is_stage2_dragon = (st in ["stage 2", "stage2", "fase 2"]) and is_pokemon_dragon(cat)
+	
+	if is_legendary:
+		return true
+	elif is_stage2_dragon:
+		return has_all_preevolutions_unlocked(pkmn_id)
+	return false
+
 func is_line_legendary(pkmn_id: int) -> bool:
 	if not pokemon_catalog.has(pkmn_id):
 		return false
@@ -8854,12 +8898,10 @@ func get_chaos_legendary_candidates() -> Array[int]:
 	return candidates
 
 func get_chaos_player_draft_candidates() -> Array[int]:
-	var candidates: Array[int] = get_chaos_legendary_candidates()
+	var candidates: Array[int] = []
 	for id in all_pokemon_ids:
-		if is_line_legendary(id):
-			var d = pokemon_catalog.get(id, {})
-			if str(d.get("stage", "")).strip_edges().to_lower() == "basic" and not (id in candidates):
-				candidates.append(id)
+		if is_valid_chaos_pokemon(id):
+			candidates.append(id)
 	return candidates
 
 func can_play_chaos_odyssey_today() -> bool:
@@ -8897,19 +8939,10 @@ func change_chaos_team(chosen_ids: Array, held_items: Array = []) -> void:
 		old_held[p["id"]] = str(p.get("held_item", ""))
 	chaos_player_team_state.clear()
 	for cid in chosen_ids:
-		if not is_pokemon_unlocked(cid):
+		if not is_valid_chaos_pokemon(cid):
 			continue
-		if cid in ALL_BOSS_IDS:
-			continue
-		var d = pokemon_catalog.get(cid, {})
-		var r = str(d.get("rarity", "Common")).strip_edges().to_lower()
-		var st = str(d.get("stage", "Basic")).strip_edges().to_lower()
-		var ev_from = str(d.get("evolves_from", "")).strip_edges()
-		var is_leg = (r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")
-		var is_dragon_line = is_line_legendary(cid)
-		if (is_leg and ev_from == "") or is_dragon_line:
-			var inst = create_pokemon_instance(cid)
-			if inst:
+		var inst = create_pokemon_instance(cid)
+		if inst:
 				var hp = old_hp.get(cid, inst.max_hp)
 				var exp_val = old_exp.get(cid, 0)
 				var burn_val = old_burn.get(cid, 0)
@@ -9072,6 +9105,10 @@ func is_pokemon_dragon(pkmn) -> bool:
 	if pkmn is Dictionary:
 		p_type = str(pkmn.get("type", "")).to_upper()
 		p_name = str(pkmn.get("name", ""))
+	elif pkmn is int or pkmn is float:
+		var d = pokemon_catalog.get(int(pkmn), {})
+		p_type = str(d.get("type", "")).to_upper()
+		p_name = str(d.get("name", ""))
 	elif "type" in pkmn:
 		p_type = str(pkmn.type).to_upper()
 		p_name = str(pkmn.name) if "name" in pkmn else ""
