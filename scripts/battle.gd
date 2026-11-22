@@ -809,8 +809,8 @@ func show_pokemon_details(pkmn, is_enemy: bool = false) -> void:
 	name_row.add_child(stage_lbl)
 	
 	# HP & Energy & Attack & Defense & Speed
-	var eff_atk = pkmn.get_effective_attack() if pkmn.has_method("get_effective_attack") else (pkmn.get("attack", 10) if "attack" in pkmn else 10)
-	var eff_def = pkmn.get_effective_defense() if pkmn.has_method("get_effective_defense") else (pkmn.get("defense", 10) if "defense" in pkmn else 10)
+	var eff_atk = pkmn.get_effective_attack() if (pkmn is Object and pkmn.has_method("get_effective_attack")) else (pkmn.get("attack", 10) if (pkmn is Dictionary and "attack" in pkmn) else 10)
+	var eff_def = pkmn.get_effective_defense() if (pkmn is Object and pkmn.has_method("get_effective_defense")) else (pkmn.get("defense", 10) if (pkmn is Dictionary and "defense" in pkmn) else 10)
 	var stats_lbl = Label.new()
 	stats_lbl.text = "❤️ HP: %d / %d   ⚡ EN: %d / %d   👟 SPD: %d   ⚔️ ATK: %d   🛡️ DEF: %d" % [
 		pkmn.current_hp, pkmn.max_hp, pkmn.current_energy, pkmn.max_energy,
@@ -1841,15 +1841,18 @@ func _get_snowball_bonus(move) -> int:
 func calculate_move_damage(move, energy_spent: int, eff_cost: int = -1, attacker = null, defender = null) -> int:
 	if move.effect_type == "MULTI_ATTACK":
 		return 0
-	var c = eff_cost if eff_cost >= 0 else move.cost
-	var base_pow: float = float(move.base_damage)
+	var base_dmg_val: int = move.base_damage if ("base_damage" in move) else int(move.get("power", move.get("dmg", 0)))
+	if base_dmg_val <= 0:
+		return 0
+	var c = eff_cost if eff_cost >= 0 else (move.cost if ("cost" in move) else 0)
+	var base_pow: float = float(base_dmg_val)
 	if c > 1 and energy_spent < c:
 		var fraction = float(energy_spent) / float(c)
 		base_pow = base_pow * fraction
 	
 	if attacker != null and defender != null:
-		var atk_val: float = float(attacker.get_effective_attack() if attacker.has_method("get_effective_attack") else (attacker.get("attack", 10) if (attacker is Dictionary or "attack" in attacker) else 10))
-		var def_val: float = float(defender.get_effective_defense() if defender.has_method("get_effective_defense") else (defender.get("defense", 10) if (defender is Dictionary or "defense" in defender) else 10))
+		var atk_val: float = float(attacker.get_effective_attack() if (attacker is Object and attacker.has_method("get_effective_attack")) else (attacker.get("attack", 10) if (attacker is Dictionary and "attack" in attacker) else 10))
+		var def_val: float = float(defender.get_effective_defense() if (defender is Object and defender.has_method("get_effective_defense")) else (defender.get("defense", 10) if (defender is Dictionary and "defense" in defender) else 10))
 		var ratio: float = atk_val / maxf(1.0, def_val)
 		return max(1, int(round(base_pow * ratio)))
 	return max(1, int(round(base_pow)))
@@ -2991,8 +2994,8 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	# 7. Cálculo del daño base
 	var multi_hit_events: Array[Dictionary] = []
 	var single_hit_crit: bool = false
-	var att_atk_val: float = float(attacker.get_effective_attack() if attacker.has_method("get_effective_attack") else (attacker.get("attack", 10) if (attacker is Dictionary or "attack" in attacker) else 10))
-	var def_def_val: float = float(defender.get_effective_defense() if defender.has_method("get_effective_defense") else (defender.get("defense", 10) if (defender is Dictionary or "defense" in defender) else 10))
+	var att_atk_val: float = float(attacker.get_effective_attack() if (attacker is Object and attacker.has_method("get_effective_attack")) else (attacker.get("attack", 10) if (attacker is Dictionary and "attack" in attacker) else 10))
+	var def_def_val: float = float(defender.get_effective_defense() if (defender is Object and defender.has_method("get_effective_defense")) else (defender.get("defense", 10) if (defender is Dictionary and "defense" in defender) else 10))
 	var ad_ratio: float = att_atk_val / maxf(1.0, def_def_val)
 	if move.effect_type == "MULTI_ATTACK":
 		var num_hits = max(1, energy_to_spend)
@@ -3026,8 +3029,10 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		var crit_tag = " [color=orange](%d Critical Hit%s!)[/color]" % [crits_landed, "s" if crits_landed > 1 else ""] if crits_landed > 0 else ""
 		note_text += " [color=yellow](%d hits: %s = %d DMG)%s[/color]" % [num_hits, rolls_text, raw_damage, crit_tag]
 	elif move.effect_type == "ANTI_TANK":
-		raw_damage = max(1, int(round(defender.current_hp * 0.5)))
-		note_text += " [color=yellow](Anti-Tank: 50%% foe's HP = %d DMG)[/color]" % raw_damage
+		var is_boss_target = (defender.id in GameData.ALL_BOSS_IDS or defender.id in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID] or defender.max_hp >= 100)
+		var at_val = int(round(defender.current_hp * 0.5))
+		raw_damage = max(1, min(25, at_val) if is_boss_target else at_val)
+		note_text += " [color=yellow](Anti-Tank: 50%% foe's HP = %d DMG%s)[/color]" % [raw_damage, " (Boss Capped)" if is_boss_target and at_val > 25 else ""]
 	else:
 		raw_damage = calculate_move_damage(move, energy_to_spend, eff_cost, attacker, defender)
 		if boosted:
@@ -3847,6 +3852,15 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			attacker.weakness = defender.weakness
 			attacker.resistant = defender.resistant
 			attacker.moves = defender.moves.duplicate(true)
+			var has_damaging_move = false
+			for m in attacker.moves:
+				if m.get("power", m.get("base_damage", 0)) > 0:
+					has_damaging_move = true
+					break
+			if not has_damaging_move:
+				var fallback_move = GameData.get_move_data("Tackle")
+				if fallback_move != null and not fallback_move.is_empty():
+					attacker.moves.append(fallback_move)
 			attacker.damage_buff = -2
 			attacker.damage_buff_turns = 99
 			note_text += " [color=pink]Transformed into %s (-2 DMG penalty)![/color]" % defender.name
@@ -5309,11 +5323,13 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 	var def_spd = get_pokemon_effective_speed(defender, attacker)
 
 	if move.effect_type == "ANTI_TANK":
-		dmg = max(1, int(round(defender.current_hp * 0.5)))
+		var is_boss_target = (defender.id in GameData.ALL_BOSS_IDS or defender.id in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID] or defender.max_hp >= 100)
+		var at_val = int(round(defender.current_hp * 0.5))
+		dmg = max(1, min(25, at_val) if is_boss_target else at_val)
 	elif move.effect_type == "MULTI_ATTACK":
 		var avg_hit = 5 if move.name == "Icicle Spear" else (4 if move.name in ["Bone Rush", "Fury Swipes"] else 3)
-		var atk_val: float = float(attacker.get_effective_attack() if attacker.has_method("get_effective_attack") else (attacker.get("attack", 10) if (attacker is Dictionary or "attack" in attacker) else 10))
-		var def_val: float = float(defender.get_effective_defense() if defender.has_method("get_effective_defense") else (defender.get("defense", 10) if (defender is Dictionary or "defense" in defender) else 10))
+		var atk_val: float = float(attacker.get_effective_attack() if (attacker is Object and attacker.has_method("get_effective_attack")) else (attacker.get("attack", 10) if (attacker is Dictionary and "attack" in attacker) else 10))
+		var def_val: float = float(defender.get_effective_defense() if (defender is Object and defender.has_method("get_effective_defense")) else (defender.get("defense", 10) if (defender is Dictionary and "defense" in defender) else 10))
 		var ratio: float = atk_val / maxf(1.0, def_val)
 		dmg = max(1, int(round(float(energy_spent * avg_hit) * ratio)))
 	else:
@@ -5322,8 +5338,8 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 			var b_dmg: float = float(move.boost_damage)
 			if move.effect_type == "BOOST_DMG" and b_dmg == 0:
 				b_dmg = 4.0
-			var atk_val: float = float(attacker.get_effective_attack() if attacker.has_method("get_effective_attack") else (attacker.get("attack", 10) if (attacker is Dictionary or "attack" in attacker) else 10))
-			var def_val: float = float(defender.get_effective_defense() if defender.has_method("get_effective_defense") else (defender.get("defense", 10) if (defender is Dictionary or "defense" in defender) else 10))
+			var atk_val: float = float(attacker.get_effective_attack() if (attacker is Object and attacker.has_method("get_effective_attack")) else (attacker.get("attack", 10) if (attacker is Dictionary and "attack" in attacker) else 10))
+			var def_val: float = float(defender.get_effective_defense() if (defender is Object and defender.has_method("get_effective_defense")) else (defender.get("defense", 10) if (defender is Dictionary and "defense" in defender) else 10))
 			var ratio: float = atk_val / maxf(1.0, def_val)
 			dmg += max(1, int(round(b_dmg * ratio)))
 		if move.effect_type == "MINIMIZE" and energy_spent < eff_cost:

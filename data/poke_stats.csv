@@ -146,7 +146,7 @@ id,pokedex_num,Stage,name,hp,attack,defense,energy,speed,type,weakness,resistant
 144,129,Basic,Magikarp,9,7,9,3,1,WATER,,,1,129.png,,,Tackle,Flail,FALSE,Common,,Gyarados,Scale,20,D,Kanto
 145,130,Stage 1,Gyarados,23,23,20,8,5,WATER,,,5,130.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Aqua Tail,Hyper Beam,FALSE,Epic,Magikarp,,,0,S+,Kanto
 146,131,Basic,Lapras,16,11,12,6,4,WATER,,,4,131.png,,,Mist,Ice Beam,FALSE,Epic,,,,0,A,Kanto
-147,132,Basic,Ditto,11,9,9,5,5,NORMAL,,,3,132.png,Slimy,This PKMN receives half of the DMG it receives.,Transform,,FALSE,Epic,,,,0,D,Kanto
+147,132,Basic,Ditto,11,9,9,5,5,NORMAL,,,3,132.png,Slimy,This PKMN receives half of the DMG it receives.,Transform,Tackle,FALSE,Epic,,,,0,D,Kanto
 148,133,Basic,Eevee,11,9,10,5,5,NORMAL,,,3,133.png,,,Quick Attack,Double Edge,FALSE,Rare,,"Vaporeon, Jolteon, Flareon, Espeon, Umbreon, Leafeon, Glaceon","Water, Thunder, Fire, Psyche, Night, Leaf, Water",20,B,Kanto
 149,134,Stage 1,Vaporeon,25,21,19,8,7,WATER,,,5,134.png,,,Water Gun,Muddy Water,FALSE,Epic,Eevee,,,0,B,Kanto
 150,135,Stage 1,Jolteon,21,21,19,8,7,ELECTRIC,,,5,135.png,,,Thunder Shock,Thunder Fang,FALSE,Epic,Eevee,,,0,A,Kanto
@@ -364,7 +364,7 @@ id,pokedex_num,Stage,name,hp,attack,defense,energy,speed,type,weakness,resistant
 362,357,Basic,Tropius,14,10,12,5,4,GRASS,FIRE,GROUND,4,357.png,,,Razor Leaf,Air Slash,FALSE,Epic,,,,0,A,Hoenn
 363,358,Stage 1,Chimecho,21,20,19,5,5,PSYCHIC,DARK,FIGHTING,3,358.png,Levitate,Immune to Ground moves and sandstorm.,Astonish,Psybeam,FALSE,Rare,Chingling,,,0,C,Hoenn
 364,359,Basic,Absol,12,14,10,5,7,DARK,FIGHTING,PSYCHIC,3,359.png,Super Luck,Increases Critical Hit chance by 25%.,Slash,Night Slash,FALSE,Epic,,,,0,A,Hoenn
-365,360,Basic,Wynaut,14,7,9,3,2,PSYCHIC,DARK,FIGHTING,1,360.png,,,Amnesia,Destiny Bond,FALSE,Common,,Wobbuffet,Psyche,20,D,Hoenn
+365,360,Basic,Wynaut,14,7,9,3,2,PSYCHIC,DARK,FIGHTING,1,360.png,,,Counter-Cut,Destiny Bond,FALSE,Common,,Wobbuffet,Psyche,20,D,Hoenn
 366,361,Basic,Snorunt,11,9,9,3,4,WATER,FIRE,WATER,2,361.png,,,Powder Snow,Bite,FALSE,Common,,"Glalie, Froslass","Water, Night",20,D,Hoenn
 367,362,Stage 1,Glalie,22,19,19,6,7,WATER,FIRE,WATER,3,362.png,,,Ice Fang,Blizzard,FALSE,Rare,Snorunt,,,0,B,Hoenn
 368,363,Basic,Spheal,12,9,9,3,2,WATER,ELECTRIC,FIRE,2,363.png,,,Powder Snow,Water Gun,FALSE,Common,,Sealeo,Water,10,D,Hoenn
