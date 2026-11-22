@@ -673,6 +673,7 @@ func _ready() -> void:
 	btn_team_sort_evo.pressed.connect(func(): _on_team_sort_pressed("EVO"))
 	update_team_sort_buttons_ui()
 	_setup_team_select_filters()
+	_setup_camp_pokemon_inspector_modal()
 	
 	# Modal Campaign Hub
 	btn_hub_tutorial.pressed.connect(_on_hub_tutorial_pressed)
@@ -7865,12 +7866,16 @@ func _setup_camp_pokemon_inspector_modal() -> void:
 	camp_pokemon_inspector_modal.name = "CampPokemonInspectorModal"
 	camp_pokemon_inspector_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
 	camp_pokemon_inspector_modal.visible = false
-	camp_pokemon_inspector_modal.z_index = 50
+	camp_pokemon_inspector_modal.z_index = 65
 	add_child(camp_pokemon_inspector_modal)
 	
 	var insp_bg = ColorRect.new()
 	insp_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	insp_bg.color = Color(0, 0, 0, 0.80)
+	insp_bg.color = Color(0, 0, 0, 0.85)
+	insp_bg.gui_input.connect(func(ev: InputEvent):
+		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+			camp_pokemon_inspector_modal.visible = false
+	)
 	camp_pokemon_inspector_modal.add_child(insp_bg)
 	
 	var insp_center = CenterContainer.new()
@@ -7878,7 +7883,7 @@ func _setup_camp_pokemon_inspector_modal() -> void:
 	camp_pokemon_inspector_modal.add_child(insp_center)
 	
 	var insp_panel = PanelContainer.new()
-	var insp_w: float = minf(460.0, get_viewport_rect().size.x - 24.0)
+	var insp_w: float = minf(480.0, get_viewport_rect().size.x - 24.0)
 	insp_panel.custom_minimum_size = Vector2(insp_w, 0)
 	var insp_sb = StyleBoxFlat.new()
 	insp_sb.bg_color = Color(0.08, 0.11, 0.17, 0.98)
@@ -7893,7 +7898,8 @@ func _setup_camp_pokemon_inspector_modal() -> void:
 	insp_center.add_child(insp_panel)
 	
 	var insp_scroll = ScrollContainer.new()
-	insp_scroll.custom_minimum_size = Vector2(0, 480)
+	var v_height: float = get_viewport_rect().size.y
+	insp_scroll.custom_minimum_size = Vector2(0, clampf(v_height - 90.0, 440.0, 560.0))
 	insp_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	insp_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	insp_panel.add_child(insp_scroll)
@@ -7904,7 +7910,35 @@ func _setup_camp_pokemon_inspector_modal() -> void:
 	insp_vbox.add_theme_constant_override("separation", 10)
 	insp_scroll.add_child(insp_vbox)
 
+func _create_stat_pill(parent: Control, label_text: String, val_text: String, text_col: Color, bg_tint: Color) -> void:
+	var pill = PanelContainer.new()
+	pill.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = bg_tint.darkened(0.55)
+	sb.border_color = text_col.darkened(0.35)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(4)
+	sb.content_margin_left = 6
+	sb.content_margin_right = 6
+	sb.content_margin_top = 3
+	sb.content_margin_bottom = 3
+	pill.add_theme_stylebox_override("panel", sb)
+	
+	var lbl = Label.new()
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.text = "%s: %s" % [label_text, val_text]
+	lbl.add_theme_font_size_override("font_size", 10)
+	lbl.add_theme_color_override("font_color", text_col)
+	pill.add_child(lbl)
+	parent.add_child(pill)
+
 func _open_camp_pokemon_inspector(p: Dictionary) -> void:
+	open_pokemon_inspector(p, true)
+
+func open_pokemon_inspector(p: Dictionary, from_camp: bool = false) -> void:
+	if not camp_pokemon_inspector_modal:
+		_setup_camp_pokemon_inspector_modal()
 	if not camp_pokemon_inspector_modal:
 		return
 	camp_pokemon_inspector_modal.visible = true
@@ -7920,29 +7954,81 @@ func _open_camp_pokemon_inspector(p: Dictionary) -> void:
 	if not full_inst:
 		return
 		
-	# Header: Name, Stage, Close button
+	var p_name = str(p.get("name", full_inst.name))
+	var p_stage = str(p.get("stage", full_inst.stage))
+	var p_type = str(p.get("type", full_inst.type)).to_upper()
+	var p_tier = str(p.get("tier", full_inst.tier if full_inst else "C")).strip_edges().to_upper()
+	if p_tier == "": p_tier = "C"
+	var p_num = str(p.get("pokedex_num", "1")).pad_zeros(3)
+	
+	var max_hp = int(p.get("max_hp", p.get("hp", full_inst.max_hp)))
+	var cur_hp = int(p.get("current_hp", max_hp))
+	var atk_val = int(p.get("attack", full_inst.attack))
+	var def_val = int(p.get("defense", full_inst.defense))
+	var spd_val = int(p.get("speed", full_inst.speed))
+	var nrg_val = int(p.get("max_energy", full_inst.max_energy))
+	
+	# --- 1. CABECERA: TIPO + NOMBRE + Nº POKÉDEX + FASE + TIER + BOTÓN CERRAR ---
 	var head_row = HBoxContainer.new()
 	head_row.add_theme_constant_override("separation", 8)
 	
 	var type_ico = TextureRect.new()
-	type_ico.custom_minimum_size = Vector2(22, 22)
+	type_ico.custom_minimum_size = Vector2(24, 24)
 	type_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	type_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	type_ico.texture = GameData.get_type_icon_texture(p["type"])
+	type_ico.texture = GameData.get_type_icon_texture(p_type)
 	head_row.add_child(type_ico)
 	
-	var p_tier = str(p.get("tier", full_inst.tier if full_inst else "C")).strip_edges().to_upper()
-	if p_tier == "": p_tier = "C"
 	var title_lbl = Label.new()
-	title_lbl.text = "%s • %s • [Tier %s]" % [p["name"], p["stage"], p_tier]
+	title_lbl.text = "#%s %s" % [p_num, p_name]
 	title_lbl.add_theme_font_size_override("font_size", 16)
-	title_lbl.add_theme_color_override("font_color", Color("#FFD700"))
+	title_lbl.add_theme_color_override("font_color", Color("#FFF176"))
 	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head_row.add_child(title_lbl)
+	
+	var stage_badge = PanelContainer.new()
+	var stage_sb = StyleBoxFlat.new()
+	stage_sb.bg_color = Color(0.12, 0.18, 0.28, 0.9)
+	stage_sb.border_color = Color(0.35, 0.55, 0.75, 0.8)
+	stage_sb.set_border_width_all(1)
+	stage_sb.set_corner_radius_all(4)
+	stage_sb.content_margin_left = 6
+	stage_sb.content_margin_right = 6
+	stage_sb.content_margin_top = 2
+	stage_sb.content_margin_bottom = 2
+	stage_badge.add_theme_stylebox_override("panel", stage_sb)
+	var stage_lbl = Label.new()
+	stage_lbl.text = p_stage.to_upper()
+	stage_lbl.add_theme_font_size_override("font_size", 10)
+	stage_lbl.add_theme_color_override("font_color", Color("#81D4FA"))
+	stage_badge.add_child(stage_lbl)
+	head_row.add_child(stage_badge)
+	
+	var tier_badge = PanelContainer.new()
+	var tier_color = AssembledCardScript.get_tier_color(p_tier)
+	var tier_sb = StyleBoxFlat.new()
+	tier_sb.bg_color = Color(0.06, 0.08, 0.12, 0.95)
+	tier_sb.border_color = tier_color
+	tier_sb.set_border_width_all(1)
+	tier_sb.set_corner_radius_all(4)
+	tier_sb.content_margin_left = 6
+	tier_sb.content_margin_right = 6
+	tier_sb.content_margin_top = 2
+	tier_sb.content_margin_bottom = 2
+	tier_badge.add_theme_stylebox_override("panel", tier_sb)
+	var tier_lbl = Label.new()
+	tier_lbl.text = "TIER %s" % p_tier
+	tier_lbl.add_theme_font_size_override("font_size", 10)
+	tier_lbl.add_theme_color_override("font_color", tier_color)
+	tier_badge.add_child(tier_lbl)
+	head_row.add_child(tier_badge)
 	
 	var btn_close = Button.new()
 	btn_close.text = "✕"
 	btn_close.custom_minimum_size = Vector2(30, 30)
+	btn_close.focus_mode = Control.FOCUS_NONE
+	btn_close.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_apply_compact_order_button_style(btn_close, Color(0.35, 0.15, 0.18), Color(0.85, 0.35, 0.40), false)
 	btn_close.pressed.connect(func(): camp_pokemon_inspector_modal.visible = false)
 	head_row.add_child(btn_close)
 	vbox.add_child(head_row)
@@ -7950,111 +8036,152 @@ func _open_camp_pokemon_inspector(p: Dictionary) -> void:
 	var sep1 = HSeparator.new()
 	vbox.add_child(sep1)
 	
-	# Main Stats Row: Sprite + Stats
+	# --- 2. RESUMEN PRINCIPAL: SPRITE + MATRIZ DE ESTADÍSTICAS + DEFENSA ---
+	var main_panel = PanelContainer.new()
+	var mp_sb = StyleBoxFlat.new()
+	mp_sb.bg_color = Color(0.06, 0.08, 0.13, 0.95)
+	mp_sb.border_color = Color(0.20, 0.35, 0.50, 0.6)
+	mp_sb.set_border_width_all(1)
+	mp_sb.set_corner_radius_all(8)
+	mp_sb.content_margin_left = 10
+	mp_sb.content_margin_right = 10
+	mp_sb.content_margin_top = 8
+	mp_sb.content_margin_bottom = 8
+	main_panel.add_theme_stylebox_override("panel", mp_sb)
+	vbox.add_child(main_panel)
+	
 	var main_row = HBoxContainer.new()
-	main_row.add_theme_constant_override("separation", 12)
+	main_row.add_theme_constant_override("separation", 14)
+	main_panel.add_child(main_row)
+	
+	var art_frame = PanelContainer.new()
+	art_frame.custom_minimum_size = Vector2(88, 110)
+	var af_sb = StyleBoxFlat.new()
+	af_sb.bg_color = Color(0.03, 0.05, 0.08, 0.9)
+	af_sb.border_color = Color(0.30, 0.45, 0.65, 0.7)
+	af_sb.set_border_width_all(1)
+	af_sb.set_corner_radius_all(6)
+	art_frame.add_theme_stylebox_override("panel", af_sb)
 	
 	var art_rect = TextureRect.new()
-	art_rect.custom_minimum_size = Vector2(80, 100)
+	art_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	art_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	art_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	var tex = GameData.get_pokemon_texture(p.get("texture_path", ""))
+	var tex = GameData.get_pokemon_texture(str(p.get("texture_path", full_inst.texture_path)))
 	if tex: art_rect.texture = tex
-	if p["current_hp"] <= 0:
-		art_rect.modulate = Color(0.5, 0.5, 0.5, 0.7)
-	main_row.add_child(art_rect)
+	if cur_hp <= 0:
+		art_rect.modulate = Color(0.45, 0.45, 0.5, 0.7)
+	art_frame.add_child(art_rect)
+	main_row.add_child(art_frame)
 	
-	var stats_box = VBoxContainer.new()
-	stats_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	stats_box.add_theme_constant_override("separation", 4)
-	main_row.add_child(stats_box)
+	var stats_col = VBoxContainer.new()
+	stats_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stats_col.add_theme_constant_override("separation", 6)
+	main_row.add_child(stats_col)
 	
-	var hp_lbl = Label.new()
-	hp_lbl.text = "❤️ HP: %d / %d" % [p["current_hp"], p["max_hp"]]
-	hp_lbl.add_theme_font_size_override("font_size", 12)
-	hp_lbl.add_theme_color_override("font_color", Color("#81C784"))
-	stats_box.add_child(hp_lbl)
+	var grid_row1 = HBoxContainer.new()
+	grid_row1.add_theme_constant_override("separation", 6)
+	stats_col.add_child(grid_row1)
 	
-	var nrg_lbl = Label.new()
-	nrg_lbl.text = "⚡ Max Energy: %d ⚡  |  👟 Speed: %d  |  🏆 Tier %s" % [full_inst.max_energy, full_inst.speed, p_tier]
-	nrg_lbl.add_theme_font_size_override("font_size", 11)
-	nrg_lbl.add_theme_color_override("font_color", Color("#FFF176"))
-	stats_box.add_child(nrg_lbl)
+	var hp_text = "%d / %d" % [cur_hp, max_hp] if (from_camp and cur_hp != max_hp) else "%d" % max_hp
+	_create_stat_pill(grid_row1, "❤️ HP", hp_text, Color("#81C784"), Color("#1B5E20"))
+	_create_stat_pill(grid_row1, "⚔️ ATK", str(atk_val), Color("#FF8A65"), Color("#BF360C"))
+	_create_stat_pill(grid_row1, "🛡️ DEF", str(def_val), Color("#4FC3F7"), Color("#01579B"))
 	
-	var cur_exp = int(p.get("current_exp", 0))
-	var req_exp = full_inst.get_required_exp()
-	var exp_str = "MAX (Final Stage)" if req_exp <= 0 else "%d / %d" % [cur_exp, req_exp]
-	var exp_lbl = Label.new()
-	exp_lbl.text = "🌟 EXP: %s" % exp_str
-	exp_lbl.add_theme_font_size_override("font_size", 11)
-	exp_lbl.add_theme_color_override("font_color", Color("#64B5F6"))
-	stats_box.add_child(exp_lbl)
+	var grid_row2 = HBoxContainer.new()
+	grid_row2.add_theme_constant_override("separation", 6)
+	stats_col.add_child(grid_row2)
 	
-	# Status condition
-	var cond_lbl = Label.new()
-	cond_lbl.add_theme_font_size_override("font_size", 11)
-	if p["current_hp"] <= 0:
-		cond_lbl.text = "Status: 💀 Fainted (Requires Revive)"
-		cond_lbl.add_theme_color_override("font_color", Color("#EF5350"))
-	elif int(p.get("burn_turns", 0)) > 0 or bool(p.get("is_poisoned", false)):
-		var s_list = []
-		if int(p.get("burn_turns", 0)) > 0: s_list.append("🔥 Burned (%d)" % int(p.get("burn_turns", 0)))
-		if bool(p.get("is_poisoned", false)): s_list.append("🟣 Poisoned")
-		cond_lbl.text = "Status: " + ", ".join(s_list)
-		cond_lbl.add_theme_color_override("font_color", Color("#FFA726"))
-	else:
-		cond_lbl.text = "Status: 💚 Healthy"
-		cond_lbl.add_theme_color_override("font_color", Color("#81C784"))
-	stats_box.add_child(cond_lbl)
+	_create_stat_pill(grid_row2, "👟 SPD", str(spd_val), Color("#FFD54F"), Color("#FF6F00"))
+	_create_stat_pill(grid_row2, "⚡ NRG", "%d⚡" % nrg_val, Color("#FFF59D"), Color("#F57F17"))
+	var reg_str = str(p.get("region", full_inst.region if ("region" in full_inst) else "Kanto")).strip_edges().capitalize()
+	_create_stat_pill(grid_row2, "📍 REGION", reg_str, Color("#B0BEC5"), Color("#263238"))
 	
-	# Weakness / Resistance
-	var weak = full_inst.weakness if full_inst.weakness != "" else GameData.get_default_weakness_for_type(p["type"])
-	var res = GameData.get_effective_resistances(p["type"], full_inst.resistant)
-	var wr_lbl = Label.new()
-	wr_lbl.text = "Weak (+2): %s  |  Resist (-2): %s" % [weak if weak != "" else "None", ", ".join(res) if res.size() > 0 else "None"]
-	wr_lbl.add_theme_font_size_override("font_size", 10)
-	wr_lbl.add_theme_color_override("font_color", Color("#B0BEC5"))
-	stats_box.add_child(wr_lbl)
+	var weak = full_inst.weakness if full_inst.weakness != "" else GameData.get_default_weakness_for_type(p_type)
+	var res = GameData.get_effective_resistances(p_type, full_inst.resistant)
+	var wr_box = HBoxContainer.new()
+	wr_box.add_theme_constant_override("separation", 8)
 	
-	# Held Item Row
-	var cur_held = str(p.get("held_item", ""))
-	var held_row = HBoxContainer.new()
-	held_row.add_theme_constant_override("separation", 6)
-	var held_lbl = Label.new()
-	held_lbl.text = "🎒 Held Item: %s" % (GameData.get_item_display_name(cur_held) if cur_held != "" else "None / Ninguno")
-	held_lbl.add_theme_font_size_override("font_size", 11)
-	held_lbl.add_theme_color_override("font_color", Color("#FFD54F") if cur_held != "" else Color("#B0BEC5"))
-	held_row.add_child(held_lbl)
+	var wr_lbl = RichTextLabel.new()
+	wr_lbl.bbcode_enabled = true
+	wr_lbl.fit_content = true
+	wr_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var res_str = ", ".join(res) if not res.is_empty() else "None"
+	wr_lbl.text = "[color=#FF8A80]Debilidad (+2):[/color] %s   |   [color=#81D4FA]Resistencia (-2):[/color] %s" % [weak if weak != "" else "None", res_str]
+	wr_lbl.add_theme_font_size_override("normal_font_size", 10)
+	wr_box.add_child(wr_lbl)
+	stats_col.add_child(wr_box)
 	
-	var btn_insp_held = Button.new()
-	btn_insp_held.text = "🔄 Cambiar" if cur_held != "" else "🎒 + Equipar"
-	btn_insp_held.custom_minimum_size = Vector2(85, 22)
-	btn_insp_held.add_theme_font_size_override("font_size", 10)
-	_apply_compact_order_button_style(btn_insp_held, Color(0.65, 0.48, 0.15), Color(0.95, 0.75, 0.25), false)
-	btn_insp_held.add_theme_color_override("font_color", Color("#FFF59D"))
-	var insp_pkmn_id = int(p.get("id", -1))
-	btn_insp_held.pressed.connect(func():
-		var c_team = GameData.get_active_campaign_team_state()
-		var found_idx = -1
-		for idx in range(c_team.size()):
-			if int(c_team[idx].get("id", -1)) == insp_pkmn_id:
-				found_idx = idx
-				break
-		if found_idx >= 0:
-			camp_pokemon_inspector_modal.visible = false
-			_open_camp_held_item_picker_for_pkmn(found_idx)
-	)
-	held_row.add_child(btn_insp_held)
-	stats_box.add_child(held_row)
-	
-	vbox.add_child(main_row)
+	if from_camp:
+		var cur_exp = int(p.get("current_exp", 0))
+		var req_exp = full_inst.get_required_exp()
+		var exp_str = "MAX (Final)" if req_exp <= 0 else "%d / %d" % [cur_exp, req_exp]
+		var exp_lbl = Label.new()
+		exp_lbl.text = "🌟 EXP: %s" % exp_str
+		exp_lbl.add_theme_font_size_override("font_size", 10)
+		exp_lbl.add_theme_color_override("font_color", Color("#64B5F6"))
+		stats_col.add_child(exp_lbl)
+		
+		var cond_lbl = Label.new()
+		cond_lbl.add_theme_font_size_override("font_size", 10)
+		if cur_hp <= 0:
+			cond_lbl.text = "Condición: 💀 Fainted / Debilitado"
+			cond_lbl.add_theme_color_override("font_color", Color("#EF5350"))
+		elif int(p.get("burn_turns", 0)) > 0 or bool(p.get("is_poisoned", false)):
+			var s_list = []
+			if int(p.get("burn_turns", 0)) > 0: s_list.append("🔥 Burned (%d)" % int(p.get("burn_turns", 0)))
+			if bool(p.get("is_poisoned", false)): s_list.append("🟣 Poisoned")
+			cond_lbl.text = "Condición: " + ", ".join(s_list)
+			cond_lbl.add_theme_color_override("font_color", Color("#FFA726"))
+		else:
+			cond_lbl.text = "Condición: 💚 Saludable (100% Listo)"
+			cond_lbl.add_theme_color_override("font_color", Color("#81C784"))
+		stats_col.add_child(cond_lbl)
+		
+		var cur_held = str(p.get("held_item", ""))
+		var held_row = HBoxContainer.new()
+		held_row.add_theme_constant_override("separation", 6)
+		var held_lbl = Label.new()
+		held_lbl.text = "🎒 Objeto: %s" % (GameData.get_item_display_name(cur_held) if cur_held != "" else "Ninguno")
+		held_lbl.add_theme_font_size_override("font_size", 10)
+		held_lbl.add_theme_color_override("font_color", Color("#FFD54F") if cur_held != "" else Color("#B0BEC5"))
+		held_row.add_child(held_lbl)
+		
+		var btn_insp_held = Button.new()
+		btn_insp_held.text = "🔄 Cambiar" if cur_held != "" else "🎒 + Equipar"
+		btn_insp_held.custom_minimum_size = Vector2(85, 20)
+		btn_insp_held.add_theme_font_size_override("font_size", 9)
+		_apply_compact_order_button_style(btn_insp_held, Color(0.65, 0.48, 0.15), Color(0.95, 0.75, 0.25), false)
+		btn_insp_held.add_theme_color_override("font_color", Color("#FFF59D"))
+		var insp_pkmn_id = int(p.get("id", -1))
+		btn_insp_held.pressed.connect(func():
+			var c_team = GameData.get_active_campaign_team_state()
+			var found_idx = -1
+			for idx in range(c_team.size()):
+				if int(c_team[idx].get("id", -1)) == insp_pkmn_id:
+					found_idx = idx
+					break
+			if found_idx >= 0:
+				camp_pokemon_inspector_modal.visible = false
+				_open_camp_held_item_picker_for_pkmn(found_idx)
+		)
+		held_row.add_child(btn_insp_held)
+		stats_col.add_child(held_row)
+	elif team_select_mode == "CAMPAIGN":
+		var evo_info = GameData.get_pokemon_evolution_chain_status(cid)
+		var evo_color = Color(evo_info.get("color_hex", "#78909C"))
+		var evo_txt_lbl = Label.new()
+		evo_txt_lbl.text = "Evolución: %s %s" % [evo_info.get("icon", "—"), evo_info.get("text_badge", "")]
+		evo_txt_lbl.add_theme_font_size_override("font_size", 10)
+		evo_txt_lbl.add_theme_color_override("font_color", evo_color)
+		stats_col.add_child(evo_txt_lbl)
 	
 	var sep2 = HSeparator.new()
 	vbox.add_child(sep2)
 	
-	# Moves Section
+	# --- 3. SECCIÓN DE MOVIMIENTOS Y PRECISIÓN ---
 	var moves_hdr = Label.new()
-	moves_hdr.text = "⚔️ POKÉMON MOVES"
+	moves_hdr.text = "⚔️ POKÉMON MOVES & ACCURACY"
 	moves_hdr.add_theme_font_size_override("font_size", 12)
 	moves_hdr.add_theme_color_override("font_color", Color("#80DEEA"))
 	vbox.add_child(moves_hdr)
@@ -8063,58 +8190,106 @@ func _open_camp_pokemon_inspector(p: Dictionary) -> void:
 		var m = full_inst.moves[m_idx]
 		var m_panel = PanelContainer.new()
 		var m_sb = StyleBoxFlat.new()
-		m_sb.bg_color = Color(0.06, 0.08, 0.12, 0.9)
-		m_sb.border_color = Color(0.20, 0.35, 0.45, 0.7)
+		m_sb.bg_color = Color(0.07, 0.10, 0.15, 0.95)
+		m_sb.border_color = Color(0.25, 0.45, 0.60, 0.7)
 		m_sb.set_border_width_all(1)
 		m_sb.set_corner_radius_all(6)
-		m_sb.content_margin_left = 8
-		m_sb.content_margin_right = 8
-		m_sb.content_margin_top = 6
-		m_sb.content_margin_bottom = 6
+		m_sb.content_margin_left = 10
+		m_sb.content_margin_right = 10
+		m_sb.content_margin_top = 8
+		m_sb.content_margin_bottom = 8
 		m_panel.add_theme_stylebox_override("panel", m_sb)
 		
 		var m_box = VBoxContainer.new()
-		m_box.add_theme_constant_override("separation", 3)
+		m_box.add_theme_constant_override("separation", 5)
 		m_panel.add_child(m_box)
 		
-		var m_title = Label.new()
-		var dmg_str = "%d DMG" % m.base_damage if m.effect_type != "MULTI_ATTACK" else "1-3 DMG/hit"
-		m_title.text = "Move %d: %s [%s] • %s (Cost: %d⚡ | Req: %d⚡)" % [
-			m_idx + 1, m.name, m.type, dmg_str, m.cost, m.min_energy_req
-		]
-		m_title.add_theme_font_size_override("font_size", 11)
-		m_title.add_theme_color_override("font_color", Color("#FFE082"))
-		m_box.add_child(m_title)
+		var m_head = HBoxContainer.new()
+		m_head.add_theme_constant_override("separation", 6)
+		m_box.add_child(m_head)
 		
-		var m_desc = Label.new()
-		m_desc.text = m.description if m.description != "" else "Standard attack."
-		m_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		m_desc.add_theme_font_size_override("font_size", 10)
-		m_desc.add_theme_color_override("font_color", Color("#CFD8DC"))
+		var m_ico = TextureRect.new()
+		m_ico.custom_minimum_size = Vector2(20, 20)
+		m_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		m_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		m_ico.texture = GameData.get_type_icon_texture(m.type)
+		m_head.add_child(m_ico)
+		
+		var m_title = Label.new()
+		m_title.text = "Move %d: %s [%s]" % [m_idx + 1, m.name, m.type]
+		m_title.add_theme_font_size_override("font_size", 12)
+		m_title.add_theme_color_override("font_color", Color("#FFE082"))
+		m_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		m_head.add_child(m_title)
+		
+		var cat_lbl = Label.new()
+		cat_lbl.add_theme_font_size_override("font_size", 9)
+		if m.base_damage <= 0:
+			cat_lbl.text = "[STATUS / UTILIDAD]"
+			cat_lbl.add_theme_color_override("font_color", Color("#81D4FA"))
+		elif m.effect_type == "MULTI_ATTACK":
+			cat_lbl.text = "[MULTI-HIT]"
+			cat_lbl.add_theme_color_override("font_color", Color("#CE93D8"))
+		else:
+			cat_lbl.text = "[ATAQUE DIRECTO]"
+			cat_lbl.add_theme_color_override("font_color", Color("#FF8A80"))
+		m_head.add_child(cat_lbl)
+		
+		var metrics_row = HBoxContainer.new()
+		metrics_row.add_theme_constant_override("separation", 6)
+		m_box.add_child(metrics_row)
+		
+		var pwr_str = "%d PWR" % m.base_damage if (m.base_damage > 0 and m.effect_type != "MULTI_ATTACK") else ("Multi-Hit" if m.effect_type == "MULTI_ATTACK" else "0 PWR")
+		var acc_val = m.accuracy if ("accuracy" in m) else 100
+		_create_stat_pill(metrics_row, "💥 Power", pwr_str, Color("#FFCC80"), Color("#E65100"))
+		_create_stat_pill(metrics_row, "🎯 Acc", "%d%%" % acc_val, Color("#80CBC4"), Color("#004D40"))
+		_create_stat_pill(metrics_row, "⚡ Cost", "%d⚡" % m.cost, Color("#FFF59D"), Color("#F57F17"))
+		_create_stat_pill(metrics_row, "⚡ Req", "%d⚡" % m.min_energy_req, Color("#E1BEE7"), Color("#4A148C"))
+		
+		var m_desc = RichTextLabel.new()
+		m_desc.bbcode_enabled = true
+		m_desc.fit_content = true
+		m_desc.add_theme_font_size_override("normal_font_size", 10)
+		var desc_text = m.description if m.description != "" else "Ataque estándar sin efectos secundarios."
+		m_desc.text = "[color=#CFD8DC]%s[/color]" % desc_text
 		m_box.add_child(m_desc)
 		
 		if m.can_boost:
-			var b_lbl = Label.new()
-			b_lbl.text = "🔥 Boost (+%d⚡): %s" % [
+			var boost_panel = PanelContainer.new()
+			var b_sb = StyleBoxFlat.new()
+			b_sb.bg_color = Color(0.20, 0.10, 0.04, 0.9)
+			b_sb.border_color = Color(0.85, 0.50, 0.15, 0.8)
+			b_sb.set_border_width_all(1)
+			b_sb.set_corner_radius_all(4)
+			b_sb.content_margin_left = 6
+			b_sb.content_margin_right = 6
+			b_sb.content_margin_top = 4
+			b_sb.content_margin_bottom = 4
+			boost_panel.add_theme_stylebox_override("panel", b_sb)
+			
+			var b_lbl = RichTextLabel.new()
+			b_lbl.bbcode_enabled = true
+			b_lbl.fit_content = true
+			b_lbl.add_theme_font_size_override("normal_font_size", 10)
+			b_lbl.text = "[color=#FFB74D]🔥 Boost (+%d⚡ Energía):[/color] [color=#FFE0B2]%s[/color]" % [
 				m.boost_cost,
 				GameData.format_move_boost_summary(m.boost_cost, m.boost_damage, m.effect_type, m.description)
 			]
-			b_lbl.add_theme_font_size_override("font_size", 10)
-			b_lbl.add_theme_color_override("font_color", Color("#FFAB40"))
-			m_box.add_child(b_lbl)
+			boost_panel.add_child(b_lbl)
+			m_box.add_child(boost_panel)
 			
 		vbox.add_child(m_panel)
 		
-	# Passive Ability
+	# --- 4. HABILIDAD PASIVA ---
 	if full_inst.has_passive and full_inst.passive_name != "":
 		var pas_panel = PanelContainer.new()
 		var p_sb = StyleBoxFlat.new()
-		p_sb.bg_color = Color(0.12, 0.08, 0.16, 0.9)
-		p_sb.border_color = Color(0.45, 0.25, 0.55, 0.7)
+		p_sb.bg_color = Color(0.12, 0.08, 0.18, 0.95)
+		p_sb.border_color = Color(0.60, 0.35, 0.85, 0.8)
 		p_sb.set_border_width_all(1)
 		p_sb.set_corner_radius_all(6)
-		p_sb.content_margin_left = 8
-		p_sb.content_margin_right = 8
+		p_sb.content_margin_left = 10
+		p_sb.content_margin_right = 10
 		p_sb.content_margin_top = 6
 		p_sb.content_margin_bottom = 6
 		pas_panel.add_theme_stylebox_override("panel", p_sb)
@@ -8124,7 +8299,7 @@ func _open_camp_pokemon_inspector(p: Dictionary) -> void:
 		pas_panel.add_child(p_box)
 		
 		var p_title = Label.new()
-		p_title.text = "✨ Passive: %s" % full_inst.passive_name
+		p_title.text = "✨ Habilidad Pasiva: %s" % full_inst.passive_name
 		p_title.add_theme_font_size_override("font_size", 11)
 		p_title.add_theme_color_override("font_color", Color("#CE93D8"))
 		p_box.add_child(p_title)
@@ -8141,9 +8316,11 @@ func _open_camp_pokemon_inspector(p: Dictionary) -> void:
 	vbox.add_child(sep3)
 	
 	var btn_done = Button.new()
-	btn_done.text = "⬅ Back to Camp"
+	btn_done.text = "⬅ Volver al Campamento / Back to Camp" if from_camp else "⬅ Cerrar / Return"
 	btn_done.custom_minimum_size = Vector2(0, 34)
 	btn_done.add_theme_font_size_override("font_size", 11)
+	btn_done.focus_mode = Control.FOCUS_NONE
+	btn_done.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_apply_retro_button_style(btn_done, Color(0.25, 0.45, 0.55), Color(0.35, 0.65, 0.80), false)
 	btn_done.pressed.connect(func(): camp_pokemon_inspector_modal.visible = false)
 	vbox.add_child(btn_done)
@@ -9069,15 +9246,55 @@ func build_team_select_cards_grid() -> void:
 		# Badge flotante para indicar rol en el equipo (✓ 1º LÍDER, etc.)
 		var badge_panel = PanelContainer.new()
 		badge_panel.set_anchors_preset(Control.PRESET_TOP_WIDE)
+		badge_panel.offset_right = -28.0
 		badge_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		badge_panel.visible = false
 		
 		var badge_lbl = Label.new()
 		badge_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		badge_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		badge_lbl.add_theme_font_size_override("font_size", 10)
+		badge_lbl.add_theme_font_size_override("font_size", 9)
 		badge_panel.add_child(badge_lbl)
 		thumb_btn.add_child(badge_panel)
+		
+		# Botón de Lupa flotante (🔍) sin texto sobre la carta para inspeccionar stats y moves
+		var btn_inspect = Button.new()
+		btn_inspect.name = "BtnInspect_%d" % cid
+		btn_inspect.text = "🔍"
+		btn_inspect.tooltip_text = GameData.tr_text("Inspect Pokémon Stats & Moves", "Inspeccionar Estadísticas y Movimientos")
+		btn_inspect.custom_minimum_size = Vector2(24, 24)
+		btn_inspect.size = Vector2(24, 24)
+		btn_inspect.position = Vector2(78, 4)
+		btn_inspect.focus_mode = Control.FOCUS_NONE
+		btn_inspect.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		btn_inspect.add_theme_font_size_override("font_size", 11)
+		
+		var sb_insp_norm = StyleBoxFlat.new()
+		sb_insp_norm.bg_color = Color(0.04, 0.07, 0.12, 0.85)
+		sb_insp_norm.border_color = Color(0.35, 0.60, 0.85, 0.75)
+		sb_insp_norm.set_border_width_all(1)
+		sb_insp_norm.set_corner_radius_all(4)
+		
+		var sb_insp_hov = StyleBoxFlat.new()
+		sb_insp_hov.bg_color = Color(0.12, 0.28, 0.50, 0.95)
+		sb_insp_hov.border_color = Color(0.60, 0.88, 1.0, 1.0)
+		sb_insp_hov.set_border_width_all(1)
+		sb_insp_hov.set_corner_radius_all(4)
+		
+		btn_inspect.add_theme_stylebox_override("normal", sb_insp_norm)
+		btn_inspect.add_theme_stylebox_override("hover", sb_insp_hov)
+		btn_inspect.add_theme_stylebox_override("pressed", sb_insp_hov)
+		
+		btn_inspect.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			open_pokemon_inspector(card, false)
+		)
+		btn_inspect.gui_input.connect(func(ev: InputEvent):
+			if ev is InputEventMouseButton and ev.pressed:
+				get_viewport().set_input_as_handled()
+		)
+		thumb_btn.add_child(btn_inspect)
 		
 		thumb_btn.pressed.connect(func():
 			if GameData.is_drag_scrolling():
@@ -9094,13 +9311,13 @@ func build_team_select_cards_grid() -> void:
 		name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		cell_vbox.add_child(name_lbl)
 		
-		# 3. Estadísticas base (HP / SPD) y Tier
+		# 3. Estadísticas base (HP / ATK / DEF / SPD)
 		var stats_lbl = Label.new()
 		stats_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		stats_lbl.add_theme_font_size_override("font_size", 9)
+		stats_lbl.add_theme_font_size_override("font_size", 8)
 		var t_val = str(card.get("tier", "C")).strip_edges().to_upper()
 		if t_val == "": t_val = "C"
-		stats_lbl.text = "❤️%d HP  👟%d SPD  ⭐%s" % [int(card.get("hp", 10)), int(card.get("speed", 1)), t_val]
+		stats_lbl.text = "❤️%d ⚔️%d 🛡️%d 👟%d" % [int(card.get("hp", 10)), int(card.get("attack", 10)), int(card.get("defense", 10)), int(card.get("speed", 1))]
 		stats_lbl.add_theme_color_override("font_color", Color(0.75, 0.85, 0.95))
 		cell_vbox.add_child(stats_lbl)
 		
