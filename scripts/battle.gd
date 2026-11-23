@@ -1846,7 +1846,7 @@ func _get_snowball_bonus(move) -> int:
 		return 2
 	return 4
 
-func calculate_move_damage(move, energy_spent: int, eff_cost: int = -1, attacker = null, defender = null) -> int:
+func calculate_move_damage(move, energy_spent: int, eff_cost: int = -1, attacker = null, defender = null, is_charged_release: bool = false) -> int:
 	if move.effect_type == "MULTI_ATTACK":
 		return 0
 	var base_dmg_val: int = move.base_damage if ("base_damage" in move) else int(move.get("power", move.get("dmg", 0)))
@@ -1854,7 +1854,7 @@ func calculate_move_damage(move, energy_spent: int, eff_cost: int = -1, attacker
 		return 0
 	var c = eff_cost if eff_cost >= 0 else (move.cost if ("cost" in move) else 0)
 	var base_pow: float = float(base_dmg_val)
-	if c > 1 and energy_spent < c:
+	if not is_charged_release and c > 1 and energy_spent < c:
 		var fraction = float(energy_spent) / float(c)
 		base_pow = base_pow * fraction
 	
@@ -2019,7 +2019,6 @@ func _is_turn_action_allowed() -> bool:
 func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: Node, is_player: bool) -> bool:
 	if not actor or not opponent:
 		return false
-	actor.is_digging = false
 	var st_side = "PLAYER" if is_player else "ENEMY"
 
 	# Leftovers (Restos): Holder restores 1/8 max HP (minimum 1) at the start of the turn
@@ -2096,7 +2095,42 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		)
 		return true
 
-	# 4. Flinch (Forced Recharge)
+	# 4. Two-Turn Move Release (Solar Beam, Dig, Bounce)
+	if actor.charging_move != "":
+		# Check if actor is unable to act due to Sleep, Freeze, Paralysis, Confusion
+		if not _check_action_impeding_status(actor, is_player):
+			actor.charging_move = ""
+			actor.is_digging = false
+			actor.is_evasive = false
+			return true
+			
+		var move_name = actor.charging_move
+		actor.charging_move = ""
+		actor.is_digging = false
+		actor.is_evasive = false
+		
+		var move_to_fire = null
+		for m in actor.moves:
+			if m.name == move_name:
+				move_to_fire = m
+				break
+		if move_to_fire == null:
+			move_to_fire = GameData.get_move_instance(move_name)
+			
+		if move_to_fire != null:
+			perform_attack(actor, opponent, move_to_fire, false, 0, actor_img, opponent_img, true)
+			
+		update_ui()
+		if is_battle_over or check_team_defeat():
+			return true
+			
+		var timer = get_tree().create_timer(2.2)
+		timer.timeout.connect(func():
+			if is_player: end_player_turn() else: end_enemy_turn()
+		)
+		return true
+
+	# 5. Flinch (Forced Recharge)
 	if actor.is_flinched:
 		actor.is_flinched = false
 		var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
@@ -2624,6 +2658,8 @@ func enemy_do_switch(target_idx: int) -> void:
 		current.is_evasive = false
 		current.evasive_reflects_dmg = 0
 		current.is_digging = false
+		current.charging_move = ""
+		current.rest_next_turn = false
 		current.damage_buff = 0
 		current.damage_buff_turns = 0
 		current.foe_damage_debuff = 0
@@ -2913,20 +2949,42 @@ func _roll_status_proc(move, _boosted: bool = false, _requires_boost: bool = fal
 	var rate = _get_status_proc_chance(move)
 	return rate >= 1.0 or (rate > 0.0 and randf() < rate)
 
-func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: int, attacker_visual: Node, defender_visual: Node) -> void:
-	attacker.current_energy -= energy_to_spend
+func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: int, attacker_visual: Node, defender_visual: Node, is_charged_release: bool = false) -> void:
+	if not is_charged_release:
+		attacker.current_energy -= energy_to_spend
 	if attacker == get_active_player() and GameData.is_campaign_mode:
 		GameData.add_daily_mission_progress("play_moves", 1)
 	
 	var eff_cost: int = get_effective_move_cost(move, attacker, defender)
-	var is_full_energy: bool = (energy_to_spend >= eff_cost or eff_cost == 0)
+	var is_full_energy: bool = is_charged_release or (energy_to_spend >= eff_cost or eff_cost == 0)
 	var raw_damage: int = 0
 	var effective_damage: int = 0
 	var note_text: String = ""
 	var effect_annulled: bool = false
 	var att_spd = get_pokemon_effective_speed(attacker, defender)
 	var def_spd = get_pokemon_effective_speed(defender, attacker)
-	if eff_cost < move.cost:
+	var move_side = "PLAYER" if attacker == get_active_player() else "ENEMY"
+
+	# Turn 1: Intercept charging/two-turn moves (Solar Beam, Dig, Bounce)
+	if not is_charged_release and (move.effect_type in ["CHARGE", "DIG", "BOUNCE"] or move.name in ["Solar Beam", "Dig", "Bounce"]):
+		attacker.charging_move = move.name
+		attacker.last_move_used = move.name
+		if move.effect_type == "DIG" or move.name == "Dig":
+			attacker.is_digging = true
+			log_action("⛏️ [b]%s[/b] dug underground! (Protected from non-Ground moves, Earthquake deals x2 DMG)" % attacker.name, move_side)
+			spawn_floating_combat_text(attacker_visual, "Underground! ⛏️", Color("#fb923c"))
+		elif move.effect_type == "BOUNCE" or move.name == "Bounce":
+			attacker.is_evasive = true
+			log_action("💨 [b]%s[/b] sprang high into the air! (Evades incoming attacks)" % attacker.name, move_side)
+			spawn_floating_combat_text(attacker_visual, "Airborne! 💨", Color("#38bdf8"))
+		else:
+			log_action("☀️ [b]%s[/b] absorbed sunlight and began charging [color=lightgreen]%s[/color]!" % [attacker.name, move.name], move_side)
+			spawn_floating_combat_text(attacker_visual, "Charging Sunlight! ☀️", Color("#facc15"))
+		GameData.play_move_sfx(move.name)
+		update_ui()
+		return
+
+	if eff_cost < move.cost and not is_charged_release:
 		note_text += " [color=cyan](Quick Attack: -1⚡ cost for higher SPD!)[/color]"
 
 	# 1. Chequeo de Amnesia del rival
@@ -3056,8 +3114,9 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		raw_damage = max(1, min(25, at_val) if is_boss_target else at_val)
 		note_text += " [color=yellow](Anti-Tank: 50%% foe's HP = %d DMG%s)[/color]" % [raw_damage, " (Boss Capped)" if is_boss_target and at_val > 25 else ""]
 	else:
-		raw_damage = calculate_move_damage(move, energy_to_spend, eff_cost, attacker, defender)
-		if not is_full_energy and eff_cost > 1:
+		var spent_for_calc = eff_cost if is_charged_release else energy_to_spend
+		raw_damage = calculate_move_damage(move, spent_for_calc, eff_cost, attacker, defender, is_charged_release)
+		if not is_full_energy and eff_cost > 1 and not is_charged_release:
 			note_text += " [color=yellow](Partial Energy %d/%d⚡: scaled damage)[/color]" % [energy_to_spend, eff_cost]
 		
 		# Close Combat (MINIMIZE): penalización por energía faltante
@@ -3255,6 +3314,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if defender.is_digging and move.name == "Earthquake":
 		raw_damage *= 2
 		defender.is_digging = false
+		defender.charging_move = ""
 
 	# Golpe Crítico (CRITICAL)
 	if move.effect_type == "CRITICAL":
@@ -3266,7 +3326,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			note_text += " [color=yellow]Critical Hit! (+%d DMG)[/color]" % crit_b
 
 	# Tirada de dado de Pichu Shock (Thunder Shock)
-	if move.is_pichu_shock:
+	if ("is_pichu_shock" in move and move.is_pichu_shock):
 		if is_full_energy:
 			var dice_roll = randi_range(1, 6)
 			note_text += " [color=yellow](🎲 Die: %d)[/color]" % dice_roll
@@ -3420,7 +3480,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			note_text += " [color=cyan]%s splashed the bench (-6 DMG to %s)![/color]" % [move.name, ", ".join(splash_names)]
 	
 	# Descongelación por daño de Fuego
-	if defender.is_frozen and (move.type == "FIRE" or move.effect_type == "BURN" or (boosted and move.boost_applies_burn)):
+	if defender.is_frozen and (move.type == "FIRE" or move.effect_type == "BURN" or (boosted and ("boost_applies_burn" in move and move.boost_applies_burn))):
 		defender.is_frozen = false
 		defender.frozen_turns = 0
 		note_text += " [color=orange]" + (GameData.tr_text("Fire thawed %s out of freeze!", "¡El fuego descongeló a %s!") % defender.name) + "[/color]"
@@ -3555,7 +3615,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 					var att_overlay = player_status_overlay if attacker == get_active_player() else enemy_status_overlay
 					if att_overlay:
 						att_overlay.trigger_poison_effect()
-		elif move.causes_poison or move.effect_type == "POISON_IF_FASTER":
+		elif ("causes_poison" in move and move.causes_poison) or move.effect_type == "POISON_IF_FASTER":
 			if att_spd > def_spd:
 				if defender.is_poisoned:
 					note_text += " [color=gray](%s is already poisoned - move had no effect!)[/color]" % defender.name
@@ -3608,8 +3668,8 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				defender.is_asleep_turns = 2
 				note_text += " [color=lightblue]Put foe to SLEEP (2 rounds)![/color]"
 			
-		# Parálisis (PARALYZE / THUNDER)
-		if (move.effect_type in ["PARALYZE", "THUNDER"] or move.name == "Thunder") and _roll_status_proc(move):
+		# Parálisis (PARALYZE / THUNDER / BOUNCE)
+		if (move.effect_type in ["PARALYZE", "THUNDER", "BOUNCE"] or move.name in ["Thunder", "Bounce"]) and _roll_status_proc(move):
 			if defender.immune_paralyze_rounds > 0:
 				note_text += " [color=gray](Immune to Paralysis: recently recovered - move had no effect!)[/color]"
 				spawn_floating_combat_text(defender_visual, "Paralyze Immune!", Color("#94a3b8"))
@@ -3722,15 +3782,6 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		if move.effect_type == "REST":
 			attacker.rest_next_turn = true
 			note_text += " [color=cyan]%s must rest next round to recharge![/color]" % attacker.name
-
-		# Excavación (DIG)
-		if move.effect_type == "DIG":
-			if attacker.last_move_used == move.name:
-				note_text += " [color=red]Dig failed! Cannot be used consecutively.[/color]"
-				spawn_floating_combat_text(attacker_visual, "Dig Failed!", Color("#ef4444"))
-			else:
-				attacker.is_digging = true
-				note_text += " [color=orange]%s dug underground! Cannot be attacked by non-ground moves.[/color]" % attacker.name
 
 		# Pantalla de Luz (WALL / Light Screen)
 		if move.effect_type == "WALL":
@@ -4018,10 +4069,28 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 							active_team[target_benched_idx]["current_exp"] = target_benched.current_exp
 	
 	var boost_str = " (BOOSTED)" if boosted else ""
-	var move_side = "PLAYER" if attacker == get_active_player() else "ENEMY"
-	log_action("[b]%s[/b] used [color=cyan]%s[/color] [%s]%s dealing [b]%d[/b] damage.%s%s" % [
-		attacker.name, move.name, move.type, boost_str, final_damage, note_text, exp_log_str
-	], move_side)
+	move_side = "PLAYER" if attacker == get_active_player() else "ENEMY"
+	if is_charged_release:
+		if move.name == "Solar Beam":
+			log_action("🌿💥 [b]%s[/b] unleashed a devastating [color=lightgreen]Solar Beam[/color] dealing [b]%d[/b] damage!%s%s" % [
+				attacker.name, final_damage, note_text, exp_log_str
+			], move_side)
+		elif move.name == "Dig":
+			log_action("⛏️💥 [b]%s[/b] emerged from underground and struck [b]%s[/b] dealing [b]%d[/b] damage!%s%s" % [
+				attacker.name, defender.name, final_damage, note_text, exp_log_str
+			], move_side)
+		elif move.name == "Bounce":
+			log_action("💨💥 [b]%s[/b] crashed down from the sky on [b]%s[/b] dealing [b]%d[/b] damage!%s%s" % [
+				attacker.name, defender.name, final_damage, note_text, exp_log_str
+			], move_side)
+		else:
+			log_action("💥 [b]%s[/b] unleashed [color=cyan]%s[/color] dealing [b]%d[/b] damage!%s%s" % [
+				attacker.name, move.name, final_damage, note_text, exp_log_str
+			], move_side)
+	else:
+		log_action("[b]%s[/b] used [color=cyan]%s[/color] [%s]%s dealing [b]%d[/b] damage.%s%s" % [
+			attacker.name, move.name, move.type, boost_str, final_damage, note_text, exp_log_str
+		], move_side)
 	
 	lunge_card(attacker_visual, attacker == get_active_player())
 	GameData.play_move_sfx(move.name)
@@ -4127,6 +4196,12 @@ func _animate_faint_and_replacement(is_player: bool, fainted_pkmn, next_idx: int
 	is_busy = true
 	can_player_act = false
 	set_controls_enabled(false)
+	
+	if fainted_pkmn:
+		fainted_pkmn.charging_move = ""
+		fainted_pkmn.is_digging = false
+		fainted_pkmn.is_evasive = false
+		fainted_pkmn.rest_next_turn = false
 	
 	if is_player and player_status_overlay:
 		player_status_overlay.clear_all()
@@ -5876,6 +5951,8 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 		current.is_evasive = false
 		current.evasive_reflects_dmg = 0
 		current.is_digging = false
+		current.charging_move = ""
+		current.rest_next_turn = false
 		current.damage_buff = 0
 		current.damage_buff_turns = 0
 		current.foe_damage_debuff = 0
@@ -6615,6 +6692,15 @@ func _format_status_list(pkmn) -> Array:
 		list.append("💨 Protected")
 	if pkmn.is_digging:
 		list.append("⛏️ Underground")
+	if "charging_move" in pkmn and pkmn.charging_move != "":
+		if pkmn.charging_move == "Solar Beam":
+			list.append("☀️ Charging Solar Beam")
+		elif pkmn.charging_move == "Bounce":
+			list.append("💨 Airborne")
+		else:
+			list.append("⚡ Charging %s" % pkmn.charging_move)
+	if "rest_next_turn" in pkmn and pkmn.rest_next_turn:
+		list.append("😴 Resting")
 	if pkmn.damage_buff > 0:
 		list.append("⚔️ Buff +%d" % pkmn.damage_buff)
 	if "temp_attack_mod" in pkmn and pkmn.temp_attack_mod != 0:
@@ -6805,7 +6891,7 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 	if eff == "BURN":
 		if boosted and move.name == "Inferno":
 			return "Severe Burn (3 DMG)"
-		elif boosted or move.boost_applies_burn:
+		elif boosted or ("boost_applies_burn" in move and move.boost_applies_burn):
 			return "Inflicts Burn (2 DMG)" if move.name in ["Burn Up", "Fire Fang", "Fire Blast"] else "Inflicts Burn (1 DMG)"
 		return "Inflicts Burn"
 	elif eff == "POISON":
@@ -6914,7 +7000,11 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 	elif eff in ["EVASIVE", "MIRAGE"]:
 		return "Evades next attack"
 	elif eff == "DIG":
-		return "Digs underground"
+		return "2-Turn: Dig & strike"
+	elif eff == "CHARGE":
+		return "2-Turn: Charge & blast"
+	elif eff == "BOUNCE":
+		return "2-Turn: Fly & crash"
 	elif eff == "REST":
 		return "Must rest next round"
 	elif eff in ["DMG_BOOST", "RELAXED", "GROWING"]:

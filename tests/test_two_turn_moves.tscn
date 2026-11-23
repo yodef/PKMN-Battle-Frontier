@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d7b9e1c4f5a3b"]
+
+[ext_resource type="Script" path="res://tests/test_two_turn_moves.gd" id="1_test"]
+
+[node name="TestTwoTurnMoves" type="Node"]
+script = ExtResource("1_test")

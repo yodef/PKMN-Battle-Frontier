@@ -4729,6 +4729,23 @@ func get_move_data(identifier: String) -> Dictionary:
 		"accuracy": 100
 	}
 
+func get_move_instance(identifier: String) -> MoveData:
+	var d = get_move_data(identifier)
+	if d.is_empty():
+		return null
+	var acc = int(d.get("accuracy", d.get("acc", 100)))
+	var m = MoveData.new(
+		str(d.get("name", identifier)), str(d.get("type", "NORMAL")), int(d.get("dmg", 0)), int(d.get("cost", 0)), int(d.get("req", 0)),
+		int(d.get("boost_cost", 0)) > 0, int(d.get("boost_cost", 0)), int(d.get("boost_dmg", 0)),
+		str(d.get("effect_type", "")) == "BURN", str(d.get("desc", "")), acc
+	)
+	m.effect_type = str(d.get("effect_type", "NONE"))
+	m.accuracy = acc
+	m.reduces_foe_speed = (m.effect_type == "SLOW_FOE")
+	m.is_pichu_shock = (m.effect_type == "PICHU_SHOCK")
+	m.causes_poison = (m.effect_type == "POISON_IF_FASTER" or m.effect_type == "POISON")
+	return m
+
 func load_pokemon_from_csv() -> void:
 	pokemon_catalog.clear()
 	all_pokemon_ids.clear()
