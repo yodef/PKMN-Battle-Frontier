@@ -5877,6 +5877,16 @@ func update_campaign_ui() -> void:
 	else:
 		btn_buy_revive.disabled = (cur_gold < GameData.ITEM_COST_REVIVE)
 		btn_buy_revive.text = "Buy (%d G)" % GameData.ITEM_COST_REVIVE
+		
+	if camp_shop_modal:
+		var btn_buy_mint = camp_shop_modal.find_child("BtnBuyMint", true, false) as Button
+		if btn_buy_mint:
+			btn_buy_mint.disabled = (cur_gold < GameData.MINT_COST_GOLD)
+			btn_buy_mint.text = "Buy (%d G)" % GameData.MINT_COST_GOLD
+			_apply_retro_button_style(btn_buy_mint, Color(0.2, 0.6, 0.4), Color(0.3, 0.8, 0.5), false)
+		var mint_count_lbl = camp_shop_modal.find_child("MintCountLbl", true, false) as Label
+		if mint_count_lbl:
+			mint_count_lbl.text = GameData.tr_text("Inventory: %d Mints", "Inventario: %d Mentas") % GameData.player_mints
 	
 	var camp_title = campaign_modal.get_node_or_null("Box/Title")
 	var camp_desc = campaign_modal.get_node_or_null("Box/Desc")
@@ -6637,6 +6647,13 @@ func _on_buy_ether_pressed() -> void:
 		GameData.play_combat_sfx("purchase")
 		update_campaign_ui()
 
+func _on_buy_mint_pressed() -> void:
+	var res = GameData.buy_mint_at_camp()
+	if res.get("success", false):
+		GameData.add_daily_mission_progress("buy_camp_shop", 1)
+		GameData.play_combat_sfx("purchase")
+		update_campaign_ui()
+
 func _on_camp_shop_pressed() -> void:
 	if camp_shop_modal:
 		camp_shop_modal.visible = true
@@ -6810,6 +6827,52 @@ func _setup_camp_modals() -> void:
 		if sp_title: sp_title.text = GameData.tr_text("Super Potion (+60 HP to a PKMN)", "Súper Poción (+60 HP a un PKMN)")
 		var hp_title = shop_section.get_node_or_null("ShopVBox/HyperPotionRow/HyperPotionInfo/HyperPotionTitle") as Label
 		if hp_title: hp_title.text = GameData.tr_text("Hyper Potion (Full 100% HP Recovery)", "Híper Poción (Recupera el 100% de HP)")
+		
+		# Fila de la Menta de Naturaleza (500 G)
+		var shop_vbox_node = shop_section.get_node_or_null("ShopVBox")
+		if shop_vbox_node and not shop_vbox_node.get_node_or_null("MintRow"):
+			var mint_row = HBoxContainer.new()
+			mint_row.name = "MintRow"
+			mint_row.add_theme_constant_override("separation", 10)
+			
+			var mint_icon = TextureRect.new()
+			mint_icon.name = "MintIcon"
+			mint_icon.custom_minimum_size = Vector2(36, 36)
+			mint_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			mint_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			mint_icon.texture = GameData.get_item_texture("mint")
+			mint_row.add_child(mint_icon)
+			
+			var mint_info = VBoxContainer.new()
+			mint_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			mint_info.alignment = BoxContainer.ALIGNMENT_CENTER
+			
+			var mint_title = Label.new()
+			mint_title.name = "MintTitle"
+			mint_title.text = GameData.tr_text("Nature Mint (Modifies Pokémon Nature)", "Menta de Naturaleza (Modifica la Naturaleza)")
+			mint_title.add_theme_font_size_override("font_size", 12)
+			mint_info.add_child(mint_title)
+			
+			var mint_count_lbl = Label.new()
+			mint_count_lbl.name = "MintCountLbl"
+			mint_count_lbl.text = GameData.tr_text("Inventory: %d Mints", "Inventario: %d Mentas") % GameData.player_mints
+			mint_count_lbl.add_theme_font_size_override("font_size", 11)
+			mint_count_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 0.6))
+			mint_info.add_child(mint_count_lbl)
+			mint_row.add_child(mint_info)
+			
+			var btn_buy_mint = Button.new()
+			btn_buy_mint.name = "BtnBuyMint"
+			btn_buy_mint.text = "Buy (500 G)"
+			btn_buy_mint.custom_minimum_size = Vector2(100, 34)
+			btn_buy_mint.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			btn_buy_mint.add_theme_font_size_override("font_size", 12)
+			_apply_retro_button_style(btn_buy_mint, Color(0.2, 0.6, 0.4), Color(0.3, 0.8, 0.5), false)
+			btn_buy_mint.pressed.connect(func():
+				_on_buy_mint_pressed()
+			)
+			mint_row.add_child(btn_buy_mint)
+			shop_vbox_node.add_child(mint_row)
 		
 	# Las Piedras Evolutivas ya NO se venden en la Tienda del Campamento:
 	# solo se compran desde el selector de Evolución de cada Pokémon (botón con la textura de la piedra).
@@ -14082,14 +14145,19 @@ func show_collection_card(index: int) -> void:
 		var tier_str = str(card.get("tier", "C")).strip_edges().to_upper()
 		if tier_str == "":
 			tier_str = "C"
-		detail_sub.text = "No. %s • Stage: %s • %s Type • %s %s • [Tier %s] • Copies: x%d" % [p_num, stage_raw, theme["name"], r_info.get("stars", "⭐"), r_info.get("name", "Common"), tier_str, stock]
+		var eff = GameData.get_pokemon_effective_stats(cid)
+		var lvl = eff.get("level", 1)
+		var nat_key = eff.get("nature", "neutral")
+		var nat_name = GameData.get_nature_display_name(nat_key)
+		var nat_sum = GameData.get_nature_summary(nat_key)
+		detail_sub.text = "No. %s • Lv. %d • %s Nature • Stage: %s • %s Type • %s %s • [Tier %s] • Copies: x%d" % [p_num, lvl, nat_name, stage_raw, theme["name"], r_info.get("stars", "⭐"), r_info.get("name", "Common"), tier_str, stock]
 		
 		stats_panel.visible = true
 		var evo_target = str(card.get("evolves_to", "")).strip_edges()
 		var req_exp_val = GameData.get_pokemon_required_exp(int(card.get("id", -1)))
 		var evo_suffix = ("  |  ⏫ Evolves to %s (%d EXP)" % [evo_target, req_exp_val]) if (evo_target != "" and req_exp_val > 0) else ""
-		stats_hp.text = "❤️ Max HP: %d HP%s" % [int(card.get("hp", 10)), evo_suffix]
-		stats_spd.text = "👟 SPD: %d | ⚔️ ATK: %d | 🛡️ DEF: %d" % [int(card.get("speed", 1)), int(card.get("attack", 10)), int(card.get("defense", 10))]
+		stats_hp.text = "❤️ Max HP: %d HP%s" % [eff.hp, evo_suffix]
+		stats_spd.text = "👟 SPD: %d | ⚔️ ATK: %d | 🛡️ DEF: %d" % [eff.speed, eff.attack, eff.defense]
 		stats_energy.text = "🔋 Recovery: +%d EN / turn (Max: %d)  |  🏆 Rank: Tier %s" % [int(card.get("recover", 1)), int(card.get("energy", 3)), tier_str]
 		
 		var weak_key = str(card.get("weakness", "NONE")).to_upper()
@@ -14120,6 +14188,9 @@ func show_collection_card(index: int) -> void:
 			res_row.visible = true
 			res_icon.visible = false
 			res_val.text = "None"
+			
+		# Panel de Mejora de Carta y Naturaleza
+		_setup_detail_card_upgrade_panel(cid, card, is_unlocked, index)
 			
 		# Pasiva
 		var pas_name = str(card.get("passive_name", "")).strip_edges()
@@ -14174,6 +14245,7 @@ func show_collection_card(index: int) -> void:
 		m2_desc.text = m2_desc_val if m2_desc_val != "" else "Secondary attack."
 	else:
 		# Si NO la tienes: solo número en Pokédex y ??? en los datos
+		_setup_detail_card_upgrade_panel(cid, card, false, index)
 		if locked_notice_panel:
 			locked_notice_panel.visible = true
 			
@@ -14247,6 +14319,307 @@ func _on_evolution_chain_card_clicked(target_id: int) -> void:
 					show_collection_card(j)
 					return
 			break
+
+var nature_selection_modal: Control = null
+
+func _setup_detail_card_upgrade_panel(cid: int, card: Dictionary, is_unlocked: bool, current_idx: int) -> void:
+	if not details_box:
+		return
+	var old = details_box.get_node_or_null("CardUpgradePanel")
+	if old:
+		old.queue_free()
+		
+	if not is_unlocked:
+		return
+		
+	var eff = GameData.get_pokemon_effective_stats(cid)
+	var lvl = eff.get("level", 1)
+	var nat_key = eff.get("nature", "neutral")
+	var nat_name = GameData.get_nature_display_name(nat_key)
+	var nat_sum = GameData.get_nature_summary(nat_key)
+	var cur_gold = GameData.get_active_campaign_gold()
+	var is_es = (GameData.settings_language == "es")
+	
+	var panel = PanelContainer.new()
+	panel.name = "CardUpgradePanel"
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.09, 0.13, 0.20, 0.95)
+	sb.border_color = Color(0.3, 0.55, 0.8, 0.7)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(8)
+	panel.add_theme_stylebox_override("panel", sb)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	panel.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 6)
+	margin.add_child(vbox)
+	
+	# Header
+	var title = Label.new()
+	title.text = "⏫ MEJORA DE CARTA & NATURALEZA (LV 1-10)" if is_es else "⏫ CARD UPGRADES & NATURE (LV 1-10)"
+	title.add_theme_font_size_override("font_size", 12)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+	vbox.add_child(title)
+	
+	# Evolutionary line notice
+	var line_names = GameData.get_pokemon_line_member_names(cid)
+	var line_lbl = Label.new()
+	line_lbl.text = "🔗 " + ("Afecta a toda la línea: %s" if is_es else "Shared by evolution line: %s") % ", ".join(line_names)
+	line_lbl.add_theme_font_size_override("font_size", 9)
+	line_lbl.add_theme_color_override("font_color", Color(0.5, 0.85, 0.95))
+	vbox.add_child(line_lbl)
+	
+	# Level Row
+	var lvl_row = HBoxContainer.new()
+	lvl_row.add_theme_constant_override("separation", 8)
+	
+	var star_str = ""
+	for s in range(1, 11):
+		star_str += "★" if s <= lvl else "☆"
+		
+	var lvl_lbl = Label.new()
+	lvl_lbl.text = ("⭐ Nivel %d/10  [%s]" if is_es else "⭐ Level %d/10  [%s]") % [lvl, star_str]
+	lvl_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lvl_lbl.add_theme_font_size_override("font_size", 11)
+	lvl_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4))
+	lvl_row.add_child(lvl_lbl)
+	
+	if lvl < GameData.MAX_CARD_LEVEL:
+		var next_cost = GameData.get_card_level_up_cost(lvl)
+		var btn_lvl = Button.new()
+		btn_lvl.text = ("⏫ Subir a Lv. %d (%d G)" if is_es else "⏫ Level Up to Lv. %d (%d G)") % [lvl + 1, next_cost]
+		btn_lvl.custom_minimum_size = Vector2(140, 30)
+		btn_lvl.add_theme_font_size_override("font_size", 10)
+		var can_afford = (cur_gold >= next_cost)
+		btn_lvl.disabled = not can_afford
+		if can_afford:
+			_apply_retro_button_style(btn_lvl, Color(0.2, 0.6, 0.35), Color(0.35, 0.85, 0.5), false)
+		else:
+			_apply_retro_button_style(btn_lvl, Color(0.3, 0.35, 0.4), Color(0.4, 0.45, 0.5), false)
+		btn_lvl.pressed.connect(func():
+			var u_res = GameData.upgrade_pokemon_line_level(cid)
+			if u_res.get("success", false):
+				GameData.play_combat_sfx("level_up")
+				show_card_details(card, is_unlocked, current_idx)
+		)
+		lvl_row.add_child(btn_lvl)
+	else:
+		var max_lbl = Label.new()
+		max_lbl.text = "👑 " + ("¡NIVEL MÁXIMO!" if is_es else "MAX LEVEL!")
+		max_lbl.add_theme_font_size_override("font_size", 10)
+		max_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+		lvl_row.add_child(max_lbl)
+	vbox.add_child(lvl_row)
+	
+	# Nature Row
+	var nat_row = HBoxContainer.new()
+	nat_row.add_theme_constant_override("separation", 8)
+	
+	var nat_lbl = Label.new()
+	nat_lbl.text = "🍃 %s: %s (%s)" % [
+		"Naturaleza" if is_es else "Nature",
+		nat_name,
+		nat_sum
+	]
+	nat_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nat_lbl.add_theme_font_size_override("font_size", 11)
+	nat_lbl.add_theme_color_override("font_color", Color(0.65, 0.95, 0.7))
+	nat_row.add_child(nat_lbl)
+	
+	var btn_nat = Button.new()
+	if GameData.player_mints > 0:
+		btn_nat.text = ("🍃 Menta (%d)" if is_es else "🍃 Mint (%d)") % GameData.player_mints
+	else:
+		btn_nat.text = "🍃 " + ("Menta (500 G)" if is_es else "Mint (500 G)")
+	btn_nat.custom_minimum_size = Vector2(130, 30)
+	btn_nat.add_theme_font_size_override("font_size", 10)
+	_apply_retro_button_style(btn_nat, Color(0.25, 0.55, 0.45), Color(0.4, 0.8, 0.65), false)
+	btn_nat.pressed.connect(func():
+		_open_nature_selection_modal(cid, current_idx)
+	)
+	nat_row.add_child(btn_nat)
+	vbox.add_child(nat_row)
+	
+	# Insert into details_box right after stats_panel
+	details_box.add_child(panel)
+	if stats_panel:
+		var sp_idx = stats_panel.get_index()
+		details_box.move_child(panel, sp_idx + 1)
+
+func _open_nature_selection_modal(cid: int, card_idx: int) -> void:
+	if nature_selection_modal != null:
+		nature_selection_modal.queue_free()
+		
+	var is_es = (GameData.settings_language == "es")
+	var pkmn_name = GameData.get_pokemon_data(cid).get("name", "PKMN")
+	var line_names = GameData.get_pokemon_line_member_names(cid)
+	var cur_nature = GameData.get_pokemon_line_nature(cid)
+	var cur_gold = GameData.get_active_campaign_gold()
+	
+	nature_selection_modal = Control.new()
+	nature_selection_modal.name = "NatureSelectionModal"
+	nature_selection_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	nature_selection_modal.mouse_filter = Control.MOUSE_FILTER_STOP
+	nature_selection_modal.z_index = 80
+	add_child(nature_selection_modal)
+	
+	var backdrop = ColorRect.new()
+	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
+	backdrop.color = Color(0, 0, 0, 0.75)
+	nature_selection_modal.add_child(backdrop)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	nature_selection_modal.add_child(center)
+	
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(480, 520)
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.10, 0.13, 0.19, 0.98)
+	sb.border_color = Color(0.35, 0.75, 0.55, 0.9)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	panel.add_theme_stylebox_override("panel", sb)
+	center.add_child(panel)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 16)
+	margin.add_theme_constant_override("margin_right", 16)
+	margin.add_theme_constant_override("margin_top", 14)
+	margin.add_theme_constant_override("margin_bottom", 14)
+	panel.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	margin.add_child(vbox)
+	
+	# Title Row
+	var head_row = HBoxContainer.new()
+	var title = Label.new()
+	title.text = "🍃 SELECCIONAR NATURALEZA" if is_es else "🍃 SELECT NATURE"
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color(0.4, 0.95, 0.65))
+	head_row.add_child(title)
+	
+	var btn_close = Button.new()
+	btn_close.text = "✕"
+	btn_close.custom_minimum_size = Vector2(30, 30)
+	btn_close.pressed.connect(func(): nature_selection_modal.queue_free())
+	head_row.add_child(btn_close)
+	vbox.add_child(head_row)
+	
+	var sub = Label.new()
+	sub.text = ("Modifica la naturaleza para %s y toda su línea evolutiva (%s)." if is_es else "Change nature for %s and its evolutionary line (%s).") % [pkmn_name, ", ".join(line_names)]
+	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	sub.add_theme_font_size_override("font_size", 10)
+	sub.add_theme_color_override("font_color", Color(0.8, 0.85, 0.9))
+	vbox.add_child(sub)
+	
+	var mint_info_lbl = Label.new()
+	if GameData.player_mints > 0:
+		mint_info_lbl.text = ("🎒 Mentas en posesión: %d (Se consumirá 1 Menta)" if is_es else "🎒 Mints owned: %d (1 Mint will be consumed)") % GameData.player_mints
+		mint_info_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
+	else:
+		mint_info_lbl.text = ("💰 Mentas en posesión: 0 (Costo: 500 G • Oro actual: %d G)" if is_es else "💰 Mints owned: 0 (Cost: 500 G • Current Gold: %d G)") % cur_gold
+		mint_info_lbl.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3) if cur_gold >= 500 else Color(0.9, 0.45, 0.45))
+	mint_info_lbl.add_theme_font_size_override("font_size", 10)
+	vbox.add_child(mint_info_lbl)
+	
+	var sep = HSeparator.new()
+	vbox.add_child(sep)
+	
+	var scroll = ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(scroll)
+	
+	var list_vbox = VBoxContainer.new()
+	list_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list_vbox.add_theme_constant_override("separation", 6)
+	scroll.add_child(list_vbox)
+	
+	for nat_key in GameData.NATURES:
+		var n_entry = GameData.NATURES[nat_key]
+		var is_this_current = (nat_key == cur_nature)
+		var n_name = str(n_entry.get("name_es" if is_es else "name_en", nat_key.capitalize()))
+		var n_sum = GameData.get_nature_summary(nat_key)
+		
+		var row_btn = Button.new()
+		row_btn.custom_minimum_size = Vector2(0, 42)
+		row_btn.focus_mode = Control.FOCUS_NONE
+		
+		var r_sb = StyleBoxFlat.new()
+		if is_this_current:
+			r_sb.bg_color = Color(0.18, 0.28, 0.24, 0.95)
+			r_sb.border_color = Color(0.4, 0.9, 0.6, 0.9)
+			r_sb.set_border_width_all(2)
+		else:
+			r_sb.bg_color = Color(0.08, 0.11, 0.16, 0.9)
+			r_sb.border_color = Color(0.25, 0.35, 0.45, 0.6)
+			r_sb.set_border_width_all(1)
+		r_sb.set_corner_radius_all(6)
+		row_btn.add_theme_stylebox_override("normal", r_sb)
+		
+		var r_sb_hover = r_sb.duplicate()
+		r_sb_hover.bg_color = r_sb_hover.bg_color.lightened(0.1)
+		row_btn.add_theme_stylebox_override("hover", r_sb_hover)
+		
+		var r_margin = MarginContainer.new()
+		r_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		r_margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+		r_margin.add_theme_constant_override("margin_left", 8)
+		r_margin.add_theme_constant_override("margin_right", 8)
+		row_btn.add_child(r_margin)
+		
+		var r_hbox = HBoxContainer.new()
+		r_hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		r_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		r_margin.add_child(r_hbox)
+		
+		var n_title_lbl = Label.new()
+		n_title_lbl.text = n_name + (" (Actual)" if is_this_current else "")
+		n_title_lbl.custom_minimum_size = Vector2(120, 0)
+		n_title_lbl.add_theme_font_size_override("font_size", 11)
+		n_title_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4) if is_this_current else Color.WHITE)
+		r_hbox.add_child(n_title_lbl)
+		
+		var n_sum_lbl = Label.new()
+		n_sum_lbl.text = n_sum
+		n_sum_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		n_sum_lbl.add_theme_font_size_override("font_size", 10)
+		n_sum_lbl.add_theme_color_override("font_color", Color(0.4, 0.85, 1.0) if nat_key == "neutral" else Color(0.65, 0.95, 0.7))
+		r_hbox.add_child(n_sum_lbl)
+		
+		var action_text = "✓" if is_this_current else ("Usar Menta" if GameData.player_mints > 0 else "500 G")
+		var act_lbl = Label.new()
+		act_lbl.text = action_text
+		act_lbl.add_theme_font_size_override("font_size", 10)
+		act_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5) if (GameData.player_mints > 0 or cur_gold >= 500) else Color(0.8, 0.4, 0.4))
+		r_hbox.add_child(act_lbl)
+		
+		if not is_this_current and (GameData.player_mints > 0 or cur_gold >= 500):
+			row_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			var chosen_key = nat_key
+			row_btn.pressed.connect(func():
+				var use_mint_item = (GameData.player_mints > 0)
+				if not use_mint_item:
+					GameData.add_active_campaign_gold(-500)
+				GameData.set_pokemon_line_nature(cid, chosen_key, use_mint_item)
+				GameData.play_combat_sfx("purchase")
+				nature_selection_modal.queue_free()
+				if card_idx >= 0 and card_idx < current_sorted_collection.size():
+					show_card_details(current_sorted_collection[card_idx], true, card_idx)
+			)
+		elif not is_this_current:
+			row_btn.disabled = true
+			
+		list_vbox.add_child(row_btn)
 
 func _update_detail_fav_button_visuals(is_fav: bool) -> void:
 	if not btn_col_fav_toggle:

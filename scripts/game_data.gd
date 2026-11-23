@@ -153,6 +153,8 @@ class PokemonData:
 	var current_exp: int = 0
 	var max_exp: int = 10
 	var held_item: String = ""
+	var level: int = 1
+	var nature: String = "neutral"
 	var moves: Array = [] # Siempre 2 movimientos activos
 
 	func get_required_exp() -> int:
@@ -5834,6 +5836,303 @@ func _build_evolution_node_ui(node_dict: Dictionary, on_pokemon_selected: Callab
 		
 	return branch_hbox
 
+const MAX_CARD_LEVEL: int = 10
+const MINT_COST_GOLD: int = 500
+
+const LEVEL_UP_GOLD_COSTS: Array[int] = [
+	0,     # Lv 0 (unused)
+	100,   # Lv 1 -> 2
+	200,   # Lv 2 -> 3
+	350,   # Lv 3 -> 4
+	550,   # Lv 4 -> 5
+	800,   # Lv 5 -> 6
+	1100,  # Lv 6 -> 7
+	1500,  # Lv 7 -> 8
+	2000,  # Lv 8 -> 9
+	2600   # Lv 9 -> 10
+]
+
+const NATURES: Dictionary = {
+	"neutral": {
+		"key": "neutral",
+		"name_en": "Hardy",
+		"name_es": "Neutra",
+		"increased": "",
+		"decreased": "",
+		"desc_en": "Neutral nature. Balanced growth with no stat modifiers.",
+		"desc_es": "Naturaleza neutra. Crecimiento equilibrado sin modificaciones."
+	},
+	"adamant": {
+		"key": "adamant",
+		"name_en": "Adamant",
+		"name_es": "Firme",
+		"increased": "attack",
+		"decreased": "defense",
+		"desc_en": "+10% ATK, -10% DEF. Prioritizes Attack growth on level-up.",
+		"desc_es": "+10% ATK, -10% DEF. Prioriza el aumento de Ataque al subir nivel."
+	},
+	"brave": {
+		"key": "brave",
+		"name_en": "Brave",
+		"name_es": "Audaz",
+		"increased": "attack",
+		"decreased": "speed",
+		"desc_en": "+10% ATK, -10% SPD. Prioritizes Attack growth on level-up.",
+		"desc_es": "+10% ATK, -10% SPD. Prioriza el aumento de Ataque al subir nivel."
+	},
+	"naughty": {
+		"key": "naughty",
+		"name_en": "Naughty",
+		"name_es": "Pícara",
+		"increased": "attack",
+		"decreased": "hp",
+		"desc_en": "+10% ATK, -10% HP. Prioritizes Attack growth on level-up.",
+		"desc_es": "+10% ATK, -10% HP. Prioriza el aumento de Ataque al subir nivel."
+	},
+	"bold": {
+		"key": "bold",
+		"name_en": "Bold",
+		"name_es": "Osada",
+		"increased": "defense",
+		"decreased": "attack",
+		"desc_en": "+10% DEF, -10% ATK. Prioritizes Defense growth on level-up.",
+		"desc_es": "+10% DEF, -10% ATK. Prioriza el aumento de Defensa al subir nivel."
+	},
+	"relaxed": {
+		"key": "relaxed",
+		"name_en": "Relaxed",
+		"name_es": "Plácida",
+		"increased": "defense",
+		"decreased": "speed",
+		"desc_en": "+10% DEF, -10% SPD. Prioritizes Defense growth on level-up.",
+		"desc_es": "+10% DEF, -10% SPD. Prioriza el aumento de Defensa al subir nivel."
+	},
+	"impish": {
+		"key": "impish",
+		"name_en": "Impish",
+		"name_es": "Agitada",
+		"increased": "defense",
+		"decreased": "hp",
+		"desc_en": "+10% DEF, -10% HP. Prioritizes Defense growth on level-up.",
+		"desc_es": "+10% DEF, -10% HP. Prioriza el aumento de Defensa al subir nivel."
+	},
+	"jolly": {
+		"key": "jolly",
+		"name_en": "Jolly",
+		"name_es": "Alegre",
+		"increased": "speed",
+		"decreased": "attack",
+		"desc_en": "+10% SPD, -10% ATK. Prioritizes Speed growth on level-up.",
+		"desc_es": "+10% SPD, -10% ATK. Prioriza el aumento de Velocidad al subir nivel."
+	},
+	"timid": {
+		"key": "timid",
+		"name_en": "Timid",
+		"name_es": "Miedosa",
+		"increased": "speed",
+		"decreased": "defense",
+		"desc_en": "+10% SPD, -10% DEF. Prioritizes Speed growth on level-up.",
+		"desc_es": "+10% SPD, -10% DEF. Prioriza el aumento de Velocidad al subir nivel."
+	},
+	"naive": {
+		"key": "naive",
+		"name_en": "Naive",
+		"name_es": "Ingenua",
+		"increased": "speed",
+		"decreased": "hp",
+		"desc_en": "+10% SPD, -10% HP. Prioritizes Speed growth on level-up.",
+		"desc_es": "+10% SPD, -10% HP. Prioriza el aumento de Velocidad al subir nivel."
+	},
+	"calm": {
+		"key": "calm",
+		"name_en": "Calm",
+		"name_es": "Serena",
+		"increased": "hp",
+		"decreased": "attack",
+		"desc_en": "+10% HP, -10% ATK. Prioritizes HP growth on level-up.",
+		"desc_es": "+10% HP, -10% ATK. Prioriza el aumento de HP al subir nivel."
+	},
+	"gentle": {
+		"key": "gentle",
+		"name_en": "Gentle",
+		"name_es": "Amable",
+		"increased": "hp",
+		"decreased": "defense",
+		"desc_en": "+10% HP, -10% DEF. Prioritizes HP growth on level-up.",
+		"desc_es": "+10% HP, -10% DEF. Prioriza el aumento de HP al subir nivel."
+	},
+	"careful": {
+		"key": "careful",
+		"name_en": "Careful",
+		"name_es": "Cauta",
+		"increased": "hp",
+		"decreased": "speed",
+		"desc_en": "+10% HP, -10% SPD. Prioritizes HP growth on level-up.",
+		"desc_es": "+10% HP, -10% SPD. Prioriza el aumento de HP al subir nivel."
+	}
+}
+
+func get_nature_data(nature_key: String) -> Dictionary:
+	var clean = nature_key.strip_edges().to_lower()
+	if NATURES.has(clean):
+		return NATURES[clean]
+	return NATURES["neutral"]
+
+func get_nature_display_name(nature_key: String) -> String:
+	var nd = get_nature_data(nature_key)
+	var is_es = (settings_language == "es")
+	return str(nd.get("name_es" if is_es else "name_en", "Neutra" if is_es else "Hardy"))
+
+func get_nature_summary(nature_key: String) -> String:
+	var nd = get_nature_data(nature_key)
+	var inc = str(nd.get("increased", "")).to_upper()
+	var dec = str(nd.get("decreased", "")).to_upper()
+	if inc == "" or dec == "":
+		return "Neutra / Balanced" if settings_language == "es" else "Neutral / Balanced"
+	return "+10% " + inc + ", -10% " + dec
+
+func get_card_level_up_cost(current_level: int) -> int:
+	if current_level < 1 or current_level >= MAX_CARD_LEVEL:
+		return 0
+	if current_level < LEVEL_UP_GOLD_COSTS.size():
+		return LEVEL_UP_GOLD_COSTS[current_level]
+	return 2600
+
+func get_pokemon_line_level(pkmn_id: int) -> int:
+	var root_id = get_root_pokemon_id(pkmn_id)
+	var entry = player_line_upgrades.get(str(root_id), {})
+	if typeof(entry) == TYPE_DICTIONARY:
+		return clampi(int(entry.get("level", 1)), 1, MAX_CARD_LEVEL)
+	return 1
+
+func get_pokemon_line_nature(pkmn_id: int) -> String:
+	var root_id = get_root_pokemon_id(pkmn_id)
+	var entry = player_line_upgrades.get(str(root_id), {})
+	if typeof(entry) == TYPE_DICTIONARY:
+		return str(entry.get("nature", "neutral")).to_lower()
+	return "neutral"
+
+func get_pokemon_line_member_names(pkmn_id: int) -> Array[String]:
+	var chain = get_full_evolution_chain(pkmn_id)
+	var names: Array[String] = []
+	var stack: Array = []
+	var r = chain.get("root", {})
+	if typeof(r) == TYPE_DICTIONARY and not r.is_empty():
+		stack.append(r)
+	while not stack.is_empty():
+		var node = stack.pop_back()
+		if typeof(node) == TYPE_DICTIONARY:
+			var n = str(node.get("name", "")).strip_edges()
+			if n != "" and not (n in names):
+				names.append(n)
+			var chs = node.get("children", [])
+			if typeof(chs) == TYPE_ARRAY:
+				for ch in chs:
+					stack.push_back(ch)
+	return names
+
+func get_pokemon_effective_stats(pkmn_id: int) -> Dictionary:
+	if not pokemon_catalog.has(pkmn_id):
+		return {"hp": 10, "attack": 10, "defense": 10, "speed": 1, "level": 1, "nature": "neutral", "base_hp": 10, "base_atk": 10, "base_def": 10, "base_spd": 1}
+	var d = pokemon_catalog[pkmn_id]
+	var base_hp = int(d.get("hp", 10))
+	var base_atk = int(d.get("attack", 10))
+	var base_def = int(d.get("defense", 10))
+	var base_spd = int(d.get("speed", 1))
+	
+	var root_id = get_root_pokemon_id(pkmn_id)
+	var level = get_pokemon_line_level(root_id)
+	var nature_key = get_pokemon_line_nature(root_id)
+	var n_data = get_nature_data(nature_key)
+	
+	var inc_stat = str(n_data.get("increased", "")).to_lower()
+	var dec_stat = str(n_data.get("decreased", "")).to_lower()
+	var lvl_bonus = level - 1 # 0 at Lv 1, up to 9 at Lv 10
+	
+	var calc_val = func(stat_name: String, base_val: int) -> int:
+		var growth = 0.02
+		var nature_mult = 1.0
+		if stat_name == inc_stat:
+			growth = 0.03
+			nature_mult = 1.10
+		elif stat_name == dec_stat:
+			growth = 0.01
+			nature_mult = 0.90
+		var final_v = float(base_val) * nature_mult * (1.0 + float(lvl_bonus) * growth)
+		return max(1, int(round(final_v)))
+		
+	var eff_hp = calc_val.call("hp", base_hp)
+	var eff_atk = calc_val.call("attack", base_atk)
+	var eff_def = calc_val.call("defense", base_def)
+	
+	var spd_growth = 0
+	if level >= 5: spd_growth += 1
+	if level >= 10: spd_growth += 1
+	var eff_spd = base_spd + spd_growth
+	if inc_stat == "speed":
+		eff_spd += 1
+	elif dec_stat == "speed":
+		eff_spd = max(1, eff_spd - 1)
+		
+	return {
+		"hp": eff_hp,
+		"attack": eff_atk,
+		"defense": eff_def,
+		"speed": eff_spd,
+		"level": level,
+		"nature": nature_key,
+		"nature_data": n_data,
+		"base_hp": base_hp,
+		"base_atk": base_atk,
+		"base_def": base_def,
+		"base_spd": base_spd
+	}
+
+func upgrade_pokemon_line_level(pkmn_id: int) -> Dictionary:
+	var root_id = get_root_pokemon_id(pkmn_id)
+	var cur_lvl = get_pokemon_line_level(root_id)
+	if cur_lvl >= MAX_CARD_LEVEL:
+		return {"success": false, "error": "MAX_LEVEL", "level": cur_lvl}
+	var cost = get_card_level_up_cost(cur_lvl)
+	var cur_gold = get_active_campaign_gold()
+	if cur_gold < cost:
+		return {"success": false, "error": "NOT_ENOUGH_GOLD", "cost": cost, "current_gold": cur_gold}
+	
+	add_active_campaign_gold(-cost)
+	var entry = player_line_upgrades.get(str(root_id), {"level": 1, "nature": "neutral"}).duplicate()
+	entry["level"] = cur_lvl + 1
+	player_line_upgrades[str(root_id)] = entry
+	line_upgrades_changed.emit()
+	save_profile()
+	return {"success": true, "new_level": cur_lvl + 1, "cost": cost, "root_id": root_id}
+
+func set_pokemon_line_nature(pkmn_id: int, new_nature: String, consume_mint: bool = true) -> Dictionary:
+	var clean_nat = new_nature.strip_edges().to_lower()
+	if not NATURES.has(clean_nat):
+		return {"success": false, "error": "INVALID_NATURE"}
+	if consume_mint:
+		if player_mints <= 0:
+			return {"success": false, "error": "NO_MINTS"}
+		player_mints -= 1
+		
+	var root_id = get_root_pokemon_id(pkmn_id)
+	var cur_lvl = get_pokemon_line_level(root_id)
+	var entry = player_line_upgrades.get(str(root_id), {"level": cur_lvl, "nature": "neutral"}).duplicate()
+	entry["nature"] = clean_nat
+	player_line_upgrades[str(root_id)] = entry
+	line_upgrades_changed.emit()
+	save_profile()
+	return {"success": true, "nature": clean_nat, "root_id": root_id, "mints_left": player_mints}
+
+func buy_mint_at_camp() -> Dictionary:
+	var cur_gold = get_active_campaign_gold()
+	if cur_gold < MINT_COST_GOLD:
+		return {"success": false, "error": "NOT_ENOUGH_GOLD", "cost": MINT_COST_GOLD}
+	add_active_campaign_gold(-MINT_COST_GOLD)
+	player_mints += 1
+	save_profile()
+	return {"success": true, "mints": player_mints, "cost": MINT_COST_GOLD}
+
 # Recompensa dinámica al derrotar un Pokémon según su rareza y fase
 func calculate_pkmn_defeat_reward(rarity_str: String, stage_str: String = "") -> Dictionary:
 	var r = rarity_str.strip_edges().to_lower()
@@ -5949,6 +6248,17 @@ var player_rare_candies: int = 0:
 	set(val):
 		player_rare_candies = max(0, val)
 		rare_candies_changed.emit(player_rare_candies)
+
+signal mints_changed(new_count: int)
+signal line_upgrades_changed()
+
+var player_mints: int = 0:
+	set(val):
+		player_mints = max(0, val)
+		mints_changed.emit(player_mints)
+
+# Dictionary: String(root_id) -> { "level": int (1..10), "nature": String }
+var player_line_upgrades: Dictionary = {}
 
 var player_card_stocks: Dictionary = {} # int pkmn_id -> int stock_count
 
@@ -7120,7 +7430,7 @@ func open_special_booster_pack() -> Array[Dictionary]:
 	return result
 
 # Genera una instancia viva para combate
-func create_pokemon_instance(pkmn_id: int) -> PokemonData:
+func create_pokemon_instance(pkmn_id: int, is_player: bool = true) -> PokemonData:
 	if not pokemon_catalog.has(pkmn_id):
 		if pokemon_catalog.size() > 0:
 			pkmn_id = all_pokemon_ids[0]
@@ -7142,13 +7452,27 @@ func create_pokemon_instance(pkmn_id: int) -> PokemonData:
 	p.current_exp = 0
 	p.max_exp = p.get_required_exp()
 	p.name = d["name"]
-	p.max_hp = d["hp"]
-	p.current_hp = d["hp"]
-	p.attack = d.get("attack", 10)
-	p.defense = d.get("defense", 10)
+	
+	if is_player:
+		var eff = get_pokemon_effective_stats(pkmn_id)
+		p.level = eff.level
+		p.nature = eff.nature
+		p.max_hp = eff.hp
+		p.current_hp = eff.hp
+		p.attack = eff.attack
+		p.defense = eff.defense
+		p.speed = eff.speed
+	else:
+		p.level = 1
+		p.nature = "neutral"
+		p.max_hp = d["hp"]
+		p.current_hp = d["hp"]
+		p.attack = d.get("attack", 10)
+		p.defense = d.get("defense", 10)
+		p.speed = d["speed"]
+		
 	p.max_energy = d["energy"]
 	p.current_energy = d["energy"]
-	p.speed = d["speed"]
 	p.recover_amount = d["recover"]
 	p.type = d["type"]
 	p.weakness = d["weakness"]
@@ -9741,6 +10065,8 @@ func get_item_texture(item_name: String) -> Texture2D:
 		file_name = "Superpotion.png"
 	elif clean in ["hyper_potion", "hyperpotion", "hyper potion"]:
 		file_name = "Hyperpotion.png"
+	elif clean in ["menta", "mint", "nature_mint", "nature mint", "menta de naturaleza"]:
+		file_name = "Menta.png"
 	elif clean in ["poke_flute", "pokeflute", "poke flute", "poke_flauta", "pokeflauta", "poke flauta"]:
 		file_name = "poke_flute.png"
 	elif clean in ["exp_share", "expshare", "exp share", "repartir_experiencia", "repartir experiencia"]:
@@ -10383,8 +10709,10 @@ func get_save_dict() -> Dictionary:
 		"economy": {
 			"diamonds": player_diamonds,
 			"rare_candies": player_rare_candies,
+			"mints": player_mints,
 			"gold": get_active_campaign_gold()
 		},
+		"line_upgrades": player_line_upgrades.duplicate(true),
 		"collection": {
 			"unlocked_ids": player_unlocked_ids,
 			"stocks": player_card_stocks
@@ -10577,8 +10905,21 @@ func apply_save_dict(data: Dictionary) -> bool:
 	var econ = data.get("economy", {})
 	player_diamonds = int(econ.get("diamonds", 0))
 	player_rare_candies = int(econ.get("rare_candies", 0))
+	player_mints = int(econ.get("mints", 0))
 	diamonds_changed.emit(player_diamonds)
 	rare_candies_changed.emit(player_rare_candies)
+	mints_changed.emit(player_mints)
+	
+	var raw_upgrades = data.get("line_upgrades", {})
+	if typeof(raw_upgrades) == TYPE_DICTIONARY:
+		for k in raw_upgrades.keys():
+			var entry = raw_upgrades[k]
+			if typeof(entry) == TYPE_DICTIONARY:
+				player_line_upgrades[str(k)] = {
+					"level": clampi(int(entry.get("level", 1)), 1, MAX_CARD_LEVEL),
+					"nature": str(entry.get("nature", "neutral")).to_lower()
+				}
+	line_upgrades_changed.emit()
 	
 	# Cargar colección (FUSIÓN INTELIGENTE: Jamás perder cartas ya obtenidas)
 	var col = data.get("collection", {})
@@ -11010,6 +11351,8 @@ func erase_profile() -> void:
 	stats_stadium_tournaments_completed = 0
 	player_diamonds = 0
 	player_rare_candies = 0
+	player_mints = 0
+	player_line_upgrades.clear()
 	set_active_campaign_gold(0)
 	
 	reset_campaign(false)

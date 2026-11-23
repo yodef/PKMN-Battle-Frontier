@@ -322,8 +322,17 @@ func setup(d: Dictionary, is_unlocked: bool = true) -> void:
 	stage_badge.add_theme_stylebox_override("panel", badge_sb)
 
 	# 4. Nombre y Estadísticas Superiores con Icono Oficial
+	var cid = int(d.get("id", -1))
+	var eff = GameData.get_pokemon_effective_stats(cid) if cid != -1 else {}
+	var disp_hp = eff.get("hp", int(d.get("hp", 10))) if not eff.is_empty() else int(d.get("hp", 10))
+	var disp_spd = eff.get("speed", int(d.get("speed", 1))) if not eff.is_empty() else int(d.get("speed", 1))
+	var disp_atk = eff.get("attack", int(d.get("attack", 10))) if not eff.is_empty() else int(d.get("attack", 10))
+	var disp_def = eff.get("defense", int(d.get("defense", 10))) if not eff.is_empty() else int(d.get("defense", 10))
+	var disp_lvl = eff.get("level", 1) if not eff.is_empty() else 1
+	var disp_nat = eff.get("nature", "neutral") if not eff.is_empty() else "neutral"
+
 	name_label.text = str(d.get("short_name", d.get("name", "PKMN")))
-	hp_label.text = "%d HP" % int(d.get("hp", 10))
+	hp_label.text = "%d HP" % disp_hp
 	type_icon.texture = GameData.get_type_icon_texture(type_key)
 
 	# 5. Cargar Sprite Limpio
@@ -332,7 +341,11 @@ func setup(d: Dictionary, is_unlocked: bool = true) -> void:
 	sprite_rect.texture = tex
 
 	# 6. Tira de Información Pokédex y Rango en Tier List
-	pokedex_label.text = "No. %s • %s Type" % [p_num, theme.get("name", type_key)]
+	if disp_lvl > 1 or disp_nat != "neutral":
+		var nat_str = " • %s" % GameData.get_nature_display_name(disp_nat) if disp_nat != "neutral" else ""
+		pokedex_label.text = "No. %s • Lv. %d%s • %s" % [p_num, disp_lvl, nat_str, theme.get("name", type_key)]
+	else:
+		pokedex_label.text = "No. %s • %s Type" % [p_num, theme.get("name", type_key)]
 	if tier_badge and tier_label:
 		var tier_val = str(d.get("tier", "C")).strip_edges().to_upper()
 		if tier_val == "":
@@ -390,7 +403,7 @@ func setup(d: Dictionary, is_unlocked: bool = true) -> void:
 		res_icon.visible = false
 		res_val.text = "—"
 
-	speed_label.text = "👟%d ⚔️%d 🛡️%d" % [int(d.get("speed", 1)), int(d.get("attack", 10)), int(d.get("defense", 10))]
+	speed_label.text = "👟%d ⚔️%d 🛡️%d" % [disp_spd, disp_atk, disp_def]
 	
 	# 9. Efecto Foil Holográfico según Rareza (Rare, Epic, Legendary, Boss, Gym Leader Ace, Elite Four Ace)
 	var card_rarity = str(d.get("rarity", "Common"))

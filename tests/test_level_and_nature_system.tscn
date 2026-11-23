@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://levelnaturesystem01"]
+
+[ext_resource type="Script" path="res://tests/test_level_and_nature_system.gd" id="1_test"]
+
+[node name="TestLevelAndNatureSystem" type="Node"]
+script = ExtResource("1_test")
