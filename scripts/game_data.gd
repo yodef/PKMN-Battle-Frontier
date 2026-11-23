@@ -4668,12 +4668,6 @@ func load_moves_from_csv() -> void:
 		var m_desc = get_val.call("description", 9, "")
 		var m_sfx = get_val.call("sfx", 10, "")
 		var m_acc = int(get_val.call("accuracy", 11, "100"))
-		if m_boost_cost == 0:
-			var desc_low = m_desc.to_lower()
-			if "use 1 extra energy" in desc_low:
-				m_boost_cost = 1
-			elif "use 2 extra energy" in desc_low:
-				m_boost_cost = 2
 		
 		var move_entry = {
 			"id": m_id,
@@ -8381,7 +8375,7 @@ func use_super_potion_on_campaign_pkmn(index: int) -> bool:
 		return false # No cura si está KO, requiere Revive
 	if p_data["current_hp"] >= p_data["max_hp"]:
 		return false # Ya está al máximo
-	p_data["current_hp"] = min(p_data["max_hp"], p_data["current_hp"] + 25)
+	p_data["current_hp"] = min(p_data["max_hp"], p_data["current_hp"] + 60)
 	inv["super_potion"] -= 1
 	save_profile()
 	return true
@@ -8898,11 +8892,11 @@ func is_valid_chaos_pokemon(pkmn_id: int) -> bool:
 	var st = str(cat.get("stage", "Basic")).strip_edges().to_lower()
 	var ev_from = str(cat.get("evolves_from", "")).strip_edges()
 	var is_legendary = ((r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]) or (st == "legendary")) and ev_from == ""
-	var is_stage2_dragon = (st in ["stage 2", "stage2", "fase 2"]) and is_pokemon_dragon(cat)
+	var is_stage2_eligible = (st in ["stage 2", "stage2", "fase 2"]) and (is_pokemon_dragon(cat) or is_line_legendary(pkmn_id))
 	
 	if is_legendary:
 		return true
-	elif is_stage2_dragon:
+	elif is_stage2_eligible:
 		return has_all_preevolutions_unlocked(pkmn_id)
 	return false
 

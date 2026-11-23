@@ -6779,6 +6779,13 @@ func _setup_camp_modals() -> void:
 		var empty_sb = StyleBoxEmpty.new()
 		shop_section.add_theme_stylebox_override("panel", empty_sb)
 		
+		var p_title = shop_section.get_node_or_null("ShopVBox/PotionRow/ShopInfo/ItemTitle") as Label
+		if p_title: p_title.text = GameData.tr_text("Potion (+25 HP to an active PKMN)", "Poción (+25 HP a un PKMN activo)")
+		var sp_title = shop_section.get_node_or_null("ShopVBox/SuperPotionRow/SuperPotionInfo/SuperPotionTitle") as Label
+		if sp_title: sp_title.text = GameData.tr_text("Super Potion (+60 HP to a PKMN)", "Súper Poción (+60 HP a un PKMN)")
+		var hp_title = shop_section.get_node_or_null("ShopVBox/HyperPotionRow/HyperPotionInfo/HyperPotionTitle") as Label
+		if hp_title: hp_title.text = GameData.tr_text("Hyper Potion (Full 100% HP Recovery)", "Híper Poción (Recupera el 100% de HP)")
+		
 	# Las Piedras Evolutivas ya NO se venden en la Tienda del Campamento:
 	# solo se compran desde el selector de Evolución de cada Pokémon (botón con la textura de la piedra).
 	camp_shop_stones_list = null
@@ -7190,20 +7197,20 @@ func _refresh_camp_bag_items_ui() -> void:
 		item_defs = [
 			{
 				"id": "potion",
-				"name": "Potion",
-				"desc": "Restores up to 10 HP to a damaged Pokémon.",
+				"name": GameData.tr_text("Potion", "Poción"),
+				"desc": GameData.tr_text("Restores up to 25 HP to a damaged Pokémon.", "Restaura hasta 25 PS a un Pokémon dañado."),
 				"stock": inv.get("potion", 0)
 			},
 			{
 				"id": "super_potion",
-				"name": "Super Potion",
-				"desc": "Restores up to 25 HP to a damaged Pokémon.",
+				"name": GameData.tr_text("Super Potion", "Súper Poción"),
+				"desc": GameData.tr_text("Restores up to 60 HP to a damaged Pokémon.", "Restaura hasta 60 PS a un Pokémon dañado."),
 				"stock": inv.get("super_potion", 0)
 			},
 			{
 				"id": "hyper_potion",
-				"name": "Hyper Potion",
-				"desc": "Restores 100% HP (Full Max HP) to a damaged Pokémon.",
+				"name": GameData.tr_text("Hyper Potion", "Híper Poción"),
+				"desc": GameData.tr_text("Restores 100% HP (Full Max HP) to a damaged Pokémon.", "Restaura el 100% de PS (Salud Máxima) a un Pokémon dañado."),
 				"stock": inv.get("hyper_potion", 0)
 			},
 			{
@@ -7656,7 +7663,7 @@ func _show_camp_bag_targets(item_id: String) -> void:
 				btn_text = "Full HP"
 			else:
 				can_apply = true
-				btn_text = "Use (+10 HP)"
+				btn_text = "Use (+25 HP)"
 		elif item_id == "super_potion":
 			if p["current_hp"] <= 0:
 				can_apply = false
@@ -7666,7 +7673,7 @@ func _show_camp_bag_targets(item_id: String) -> void:
 				btn_text = "Full HP"
 			else:
 				can_apply = true
-				btn_text = "Use (+25 HP)"
+				btn_text = "Use (+60 HP)"
 		elif item_id == "hyper_potion":
 			if p["current_hp"] <= 0:
 				can_apply = false

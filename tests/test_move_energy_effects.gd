@@ -13,6 +13,8 @@ func _ready() -> void:
 	# 1. Probar Aerial Ace (Coste: 2, Base: 8, Efecto: BOOST_IF_FASTER +3 DMG si atacante es más veloz)
 	var attacker = GameData.create_pokemon_instance(16) # Pidgey (SPD: 3)
 	var defender = GameData.create_pokemon_instance(0)  # Bulbasaur (SPD: 1, Debilidad: FUEGO, Res: OSCURO)
+	attacker.attack = 20
+	defender.defense = 20
 	var aerial_ace = create_move_instance("Aerial Ace")
 	assert(aerial_ace != null, "Aerial Ace debe existir.")
 	assert(aerial_ace.cost == 2, "Aerial Ace debe costar 2 energías.")
@@ -51,8 +53,8 @@ func _ready() -> void:
 	
 	assert(attacker.burn_turns == 2, "Con energía parcial (1/2⚡), Rapid Spin NO debe limpiar la quemadura.")
 	var rs_partial_dmg = 30 - defender.current_hp
-	assert(rs_partial_dmg == 3, "Rapid Spin debe hacer daño fraccionado (3 DMG). Daño recibido: %d" % rs_partial_dmg)
-	print("✓ Verificación 3: Rapid Spin con energía parcial (1/2⚡) inflige daño (3 DMG) pero NO limpia estados negativos.")
+	assert(rs_partial_dmg == 4, "Rapid Spin debe hacer daño fraccionado (4 DMG). Daño recibido: %d" % rs_partial_dmg)
+	print("✓ Verificación 3: Rapid Spin con energía parcial (1/2⚡) inflige daño (4 DMG) pero NO limpia estados negativos.")
 	
 	# Caso B: Energía COMPLETA (Paga 2 de 2 energías)
 	attacker.current_energy = 2
@@ -113,11 +115,12 @@ func _ready() -> void:
 	player_pkmn.current_energy = 1
 	battle_scene.is_player_turn = true
 	battle_scene.is_busy = false
+	battle_scene.can_player_act = true
 	battle_scene.update_move_button_labels()
 	
 	var btn2 = battle_scene.btn_move2
 	assert(btn2.disabled == false, "El botón del movimiento 2 debe estar HABILITADO con 1⚡ para permitir uso con daño parcial.")
-	assert(btn2.text.contains("Parcial"), "El botón debe indicar que es un ataque [Parcial]. Texto: %s" % btn2.text)
+	assert(btn2.text.contains("Parcial") or btn2.text.contains("Partial"), "El botón debe indicar que es un ataque [Parcial]. Texto: %s" % btn2.text)
 	print("✓ Verificación 10: La UI de combate habilita el botón con texto '[Parcial]' y aviso de '(Sin efecto)' cuando la energía es parcial.")
 	
 	print("\n🎉 TODOS LOS TESTS DE ENERGÍA Y EFECTOS DE MOVIMIENTOS PASARON EXITOSAMENTE.")

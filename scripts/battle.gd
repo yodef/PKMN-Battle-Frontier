@@ -1934,7 +1934,7 @@ func start_new_round() -> void:
 				GameData.tr_text("🎒 Using Items & Potions in Battle", "🎒 Usar Objetos y Pociones en Batalla"),
 				GameData.tr_text(
 					"You can use battle items from your Bag during your turn!\n\n• Tap [b]Bag 🎒[/b] below to view your inventory.\n• Select a [b]Potion[/b] to heal your active or benched Pokémon (+25 HP) without losing your attack action!\n• You can also use other battle items like Remedies or Ethers when needed.",
-					"¡Puedes usar objetos de combate desde tu Mochila durante tu turno!\n\n• Toca [b]Mochila 🎒[/b] abajo para ver tu inventario.\n• ¡Selecciona una [b]Poción[/b] para curar a tu Pokémon activo o de la banca (+10 HP) sin perder tu acción de ataque!\n• También puedes usar otros objetos como Antídotos o Éteres cuando sea necesario."
+					"¡Puedes usar objetos de combate desde tu Mochila durante tu turno!\n\n• Toca [b]Mochila 🎒[/b] abajo para ver tu inventario.\n• ¡Selecciona una [b]Poción[/b] para curar a tu Pokémon activo o de la banca (+25 HP) sin perder tu acción de ataque!\n• También puedes usar otros objetos como Antídotos o Éteres cuando sea necesario."
 				),
 				GameData.tr_text("Next ➡️", "Siguiente ➡️"),
 				func():
@@ -2779,12 +2779,12 @@ func execute_enemy_ai() -> void:
 	# 1. Pichu Thunder Shock
 	if move2.is_pichu_shock and e.current_energy >= move2.cost:
 		perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
-	# 2. Bite con Flinch potenciado (Rattata)
-	elif move2.effect_type == "FLINCH" and e.current_energy >= (move2.cost + move2.boost_cost) and not p.was_flinched_last_round and not p.is_flinched:
-		perform_attack(e, p, move2, true, move2.cost + move2.boost_cost, enemy_card_img, player_card_img)
-	# 3. Ember con Burn potenciado (Charmander)
-	elif move2.boost_applies_burn and e.current_energy >= (move2.cost + move2.boost_cost) and p.burn_turns == 0:
-		perform_attack(e, p, move2, true, move2.cost + move2.boost_cost, enemy_card_img, player_card_img)
+	# 2. Bite con Flinch (Rattata)
+	elif move2.effect_type == "FLINCH" and e.current_energy >= move2.cost and not p.was_flinched_last_round and not p.is_flinched:
+		perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
+	# 3. Ember con Burn (Charmander)
+	elif (move2.effect_type == "BURN" or move2.name == "Ember") and e.current_energy >= move2.cost and p.burn_turns == 0:
+		perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
 	# 4. Poison Sting con veneno si es más veloz (Weedle)
 	elif move2.causes_poison and not p.is_poisoned and get_pokemon_effective_speed(e, p) > get_pokemon_effective_speed(p, e) and e.current_energy >= move2.cost:
 		perform_attack(e, p, move2, false, move2.cost, enemy_card_img, player_card_img)
@@ -2888,9 +2888,7 @@ func enemy_do_recover() -> void:
 	)
 
 # --- EJECUCIÓN DE ATAQUES Y HABILIDADES ---
-func _get_status_proc_chance(move, boosted: bool, requires_boost: bool) -> float:
-	if requires_boost:
-		return 1.0 if boosted else 0.0
+func _get_status_proc_chance(move, _boosted: bool = false, _requires_boost: bool = false) -> float:
 	var desc_l = move.description.to_lower()
 	var chance_pct = -1.0
 	if "35% chance to " in desc_l or "has a 35%" in desc_l or "35%" in desc_l:
@@ -2902,13 +2900,11 @@ func _get_status_proc_chance(move, boosted: bool, requires_boost: bool) -> float
 	elif "15% chance to " in desc_l or "has a 15%" in desc_l or (move.effect_type == "FLINCH" and "15%" in desc_l):
 		chance_pct = 0.15
 	if chance_pct > 0.0:
-		return 1.0 if boosted else chance_pct
-	if move.effect_type == "FLINCH" and "extra energy" in desc_l:
-		return 1.0 if boosted else 0.0
+		return chance_pct
 	return 1.0
 
-func _roll_status_proc(move, boosted: bool, requires_boost: bool) -> bool:
-	var rate = _get_status_proc_chance(move, boosted, requires_boost)
+func _roll_status_proc(move, _boosted: bool = false, _requires_boost: bool = false) -> bool:
+	var rate = _get_status_proc_chance(move)
 	return rate >= 1.0 or (rate > 0.0 and randf() < rate)
 
 func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: int, attacker_visual: Node, defender_visual: Node) -> void:
@@ -3041,12 +3037,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		note_text += " [color=yellow](Anti-Tank: 50%% foe's HP = %d DMG%s)[/color]" % [raw_damage, " (Boss Capped)" if is_boss_target and at_val > 25 else ""]
 	else:
 		raw_damage = calculate_move_damage(move, energy_to_spend, eff_cost, attacker, defender)
-		if boosted:
-			var b_dmg: float = float(move.boost_damage)
-			if move.effect_type == "BOOST_DMG" and b_dmg == 0:
-				b_dmg = 4.0
-			raw_damage += max(1, int(round(b_dmg * ad_ratio)))
-		elif not is_full_energy and eff_cost > 1:
+		if not is_full_energy and eff_cost > 1:
 			note_text += " [color=yellow](Partial Energy %d/%d⚡: scaled damage)[/color]" % [energy_to_spend, eff_cost]
 		
 		# Close Combat (MINIMIZE): penalización por energía faltante
@@ -3423,7 +3414,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 
 	# Drenaje de Vida (LIFE_DRAIN)
 	if move.effect_type == "LIFE_DRAIN" and is_full_energy and final_damage > 0:
-		var drain_ratio = 1.0 if (boosted and "100%" in move.description) else 0.5
+		var drain_ratio = 0.5
 		var heal_amount = max(1, int(round(final_damage * drain_ratio)))
 		attacker.current_hp = min(attacker.max_hp, attacker.current_hp + heal_amount)
 		note_text += " [color=green]Drained health and recovered +%d HP![/color]" % heal_amount
@@ -3442,8 +3433,6 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		elif move.name == "Flare Blitz":
 			recoil_pct = 0.30
 			avoid_recoil = (defender.burn_turns > 0)
-		else:
-			avoid_recoil = boosted
 		if not avoid_recoil:
 			var rec_dmg = max(1, int(round(final_damage * recoil_pct)))
 			attacker.current_hp = max(0, attacker.current_hp - rec_dmg)
@@ -3506,13 +3495,10 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	# 12. Aplicación de Estados y Efectos Secundarios (si no fue anulado por Amnesia y con energía completa)
 	if not effect_annulled and is_full_energy:
 		var desc_l = move.description.to_lower()
-		var requires_boost_for_status = ("extra energy" in desc_l and move.boost_damage == 0 and move.can_boost)
 		# Quemadura
 		var should_burn = false
-		if move.effect_type == "BURN":
-			should_burn = _roll_status_proc(move, boosted, requires_boost_for_status)
-		elif boosted and (move.boost_applies_burn or move.name == "Inferno"):
-			should_burn = true
+		if move.effect_type == "BURN" or move.name == "Inferno":
+			should_burn = _roll_status_proc(move)
 		if should_burn:
 			if defender.burn_turns > 0:
 				note_text += " [color=gray](%s is already burned - move had no effect!)[/color]" % defender.name
@@ -3533,7 +3519,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 						att_overlay.trigger_burn_effect()
 			
 		# Envenenamiento
-		if move.effect_type == "POISON" and _roll_status_proc(move, boosted, requires_boost_for_status):
+		if move.effect_type == "POISON" and _roll_status_proc(move):
 			if defender.is_poisoned:
 				note_text += " [color=gray](%s is already poisoned - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Poisoned!", Color("#a855f7"))
@@ -3581,7 +3567,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				note_text += " [color=gray](Toxic requires foe to be poisoned first)[/color]"
 				
 		# Congelación (FREEZE)
-		if move.effect_type == "FREEZE" and _roll_status_proc(move, boosted, requires_boost_for_status):
+		if move.effect_type == "FREEZE" and _roll_status_proc(move):
 			if defender.is_frozen or defender.frozen_turns > 0:
 				note_text += " [color=gray](%s is already frozen - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Frozen!", Color("#38bdf8"))
@@ -3603,7 +3589,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				note_text += " [color=lightblue]Put foe to SLEEP (2 rounds)![/color]"
 			
 		# Parálisis (PARALYZE / THUNDER)
-		if (move.effect_type in ["PARALYZE", "THUNDER"] or move.name == "Thunder") and _roll_status_proc(move, boosted, requires_boost_for_status):
+		if (move.effect_type in ["PARALYZE", "THUNDER"] or move.name == "Thunder") and _roll_status_proc(move):
 			if defender.immune_paralyze_rounds > 0:
 				note_text += " [color=gray](Immune to Paralysis: recently recovered - move had no effect!)[/color]"
 				spawn_floating_combat_text(defender_visual, "Paralyze Immune!", Color("#94a3b8"))
@@ -3620,7 +3606,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 					note_text += " [color=magenta]%s's Synchronize mirrored PARALYZE back to %s![/color]" % [defender.name, attacker.name]
 			
 		# Confusión (CONFUSION)
-		if move.effect_type == "CONFUSION" and _roll_status_proc(move, boosted, requires_boost_for_status):
+		if move.effect_type == "CONFUSION" and _roll_status_proc(move):
 			if defender.is_confused or defender.confused_turns > 0:
 				note_text += " [color=gray](%s is already confused - move had no effect!)[/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Already Confused!", Color("#e879f9"))
@@ -3653,7 +3639,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				note_text += " [color=green]Planted Leech Seed on foe (saps 2 HP x 3 rounds)![/color]"
 			
 		# Flinch (FLINCH)
-		if move.effect_type == "FLINCH" and _roll_status_proc(move, boosted, false):
+		if move.effect_type == "FLINCH" and _roll_status_proc(move):
 			if defender.has_passive and defender.passive_name == "Inner Focus":
 				note_text += " [color=cyan]%s's Inner Focus prevented flinching![/color]" % defender.name
 				spawn_floating_combat_text(defender_visual, "Inner Focus!", Color("#38bdf8"))
@@ -3666,15 +3652,13 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 
 		# Reducción de Velocidad al rival (SLOW_FOE / BLIND)
 		if move.reduces_foe_speed or move.effect_type in ["SLOW_FOE", "BLIND"]:
-			var slow_requires_boost = ("extra energy" in desc_l and "reduce" in desc_l and move.name in ["Bubble Beam", "Vine Whip"])
-			if boosted if slow_requires_boost else true:
-				var spd_drop = 3 if "-3" in move.description else (2 if "-2" in move.description else 1)
-				defender.temp_speed_mod = -spd_drop
-				defender.speed_mod_expires_round = round_number + 1
-				note_text += " [color=lightblue]Reduced foe's Speed by %d next round![/color]" % spd_drop
+			var spd_drop = 3 if "-3" in move.description else (2 if "-2" in move.description else 1)
+			defender.temp_speed_mod = -spd_drop
+			defender.speed_mod_expires_round = round_number + 1
+			note_text += " [color=lightblue]Reduced foe's Speed by %d next round![/color]" % spd_drop
 
 		# Debilitamiento al rival (WEAKEN)
-		if move.effect_type == "WEAKEN" and _roll_status_proc(move, boosted, false):
+		if move.effect_type == "WEAKEN" and _roll_status_proc(move):
 			defender.foe_damage_debuff = 2
 			defender.foe_damage_debuff_turns = 2
 			note_text += " [color=purple]Weakened foe: -2 DMG on next 2 rounds![/color]"
@@ -5343,14 +5327,6 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 		dmg = max(1, int(round(float(energy_spent * avg_hit) * ratio)))
 	else:
 		dmg = calculate_move_damage(move, energy_spent, eff_cost, attacker, defender)
-		if boosted:
-			var b_dmg: float = float(move.boost_damage)
-			if move.effect_type == "BOOST_DMG" and b_dmg == 0:
-				b_dmg = 4.0
-			var atk_val: float = float(attacker.get_effective_attack() if (attacker is Object and attacker.has_method("get_effective_attack")) else (attacker.get("attack", 10) if (attacker is Dictionary and "attack" in attacker) else 10))
-			var def_val: float = float(defender.get_effective_defense() if (defender is Object and defender.has_method("get_effective_defense")) else (defender.get("defense", 10) if (defender is Dictionary and "defense" in defender) else 10))
-			var ratio: float = atk_val / maxf(1.0, def_val)
-			dmg += max(1, int(round(b_dmg * ratio)))
 		if move.effect_type == "MINIMIZE" and energy_spent < eff_cost:
 			dmg = max(1, dmg - ((eff_cost - energy_spent) * 6))
 
@@ -5575,7 +5551,6 @@ func open_energy_select_modal(move, initial_boosted: bool, max_spend: int) -> vo
 
 	# Caso 2: Movimiento normal con costo > 1
 	var normal_cost = get_effective_move_cost(move, p, e)
-	var can_boost_this = move.can_boost and (p.current_energy >= (normal_cost + move.boost_cost))
 	var upper_limit = min(p.current_energy, normal_cost)
 	
 	# Opciones parciales y completa normal (1 hasta upper_limit)
@@ -5634,34 +5609,6 @@ func open_energy_select_modal(move, initial_boosted: bool, max_spend: int) -> vo
 		)
 		energy_modal_options.add_child(btn)
 		
-	# Opción Potenciada (Boost) si el Pokémon tiene la energía suficiente para el boost
-	if can_boost_this:
-		var boost_btn = Button.new()
-		boost_btn.custom_minimum_size = Vector2(0, 52)
-		boost_btn.add_theme_font_size_override("font_size", 12)
-		
-		var b_cost = normal_cost + move.boost_cost
-		var b_dmg = calculate_predicted_damage(p, e, move, b_cost, true)
-		var lightning = ""
-		for l in range(b_cost):
-			lightning += "⚡"
-			
-		var b_extra = "(%s)" % GameData.format_move_boost_summary(move.boost_cost, move.boost_damage, move.effect_type, move.description)
-			
-		var b_remate = ""
-		if b_dmg >= e.current_hp:
-			b_remate = "  ✨ KO!"
-			
-		boost_btn.text = "%s Pay %d⚡ ➔ %d DMG%s [BOOSTED 🔥]%s\n%s" % [
-			lightning, b_cost, b_dmg, type_mod_str, b_remate, b_extra
-		]
-		boost_btn.modulate = Color(1.0, 0.75, 0.2)
-		boost_btn.pressed.connect(func():
-			energy_modal.visible = false
-			execute_player_move(move, true, b_cost)
-		)
-		energy_modal_options.add_child(boost_btn)
-		
 	energy_modal.visible = true
 
 func _on_move_button_pressed(move_idx: int) -> void:
@@ -5681,8 +5628,7 @@ func _on_move_button_pressed(move_idx: int) -> void:
 		return
 		
 	var selected_spend = selected_energy_move1 if move_idx == 0 else selected_energy_move2
-	var can_afford_boost = move.can_boost and (actor.current_energy >= (eff_cost + move.boost_cost))
-	var max_cost = eff_cost + (move.boost_cost if can_afford_boost else 0)
+	var max_cost = eff_cost
 	
 	if eff_cost == 0:
 		selected_spend = 0
@@ -5693,8 +5639,7 @@ func _on_move_button_pressed(move_idx: int) -> void:
 			log_action("[color=red]Not enough energy to spend %d⚡ (you have %d⚡)![/color]" % [selected_spend, actor.current_energy])
 			return
 			
-	var is_boost_spend = (selected_spend > eff_cost)
-	execute_player_move(move, is_boost_spend, selected_spend)
+	execute_player_move(move, false, selected_spend)
 
 func _on_move1_pressed() -> void:
 	_on_move_button_pressed(0)
@@ -6921,7 +6866,7 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 
 func _create_slot_button(slot_val: int, current_selected: int, move_idx: int, is_affordable: bool, is_boost_slot: bool, label_text: String) -> Button:
 	var btn = Button.new()
-	btn.custom_minimum_size = Vector2(26, 26)
+	btn.custom_minimum_size = Vector2(28, 28)
 	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	btn.add_theme_font_size_override("font_size", 10)
@@ -6931,7 +6876,7 @@ func _create_slot_button(slot_val: int, current_selected: int, move_idx: int, is
 	var is_selected = (slot_val == current_selected)
 	
 	var sb = StyleBoxFlat.new()
-	sb.set_corner_radius_all(13)
+	sb.set_corner_radius_all(14)
 	sb.content_margin_left = 0
 	sb.content_margin_right = 0
 	sb.content_margin_top = 0
@@ -7004,9 +6949,8 @@ func update_single_move_ui(move_idx: int, move, slots_container: BoxContainer, b
 	
 	var base_cost = get_effective_move_cost(move, p, active_e)
 	var min_cost = min(move.min_energy_req, base_cost)
-	var has_boost = move.can_boost and move.boost_cost > 0
-	var max_cost = base_cost + (move.boost_cost if has_boost else 0)
-	var can_fraction = (base_cost > 0 and (min_cost < base_cost or has_boost))
+	var max_cost = base_cost
+	var can_fraction = (base_cost > 0 and min_cost < base_cost)
 	
 	var current_selected = selected_energy_move1 if move_idx == 0 else selected_energy_move2
 	
@@ -7055,10 +6999,9 @@ func update_single_move_ui(move_idx: int, move, slots_container: BoxContainer, b
 			slots_container.add_child(slot_btn)
 		elif can_fraction:
 			for slot_val in range(min_cost, max_cost + 1):
-				var is_boost_slot = (slot_val > base_cost)
 				var is_affordable = (p.current_energy >= slot_val)
-				var label_text = ("🔥%d" if is_boost_slot else "%d⚡") % slot_val
-				var slot_btn = _create_slot_button(slot_val, current_selected, move_idx, is_affordable, is_boost_slot, label_text)
+				var label_text = "%d⚡" % slot_val
+				var slot_btn = _create_slot_button(slot_val, current_selected, move_idx, is_affordable, false, label_text)
 				slots_container.add_child(slot_btn)
 		else:
 			var is_affordable = (p.current_energy >= base_cost)
@@ -7072,7 +7015,7 @@ func update_single_move_ui(move_idx: int, move, slots_container: BoxContainer, b
 		
 	btn.disabled = not _is_turn_action_allowed()
 	
-	var is_boosted = (current_selected > base_cost)
+	var is_boosted = false
 	
 	if move.effect_type == "MULTI_ATTACK":
 		var hits = max(1, current_selected)
@@ -7096,7 +7039,9 @@ func update_single_move_ui(move_idx: int, move, slots_container: BoxContainer, b
 				type_tag = " (+%d)" % WEAKNESS_BONUS
 			elif GameData.is_attack_resisted(active_e.type, active_e.resistant, move.type):
 				type_tag = " (-%d)" % RESISTANCE_REDUCTION
-		var title_line = ("%s [BOOSTED 🔥]" % move.name) if is_boosted else move.name
+		var is_partial = (spend_val < base_cost and base_cost > 1)
+		var partial_tag = " [Parcial]" if GameData.is_spanish() else " [Partial]"
+		var title_line = (move.name + partial_tag) if is_partial else move.name
 		btn.text = "%s\n%d DMG%s%s" % [title_line, dmg, type_tag, ko_tag]
 
 func update_move_button_labels() -> void:
@@ -8231,13 +8176,13 @@ func refresh_bag_items_ui() -> void:
 			{
 				"id": "potion",
 				"name": "Potion",
-				"desc": GameData.tr_text("Restores +10 HP (Active or Bench).", "Cura +10 PS (Activo o Banca)."),
+				"desc": GameData.tr_text("Restores +25 HP (Active or Bench).", "Cura +25 PS (Activo o Banca)."),
 				"icon": "potion"
 			},
 			{
 				"id": "super_potion",
 				"name": "Super Potion",
-				"desc": GameData.tr_text("Restores +25 HP (Active or Bench).", "Cura +25 PS (Activo o Banca)."),
+				"desc": GameData.tr_text("Restores +60 HP (Active or Bench).", "Cura +60 PS (Activo o Banca)."),
 				"icon": "super_potion"
 			},
 			{

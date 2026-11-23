@@ -2033,7 +2033,7 @@ alignment = 1
 [node name="ItemTitle" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/PotionRow/ShopInfo"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "Potion (+10 HP to an active PKMN)"
+text = "Potion (+25 HP to an active PKMN)"
 
 [node name="ItemCountLbl" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/PotionRow/ShopInfo"]
 layout_mode = 2
@@ -2066,7 +2066,7 @@ alignment = 1
 [node name="SuperPotionTitle" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/SuperPotionRow/SuperPotionInfo"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "Super Potion (+25 HP to a PKMN)"
+text = "Super Potion (+60 HP to a PKMN)"
 
 [node name="SuperPotionCountLbl" type="Label" parent="CampaignModal/Box/ShopSection/ShopVBox/SuperPotionRow/SuperPotionInfo"]
 layout_mode = 2

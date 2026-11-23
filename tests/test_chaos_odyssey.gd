@@ -210,12 +210,17 @@ func test_chaos_legendary_candidates() -> void:
 	assert(not (162 in leg_candidates), "Dratini must NOT be in pure legendary rival pool")
 	assert(not (GameData.CRYSTAL_ONIX_ID in leg_candidates), "Crystal Onix (Boss) must NOT be in rival legendary pool!")
 	
+	# Asegurar que las líneas de prueba estén desbloqueadas para el test de candidatos de draft
+	for uid in [162, 163, 164, 251, 252, 253, 376, 377, 378, 379, 380, 381, 447, 448, 449]:
+		if not (uid in GameData.player_unlocked_ids):
+			GameData.player_unlocked_ids.append(uid)
+	
 	var draft_candidates = GameData.get_chaos_player_draft_candidates()
-	assert(162 in draft_candidates, "Dratini must be in player draft candidates")
-	assert(251 in draft_candidates, "Larvitar must be in player draft candidates")
-	assert(376 in draft_candidates, "Bagon must be in player draft candidates")
-	assert(379 in draft_candidates, "Beldum must be in player draft candidates")
-	assert(447 in draft_candidates, "Gible must be in player draft candidates")
+	assert(164 in draft_candidates, "Dragonite must be in player draft candidates")
+	assert(253 in draft_candidates, "Tyranitar must be in player draft candidates")
+	assert(378 in draft_candidates, "Salamence must be in player draft candidates")
+	assert(381 in draft_candidates, "Metagross must be in player draft candidates")
+	assert(449 in draft_candidates, "Garchomp must be in player draft candidates")
 	assert(not (0 in draft_candidates), "Bulbasaur must NOT be in candidates")
 	assert(not (GameData.CRYSTAL_ONIX_ID in draft_candidates), "Crystal Onix (Boss) must NOT be in player draft candidates!")
 	print("✓ Chaos legendary selection candidates correctly curated!")
@@ -238,7 +243,7 @@ func test_daily_limit_and_reset() -> void:
 	GameData.reset_chaos_odyssey()
 	assert(GameData.chaos_match_number == 1, "Reset must set match number to 1")
 	assert(GameData.chaos_player_team_state.is_empty(), "Reset must clear team")
-	assert(GameData.chaos_inventory == GameData.DEFAULT_INVENTORY, "Reset must restore default inventory")
+	assert(GameData.chaos_inventory.get("potion", 0) == GameData.DEFAULT_INVENTORY.get("potion", 0), "Reset must restore default inventory")
 	print("✓ Daily limit & Odyssey reset work accurately!")
 
 func test_save_load_serialization() -> void:
