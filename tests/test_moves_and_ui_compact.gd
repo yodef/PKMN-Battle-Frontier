@@ -157,14 +157,14 @@ func _ready() -> void:
 	var jolteon_id = GameData.get_pokemon_id_by_name("Jolteon")
 	var flareon_id = GameData.get_pokemon_id_by_name("Flareon")
 	
-	assert(GameData.get_pokemon_required_exp(bulba_id) == 10, "Bulbasaur (Basic -> S1 -> S2) should require 10 EXP")
-	assert(GameData.get_pokemon_required_exp(ivysaur_id) == 25, "Ivysaur (S1 -> S2) should require 25 EXP")
+	assert(GameData.get_pokemon_required_exp(bulba_id) == 50, "Bulbasaur (Basic -> S1 -> S2) should require 50 EXP")
+	assert(GameData.get_pokemon_required_exp(ivysaur_id) == 120, "Ivysaur (S1 -> S2) should require 120 EXP")
 	assert(GameData.get_pokemon_required_exp(venusaur_id) == 0, "Venusaur (S2 final) should require 0 EXP")
-	assert(GameData.get_pokemon_required_exp(rattata_id) == 20, "Rattata (Basic -> S1 only) should require 20 EXP")
+	assert(GameData.get_pokemon_required_exp(rattata_id) == 80, "Rattata (Basic -> S1 only) should require 80 EXP")
 	assert(GameData.get_pokemon_required_exp(raticate_id) == 0, "Raticate (S1 final) should require 0 EXP")
-	assert(GameData.get_pokemon_required_exp(magikarp_id) == 20, "Magikarp (Basic -> S1 only) should require 20 EXP")
-	assert(GameData.get_pokemon_required_exp(eevee_id) == 20, "Eevee (branched Basic -> S1) should require 20 EXP")
-	assert(GameData.get_pokemon_required_exp(chansey_id) == 25, "Chansey (evolves_from Happiny, evolves_to Blissey) should require 25 EXP")
+	assert(GameData.get_pokemon_required_exp(magikarp_id) == 80, "Magikarp (Basic -> S1 only) should require 80 EXP")
+	assert(GameData.get_pokemon_required_exp(eevee_id) == 80, "Eevee (branched Basic -> S1) should require 80 EXP")
+	assert(GameData.get_pokemon_required_exp(chansey_id) == 120, "Chansey (evolves_from Happiny, evolves_to Blissey) should require 120 EXP")
 	assert(GameData.get_pokemon_required_exp(farfetchd_id) == 0, "Farfetch'd (no evolution) should require 0 EXP")
 
 	# Verify evolves_from and required_stone metadata
@@ -184,7 +184,7 @@ func _ready() -> void:
 	assert(ivy_opts.size() == 1 and ivy_opts[0]["to_name"] == "Venusaur" and ivy_opts[0]["stone_type"] == "Leaf" and int(ivy_opts[0]["stone_count"]) == 2, "Ivysaur (Stage 1 -> Stage 2) must require 2x Leaf Stone")
 
 	var rattata_inst = GameData.create_pokemon_instance(rattata_id)
-	assert(rattata_inst.get_required_exp() == 20 and rattata_inst.max_exp == 20, "Rattata instance get_required_exp() must be 20")
+	assert(rattata_inst.get_required_exp() == 80 and rattata_inst.max_exp == 80, "Rattata instance get_required_exp() must be 80")
 	
 	# Test custom required_exp override
 	var orig_chansey_exp = GameData.pokemon_catalog[chansey_id]["required_exp"]
@@ -211,27 +211,27 @@ func _ready() -> void:
 		"max_hp": 12,
 		"speed": 2,
 		"texture_path": bulba_inst.texture_path,
-		"current_exp": 10,
-		"max_exp": 10,
+		"current_exp": 50,
+		"max_exp": 50,
 		"burn_turns": 0,
 		"is_poisoned": false,
 		"is_flinched": false
 	}]
-	assert(not bool(GameData.can_evolve_campaign_pokemon_with_option(0, ivysaur_id).get("can_evolve", false)), "Bulbasaur at 10/10 EXP should NOT be able to evolve with 0 Leaf Stones")
+	assert(not bool(GameData.can_evolve_campaign_pokemon_with_option(0, ivysaur_id).get("can_evolve", false)), "Bulbasaur at 50/50 EXP should NOT be able to evolve with 0 Leaf Stones")
 	assert(GameData.buy_campaign_stone("Leaf") == true, "Should be able to buy 1x Leaf Stone for 10 G")
 	assert(GameData.campaign_gold == 20 and GameData.get_campaign_stone_count("Leaf") == 1, "Buying 1x Leaf Stone must leave 20 G and 1 Leaf Stone")
-	assert(bool(GameData.can_evolve_campaign_pokemon_with_option(0, ivysaur_id).get("can_evolve", false)), "Bulbasaur at 10/10 EXP with 1 Leaf Stone MUST be able to evolve")
+	assert(bool(GameData.can_evolve_campaign_pokemon_with_option(0, ivysaur_id).get("can_evolve", false)), "Bulbasaur at 50/50 EXP with 1 Leaf Stone MUST be able to evolve")
 	var evo_s1_info = GameData.evolve_campaign_pokemon_with_option(0, ivysaur_id)
 	assert(bool(evo_s1_info.get("success", false)) and evo_s1_info["to_name"] == "Ivysaur", "Bulbasaur must evolve into Ivysaur")
 	assert(GameData.get_campaign_stone_count("Leaf") == 0, "Evolving Basic -> Stage 1 must consume 1 Leaf Stone")
 
-	# Now Ivysaur -> Venusaur (Stage 1 -> Stage 2) requires 25 EXP and 2x Leaf Stones
-	GameData.campaign_player_team_state[0]["current_exp"] = 25
+	# Now Ivysaur -> Venusaur (Stage 1 -> Stage 2) requires 120 EXP and 2x Leaf Stones
+	GameData.campaign_player_team_state[0]["current_exp"] = 120
 	GameData.buy_campaign_stone("Leaf") # 1 Leaf Stone owned (10 G left)
-	assert(not bool(GameData.can_evolve_campaign_pokemon_with_option(0, venusaur_id).get("can_evolve", false)), "Ivysaur at 25/25 EXP must NOT evolve with only 1 Leaf Stone (needs 2)")
+	assert(not bool(GameData.can_evolve_campaign_pokemon_with_option(0, venusaur_id).get("can_evolve", false)), "Ivysaur at 120/120 EXP must NOT evolve with only 1 Leaf Stone (needs 2)")
 	GameData.buy_campaign_stone("Leaf") # 2 Leaf Stones owned (0 G left)
 	assert(GameData.get_campaign_stone_count("Leaf") == 2 and GameData.campaign_gold == 0, "Should now have 2 Leaf Stones and 0 G")
-	assert(bool(GameData.can_evolve_campaign_pokemon_with_option(0, venusaur_id).get("can_evolve", false)), "Ivysaur at 25/25 EXP with 2 Leaf Stones MUST be able to evolve")
+	assert(bool(GameData.can_evolve_campaign_pokemon_with_option(0, venusaur_id).get("can_evolve", false)), "Ivysaur at 120/120 EXP with 2 Leaf Stones MUST be able to evolve")
 	var evo_s2_info = GameData.evolve_campaign_pokemon_with_option(0, venusaur_id)
 	assert(bool(evo_s2_info.get("success", false)) and evo_s2_info["to_name"] == "Venusaur", "Ivysaur must evolve into Venusaur")
 	assert(GameData.get_campaign_stone_count("Leaf") == 0, "Evolving Stage 1 -> Stage 2 must consume 2 Leaf Stones")

@@ -46,38 +46,38 @@ func _ready() -> void:
 	# Simulate combat EXP gains
 	var inst = GameData.create_pokemon_instance(bulba_id)
 	var req = inst.get_required_exp()
-	assert(req == 10, "Bulbasaur required exp must be 10")
+	assert(req == 50, "Bulbasaur required exp must be 50")
 	
-	# Gain 7 damage
-	var dmg1 = 7
+	# Gain 20 damage
+	var dmg1 = 20
 	var gained1 = min(dmg1, req - inst.current_exp)
 	inst.current_exp += gained1
-	assert(inst.current_exp == 7, "EXP should be 7")
+	assert(inst.current_exp == 20, "EXP should be 20")
 	
-	# Gain 8 damage (should cap at 10, not become 15)
-	var dmg2 = 8
+	# Gain 35 damage (should cap at 50, not become 55)
+	var dmg2 = 35
 	var gained2 = min(dmg2, req - inst.current_exp)
 	inst.current_exp += gained2
-	assert(inst.current_exp == 10, "EXP must cap at 10 (req_exp)")
+	assert(inst.current_exp == 50, "EXP must cap at 50 (req_exp)")
 	
-	# Gain another 5 damage when already at MAX
-	var dmg3 = 5
+	# Gain another 15 damage when already at MAX
+	var dmg3 = 15
 	var gained3 = 0
 	if inst.current_exp < req:
 		gained3 = min(dmg3, req - inst.current_exp)
 		inst.current_exp += gained3
-	assert(inst.current_exp == 10, "EXP must not increase once at MAX")
-	print("✅ EXP correctly capped at req_exp (10/10)")
+	assert(inst.current_exp == 50, "EXP must not increase once at MAX")
+	print("✅ EXP correctly capped at req_exp (50/50)")
 	
 	# Apply evolution
-	p_state["current_exp"] = 10
+	p_state["current_exp"] = 50
 	var evos = GameData.check_and_apply_campaign_evolutions()
 	assert(evos.size() == 1, "Should have evolved 1 Pokémon")
 	assert(evos[0]["to_name"] == "Ivysaur", "Should evolve to Ivysaur")
 	assert(p_state["name"] == "Ivysaur", "State name updated")
 	assert(p_state["current_exp"] == 0, "Next stage MUST start with 0 EXP!")
-	assert(p_state["max_exp"] == 25, "Ivysaur max_exp must be 25")
-	print("✅ Evolution successful: next stage (Ivysaur) arrived with EXACTLY 0 EXP (max: 25)")
+	assert(p_state["max_exp"] == 120, "Ivysaur max_exp must be 120")
+	print("✅ Evolution successful: next stage (Ivysaur) arrived with EXACTLY 0 EXP (max: 120)")
 	
 	# Test 3: Diamond Preservation on Defeat
 	print("\n--- Test 3: Diamond Preservation on Combat Defeat ---")

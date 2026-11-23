@@ -162,9 +162,9 @@ class PokemonData:
 			return required_exp
 		var st = stage.strip_edges().to_lower()
 		if st == "basic":
-			return 10
+			return 50
 		elif st == "stage 1":
-			return 25
+			return 120
 		return 0 # Stage 2 u otras fases no evolucionan más
 
 	func can_evolve_exp() -> bool:
@@ -5386,9 +5386,9 @@ func get_pokemon_required_exp(pkmn_id: int) -> int:
 	if st == "basic":
 		var target1_id = get_evolution_target_id(pkmn_id)
 		var target2_id = get_evolution_target_id(target1_id) if target1_id != -1 else -1
-		return 10 if target2_id != -1 else 20
+		return 50 if target2_id != -1 else 80
 	elif st == "stage 1":
-		return 25
+		return 120
 	return 0
 
 # Obtiene el estado de evolución de un Pokémon según las cartas que posee el jugador en su colección

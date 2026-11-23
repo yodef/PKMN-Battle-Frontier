@@ -9,11 +9,11 @@ func _ready():
 	
 	GameData.is_campaign_mode = true
 	
-	# Create Attacker: Bulbasaur (ID 1, req_exp = 10)
+	# Create Attacker: Bulbasaur (ID 1, req_exp = 50)
 	var attacker = GameData.create_pokemon_instance(1)
 	attacker.current_exp = 0
 	var req_exp = attacker.get_required_exp()
-	assert(req_exp == 10, "Bulbasaur req_exp should be 10")
+	assert(req_exp == 50, "Bulbasaur req_exp should be 50")
 	
 	# Create Defender: Rattata (ID 19)
 	var defender = GameData.create_pokemon_instance(19)
@@ -26,6 +26,8 @@ func _ready():
 	# Prepare a Move with base_damage = 8 (cost = 1)
 	var test_move_8dmg = GameData.MoveData.new("Tackle 8", "NORMAL", 8, 1, 1, false, 0, 0, false, "Deals 8 damage.")
 	attacker.current_energy = 5
+	attacker.attack = 20
+	defender.defense = 20
 	attacker.damage_buff = 0
 	attacker.foe_damage_debuff = 0
 	defender.weakness = "NONE"
@@ -74,19 +76,19 @@ func _ready():
 	assert(attacker.current_exp == 7, "Attacker must gain 0 EXP when effective damage is 0!")
 	print("✓ Test 3 Passed: Zero effective damage grants zero EXP!")
 	
-	# TEST 4: Enemy has 10 HP. Attacker has 9 EXP (req: 10). Move deals 5 DMG.
-	# Effective damage is 5, but capped at required_exp (10).
-	print("\n--- Test 4: Attacker at 9/10 EXP, deals 5 effective damage ---")
+	# TEST 4: Enemy has 10 HP. Attacker has 49 EXP (req: 50). Move deals 5 DMG.
+	# Effective damage is 5, but capped at required_exp (50).
+	print("\n--- Test 4: Attacker at 49/50 EXP, deals 5 effective damage ---")
 	defender.current_hp = 10
-	attacker.current_exp = 9
+	attacker.current_exp = 49
 	attacker.current_energy = 5
 	var test_move_5dmg = GameData.MoveData.new("Tackle 5", "NORMAL", 5, 1, 1, false, 0, 0, false, "Deals 5 damage.")
 	
 	battle.perform_attack(attacker, defender, test_move_5dmg, false, 1, battle.player_card_img, battle.enemy_card_img)
 	
 	assert(defender.current_hp == 5, "Defender HP should be 5")
-	print("Attacker EXP after attack: %d (expected: 10 MAX)" % attacker.current_exp)
-	assert(attacker.current_exp == 10, "Attacker EXP must cap at 10/10 (req_exp)!")
+	print("Attacker EXP after attack: %d (expected: 50 MAX)" % attacker.current_exp)
+	assert(attacker.current_exp == 50, "Attacker EXP must cap at 50/50 (req_exp)!")
 	print("✓ Test 4 Passed: EXP caps properly at req_exp!")
 	
 	battle.queue_free()
