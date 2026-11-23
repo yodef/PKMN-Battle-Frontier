@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://expshareevochain01"]
+
+[ext_resource type="Script" path="res://tests/test_exp_share_and_evo_chain.gd" id="1_test"]
+
+[node name="TestExpShareAndEvoChain" type="Node"]
+script = ExtResource("1_test")

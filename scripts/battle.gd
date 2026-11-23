@@ -965,6 +965,11 @@ func show_pokemon_details(pkmn, is_enemy: bool = false) -> void:
 		p_desc.text = "[color=#E1BEE7]%s[/color]" % pkmn.passive_desc
 		pas_vbox.add_child(p_desc)
 
+	# Evolution Chain Display (Cadena Evolutiva)
+	var evo_view = GameData.build_evolution_chain_view(pkmn.id)
+	if evo_view:
+		details_content_box.add_child(evo_view)
+
 	details_modal.visible = true
 
 func _on_speed_toggle_pressed() -> void:
@@ -4039,38 +4044,31 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				active_team[p_idx]["current_exp"] = attacker.current_exp
 
 		# Exp Share (Held Item):
-		# "El PKMN que lleva este objeto mientras está en banca, recibe un 30% de la EXP que recibe el PKMN activo."
-		if exp_gained > 0:
-			var target_benched = null
-			var target_benched_idx = -1
-			for b_i in range(player_team.size()):
-				if player_team[b_i] == attacker:
-					continue
-				var b_pkmn = player_team[b_i]
-				if b_pkmn and b_pkmn.held_item == "exp_share":
-					var b_req = b_pkmn.get_required_exp()
-					if b_req > 0 and b_pkmn.current_exp < b_req:
-						target_benched = b_pkmn
-						target_benched_idx = b_i
-						break
-			if target_benched != null:
-				var shared_amount: int = max(1, int(round(float(exp_gained) * 0.30)))
-				var b_req: int = target_benched.get_required_exp()
-				var b_actual_gain: int = min(shared_amount, b_req - target_benched.current_exp)
-				if b_actual_gain > 0:
-					target_benched.current_exp += b_actual_gain
-					var b_is_max: bool = (target_benched.current_exp >= b_req)
-					exp_log_str += " [color=#FFD54F][Exp. Share 🎒: %s +%d EXP (30%%) ➔ %d/%d%s][/color]" % [
-						target_benched.name,
-						b_actual_gain,
-						target_benched.current_exp,
-						b_req,
-						" ⭐ READY TO EVOLVE!" if b_is_max else ""
-					]
-					if GameData.is_campaign_mode:
-						var active_team = GameData.get_active_campaign_team_state()
-						if target_benched_idx != -1 and target_benched_idx < active_team.size():
-							active_team[target_benched_idx]["current_exp"] = target_benched.current_exp
+		# El PKMN que lleva este objeto mientras está en banca recibe un 30% del daño efectivo provocado como EXP,
+		# incluso si el atacante activo ya está al máximo de EXP o es una fase final que no requiere EXP.
+		for b_i in range(player_team.size()):
+			if player_team[b_i] == attacker:
+				continue
+			var b_pkmn = player_team[b_i]
+			if b_pkmn and b_pkmn.held_item == "exp_share":
+				var b_req = b_pkmn.get_required_exp()
+				if b_req > 0 and b_pkmn.current_exp < b_req:
+					var shared_amount: int = max(1, int(round(float(effective_damage) * 0.30)))
+					var b_actual_gain: int = min(shared_amount, b_req - b_pkmn.current_exp)
+					if b_actual_gain > 0:
+						b_pkmn.current_exp += b_actual_gain
+						var b_is_max: bool = (b_pkmn.current_exp >= b_req)
+						exp_log_str += " [color=#FFD54F][Exp. Share 🎒: %s +%d EXP (30%%) ➔ %d/%d%s][/color]" % [
+							b_pkmn.name,
+							b_actual_gain,
+							b_pkmn.current_exp,
+							b_req,
+							" ⭐ READY TO EVOLVE!" if b_is_max else ""
+						]
+						if GameData.is_campaign_mode:
+							var active_team = GameData.get_active_campaign_team_state()
+							if b_i < active_team.size():
+								active_team[b_i]["current_exp"] = b_pkmn.current_exp
 	
 	var boost_str = " (BOOSTED)" if boosted else ""
 	move_side = "PLAYER" if attacker == get_active_player() else "ENEMY"

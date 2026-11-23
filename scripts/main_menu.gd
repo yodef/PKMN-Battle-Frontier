@@ -264,6 +264,7 @@ var _is_camp_evo_active: bool = false
 @onready var btn_back_to_grid: Button = $CollectionModal/DetailView/TopNav/BtnBackToGrid
 
 @onready var assembled_card: Control = $CollectionModal/DetailView/CardCenter/AssembledCard
+@onready var details_box: VBoxContainer = $CollectionModal/DetailView/DetailsScroll/DetailsBox
 @onready var locked_notice_panel: PanelContainer = $CollectionModal/DetailView/DetailsScroll/DetailsBox/LockedNoticePanel
 @onready var detail_type_icon: TextureRect = $CollectionModal/DetailView/DetailsScroll/DetailsBox/HeaderPanel/HeaderMargin/HeaderVBox/NameRow/DetailTypeIcon
 @onready var detail_name: Label = $CollectionModal/DetailView/DetailsScroll/DetailsBox/HeaderPanel/HeaderMargin/HeaderVBox/NameRow/DetailName
@@ -14213,8 +14214,39 @@ func show_collection_card(index: int) -> void:
 		m2_boost.visible = false
 		m2_desc.text = "Move data not discovered."
 		
-	# 3. Actualizar página y botones
+	# 3. Cadena evolutiva estilo Pokédex
+	if details_box:
+		var old_evo = details_box.get_node_or_null("EvoChainPanel")
+		if old_evo:
+			old_evo.queue_free()
+		var evo_view = GameData.build_evolution_chain_view(cid, func(target_id: int):
+			_on_evolution_chain_card_clicked(target_id)
+		)
+		if evo_view:
+			evo_view.name = "EvoChainPanel"
+			details_box.add_child(evo_view)
+
+	# 4. Actualizar página y botones
 	collection_page_lbl.text = "%d / %d" % [index + 1, current_sorted_collection.size()]
+
+func _on_evolution_chain_card_clicked(target_id: int) -> void:
+	if target_id == -1:
+		return
+	for i in range(current_sorted_collection.size()):
+		if int(current_sorted_collection[i].get("id", -1)) == target_id:
+			current_collection_index = i
+			show_collection_card(i)
+			return
+	for i in range(all_catalog_cards.size()):
+		if int(all_catalog_cards[i].get("id", -1)) == target_id:
+			col_filter_owned = "ALL"
+			current_sorted_collection = get_sorted_cards(all_catalog_cards, collection_sort_mode)
+			for j in range(current_sorted_collection.size()):
+				if int(current_sorted_collection[j].get("id", -1)) == target_id:
+					current_collection_index = j
+					show_collection_card(j)
+					return
+			break
 
 func _update_detail_fav_button_visuals(is_fav: bool) -> void:
 	if not btn_col_fav_toggle:

@@ -570,8 +570,8 @@ func get_held_item_desc(item_id: String) -> String:
 	match item_id:
 		"exp_share":
 			return tr_text(
-				"The Pokémon holding this item while on the bench receives 30% of the EXP gained by the active Pokémon.",
-				"El PKMN que lleva este objeto mientras está en banca, recibe un 30% de la EXP que recibe el PKMN activo."
+				"The Pokémon holding this item on the bench receives 30% of the effective damage dealt by the active Pokémon as EXP, even if the active Pokémon is at MAX EXP or cannot evolve.",
+				"El PKMN que lleva este objeto en banca recibe un 30% del daño efectivo provocado por el PKMN activo como EXP, incluso si el activo ya está al máximo o no evoluciona."
 			)
 		"poke_flute":
 			return tr_text(
@@ -5517,6 +5517,322 @@ func get_pokemon_evolution_chain_status(pkmn_id: int) -> Dictionary:
 				"tooltip": "Cannot evolve in tournament: %s card is missing from your collection!" % t1_name,
 				"sort_rank": 3
 			}
+
+func get_root_pokemon_id(pkmn_id: int) -> int:
+	if not pokemon_catalog.has(pkmn_id):
+		return pkmn_id
+	var cur_id = pkmn_id
+	var visited: Array[int] = [cur_id]
+	while true:
+		var d = pokemon_catalog.get(cur_id, {})
+		var ef = str(d.get("evolves_from", "")).strip_edges()
+		if ef == "":
+			break
+		var pre_id = get_pokemon_id_by_name(ef)
+		if pre_id == -1 or pre_id in visited:
+			break
+		visited.append(pre_id)
+		cur_id = pre_id
+	return cur_id
+
+func _build_evolution_tree_node(node_id: int, current_view_id: int, visited_ids: Array[int] = []) -> Dictionary:
+	if not pokemon_catalog.has(node_id):
+		return {}
+	var d = pokemon_catalog[node_id]
+	var node = {
+		"id": node_id,
+		"name": str(d.get("name", "")),
+		"stage": str(d.get("stage", "Basic")),
+		"texture_path": str(d.get("texture_path", "")),
+		"texture_file": str(d.get("texture_file", "")),
+		"is_unlocked": is_pokemon_unlocked(node_id),
+		"is_current": (node_id == current_view_id),
+		"children": []
+	}
+	var new_visited = visited_ids.duplicate()
+	new_visited.append(node_id)
+	
+	var evo_options = get_evolution_options(node_id, false)
+	for opt in evo_options:
+		var to_id = opt.get("to_id", -1)
+		var to_name = opt.get("to_name", "")
+		if to_id != -1 and to_id in new_visited:
+			continue
+		
+		var child_dict: Dictionary = {}
+		if to_id != -1 and pokemon_catalog.has(to_id):
+			child_dict = _build_evolution_tree_node(to_id, current_view_id, new_visited)
+		else:
+			child_dict = {
+				"id": -1,
+				"name": to_name,
+				"stage": opt.get("to_stage", "Stage 1"),
+				"texture_path": "",
+				"texture_file": "",
+				"is_unlocked": false,
+				"is_current": false,
+				"children": []
+			}
+		child_dict["req_exp"] = opt.get("required_exp", 0)
+		child_dict["stone_type"] = opt.get("stone_type", "Heart")
+		child_dict["stone_name"] = opt.get("stone_name", "Heart Stone")
+		child_dict["stone_count"] = opt.get("stone_count", 1)
+		child_dict["stone_key"] = opt.get("stone_key", "Heart")
+		node["children"].append(child_dict)
+		
+	return node
+
+func get_full_evolution_chain(pkmn_id: int) -> Dictionary:
+	if not pokemon_catalog.has(pkmn_id):
+		return {"has_line": false, "root": {}, "target_id": pkmn_id}
+	var root_id = get_root_pokemon_id(pkmn_id)
+	var root_node = _build_evolution_tree_node(root_id, pkmn_id)
+	var has_line = (root_node.get("children", []).size() > 0) or (root_id != pkmn_id)
+	return {
+		"has_line": has_line,
+		"root": root_node,
+		"target_id": pkmn_id
+	}
+
+func build_evolution_chain_view(pkmn_id: int, on_pokemon_selected: Callable = Callable()) -> Control:
+	var chain_data = get_full_evolution_chain(pkmn_id)
+	var is_es = (settings_language == "es")
+	
+	var outer = PanelContainer.new()
+	var outer_sb = StyleBoxFlat.new()
+	outer_sb.bg_color = Color(0.08, 0.11, 0.17, 0.95)
+	outer_sb.border_color = Color(0.22, 0.38, 0.58, 0.7)
+	outer_sb.set_border_width_all(1)
+	outer_sb.set_corner_radius_all(8)
+	outer.add_theme_stylebox_override("panel", outer_sb)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	outer.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 6)
+	margin.add_child(vbox)
+	
+	# Header
+	var title = Label.new()
+	title.text = "🧬 CADENA EVOLUTIVA" if is_es else "🧬 EVOLUTION CHAIN"
+	title.add_theme_font_size_override("font_size", 12)
+	title.add_theme_color_override("font_color", Color(0.35, 0.85, 1.0))
+	vbox.add_child(title)
+	
+	if not chain_data.get("has_line", false):
+		var no_evo_lbl = Label.new()
+		no_evo_lbl.text = "🌟 Pokémon de fase única • No tiene evoluciones conocidas." if is_es else "🌟 Single Stage Pokémon • Does not evolve."
+		no_evo_lbl.add_theme_font_size_override("font_size", 10)
+		no_evo_lbl.add_theme_color_override("font_color", Color(0.7, 0.75, 0.85))
+		vbox.add_child(no_evo_lbl)
+		return outer
+		
+	var subtitle = Label.new()
+	subtitle.text = "Fases, requisitos de EXP/Piedras y estado en colección:" if is_es else "Stages, EXP/Stone requirements & collection status:"
+	subtitle.add_theme_font_size_override("font_size", 9)
+	subtitle.add_theme_color_override("font_color", Color(0.65, 0.7, 0.8))
+	vbox.add_child(subtitle)
+	
+	var scroll = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, 135)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	vbox.add_child(scroll)
+	
+	var root_node = chain_data.get("root", {})
+	var tree_ui = _build_evolution_node_ui(root_node, on_pokemon_selected, is_es)
+	scroll.add_child(tree_ui)
+	
+	return outer
+
+func _build_evolution_node_ui(node_dict: Dictionary, on_pokemon_selected: Callable, is_es: bool) -> Control:
+	var is_current = node_dict.get("is_current", false)
+	var is_unlocked = node_dict.get("is_unlocked", false)
+	var pkmn_name = str(node_dict.get("name", "???"))
+	var stage_name = str(node_dict.get("stage", "Basic"))
+	var pid = int(node_dict.get("id", -1))
+	
+	# Node Card Container (Button for interactivity)
+	var btn = Button.new()
+	btn.custom_minimum_size = Vector2(96, 126)
+	btn.focus_mode = Control.FOCUS_NONE
+	
+	var sb = StyleBoxFlat.new()
+	if is_current:
+		sb.bg_color = Color(0.16, 0.22, 0.32, 0.98)
+		sb.border_color = Color(1.0, 0.85, 0.2, 0.95)
+		sb.set_border_width_all(2)
+	elif is_unlocked:
+		sb.bg_color = Color(0.10, 0.14, 0.20, 0.92)
+		sb.border_color = Color(0.25, 0.45, 0.65, 0.65)
+		sb.set_border_width_all(1)
+	else:
+		sb.bg_color = Color(0.08, 0.09, 0.12, 0.85)
+		sb.border_color = Color(0.35, 0.3, 0.35, 0.5)
+		sb.set_border_width_all(1)
+	sb.set_corner_radius_all(6)
+	btn.add_theme_stylebox_override("normal", sb)
+	
+	var sb_hover = sb.duplicate()
+	sb_hover.bg_color = sb_hover.bg_color.lightened(0.1)
+	btn.add_theme_stylebox_override("hover", sb_hover)
+	btn.add_theme_stylebox_override("pressed", sb)
+	
+	if on_pokemon_selected.is_valid() and pid != -1:
+		btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		btn.pressed.connect(func(): on_pokemon_selected.call(pid))
+	
+	var card_margin = MarginContainer.new()
+	card_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card_margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	card_margin.add_theme_constant_override("margin_left", 4)
+	card_margin.add_theme_constant_override("margin_right", 4)
+	card_margin.add_theme_constant_override("margin_top", 4)
+	card_margin.add_theme_constant_override("margin_bottom", 4)
+	btn.add_child(card_margin)
+	
+	var card_vbox = VBoxContainer.new()
+	card_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card_vbox.add_theme_constant_override("separation", 2)
+	card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	card_margin.add_child(card_vbox)
+	
+	# 1. Badge Top
+	var badge = Label.new()
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	badge.add_theme_font_size_override("font_size", 8)
+	if is_current:
+		badge.text = "⭐ ACTUAL" if is_es else "⭐ CURRENT"
+		badge.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+	elif is_unlocked:
+		badge.text = "✓ OBTENIDA" if is_es else "✓ OWNED"
+		badge.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
+	else:
+		badge.text = "🔒 BLOQUEADA" if is_es else "🔒 LOCKED"
+		badge.add_theme_color_override("font_color", Color(0.95, 0.45, 0.45))
+	card_vbox.add_child(badge)
+	
+	# 2. Sprite Thumbnail
+	var sprite_rect = TextureRect.new()
+	sprite_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sprite_rect.custom_minimum_size = Vector2(48, 48)
+	sprite_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sprite_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var tex = get_pokemon_texture(node_dict.get("texture_path", ""))
+	if not tex:
+		tex = get_pokemon_texture(node_dict.get("texture_file", ""))
+	if tex:
+		sprite_rect.texture = tex
+	if not is_unlocked and not is_current:
+		sprite_rect.modulate = Color(0.18, 0.18, 0.22, 0.85)
+	card_vbox.add_child(sprite_rect)
+	
+	# 3. Name
+	var name_lbl = Label.new()
+	name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	name_lbl.text = pkmn_name
+	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_lbl.add_theme_font_size_override("font_size", 9)
+	if is_current:
+		name_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4))
+	elif is_unlocked:
+		name_lbl.add_theme_color_override("font_color", Color.WHITE)
+	else:
+		name_lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	card_vbox.add_child(name_lbl)
+	
+	# 4. Stage & Sub-notice
+	var stage_lbl = Label.new()
+	stage_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stage_lbl.add_theme_font_size_override("font_size", 8)
+	if not is_unlocked and not is_current:
+		stage_lbl.text = "%s\n(%s)" % [stage_name, "No en Colección" if is_es else "Not in Collection"]
+		stage_lbl.add_theme_color_override("font_color", Color(0.9, 0.5, 0.5))
+	else:
+		stage_lbl.text = stage_name
+		stage_lbl.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
+	card_vbox.add_child(stage_lbl)
+	
+	var children = node_dict.get("children", [])
+	if children.is_empty():
+		return btn
+		
+	# HBox that contains this node and all of its branches
+	var branch_hbox = HBoxContainer.new()
+	branch_hbox.add_theme_constant_override("separation", 6)
+	branch_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	branch_hbox.add_child(btn)
+	
+	var children_vbox = VBoxContainer.new()
+	children_vbox.add_theme_constant_override("separation", 8)
+	children_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	branch_hbox.add_child(children_vbox)
+	
+	for child in children:
+		var edge_hbox = HBoxContainer.new()
+		edge_hbox.add_theme_constant_override("separation", 6)
+		edge_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		
+		# Arrow & Requirement Container
+		var arrow_vbox = VBoxContainer.new()
+		arrow_vbox.custom_minimum_size = Vector2(74, 0)
+		arrow_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		arrow_vbox.add_theme_constant_override("separation", 1)
+		
+		var arrow_lbl = Label.new()
+		arrow_lbl.text = "➔"
+		arrow_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		arrow_lbl.add_theme_font_size_override("font_size", 16)
+		arrow_lbl.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
+		arrow_vbox.add_child(arrow_lbl)
+		
+		var req_exp = int(child.get("req_exp", 0))
+		if req_exp > 0:
+			var exp_lbl = Label.new()
+			exp_lbl.text = "%d EXP" % req_exp
+			exp_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			exp_lbl.add_theme_font_size_override("font_size", 8)
+			exp_lbl.add_theme_color_override("font_color", Color(0.95, 0.8, 0.3))
+			arrow_vbox.add_child(exp_lbl)
+			
+		var st_name = str(child.get("stone_name", "")).strip_edges()
+		var st_type = str(child.get("stone_type", "")).strip_edges()
+		var st_count = int(child.get("stone_count", 1))
+		if st_name != "" and st_name.to_lower() != "none":
+			var stone_row = HBoxContainer.new()
+			stone_row.alignment = BoxContainer.ALIGNMENT_CENTER
+			stone_row.add_theme_constant_override("separation", 2)
+			
+			var st_tex = get_item_texture(st_type)
+			if st_tex:
+				var st_icon = TextureRect.new()
+				st_icon.custom_minimum_size = Vector2(14, 14)
+				st_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				st_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				st_icon.texture = st_tex
+				stone_row.add_child(st_icon)
+				
+			var st_lbl = Label.new()
+			st_lbl.text = "%dx %s" % [st_count, get_stone_display_name(st_type)]
+			st_lbl.add_theme_font_size_override("font_size", 8)
+			st_lbl.add_theme_color_override("font_color", Color(0.5, 0.9, 0.6))
+			stone_row.add_child(st_lbl)
+			arrow_vbox.add_child(stone_row)
+			
+		edge_hbox.add_child(arrow_vbox)
+		
+		var child_sub_ui = _build_evolution_node_ui(child, on_pokemon_selected, is_es)
+		edge_hbox.add_child(child_sub_ui)
+		children_vbox.add_child(edge_hbox)
+		
+	return branch_hbox
 
 # Recompensa dinámica al derrotar un Pokémon según su rareza y fase
 func calculate_pkmn_defeat_reward(rarity_str: String, stage_str: String = "") -> Dictionary:
