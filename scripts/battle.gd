@@ -3494,8 +3494,12 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 
 	# Drenaje de Vida (LIFE_DRAIN)
 	if move.effect_type == "LIFE_DRAIN" and is_full_energy and final_damage > 0:
-		var drain_ratio = 0.5
-		var heal_amount = max(1, int(round(final_damage * drain_ratio)))
+		var drain_ratio = 0.30
+		# Se calcula sobre el daño base/normal recibido para evitar que la debilidad elemental (x2) infle la curación al doble
+		var heal_base = min(raw_damage, final_damage)
+		# Límite máximo de curación por golpe (cap al 20% del HP máximo del usuario, mín 6)
+		var max_heal_cap = max(6, int(round(float(attacker.max_hp) * 0.20)))
+		var heal_amount = clamp(int(round(float(heal_base) * drain_ratio)), 1, max_heal_cap)
 		attacker.current_hp = min(attacker.max_hp, attacker.current_hp + heal_amount)
 		note_text += " [color=green]Drained health and recovered +%d HP![/color]" % heal_amount
 		spawn_floating_combat_number(attacker_visual, heal_amount, true)
@@ -5757,7 +5761,7 @@ func open_energy_select_modal(move, initial_boosted: bool, max_spend: int) -> vo
 			elif move.effect_type == "POISON" or move.effect_type == "POISON_IF_FASTER":
 				eff_desc = "Inflicts Poison (-1 DMG)"
 			elif move.effect_type == "LIFE_DRAIN":
-				eff_desc = "Drains 50% of dealt HP"
+				eff_desc = "Drains 30% of dealt HP"
 			elif move.effect_type == "SHIELD_BREAKER":
 				eff_desc = "Charges +4 DMG to next move" if "next move" in move.description.to_lower() else "Shatters foe's shield"
 			elif move.effect_type == "SUPPORT_BOOST":
@@ -6926,7 +6930,7 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 	elif eff == "SEEDED":
 		return "Leech Seed (saps 2 HP)"
 	elif eff == "LIFE_DRAIN":
-		return "Drains 100% HP" if boosted else "Drains 50% HP"
+		return "Drains 30% HP"
 	elif eff == "ANTI_TANK":
 		return "Deals 50% foe's HP"
 	elif eff == "WEAK_SPOT" or eff == "ADAPT":
