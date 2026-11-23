@@ -45,11 +45,12 @@ var boss_damage_taken_total: int = 0
 var last_enemy_switch_round: int = -1
 
 func get_boss_diamond_rewards_for_damage(damage: int) -> int:
-	var d = int(damage / 10)
-	d += int(damage / 100) * 10
-	if damage >= 500:
-		d += 50
-	return d
+	if damage <= 0:
+		return 0
+	# Base de 20 diamantes por llegar al boss y empezar a minar,
+	# escalando progresivamente hasta un máximo de 50 diamantes (a los 750+ de daño)
+	var bonus = int(float(damage) / 25.0)
+	return clampi(20 + bonus, 20, 50)
 
 func register_boss_damage(dmg: int) -> void:
 	if dmg <= 0:
@@ -62,7 +63,7 @@ func register_boss_damage(dmg: int) -> void:
 	if diff > 0:
 		GameData.player_diamonds += diff
 		GameData.save_profile()
-		log_action("💎 [b]Crystal Onix[/b] dropped [color=yellow]+%d Diamonds[/color]! (Total Boss DMG: %d / 900 HP)" % [diff, boss_damage_taken_total])
+		log_action("💎 [b]Crystal Onix[/b] dropped [color=yellow]+%d Diamonds[/color]! (Total Mined: %d DMG | 💎 %d/50)" % [diff, boss_damage_taken_total, new_d])
 
 func is_crystal_onix_boss_battle() -> bool:
 	var act_e = get_active_enemy()
@@ -2031,6 +2032,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		actor.current_hp = max(0, actor.current_hp - s_dmg)
 		if actor.name == "Crystal Onix":
 			register_boss_damage(s_dmg)
+			actor.current_hp = actor.max_hp
 		opponent.current_hp = min(opponent.max_hp, opponent.current_hp + s_dmg)
 		log_action("🌱 [color=green]Leech Seed saps %d HP from %s to %s![/color]" % [s_dmg, actor.name, opponent.name], st_side)
 		play_damage_hit(actor_img, "GRASS", s_dmg)
@@ -2052,6 +2054,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		actor.current_hp = max(0, actor.current_hp - bdmg)
 		if actor.name == "Crystal Onix":
 			register_boss_damage(bdmg)
+			actor.current_hp = actor.max_hp
 		actor.burn_turns -= 1
 		log_action("🔥 [color=orange]%s takes %d Burn damage![/color] (%d turns remaining)" % [actor.name, bdmg, actor.burn_turns], st_side)
 		var target_overlay = player_status_overlay if actor == get_active_player() else enemy_status_overlay
@@ -2439,6 +2442,7 @@ func _finish_round() -> void:
 			active_e.current_hp = max(0, active_e.current_hp - 2)
 			if active_e.name == "Crystal Onix":
 				register_boss_damage(2)
+				active_e.current_hp = active_e.max_hp
 			spawn_floating_combat_number(enemy_card_img, -2, false)
 			play_damage_hit(enemy_card_img, "GROUND", 2)
 		if check_active_faint() and check_team_defeat():
@@ -2463,6 +2467,7 @@ func _finish_round() -> void:
 			pkmn.current_hp = max(0, pkmn.current_hp - c_dmg)
 			if pkmn.name == "Crystal Onix":
 				register_boss_damage(c_dmg)
+				pkmn.current_hp = pkmn.max_hp
 			var node_vis = player_card_img if pkmn == active_p else enemy_card_img
 			var p_side = "PLAYER" if pkmn == active_p else "ENEMY"
 			pkmn.constricted_turns -= 1
@@ -2482,6 +2487,7 @@ func _finish_round() -> void:
 			pkmn.current_hp = max(0, pkmn.current_hp - 1)
 			if pkmn.name == "Crystal Onix":
 				register_boss_damage(1)
+				pkmn.current_hp = pkmn.max_hp
 			var node_vis = player_card_img if pkmn == active_p else enemy_card_img
 			var p_side = "PLAYER" if pkmn == active_p else "ENEMY"
 			log_action("☠️ [color=purple]%s takes 1 extra DMG from Toxic![/color]" % pkmn.name, p_side)
@@ -3385,8 +3391,11 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		defender.current_hp = max(0, defender.current_hp - final_damage)
 		effective_damage = max(0, defender_prev_hp - defender.current_hp)
 	defender.took_damage_last_turn = (final_damage > 0)
-	if defender.name == "Crystal Onix" and final_damage > 0:
-		register_boss_damage(final_damage)
+	if defender.name == "Crystal Onix" or defender.id == GameData.CRYSTAL_ONIX_ID:
+		if final_damage > 0:
+			register_boss_damage(final_damage)
+		# Crystal Onix es invencible: su salud no se agota, solo se mina daño
+		defender.current_hp = defender.max_hp
 
 	if (move.name == "Crystal Blast" or move.effect_type == "BENCH_DAMAGE") and final_damage > 0:
 		var target_bench = get_benched_player_indices() if attacker == get_active_enemy() else get_benched_enemy_indices()
@@ -4135,7 +4144,7 @@ func check_active_faint() -> bool:
 	var active_e = get_active_enemy()
 	var triggered = false
 	
-	if active_e and active_e.current_hp <= 0 and not is_enemy_fainting:
+	if active_e and active_e.current_hp <= 0 and not is_enemy_fainting and not is_crystal_onix_boss_battle():
 		var next_e_idx = find_next_alive_enemy()
 		log_action("[b]%s's %s fainted![/b]" % [get_enemy_trainer_name(), active_e.name])
 		_animate_faint_and_replacement(false, active_e, next_e_idx)
@@ -4599,8 +4608,8 @@ func _resolve_battle_victory() -> void:
 				GameData.is_campaign_mode = false
 				GameData.save_profile()
 				show_game_over(
-					"💎 CRYSTAL ONIX TRIAL CONQUERED!",
-					"You faced the legendary Boss Crystal Onix!\n\n💥 Damage Inflicted: %d / 900 HP\n💎 Diamonds Mined: +%d Diamonds!\n🏆 Highest Boss Record: %d HP\n\nDaily limit reached. Come back tomorrow for another run!" % [
+					"💎 CRYSTAL ONIX TRIAL COMPLETED!",
+					"You faced the invincible Boss Crystal Onix!\n\n💥 Damage Mined: %d DMG\n💎 Diamonds Mined: +%d Diamonds! (20-50 Range)\n🏆 Highest Boss Record: %d DMG\n\nDaily limit reached. Come back tomorrow for another run!" % [
 						boss_damage_taken_total,
 						mined_diamonds,
 						GameData.chaos_boss_damage_record
@@ -4951,7 +4960,7 @@ func _resolve_battle_defeat(is_double_ko: bool = false) -> void:
 				GameData.save_profile()
 				show_game_over(
 					"💎 CHAOS ODYSSEY - BOSS RESULT",
-					"Your team was pushed to the limit by Crystal Onix!\n\n💥 Damage Inflicted: %d / 900 HP\n💎 Diamonds Mined: +%d Diamonds!\n🏆 Highest Boss Record: %d HP\n\nDaily limit reached. Come back tomorrow for another run!" % [
+					"Your team faced the invincible Crystal Onix!\n\n💥 Damage Mined: %d DMG\n💎 Diamonds Mined: +%d Diamonds! (20-50 Range)\n🏆 Highest Boss Record: %d DMG\n\nDaily limit reached. Come back tomorrow for another run!" % [
 						boss_damage_taken_total,
 						mined_diamonds,
 						GameData.chaos_boss_damage_record
@@ -6637,10 +6646,16 @@ func update_ui() -> void:
 	_update_enemy_bench_card(enemy_bench_1, enemy_team, enemy_benched_idx, 0)
 	_update_enemy_bench_card(enemy_bench_2, enemy_team, enemy_benched_idx, 1)
 	
-	enemy_hp_bar.max_value = active_e.max_hp
-	enemy_hp_bar.value = active_e.current_hp
-	_apply_hp_bar_styles(enemy_hp_bar, active_e.current_hp, active_e.max_hp)
-	enemy_hp_lbl.text = "%d / %d" % [active_e.current_hp, active_e.max_hp]
+	if is_crystal_onix_boss_battle():
+		enemy_hp_bar.max_value = 750
+		enemy_hp_bar.value = min(boss_damage_taken_total, 750)
+		_apply_hp_bar_styles(enemy_hp_bar, min(boss_damage_taken_total, 750), 750)
+		enemy_hp_lbl.text = "💎 %d DMG (💎 %d/50)" % [boss_damage_taken_total, get_boss_diamond_rewards_for_damage(boss_damage_taken_total)]
+	else:
+		enemy_hp_bar.max_value = active_e.max_hp
+		enemy_hp_bar.value = active_e.current_hp
+		_apply_hp_bar_styles(enemy_hp_bar, active_e.current_hp, active_e.max_hp)
+		enemy_hp_lbl.text = "%d / %d" % [active_e.current_hp, active_e.max_hp]
 	enemy_energy_lbl.text = GameData.tr_text("Energy: ", "Energía: ") + get_energy_icons(active_e.current_energy, active_e.max_energy)
 	enemy_status_lbl.text = " | ".join(_format_status_list(active_e))
 	

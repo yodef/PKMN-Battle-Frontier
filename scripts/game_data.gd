@@ -9082,7 +9082,7 @@ func get_chaos_match_info(match_num: int) -> Dictionary:
 		7:
 			return {
 				"match_num": 7,
-				"desc": "FINAL BOSS: 💎 Crystal Onix (900 HP) — Push your limits!",
+				"desc": "FINAL BOSS: 💎 Crystal Onix (Invincible Titan) — Mine 20-50 Diamonds!",
 				"reward_gold": 0,
 				"reward_diamonds": 0,
 				"super_potions": 0,

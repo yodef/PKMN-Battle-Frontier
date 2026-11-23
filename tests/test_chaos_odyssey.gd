@@ -44,24 +44,23 @@ func test_crystal_onix_and_moves() -> void:
 	print("✓ Crystal Onix stats (900 HP, 8 NRG, 4 REC, 3 SPD) and Crystal Blast move verified!")
 
 func test_boss_diamond_rewards_formula() -> void:
-	print("\n--- Testing Boss Diamond Formula ---")
+	print("\n--- Testing Boss Diamond Formula (20-50 Range) ---")
 	var battle_script = preload("res://scripts/battle.gd")
 	var battle_dummy = Control.new()
 	battle_dummy.set_script(battle_script)
 	
 	assert(battle_dummy.get_boss_diamond_rewards_for_damage(0) == 0, "0 DMG -> 0 Diamonds")
-	assert(battle_dummy.get_boss_diamond_rewards_for_damage(9) == 0, "9 DMG -> 0 Diamonds")
-	assert(battle_dummy.get_boss_diamond_rewards_for_damage(10) == 1, "10 DMG -> 1 Diamond")
-	assert(battle_dummy.get_boss_diamond_rewards_for_damage(50) == 5, "50 DMG -> 5 Diamonds")
-	assert(battle_dummy.get_boss_diamond_rewards_for_damage(99) == 9, "99 DMG -> 9 Diamonds")
-	assert(battle_dummy.get_boss_diamond_rewards_for_damage(100) == 20, "100 DMG -> 20 Diamonds (10+10)")
-	assert(battle_dummy.get_boss_diamond_rewards_for_damage(200) == 40, "200 DMG -> 40 Diamonds (20+20)")
-	assert(battle_dummy.get_boss_diamond_rewards_for_damage(499) == 89, "499 DMG -> 89 Diamonds (49+40)")
-	assert(battle_dummy.get_boss_diamond_rewards_for_damage(500) == 150, "500 DMG -> 150 Diamonds (50+50+50)")
-	assert(battle_dummy.get_boss_diamond_rewards_for_damage(900) == 230, "900 DMG -> 230 Diamonds (90+90+50)")
+	assert(battle_dummy.get_boss_diamond_rewards_for_damage(1) == 20, "1 DMG -> 20 Diamonds (base floor)")
+	assert(battle_dummy.get_boss_diamond_rewards_for_damage(25) == 21, "25 DMG -> 21 Diamonds")
+	assert(battle_dummy.get_boss_diamond_rewards_for_damage(125) == 25, "125 DMG -> 25 Diamonds")
+	assert(battle_dummy.get_boss_diamond_rewards_for_damage(250) == 30, "250 DMG -> 30 Diamonds")
+	assert(battle_dummy.get_boss_diamond_rewards_for_damage(500) == 40, "500 DMG -> 40 Diamonds")
+	assert(battle_dummy.get_boss_diamond_rewards_for_damage(750) == 50, "750 DMG -> 50 Diamonds (maximum cap)")
+	assert(battle_dummy.get_boss_diamond_rewards_for_damage(900) == 50, "900 DMG -> 50 Diamonds (hard cap)")
+	assert(battle_dummy.get_boss_diamond_rewards_for_damage(1500) == 50, "1500 DMG -> 50 Diamonds (hard cap)")
 	
 	battle_dummy.free()
-	print("✓ Diamond calculation formula rigorously verified across all damage tiers!")
+	print("✓ Diamond calculation formula (20-50 range) rigorously verified across all damage tiers!")
 
 func test_chaos_match_info() -> void:
 	print("\n--- Testing Chaos Match Info Configuration ---")
