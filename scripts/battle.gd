@@ -813,9 +813,14 @@ func show_pokemon_details(pkmn, is_enemy: bool = false) -> void:
 	var eff_atk = pkmn.get_effective_attack() if (pkmn is Object and pkmn.has_method("get_effective_attack")) else (pkmn.get("attack", 10) if (pkmn is Dictionary and "attack" in pkmn) else 10)
 	var eff_def = pkmn.get_effective_defense() if (pkmn is Object and pkmn.has_method("get_effective_defense")) else (pkmn.get("defense", 10) if (pkmn is Dictionary and "defense" in pkmn) else 10)
 	var stats_lbl = Label.new()
-	stats_lbl.text = "❤️ HP: %d / %d   ⚡ EN: %d / %d   👟 SPD: %d   ⚔️ ATK: %d   🛡️ DEF: %d" % [
+	var acc_mod = pkmn.temp_accuracy_mod if ("temp_accuracy_mod" in pkmn) else 0
+	var eva_mod = pkmn.temp_evasion_mod if ("temp_evasion_mod" in pkmn) else 0
+	var acc_txt = "   🎯 ACC: %+d%%" % acc_mod if acc_mod != 0 else ""
+	var eva_txt = "   💨 EVA: %+d%%" % eva_mod if eva_mod != 0 else ""
+	stats_lbl.text = "❤️ HP: %d / %d   ⚡ EN: %d / %d   👟 SPD: %d   ⚔️ ATK: %d   🛡️ DEF: %d%s%s" % [
 		pkmn.current_hp, pkmn.max_hp, pkmn.current_energy, pkmn.max_energy,
-		get_pokemon_effective_speed(pkmn, opponent), eff_atk, eff_def
+		get_pokemon_effective_speed(pkmn, opponent), eff_atk, eff_def,
+		acc_txt, eva_txt
 	]
 	stats_lbl.add_theme_font_size_override("font_size", 11)
 	stats_lbl.add_theme_color_override("font_color", Color(0.85, 0.92, 1.0))
@@ -2055,8 +2060,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		if actor.name == "Crystal Onix":
 			register_boss_damage(bdmg)
 			actor.current_hp = actor.max_hp
-		actor.burn_turns -= 1
-		log_action("🔥 [color=orange]%s takes %d Burn damage![/color] (%d turns remaining)" % [actor.name, bdmg, actor.burn_turns], st_side)
+		log_action("🔥 [color=orange]%s takes %d Burn damage![/color]" % [actor.name, bdmg], st_side)
 		var target_overlay = player_status_overlay if actor == get_active_player() else enemy_status_overlay
 		if target_overlay:
 			target_overlay.trigger_burn_effect()
@@ -2128,24 +2132,24 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 			log_action("✨ [b]%s[/b] [color=green]woke up from sleep and gained 1 round Sleep immunity![/color]" % actor.name, st_side)
 			update_ui()
 
-	# 2. Freeze: Thaw check
+	# 2. Freeze: Thaw check (20% natural thaw or Fire hit)
 	if actor.is_frozen:
 		actor.frozen_turns += 1
-		if actor.frozen_turns >= 2 or randf() < 0.25:
+		if randf() < 0.20:
 			actor.is_frozen = false
 			actor.frozen_turns = 0
 			log_action("🔥 [b]%s[/b] [color=orange]thawed out and can move![/color]" % actor.name, st_side)
 			update_ui()
 		else:
-			log_action("❄️ [b]%s[/b] [color=cyan]is frozen solid and cannot move! (%d/2)[/color]" % [actor.name, actor.frozen_turns], st_side)
+			log_action("❄️ [b]%s[/b] [color=cyan]is frozen solid and cannot move![/color]" % actor.name, st_side)
 			update_ui()
 			_end_failed_action_turn(is_player)
 			return false
 
-	# 3. Paralysis: 25% chance unable to act
+	# 3. Paralysis: 25% chance unable to act & -50% Speed
 	if actor.is_paralyzed:
 		if randf() < 0.25:
-			log_action("⚡ [b]%s[/b] [color=yellow]is fully paralyzed! It cannot move! (%d rounds left)[/color]" % [actor.name, actor.paralyze_turns], st_side)
+			log_action("⚡ [b]%s[/b] [color=yellow]is fully paralyzed! It cannot move![/color]" % actor.name, st_side)
 			var target_overlay = player_status_overlay if (actor == get_active_player()) else enemy_status_overlay
 			if target_overlay:
 				target_overlay.trigger_paralyze_effect(1.4)
@@ -2515,13 +2519,11 @@ func _finish_round() -> void:
 				pkmn.foe_damage_debuff_turns -= 1
 				if pkmn.foe_damage_debuff_turns == 0:
 					pkmn.foe_damage_debuff = 0
-			if pkmn.is_paralyzed:
-				pkmn.paralyze_turns -= 1
-				if pkmn.paralyze_turns <= 0:
-					pkmn.is_paralyzed = false
-					pkmn.paralyze_turns = 0
-					pkmn.immune_paralyze_rounds = 1
-					log_action("✨ [b]%s[/b] [color=green]recovered from paralysis and gained 1 round Paralysis immunity![/color]" % pkmn.name)
+			if "stat_mod_turns" in pkmn and pkmn.stat_mod_turns > 0:
+				pkmn.stat_mod_turns -= 1
+				if pkmn.stat_mod_turns == 0:
+					pkmn.reset_stat_modifiers()
+					log_action("🔄 [b]%s[/b]'s temporary stat modifications returned to normal." % pkmn.name)
 			if pkmn.immune_paralyze_rounds > 0 and not pkmn.is_paralyzed:
 				pkmn.immune_paralyze_rounds -= 1
 			if pkmn.immune_sleep_rounds > 0:
@@ -2625,6 +2627,8 @@ func enemy_do_switch(target_idx: int) -> void:
 		current.foe_damage_debuff = 0
 		current.foe_damage_debuff_turns = 0
 		current.temp_speed_mod = 0
+		if current.has_method("reset_stat_modifiers"):
+			current.reset_stat_modifiers()
 		_cleanse_pokemon_status(current)
 		
 	active_enemy_idx = target_idx
@@ -2983,15 +2987,29 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		update_ui()
 		return
 
-	# 6. Chequeo de Precisión (Accuracy)
-	var move_acc = int(move.accuracy) if ("accuracy" in move) else 100
-	if move_acc < 100 and move.effect_type != "CANNOT_MISS":
-		var roll = randi_range(1, 100)
-		if roll > move_acc:
-			log_action("[b]%s[/b] used [color=cyan]%s[/color], but it [color=red]missed![/color] (🎯 ACC: %d%%)" % [attacker.name, move.name, move_acc])
-			shake_node(defender_visual)
-			update_ui()
-			return
+	# 6. Chequeo de Precisión y Evasión (Accuracy & Evasiveness)
+	if move.effect_type == "CANNOT_MISS" or move.name in ["Swift", "Aerial Ace", "Shock Wave", "Magnet Bomb", "Faint Attack", "Vital Throw"]:
+		# Movimiento infalible: ignora modificadores de precisión y evasión
+		pass
+	else:
+		var base_acc = int(move.accuracy) if ("accuracy" in move) else 100
+		var att_acc_mod = attacker.temp_accuracy_mod if ("temp_accuracy_mod" in attacker) else 0
+		var def_eva_mod = defender.temp_evasion_mod if ("temp_evasion_mod" in defender) else 0
+		var eff_acc = clamp(base_acc + att_acc_mod - def_eva_mod, 25, 100)
+		if eff_acc < 100:
+			var roll = randi_range(1, 100)
+			if roll > eff_acc:
+				var reason = ""
+				if def_eva_mod > 0:
+					reason = " (Evaded! 💨 +%d%%)" % def_eva_mod
+				elif att_acc_mod < 0:
+					reason = " (Obscured! 🎯 %d%%)" % eff_acc
+				else:
+					reason = " (🎯 ACC: %d%%)" % eff_acc
+				log_action("[b]%s[/b] used [color=cyan]%s[/color], but it [color=red]missed![/color]%s" % [attacker.name, move.name, reason])
+				shake_node(defender_visual)
+				update_ui()
+				return
 
 	# 7. Cálculo del daño base
 	var multi_hit_events: Array[Dictionary] = []
@@ -3717,15 +3735,90 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			attacker.wall_hp = 4
 			note_text += " [color=cyan]Light Screen Wall active (absorbs 4 DMG & counters)![/color]"
 
-		# Evasión / Reflejo (EVASIVE / MIRAGE e.g. Reflect / Teleport / Primal Coat)
-		if move.effect_type in ["EVASIVE", "MIRAGE"]:
+		# Evasión / Reflejo (EVASIVE / MIRAGE / PROTECT e.g. Reflect / Teleport / Primal Coat / Protect)
+		if move.effect_type in ["EVASIVE", "MIRAGE", "PROTECT"]:
 			if attacker.last_move_used == move.name:
-				note_text += " [color=red]Evasion failed! Cannot be used consecutively.[/color]"
-				spawn_floating_combat_text(attacker_visual, "Evasion Failed!", Color("#ef4444"))
+				note_text += " [color=red]%s failed! Cannot be used consecutively.[/color]" % move.name
+				spawn_floating_combat_text(attacker_visual, "%s Failed!" % move.name, Color("#ef4444"))
 			else:
 				attacker.is_evasive = true
 				attacker.evasive_reflects_dmg = 3 if move.effect_type == "EVASIVE" else 0
-				note_text += " [color=cyan]Active Evasion: next move against %s will fail![/color]" % attacker.name
+				note_text += " [color=cyan]Protected from incoming attacks this turn![/color]"
+				spawn_floating_combat_text(attacker_visual, "Protected!", Color("#38bdf8"))
+
+		# Reducción de defensa rival (LOWER_DEF e.g. Tail Whip / Leer)
+		if move.effect_type == "LOWER_DEF":
+			var def_loss = max(4, int(round(defender.defense * 0.25)))
+			defender.temp_defense_mod -= def_loss
+			defender.stat_mod_turns = 5
+			note_text += " [color=orange]Lowers foe's Defense by 1 Stage (-%d DEF) for 5 rounds![/color]" % def_loss
+			spawn_floating_combat_text(defender_visual, "-%d DEF" % def_loss, Color("#f97316"))
+
+		# Reducción de ataque rival (LOWER_ATK e.g. Growl)
+		if move.effect_type == "LOWER_ATK":
+			var atk_loss = max(4, int(round(defender.attack * 0.25)))
+			defender.temp_attack_mod -= atk_loss
+			defender.stat_mod_turns = 5
+			note_text += " [color=orange]Lowers foe's Attack by 1 Stage (-%d ATK) for 5 rounds![/color]" % atk_loss
+			spawn_floating_combat_text(defender_visual, "-%d ATK" % atk_loss, Color("#f97316"))
+
+		# Aumento de defensa propio (RAISE_DEF e.g. Harden / Withdraw / Defense Curl / Defend Order / Cosmic Power)
+		if move.effect_type == "RAISE_DEF":
+			var def_mult = 0.50 if move.name == "Defend Order" else 0.25
+			var def_gain = max(4, int(round(attacker.defense * def_mult)))
+			attacker.temp_defense_mod += def_gain
+			attacker.stat_mod_turns = 5
+			note_text += " [color=cyan]Raises user's Defense (+%d DEF) for 5 rounds![/color]" % def_gain
+			spawn_floating_combat_text(attacker_visual, "+%d DEF" % def_gain, Color("#38bdf8"))
+
+		# Aumento de musculatura propio (BULK_UP)
+		if move.effect_type == "BULK_UP":
+			var atk_gain = max(4, int(round(attacker.attack * 0.25)))
+			var def_gain = max(4, int(round(attacker.defense * 0.25)))
+			attacker.temp_attack_mod += atk_gain
+			attacker.temp_defense_mod += def_gain
+			attacker.stat_mod_turns = 5
+			note_text += " [color=cyan]Bulked up! +%d ATK and +%d DEF for 5 rounds![/color]" % [atk_gain, def_gain]
+			spawn_floating_combat_text(attacker_visual, "+ATK & +DEF", Color("#38bdf8"))
+
+		# Reducción de precisión rival (ACCURACY_DOWN e.g. Sand Attack / Smokescreen)
+		if move.effect_type == "ACCURACY_DOWN":
+			var acc_loss = 25 if move.name == "Smokescreen" else 20
+			defender.temp_accuracy_mod -= acc_loss
+			defender.stat_mod_turns = 5
+			note_text += " [color=orange]Obscured foe's vision! -%d%% Accuracy for 5 rounds![/color]" % acc_loss
+			spawn_floating_combat_text(defender_visual, "-%d%% ACC" % acc_loss, Color("#f59e0b"))
+
+		# Bofetón Lodo (MUD_SLAP)
+		if move.effect_type == "MUD_SLAP":
+			defender.temp_accuracy_mod -= 15
+			defender.stat_mod_turns = max(defender.stat_mod_turns, 3)
+			note_text += " [color=orange]Mud splashed in foe's eyes! -15%% Accuracy for 3 rounds![/color]"
+			spawn_floating_combat_text(defender_visual, "-15% ACC", Color("#f59e0b"))
+
+		# Disparo de tinta (OCTAZOOKA)
+		if move.effect_type == "OCTAZOOKA":
+			if randf() < 0.50:
+				defender.temp_accuracy_mod -= 30
+				defender.stat_mod_turns = max(defender.stat_mod_turns, 3)
+				note_text += " [color=orange]Ink blasted into foe's eyes! -30%% Accuracy for 3 rounds![/color]"
+				spawn_floating_combat_text(defender_visual, "-30% ACC", Color("#f59e0b"))
+
+		# Aumento de evasión propio (EVASION_UP e.g. Double Team / Minimize)
+		if move.effect_type == "EVASION_UP":
+			attacker.temp_evasion_mod += 20
+			attacker.stat_mod_turns = 5
+			note_text += " [color=cyan]Created elusive illusions! +20%% Evasion for 5 rounds![/color]"
+			spawn_floating_combat_text(attacker_visual, "+20% EVA", Color("#a855f7"))
+
+		# Triturar (CRUNCH)
+		if move.effect_type == "CRUNCH":
+			if randf() < 0.20:
+				var def_loss = max(4, int(round(defender.defense * 0.25)))
+				defender.temp_defense_mod -= def_loss
+				defender.stat_mod_turns = max(defender.stat_mod_turns, 5)
+				note_text += " [color=orange]Crunch crushed foe's defense (-%d DEF) for 5 rounds![/color]" % def_loss
+				spawn_floating_combat_text(defender_visual, "-%d DEF" % def_loss, Color("#f97316"))
 
 		# Escudo defensivo (SHIELD / BLOCK / VEIL)
 		if move.effect_type in ["SHIELD", "BLOCK", "VEIL"]:
@@ -5786,6 +5879,8 @@ func _on_switch_pressed(benched_slot_idx: int) -> void:
 		current.foe_damage_debuff = 0
 		current.foe_damage_debuff_turns = 0
 		current.temp_speed_mod = 0
+		if current.has_method("reset_stat_modifiers"):
+			current.reset_stat_modifiers()
 		_cleanse_pokemon_status(current)
 	if is_p2:
 		current = get_active_enemy()
@@ -6490,7 +6585,7 @@ func _format_status_list(pkmn) -> Array:
 	if not pkmn:
 		return list
 	if pkmn.burn_turns > 0:
-		list.append("🔥 Burn (%d)" % pkmn.burn_turns)
+		list.append("🔥 Burn (-50% ATK)")
 	if pkmn.is_poisoned:
 		if pkmn.toxic_envenomed:
 			list.append("☠️ Toxic (-1 DMG & tick)")
@@ -6499,11 +6594,11 @@ func _format_status_list(pkmn) -> Array:
 	if pkmn.is_flinched:
 		list.append("💫 Flinch")
 	if pkmn.is_frozen:
-		list.append("❄️ Frozen (%d/2)" % pkmn.frozen_turns if pkmn.frozen_turns > 0 else "❄️ Frozen")
+		list.append("❄️ Frozen")
 	if pkmn.is_asleep_turns > 0:
 		list.append("💤 Asleep (%d)" % pkmn.is_asleep_turns)
 	if pkmn.is_paralyzed:
-		list.append("⚡ Paralyzed (%d)" % pkmn.paralyze_turns if pkmn.paralyze_turns > 0 else "⚡ Paralyzed")
+		list.append("⚡ Paralyzed (-50% SPD)")
 	if pkmn.is_confused:
 		list.append("🌀 Confused (%d/3)" % pkmn.confused_turns if pkmn.confused_turns > 0 else "🌀 Confused")
 	if pkmn.is_constricted_dmg > 0:
@@ -6515,11 +6610,19 @@ func _format_status_list(pkmn) -> Array:
 	if pkmn.wall_hp > 0:
 		list.append("🧱 Wall (%d HP)" % pkmn.wall_hp)
 	if pkmn.is_evasive:
-		list.append("💨 Evasive")
+		list.append("💨 Protected")
 	if pkmn.is_digging:
 		list.append("⛏️ Underground")
 	if pkmn.damage_buff > 0:
 		list.append("⚔️ Buff +%d" % pkmn.damage_buff)
+	if "temp_attack_mod" in pkmn and pkmn.temp_attack_mod != 0:
+		list.append("⚔️ ATK %+d" % pkmn.temp_attack_mod)
+	if "temp_defense_mod" in pkmn and pkmn.temp_defense_mod != 0:
+		list.append("🛡️ DEF %+d" % pkmn.temp_defense_mod)
+	if "temp_accuracy_mod" in pkmn and pkmn.temp_accuracy_mod != 0:
+		list.append("🎯 ACC %+d%%" % pkmn.temp_accuracy_mod)
+	if "temp_evasion_mod" in pkmn and pkmn.temp_evasion_mod != 0:
+		list.append("💨 EVA %+d%%" % pkmn.temp_evasion_mod)
 	return list
 
 # --- ACTUALIZACIÓN DE INTERFAZ ---

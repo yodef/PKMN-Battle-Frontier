@@ -84,6 +84,9 @@ class PokemonData:
 	var defense: int = 10
 	var temp_attack_mod: int = 0
 	var temp_defense_mod: int = 0
+	var temp_accuracy_mod: int = 0
+	var temp_evasion_mod: int = 0
+	var stat_mod_turns: int = 0
 	var max_energy: int
 	var current_energy: int
 	var speed: int
@@ -171,14 +174,25 @@ class PokemonData:
 	func get_effective_speed() -> int:
 		var spd = max(1, speed + temp_speed_mod)
 		if is_paralyzed or paralyze_turns > 0:
-			spd = max(1, spd - 3)
+			spd = max(1, int(round(spd * 0.5)))
 		return spd
 
 	func get_effective_attack() -> int:
-		return max(1, attack + temp_attack_mod)
+		var atk = max(1, attack + temp_attack_mod)
+		if burn_turns > 0:
+			atk = max(1, int(round(atk * 0.5)))
+		return atk
 
 	func get_effective_defense() -> int:
 		return max(1, defense + temp_defense_mod)
+
+	func reset_stat_modifiers() -> void:
+		temp_attack_mod = 0
+		temp_defense_mod = 0
+		temp_speed_mod = 0
+		temp_accuracy_mod = 0
+		temp_evasion_mod = 0
+		stat_mod_turns = 0
 
 # Base de datos de movimientos cargada desde poke_moves.csv
 var moves_catalog: Dictionary = {}

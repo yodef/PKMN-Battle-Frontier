@@ -53,8 +53,8 @@ func _ready() -> void:
 	
 	assert(attacker.burn_turns == 2, "Con energía parcial (1/2⚡), Rapid Spin NO debe limpiar la quemadura.")
 	var rs_partial_dmg = 30 - defender.current_hp
-	assert(rs_partial_dmg == 4, "Rapid Spin debe hacer daño fraccionado (4 DMG). Daño recibido: %d" % rs_partial_dmg)
-	print("✓ Verificación 3: Rapid Spin con energía parcial (1/2⚡) inflige daño (4 DMG) pero NO limpia estados negativos.")
+	assert(rs_partial_dmg == 2, "Rapid Spin bajo Quemadura debe hacer 2 DMG (4 base / 2 por quemadura). Daño recibido: %d" % rs_partial_dmg)
+	print("✓ Verificación 3: Rapid Spin con energía parcial (1/2⚡) inflige daño mitigado por quemadura (2 DMG) y NO limpia estados negativos.")
 	
 	# Caso B: Energía COMPLETA (Paga 2 de 2 energías)
 	attacker.current_energy = 2
