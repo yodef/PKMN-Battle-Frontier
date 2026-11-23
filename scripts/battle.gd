@@ -2538,20 +2538,20 @@ func _finish_round() -> void:
 			pkmn.was_flinched_last_round = pkmn.flinched_this_round
 			pkmn.flinched_this_round = false
 
-	# Regeneración pasiva de banca (+1⚡ al final de cada ronda para Pokémon vivos en la banca)
+	# Regeneración pasiva de energía (+1⚡ al final de cada ronda para todos los Pokémon vivos: activos y banca)
 	active_p = get_active_player()
 	active_e = get_active_enemy()
-	var bench_recharged_names: Array[String] = []
+	var recharged_names: Array[String] = []
 	for pkmn in player_team:
-		if pkmn != active_p and pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
+		if pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
 			pkmn.current_energy = min(pkmn.max_energy, pkmn.current_energy + 1)
-			bench_recharged_names.append("%s (⚡%d/%d)" % [pkmn.name, pkmn.current_energy, pkmn.max_energy])
+			recharged_names.append("%s (⚡%d/%d)" % [pkmn.name, pkmn.current_energy, pkmn.max_energy])
 	for pkmn in enemy_team:
-		if pkmn != active_e and pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
+		if pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
 			pkmn.current_energy = min(pkmn.max_energy, pkmn.current_energy + 1)
-			bench_recharged_names.append("Rival %s (⚡%d/%d)" % [pkmn.name, pkmn.current_energy, pkmn.max_energy])
-	if not bench_recharged_names.is_empty():
-		log_action("🔋 [color=#FFD54F]Bench Recharge (+1⚡):[/color] %s" % ", ".join(bench_recharged_names))
+			recharged_names.append("Rival %s (⚡%d/%d)" % [pkmn.name, pkmn.current_energy, pkmn.max_energy])
+	if not recharged_names.is_empty():
+		log_action("🔋 [color=#FFD54F]" + (GameData.tr_text("Energy Recharge (+1⚡):", "Recarga de Energía (+1⚡):") + "[/color] %s") % ", ".join(recharged_names))
 
 	update_ui()
 	
@@ -3027,15 +3027,15 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		for i in range(num_hits):
 			var base_roll: int = 0
 			if move.name in ["Bone Rush", "Fury Swipes"]:
-				base_roll = 4 if randf() < 0.5 else 3
+				base_roll = 9 if randf() < 0.5 else 8
 			elif move.name == "Icicle Spear":
-				base_roll = 5 if randf() < 0.5 else 4
+				base_roll = 11 if randf() < 0.5 else 10
 			else: # Bullet Seed, Fury Attack
-				base_roll = 3 if randf() < 0.5 else 2
+				base_roll = 8 if randf() < 0.5 else 7
 				
 			var is_crit = (randf() < 0.25)
 			if is_crit:
-				var crit_bonus = 3 if move.name in ["Bone Rush", "Icicle Spear"] else 2
+				var crit_bonus = 6 if move.name in ["Bone Rush", "Icicle Spear"] else 5
 				base_roll += crit_bonus
 				crits_landed += 1
 			base_roll = max(1, int(round(float(base_roll) * ad_ratio)))
@@ -3414,10 +3414,10 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		var splash_names: Array[String] = []
 		for b_idx in target_bench:
 			if b_idx < target_team.size() and target_team[b_idx].current_hp > 0:
-				target_team[b_idx].current_hp = max(0, target_team[b_idx].current_hp - 3)
+				target_team[b_idx].current_hp = max(0, target_team[b_idx].current_hp - 6)
 				splash_names.append(target_team[b_idx].name)
 		if not splash_names.is_empty():
-			note_text += " [color=cyan]%s splashed the bench (-3 DMG to %s)![/color]" % [move.name, ", ".join(splash_names)]
+			note_text += " [color=cyan]%s splashed the bench (-6 DMG to %s)![/color]" % [move.name, ", ".join(splash_names)]
 	
 	# Descongelación por daño de Fuego
 	if defender.is_frozen and (move.type == "FIRE" or move.effect_type == "BURN" or (boosted and move.boost_applies_burn)):
@@ -6878,7 +6878,7 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 	elif eff == "THUNDER":
 		return "33% Miss / 35% Paralyze"
 	elif eff == "BENCH_DAMAGE":
-		return "3 splash DMG to bench"
+		return "6 splash DMG to bench"
 	elif eff == "DMG_BOOST_CHANCE":
 		return "35% chance +3 DMG"
 	elif eff == "BOOST_IF_FASTER":
@@ -7124,8 +7124,8 @@ func update_single_move_ui(move_idx: int, move, slots_container: BoxContainer, b
 	
 	if move.effect_type == "MULTI_ATTACK":
 		var hits = max(1, current_selected)
-		var per_hit_min = 4 if move.name == "Icicle Spear" else (3 if move.name in ["Bone Rush", "Fury Swipes"] else 2)
-		var per_hit_max = 8 if move.name == "Icicle Spear" else (7 if move.name == "Bone Rush" else (6 if move.name == "Fury Swipes" else 5))
+		var per_hit_min = 10 if move.name == "Icicle Spear" else (8 if move.name in ["Bone Rush", "Fury Swipes"] else 7)
+		var per_hit_max = 18 if move.name == "Icicle Spear" else (15 if move.name in ["Bone Rush", "Fury Swipes"] else 13)
 		var est_min = hits * per_hit_min
 		var est_max = hits * per_hit_max
 		var ko_tag = " • ✨ KO" if (active_e and est_min >= active_e.current_hp and active_e.current_hp > 0) else ""

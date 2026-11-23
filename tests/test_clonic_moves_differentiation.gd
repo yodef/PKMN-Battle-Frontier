@@ -41,17 +41,17 @@ func test_clonic_moves() -> void:
 	pidgey.defense = 10
 	caterpie.attack = 10
 	caterpie.defense = 10
-	rattata.current_hp = 30
-	rattata.max_hp = 30
-	pidgey.current_hp = 20
-	pidgey.max_hp = 20
-	caterpie.current_hp = 15
-	caterpie.max_hp = 15
+	rattata.current_hp = 50
+	rattata.max_hp = 50
+	pidgey.current_hp = 30
+	pidgey.max_hp = 30
+	caterpie.current_hp = 30
+	caterpie.max_hp = 30
 	
 	var surf_move = get_test_move("Surf")
 	assert(surf_move != null, "Surf move should exist in catalog")
 	assert(surf_move.effect_type == "BENCH_DAMAGE", "Surf should have BENCH_DAMAGE effect")
-	assert(surf_move.base_damage == 12, "Surf base damage should be 12")
+	assert(surf_move.base_damage == 32, "Surf base damage should be 32")
 	
 	blastoise.current_energy = 5
 	var dummy_v1 = Control.new()
@@ -60,18 +60,18 @@ func test_clonic_moves() -> void:
 	add_child(dummy_v2)
 	
 	battle.perform_attack(blastoise, rattata, surf_move, false, 3, dummy_v1, dummy_v2)
-	assert(rattata.current_hp == 18, "Rattata active HP should be 30 - 12 = 18")
-	assert(pidgey.current_hp == 17, "Pidgey bench HP should take 3 splash DMG (20 - 3 = 17)")
-	assert(caterpie.current_hp == 12, "Caterpie bench HP should take 3 splash DMG (15 - 3 = 12)")
-	print("✓ Test Surf (BENCH_DAMAGE) passed: 12 active + 3 bench splash")
+	assert(rattata.current_hp == 18, "Rattata active HP should be 50 - 32 = 18")
+	assert(pidgey.current_hp == 24, "Pidgey bench HP should take 6 splash DMG (30 - 6 = 24)")
+	assert(caterpie.current_hp == 24, "Caterpie bench HP should take 6 splash DMG (30 - 6 = 24)")
+	print("✓ Test Surf (BENCH_DAMAGE) passed: 32 active + 6 bench splash")
 	
-	# 2. Test Hydro Pump (raw 18 DMG)
+	# 2. Test Hydro Pump (raw 52 DMG)
 	var hp_move = get_test_move("Hydro Pump")
 	assert(hp_move != null, "Hydro Pump should exist")
-	assert(hp_move.base_damage == 18, "Hydro Pump base damage should be 18")
+	assert(hp_move.base_damage == 52, "Hydro Pump base damage should be 52")
 	assert(hp_move.cost == 4, "Hydro Pump cost should be 4")
 	assert(hp_move.effect_type == "NONE", "Hydro Pump should be raw cannon")
-	print("✓ Test Hydro Pump (18 raw DMG cannon) passed")
+	print("✓ Test Hydro Pump (52 raw DMG cannon) passed")
 
 	# 3. Test Aqua Jet (BOOST_IF_FASTER: 4 + 3 = 7 DMG)
 	var aqua_jet = get_test_move("Aqua Jet")
@@ -79,27 +79,27 @@ func test_clonic_moves() -> void:
 	assert(aqua_jet.effect_type == "BOOST_IF_FASTER", "Aqua Jet should be BOOST_IF_FASTER")
 	blastoise.speed = 10
 	rattata.speed = 5
-	rattata.current_hp = 20
+	rattata.current_hp = 30
 	battle.perform_attack(blastoise, rattata, aqua_jet, false, 1, dummy_v1, dummy_v2)
-	assert(rattata.current_hp == 13, "Aqua Jet should deal 4 base + 3 faster = 7 DMG (20 - 7 = 13)")
-	print("✓ Test Aqua Jet (BOOST_IF_FASTER) passed: 7 DMG when faster")
+	assert(rattata.current_hp == 15, "Aqua Jet should deal 12 base + 3 faster = 15 DMG (30 - 15 = 15)")
+	print("✓ Test Aqua Jet (BOOST_IF_FASTER) passed: 15 DMG when faster")
 
 	# 4. Test Water Spout & Eruption (FULL_HP_POWER)
 	var spout = get_test_move("Water Spout")
 	assert(spout != null, "Water Spout should exist")
 	assert(spout.effect_type == "FULL_HP_POWER", "Water Spout should be FULL_HP_POWER")
-	# Case A: User HP >= 80% (16 + 4 = 20 DMG)
+	# Case A: User HP >= 80% (48 + 4 = 52 DMG)
 	blastoise.current_hp = 30
 	blastoise.max_hp = 30
-	rattata.current_hp = 30
+	rattata.current_hp = 60
 	battle.perform_attack(blastoise, rattata, spout, false, spout.cost, dummy_v1, dummy_v2)
-	assert(rattata.current_hp == 10, "Water Spout at 100% HP should deal 16 + 4 = 20 DMG (30 - 20 = 10)")
+	assert(rattata.current_hp == 8, "Water Spout at 100% HP should deal 48 + 4 = 52 DMG (60 - 52 = 8)")
 	
-	# Case B: User HP < 50% (16 - 4 = 12 DMG)
+	# Case B: User HP < 50% (48 - 4 = 44 DMG)
 	blastoise.current_hp = 10
-	rattata.current_hp = 30
+	rattata.current_hp = 60
 	battle.perform_attack(blastoise, rattata, spout, false, spout.cost, dummy_v1, dummy_v2)
-	assert(rattata.current_hp == 18, "Water Spout at <50% HP should deal 16 - 4 = 12 DMG (30 - 12 = 18)")
+	assert(rattata.current_hp == 16, "Water Spout at <50% HP should deal 48 - 4 = 44 DMG (60 - 44 = 16)")
 	print("✓ Test Water Spout / Eruption (FULL_HP_POWER) passed: +4 at high HP, -4 at low HP")
 
 	# 5. Test Shell Smash (SHELL_SMASH: -2 HP, +4 permanent DMG, +2 Speed)
@@ -123,10 +123,10 @@ func test_clonic_moves() -> void:
 	blastoise.speed = 2
 	rattata.speed = 10 # foe is faster -> blastoise acts second
 	blastoise.took_damage_last_turn = false
-	rattata.current_hp = 30
+	rattata.current_hp = 40
 	battle.perform_attack(blastoise, rattata, payback, false, 2, dummy_v1, dummy_v2)
-	assert(rattata.current_hp == 18, "Payback should deal 6 + 6 = 12 DMG when acting second (30 - 12 = 18)")
-	print("✓ Test Payback (REVENGE acting second) passed: 12 DMG")
+	assert(rattata.current_hp == 16, "Payback should deal 18 + 6 = 24 DMG when acting second (40 - 24 = 16)")
+	print("✓ Test Payback (REVENGE acting second) passed: 24 DMG")
 
 	# 7. Test Knock Off (BUFF_PURGE: strips shields and damage buffs)
 	var knock_off = get_test_move("Knock Off")
@@ -144,21 +144,21 @@ func test_clonic_moves() -> void:
 	# 8. Test Earthquake vs Dig (2x DMG)
 	var eq = get_test_move("Earthquake")
 	assert(eq != null, "Earthquake should exist")
-	rattata.current_hp = 40
+	rattata.current_hp = 120
 	rattata.is_digging = true
 	battle.perform_attack(blastoise, rattata, eq, false, 4, dummy_v1, dummy_v2)
 	assert(rattata.is_digging == false, "Earthquake should hit and cancel Dig")
-	assert(rattata.current_hp == 8, "Earthquake should deal 16 * 2 = 32 DMG to digging foe (40 - 32 = 8)")
-	print("✓ Test Earthquake vs Dig passed: 32 DMG (x2)")
+	assert(rattata.current_hp == 24, "Earthquake should deal 48 * 2 = 96 DMG to digging foe (120 - 96 = 24)")
+	print("✓ Test Earthquake vs Dig passed: 96 DMG (x2)")
 
 	# 9. Test CANNOT_MISS (Shock Wave bypassing evasion)
 	var shock_wave = get_test_move("Shock Wave")
 	assert(shock_wave != null, "Shock Wave should exist")
 	assert(shock_wave.effect_type == "CANNOT_MISS", "Shock Wave should be CANNOT_MISS")
-	rattata.current_hp = 20
+	rattata.current_hp = 40
 	rattata.is_evasive = true
 	battle.perform_attack(blastoise, rattata, shock_wave, false, 2, dummy_v1, dummy_v2)
-	assert(rattata.current_hp == 12, "Shock Wave should pierce evasion dealing 8 DMG (20 - 8 = 12)")
+	assert(rattata.current_hp == 18, "Shock Wave should pierce evasion dealing 22 DMG (40 - 22 = 18)")
 	print("✓ Test Shock Wave (CANNOT_MISS) passed: pierced evasion")
 
 	# 10. Test Weather Ball in Sandstorm (+6 DMG and Ground element with x2 Weakness Multiplier)
@@ -169,9 +169,9 @@ func test_clonic_moves() -> void:
 	var pikachu = GameData.create_pokemon_instance(25) # Electric type (weak to Ground)
 	pikachu.attack = 10
 	pikachu.defense = 10
-	pikachu.current_hp = 60
-	pikachu.max_hp = 60
-	# 8 base + 6 sandstorm = 14 GROUND dmg. Ground vs Electric weakness (x2 multiplier) = 28 DMG! (60 - 28 = 32)
+	pikachu.current_hp = 80
+	pikachu.max_hp = 80
+	# 22 base + 6 sandstorm = 28 GROUND dmg. Ground vs Electric weakness (x2 multiplier) = 56 DMG! (80 - 56 = 24)
 	battle.perform_attack(blastoise, pikachu, wb, false, 2, dummy_v1, dummy_v2)
-	assert(pikachu.current_hp == 32, "Weather Ball in sandstorm should deal 14 * 2 = 28 DMG (60 - 28 = 32). Actual: %d" % pikachu.current_hp)
+	assert(pikachu.current_hp == 24, "Weather Ball in sandstorm should deal 28 * 2 = 56 DMG (80 - 56 = 24). Actual: %d" % pikachu.current_hp)
 	print("✓ Test Weather Ball in Sandstorm passed: +6 DMG and adopted Ground element hitting Electric weakness with x2 multiplier")
