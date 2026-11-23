@@ -14408,7 +14408,7 @@ func _setup_detail_card_upgrade_panel(cid: int, card: Dictionary, is_unlocked: b
 			var u_res = GameData.upgrade_pokemon_line_level(cid)
 			if u_res.get("success", false):
 				GameData.play_combat_sfx("level_up")
-				show_card_details(card, is_unlocked, current_idx)
+				show_collection_card(current_idx)
 		)
 		lvl_row.add_child(btn_lvl)
 	else:
@@ -14616,7 +14616,7 @@ func _open_nature_selection_modal(cid: int, card_idx: int) -> void:
 				GameData.play_combat_sfx("purchase")
 				nature_selection_modal.queue_free()
 				if card_idx >= 0 and card_idx < current_sorted_collection.size():
-					show_card_details(current_sorted_collection[card_idx], true, card_idx)
+					show_collection_card(card_idx)
 			)
 		elif not is_this_current:
 			row_btn.disabled = true
