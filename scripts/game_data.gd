@@ -9114,6 +9114,8 @@ func generate_chaos_rival_team(match_num: int) -> Array[int]:
 		3:
 			# Match 3: 2 Stage 2
 			var pool = get_tournament_candidates("stage 2", "any", ["B", "A"])
+			if pool.size() < 2:
+				pool = get_tournament_candidates("stage 2", "any", ["B", "A", "S"])
 			return pick_random_unique(pool, 2)
 		4:
 			# Match 4: 1 basic tier alto, 1 legendario (Super Potion 🧪)
@@ -9123,7 +9125,10 @@ func generate_chaos_rival_team(match_num: int) -> Array[int]:
 		5:
 			# Match 5: 1 stage 1, 1 stage 2 y 1 legendario (Super Potion 🧪)
 			var s1 = pick_random_unique(get_tournament_candidates("stage 1", "any", ["B", "A"]), 1)
-			var s2 = pick_random_unique(get_tournament_candidates("stage 2", "any", ["B", "A"]), 1, s1)
+			var s2_pool = get_tournament_candidates("stage 2", "any", ["B", "A"])
+			if s2_pool.is_empty():
+				s2_pool = get_tournament_candidates("stage 2", "any", ["B", "A", "S"])
+			var s2 = pick_random_unique(s2_pool, 1, s1)
 			var leg = pick_random_unique(get_chaos_legendary_candidates(), 1, s1 + s2)
 			return s1 + s2 + leg
 		6:
