@@ -143,6 +143,7 @@ func _ready() -> void:
 	battle_scene.active_player_idx = 0
 	battle_scene.active_enemy_idx = 0
 	var hyper_beam = GameData.get_move_instance("Hyper Beam")
+	hyper_beam.accuracy = 100
 	battle_scene.perform_attack(p4, e4, hyper_beam, false, 5, dummy_v1, dummy_v2)
 	assert(p4.rest_next_turn == true, "Tras Hyper Beam, rest_next_turn debe ser true")
 	assert(p4.current_energy == 0, "Energía debe ser 0")
@@ -169,7 +170,11 @@ func _ready() -> void:
 	battle_scene.active_enemy_idx = 0
 	
 	# Turno 1: Spoink usa Bounce
+	for m in p5.moves:
+		if m.name == "Bounce":
+			m.accuracy = 100
 	var bounce_inst = GameData.get_move_instance("Bounce")
+	bounce_inst.accuracy = 100
 	battle_scene.perform_attack(p5, e5, bounce_inst, false, 2, dummy_v1, dummy_v2)
 	assert(p5.current_energy == 1, "Spoink gastó 2⚡ (le queda 1⚡). Actual: %d" % p5.current_energy)
 	assert(e5.current_hp == e5_initial_hp, "En turno 1, rival no recibe daño mientras salta. Actual: %d" % e5.current_hp)

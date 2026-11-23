@@ -8364,7 +8364,9 @@ func open_pokemon_inspector(p: Dictionary, from_camp: bool = false) -> void:
 		m_desc.bbcode_enabled = true
 		m_desc.fit_content = true
 		m_desc.add_theme_font_size_override("normal_font_size", 10)
-		var desc_text = m.description if m.description != "" else "Ataque estándar sin efectos secundarios."
+		var desc_text = GameData.get_move_description(m)
+		if desc_text == "":
+			desc_text = GameData.tr_text("Standard attack with no secondary effects.", "Ataque estándar sin efectos secundarios.")
 		m_desc.text = "[color=#CFD8DC]%s[/color]" % desc_text
 		m_box.add_child(m_desc)
 		

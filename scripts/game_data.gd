@@ -25,8 +25,9 @@ class MoveData:
 	var reduces_foe_speed: bool = false
 	var causes_poison: bool = false
 	var description: String
+	var description_es: String = ""
 
-	func _init(p_name: String, p_type: String, p_dmg: int, p_cost: int, p_min_req: int, p_can_boost: bool, p_boost_cost: int, p_boost_dmg: int, p_burn: bool, p_desc: String, p_acc: int = 100):
+	func _init(p_name: String, p_type: String, p_dmg: int, p_cost: int, p_min_req: int, p_can_boost: bool, p_boost_cost: int, p_boost_dmg: int, p_burn: bool, p_desc: String, p_acc: int = 100, p_desc_es: String = ""):
 		name = p_name
 		type = p_type
 		base_damage = p_dmg
@@ -38,6 +39,14 @@ class MoveData:
 		boost_applies_burn = p_burn
 		description = p_desc
 		accuracy = p_acc
+		description_es = p_desc_es
+
+	func get_description() -> String:
+		if GameData.is_spanish():
+			if description_es != "":
+				return description_es
+			return GameData.GameLocalizationScript.translate_en_to_es(description)
+		return description
 
 func format_move_boost_summary(b_cost: int, b_dmg: int, eff_type: String, desc: String) -> String:
 	if b_cost <= 0:
@@ -4682,6 +4691,7 @@ func load_moves_from_csv() -> void:
 		var m_boost_dmg = int(get_val.call("boost_dmg", 7, "0"))
 		var m_effect_type = get_val.call("effect_type", 8, "NONE").to_upper()
 		var m_desc = get_val.call("description", 9, "")
+		var m_desc_es = get_val.call("description_es", 12, "")
 		var m_sfx = get_val.call("sfx", 10, "")
 		var m_acc = int(get_val.call("accuracy", 11, "100"))
 		
@@ -4697,6 +4707,9 @@ func load_moves_from_csv() -> void:
 			"boost_dmg": m_boost_dmg,
 			"effect_type": m_effect_type,
 			"desc": m_desc,
+			"desc_es": m_desc_es,
+			"description": m_desc,
+			"description_es": m_desc_es,
 			"sfx": m_sfx,
 			"accuracy": m_acc
 		}
@@ -4727,20 +4740,39 @@ func get_move_data(identifier: String) -> Dictionary:
 		"boost_dmg": 0,
 		"effect_type": "NONE",
 		"desc": "",
+		"desc_es": "",
+		"description": "",
+		"description_es": "",
 		"sfx": "",
 		"accuracy": 100
 	}
+
+func get_move_description(move_or_data) -> String:
+	if move_or_data == null:
+		return ""
+	if move_or_data is MoveData:
+		return move_or_data.get_description()
+	elif typeof(move_or_data) == TYPE_DICTIONARY:
+		if is_spanish():
+			var es = str(move_or_data.get("desc_es", move_or_data.get("description_es", "")))
+			if es != "":
+				return es
+			return GameLocalizationScript.translate_en_to_es(str(move_or_data.get("desc", move_or_data.get("description", ""))))
+		return str(move_or_data.get("desc", move_or_data.get("description", "")))
+	return ""
 
 func get_move_instance(identifier: String) -> MoveData:
 	var d = get_move_data(identifier)
 	if d.is_empty():
 		return null
 	var acc = int(d.get("accuracy", d.get("acc", 100)))
+	var desc_es = str(d.get("desc_es", d.get("description_es", "")))
 	var m = MoveData.new(
 		str(d.get("name", identifier)), str(d.get("type", "NORMAL")), int(d.get("dmg", 0)), int(d.get("cost", 0)), int(d.get("req", 0)),
 		int(d.get("boost_cost", 0)) > 0, int(d.get("boost_cost", 0)), int(d.get("boost_dmg", 0)),
-		str(d.get("effect_type", "")) == "BURN", str(d.get("desc", "")), acc
+		str(d.get("effect_type", "")) == "BURN", str(d.get("desc", "")), acc, desc_es
 	)
+	m.description_es = desc_es
 	m.effect_type = str(d.get("effect_type", "NONE"))
 	m.accuracy = acc
 	m.reduces_foe_speed = (m.effect_type == "SLOW_FOE")

@@ -908,7 +908,9 @@ func show_pokemon_details(pkmn, is_enemy: bool = false) -> void:
 		m_desc.bbcode_enabled = true
 		m_desc.fit_content = true
 		m_desc.add_theme_font_size_override("normal_font_size", 11)
-		var desc_text = m.description if m.description != "" else "Standard attack."
+		var desc_text = GameData.get_move_description(m)
+		if desc_text == "":
+			desc_text = GameData.tr_text("Standard attack.", "Ataque estándar.")
 		m_desc.text = "[color=#CFD8DC]%s[/color]" % desc_text
 		m_vbox.add_child(m_desc)
 		
