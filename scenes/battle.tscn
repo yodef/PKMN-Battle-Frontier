@@ -1238,13 +1238,13 @@ alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.41, 0.94, 0.68, 1)
 theme_override_font_sizes/font_size = 10
-text = "🟩 +2 Super Effective"
+text = "🟩 x2 Super Effective"
 
 [node name="LegMinus" type="Label" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/LegendRow" unique_id=1266707295]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.54, 0.5, 1)
 theme_override_font_sizes/font_size = 10
-text = "🟥 -2 Resisted (Table / Same Type)"
+text = "🟥 x0.5 Resisted (Table / Same Type)"
 
 [node name="LegNeutral" type="Label" parent="TypeChartModal/CenterBox/Panel/Margin/VBox/LegendRow" unique_id=849094205]
 layout_mode = 2

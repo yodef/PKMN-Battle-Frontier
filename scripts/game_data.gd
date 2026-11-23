@@ -8284,6 +8284,7 @@ func use_potion_on_campaign_pkmn(index: int) -> bool:
 		
 	p_data["current_hp"] = min(p_data["max_hp"], p_data["current_hp"] + 25)
 	inv["potion"] -= 1
+	save_profile()
 	return true
 
 func use_revive_on_campaign_pkmn(index: int) -> bool:
@@ -8300,6 +8301,7 @@ func use_revive_on_campaign_pkmn(index: int) -> bool:
 	# Revive con el 50% de sus HP máximos (mínimo 1 HP)
 	p_data["current_hp"] = max(1, int(p_data["max_hp"] / 2.0))
 	inv["revive"] -= 1
+	save_profile()
 	return true
 
 func buy_campaign_potion() -> bool:
@@ -8351,6 +8353,7 @@ func use_remedy_on_campaign_pkmn(index: int) -> bool:
 	p_data["is_constricted_dmg"] = 0
 	p_data["constricted_turns"] = 0
 	inv["remedy"] -= 1
+	save_profile()
 	return true
 
 func buy_campaign_remedy() -> bool:

@@ -6457,6 +6457,30 @@ func update_campaign_ui() -> void:
 		btn_status.pressed.connect(func(): _open_camp_pokemon_inspector(target_p))
 		card_btns_vbox.add_child(btn_status)
 		
+		# 3.1.5 Quick Heal / Revive Button if damaged
+		var p_cur_hp = int(p.get("current_hp", 0))
+		var p_max_hp = int(p.get("max_hp", 1))
+		var c_inv = GameData.get_active_campaign_inventory()
+		var has_heals = (c_inv.get("potion", 0) > 0 or c_inv.get("super_potion", 0) > 0 or c_inv.get("hyper_potion", 0) > 0 or c_inv.get("revive", 0) > 0)
+		if p_cur_hp < p_max_hp and has_heals:
+			var btn_quick_heal = Button.new()
+			btn_quick_heal.custom_minimum_size = Vector2(104, 24)
+			btn_quick_heal.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			btn_quick_heal.add_theme_font_size_override("font_size", 10)
+			var is_p_ko = (p_cur_hp <= 0)
+			if is_p_ko:
+				btn_quick_heal.text = "❤️ Revive"
+				_apply_compact_order_button_style(btn_quick_heal, Color(0.70, 0.25, 0.25), Color(0.95, 0.40, 0.40), false)
+			else:
+				btn_quick_heal.text = "🧪 Curar" if GameData.is_spanish() else "🧪 Heal"
+				_apply_compact_order_button_style(btn_quick_heal, Color(0.18, 0.55, 0.35), Color(0.30, 0.85, 0.55), false)
+			btn_quick_heal.pressed.connect(func():
+				_on_camp_bag_pressed()
+				var target_it = "revive" if is_p_ko else ("potion" if c_inv.get("potion", 0) > 0 else ("super_potion" if c_inv.get("super_potion", 0) > 0 else "hyper_potion"))
+				_show_camp_bag_targets(target_it)
+			)
+			card_btns_vbox.add_child(btn_quick_heal)
+		
 		# 3.2 Held Item Button
 		var btn_held = Button.new()
 		btn_held.custom_minimum_size = Vector2(104, 24)
@@ -7447,7 +7471,21 @@ func _refresh_camp_bag_items_ui() -> void:
 				use_btn.pressed.connect(func():
 					_show_camp_bag_held_item_targets(cur_it)
 				)
+		elif item_id in ["potion", "super_potion", "hyper_potion", "revive", "remedy", "poke_flute"]:
+			use_btn.text = GameData.tr_text("Use", "Usar") if stock > 0 else GameData.tr_text("Empty", "Agotado")
+			use_btn.disabled = (stock <= 0)
+			if stock > 0:
+				_apply_retro_button_style(use_btn, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), false)
+			else:
+				_apply_retro_button_style(use_btn, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
+			var cur_id = item_id
+			use_btn.pressed.connect(func(): _show_camp_bag_targets(cur_id))
 		elif item_id == "ether":
+			use_btn.text = GameData.tr_text("In Combat", "En Combate")
+			use_btn.disabled = true
+			_apply_retro_button_style(use_btn, Color(0.25, 0.30, 0.35), Color(0.35, 0.40, 0.45), false)
+		else:
+			use_btn.text = GameData.tr_text("Use", "Usar") if stock > 0 else GameData.tr_text("Empty", "Agotado")
 			use_btn.disabled = (stock <= 0)
 			if stock > 0:
 				_apply_retro_button_style(use_btn, Color(0.22, 0.63, 0.41), Color(0.40, 0.85, 0.60), false)
@@ -7630,11 +7668,14 @@ func _show_camp_bag_targets(item_id: String) -> void:
 		if p["current_hp"] <= 0:
 			stat_lbl.text = "💀 Fainted"
 			stat_lbl.add_theme_color_override("font_color", Color("#EF5350"))
-		elif int(p.get("burn_turns", 0)) > 0 or bool(p.get("is_poisoned", false)) or int(p.get("is_asleep_turns", 0)) > 0:
+		elif int(p.get("burn_turns", 0)) > 0 or bool(p.get("is_poisoned", false)) or bool(p.get("is_paralyzed", false)) or bool(p.get("is_frozen", false)) or int(p.get("is_asleep_turns", 0)) > 0 or bool(p.get("is_confused", false)):
 			var s_arr = []
-			if int(p.get("burn_turns", 0)) > 0: s_arr.append("🔥 Burned (%d)" % int(p.get("burn_turns", 0)))
+			if int(p.get("burn_turns", 0)) > 0: s_arr.append("🔥 Burned")
 			if bool(p.get("is_poisoned", false)): s_arr.append("🟣 Poisoned")
-			if int(p.get("is_asleep_turns", 0)) > 0: s_arr.append("💤 Asleep (%d)" % int(p.get("is_asleep_turns", 0)))
+			if bool(p.get("is_paralyzed", false)): s_arr.append("⚡ Paralyzed")
+			if bool(p.get("is_frozen", false)): s_arr.append("❄️ Frozen")
+			if int(p.get("is_asleep_turns", 0)) > 0: s_arr.append("💤 Asleep")
+			if bool(p.get("is_confused", false)): s_arr.append("💫 Confused")
 			stat_lbl.text = ", ".join(s_arr)
 			stat_lbl.add_theme_color_override("font_color", Color("#FFA726"))
 		else:
@@ -7702,7 +7743,7 @@ func _show_camp_bag_targets(item_id: String) -> void:
 				can_apply = true
 				btn_text = "Revive (50%)"
 		elif item_id == "remedy":
-			var has_stat = (int(p.get("burn_turns", 0)) > 0) or bool(p.get("is_poisoned", false)) or bool(p.get("is_flinched", false)) or (int(p.get("is_asleep_turns", 0)) > 0)
+			var has_stat = (int(p.get("burn_turns", 0)) > 0) or bool(p.get("is_poisoned", false)) or bool(p.get("is_flinched", false)) or bool(p.get("is_paralyzed", false)) or (int(p.get("paralyze_turns", 0)) > 0) or (int(p.get("is_asleep_turns", 0)) > 0) or bool(p.get("is_frozen", false)) or bool(p.get("is_confused", false)) or (int(p.get("is_constricted_dmg", 0)) > 0)
 			if not has_stat:
 				can_apply = false
 				btn_text = "No Status"
@@ -14055,7 +14096,7 @@ func show_collection_card(index: int) -> void:
 			deb_row.visible = true
 			deb_icon.visible = true
 			deb_icon.texture = GameData.get_type_icon_texture(weak_key)
-			deb_val.text = "%s (+2 damage taken)" % weak_key
+			deb_val.text = "%s (x2 damage taken)" % weak_key
 		else:
 			deb_row.visible = true
 			deb_icon.visible = false
@@ -14073,7 +14114,7 @@ func show_collection_card(index: int) -> void:
 					res_desc_list.append("%s (Natural)" % r)
 				else:
 					res_desc_list.append(r)
-			res_val.text = "%s (-2 damage taken)" % ", ".join(res_desc_list)
+			res_val.text = "%s (x0.5 damage taken)" % ", ".join(res_desc_list)
 		else:
 			res_row.visible = true
 			res_icon.visible = false

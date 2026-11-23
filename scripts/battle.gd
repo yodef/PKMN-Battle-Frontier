@@ -3,9 +3,11 @@ extends Control
 const Localization = preload("res://scripts/localization.gd")
 
 # --- CONFIGURACIÓN DE REGLAS ---
-const WEAKNESS_BONUS: int = 2        # Daño extra si atacas a la debilidad del rival
-const RESISTANCE_REDUCTION: int = 2  # Daño reducido si el rival resiste tu tipo
-const MIN_DAMAGE_AFTER_RESIST: int = 1 # Daño mínimo si la resistencia reduce
+const WEAKNESS_MULTIPLIER: float = 2.0     # Multiplicador de daño al atacar a la debilidad del rival (x2)
+const RESISTANCE_MULTIPLIER: float = 0.5   # Multiplicador de daño al ser resistido por el rival (x0.5)
+const MIN_DAMAGE_AFTER_RESIST: int = 1     # Daño mínimo si la resistencia reduce
+const WEAKNESS_BONUS: int = 2              # Compatibilidad retroactiva
+const RESISTANCE_REDUCTION: int = 2        # Compatibilidad retroactiva
 
 # --- MODELOS DE DATOS ---
 var player_team: Array = []
@@ -832,7 +834,7 @@ func show_pokemon_details(pkmn, is_enemy: bool = false) -> void:
 	var weak_lbl = RichTextLabel.new()
 	weak_lbl.bbcode_enabled = true
 	weak_lbl.fit_content = true
-	weak_lbl.text = "[color=#FF8A80]Weakness (+2 DMG):[/color] %s  |  [color=#81D4FA]Resist (-2 DMG):[/color] %s" % [pkmn.weakness, res_text]
+	weak_lbl.text = "[color=#FF8A80]Weakness (x2 DMG):[/color] %s  |  [color=#81D4FA]Resist (x0.5 DMG):[/color] %s" % [pkmn.weakness, res_text]
 	weak_lbl.add_theme_font_size_override("normal_font_size", 10)
 	info_vbox.add_child(weak_lbl)
 	
@@ -2262,8 +2264,8 @@ func start_player_turn() -> void:
 					move_lines.append("• [b]%s[/b]: Deals %d DMG. (Cost: %d ⚡)" % [m_name, m_dmg, m_cost])
 			var moves_desc = "\n".join(move_lines)
 			var type_hint = GameData.tr_text(
-				"⭐ [color=yellow][b]Type Weakness (+2 DMG):[/b][/color] %s is weak to %s attacks! Using your effective move triggers the Weakness bonus for [b]+2 EXTRA DAMAGE[/b]!" % [e.name, p.type],
-				"⭐ [color=yellow][b]Debilidad de Tipo (+2 DMG):[/b][/color] ¡%s es débil a los ataques de tipo %s! ¡Usar tu ataque supereficaz activa la bonificación de [b]+2 DAÑO EXTRA[/b]!" % [e.name, p.type]
+				"⭐ [color=yellow][b]Type Weakness (x2 DMG):[/b][/color] %s is weak to %s attacks! Using your effective move triggers the Weakness multiplier for [b]DOUBLE DAMAGE (x2)[/b]!" % [e.name, p.type],
+				"⭐ [color=yellow][b]Debilidad de Tipo (x2 DMG):[/b][/color] ¡%s es débil a los ataques de tipo %s! ¡Usar tu ataque supereficaz activa el multiplicador de debilidad de [b]DOBLE DAÑO (x2)[/b]!" % [e.name, p.type]
 			)
 			_show_tutorial_callout(
 				"step3",
@@ -2681,7 +2683,7 @@ func execute_enemy_ai() -> void:
 		e.speed_mod_expires_round = round_number + 1
 		var dmg = 3
 		if GameData.is_attack_resisted(p.type, p.resistant, "NORMAL"):
-			dmg = max(1, dmg - RESISTANCE_REDUCTION)
+			dmg = max(1, int(round(float(dmg) * RESISTANCE_MULTIPLIER)))
 		p.current_hp = max(0, p.current_hp - dmg)
 		log_action("Rival [b]%s[/b] triggered passive [color=cyan]Turtle Shell[/color] dealing [b]%d[/b] damage and gaining [b]+2 Speed[/b] for next round!" % [e.name, dmg])
 		lunge_card(enemy_card_img, false)
@@ -2727,7 +2729,7 @@ func execute_enemy_ai() -> void:
 				if m and e.current_energy >= m.min_energy_req:
 					var est_dmg = m.base_damage
 					if GameData.types_match(p.weakness, m.type):
-						est_dmg += WEAKNESS_BONUS
+						est_dmg = int(round(float(est_dmg) * WEAKNESS_MULTIPLIER))
 					if p.current_hp <= est_dmg:
 						can_ko_now = true
 						break
@@ -3295,15 +3297,15 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		# Dragon Fang (Colmillo Dragón): Si es un Dragón siempre hace DMG con ventaja de tipo
 		var has_dragon_fang = (attacker.held_item == "dragon_fang" and GameData.is_pokemon_dragon(attacker))
 		if has_dragon_fang:
-			final_damage += WEAKNESS_BONUS
-			note_text += " [color=yellow]Dragon Fang forces type advantage! (+%d DMG)[/color]" % WEAKNESS_BONUS
+			final_damage = int(round(float(final_damage) * WEAKNESS_MULTIPLIER))
+			note_text += " [color=yellow]Dragon Fang forces type advantage! (x2 DMG)[/color]"
 		# Daño Verdadero Fijo (Sonic Boom, Night Shade)
 		elif move.effect_type == "FIXED_DMG" or move.name in ["Sonic Boom", "Night Shade"]:
 			note_text += " [color=cyan]Fixed True Damage (bypasses defense & resistance)![/color]"
 		# Movimientos Adaptativos / Punto Débil (WEAK_SPOT / ADAPT)
 		elif move.effect_type in ["WEAK_SPOT", "ADAPT"]:
-			final_damage += WEAKNESS_BONUS
-			note_text += " [color=yellow]Adapted to weakness! (+%d DMG)[/color]" % WEAKNESS_BONUS
+			final_damage = int(round(float(final_damage) * WEAKNESS_MULTIPLIER))
+			note_text += " [color=yellow]Adapted to weakness! (x2 DMG)[/color]"
 		# Movimientos de doble o triple tipo
 		elif move.effect_type in ["DOUBLE_TYPE", "TRIPLE_TYPE"]:
 			var combo_types = ["WATER", "FIRE", "ELECTRIC"] if move.effect_type == "TRIPLE_TYPE" else (["FIGHTING", "PSYCHIC"] if move.name == "Aura Sphere" else ["FIGHTING", "WATER"])
@@ -3315,25 +3317,25 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				if not GameData.is_attack_resisted(defender.type, defender.resistant, ct):
 					all_res = false
 			if hit_weak:
-				final_damage += WEAKNESS_BONUS
-				note_text += " [color=yellow]Super effective elemental combo! (+%d DMG)[/color]" % WEAKNESS_BONUS
+				final_damage = int(round(float(final_damage) * WEAKNESS_MULTIPLIER))
+				note_text += " [color=yellow]Super effective elemental combo! (x2 DMG)[/color]"
 			elif all_res:
-				final_damage = max(MIN_DAMAGE_AFTER_RESIST, final_damage - RESISTANCE_REDUCTION)
-				note_text += " [color=gray]Resisted elemental combo (-%d DMG)[/color]" % RESISTANCE_REDUCTION
+				final_damage = max(MIN_DAMAGE_AFTER_RESIST, int(round(float(final_damage) * RESISTANCE_MULTIPLIER)))
+				note_text += " [color=gray]Resisted elemental combo (x0.5 DMG)[/color]"
 		# Tipo estándar
 		elif GameData.types_match(defender.weakness, attack_type):
-			final_damage += WEAKNESS_BONUS
-			note_text += " [color=yellow]It's super effective! (+%d DMG)[/color]" % WEAKNESS_BONUS
+			final_damage = int(round(float(final_damage) * WEAKNESS_MULTIPLIER))
+			note_text += " [color=yellow]It's super effective! (x2 DMG)[/color]"
 			if defender.has_passive and defender.passive_name == "Protect":
 				defender.weakness = "NONE"
 				note_text += " [color=cyan]%s's Protect removes its weakness for the rest of battle![/color]" % defender.name
 		elif GameData.is_attack_resisted(defender.type, defender.resistant, attack_type):
-			final_damage = max(MIN_DAMAGE_AFTER_RESIST, final_damage - RESISTANCE_REDUCTION)
+			final_damage = max(MIN_DAMAGE_AFTER_RESIST, int(round(float(final_damage) * RESISTANCE_MULTIPLIER)))
 			var is_same_type_resist = (GameData.normalize_type_key(attack_type) == GameData.normalize_type_key(defender.type)) and not GameData.types_match(defender.resistant, attack_type)
 			if is_same_type_resist:
-				note_text += " [color=gray]It's not very effective... Same-type resistance (-%d DMG)[/color]" % RESISTANCE_REDUCTION
+				note_text += " [color=gray]It's not very effective... Same-type resistance (x0.5 DMG)[/color]"
 			else:
-				note_text += " [color=gray]It's not very effective... (-%d DMG)[/color]" % RESISTANCE_REDUCTION
+				note_text += " [color=gray]It's not very effective... (x0.5 DMG)[/color]"
 
 		# 10. Reducciones y Pasivas defensivas (omitidas si es daño verdadero fijo)
 		if move.effect_type != "FIXED_DMG" and not (move.name in ["Sonic Boom", "Night Shade"]):
@@ -5550,11 +5552,11 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 	# Debilidad / Resistencia
 	if dmg > 0:
 		if attacker.held_item == "dragon_fang" and GameData.is_pokemon_dragon(attacker):
-			dmg += WEAKNESS_BONUS
+			dmg = int(round(float(dmg) * WEAKNESS_MULTIPLIER))
 		elif move.effect_type == "FIXED_DMG" or move.name in ["Sonic Boom", "Night Shade"]:
 			return dmg
 		elif move.effect_type in ["WEAK_SPOT", "ADAPT"]:
-			dmg += WEAKNESS_BONUS
+			dmg = int(round(float(dmg) * WEAKNESS_MULTIPLIER))
 		elif move.effect_type in ["DOUBLE_TYPE", "TRIPLE_TYPE"]:
 			var combo_types = ["WATER", "FIRE", "ELECTRIC"] if move.effect_type == "TRIPLE_TYPE" else (["FIGHTING", "PSYCHIC"] if move.name == "Aura Sphere" else ["FIGHTING", "WATER"])
 			var hit_weak = false
@@ -5565,13 +5567,13 @@ func calculate_predicted_damage(attacker, defender, move, energy_spent: int, boo
 				if not GameData.is_attack_resisted(defender.type, defender.resistant, ct):
 					all_res = false
 			if hit_weak:
-				dmg += WEAKNESS_BONUS
+				dmg = int(round(float(dmg) * WEAKNESS_MULTIPLIER))
 			elif all_res:
-				dmg = max(MIN_DAMAGE_AFTER_RESIST, dmg - RESISTANCE_REDUCTION)
+				dmg = max(MIN_DAMAGE_AFTER_RESIST, int(round(float(dmg) * RESISTANCE_MULTIPLIER)))
 		elif GameData.types_match(defender.weakness, attack_type):
-			dmg += WEAKNESS_BONUS
+			dmg = int(round(float(dmg) * WEAKNESS_MULTIPLIER))
 		elif GameData.is_attack_resisted(defender.type, defender.resistant, attack_type):
-			dmg = max(MIN_DAMAGE_AFTER_RESIST, dmg - RESISTANCE_REDUCTION)
+			dmg = max(MIN_DAMAGE_AFTER_RESIST, int(round(float(dmg) * RESISTANCE_MULTIPLIER)))
 
 		# Reducciones defensivas
 		if defender.has_passive and defender.passive_name == "Charm" and move.type == "NORMAL":
@@ -5607,9 +5609,9 @@ func open_energy_select_modal(move, initial_boosted: bool, max_spend: int) -> vo
 	# Indicador de afinidad de tipo frente al rival
 	var type_mod_str = ""
 	if GameData.types_match(e.weakness, move.type):
-		type_mod_str = " (Effective +%d!)" % WEAKNESS_BONUS
+		type_mod_str = " (Effective x2!)"
 	elif GameData.is_attack_resisted(e.type, e.resistant, move.type):
-		type_mod_str = " (Resisted -%d)" % RESISTANCE_REDUCTION
+		type_mod_str = " (Resisted x0.5)"
 	
 	# Caso 1: Ataque Múltiple (Fury Attack)
 	if move.effect_type == "MULTI_ATTACK":
@@ -5766,7 +5768,7 @@ func _on_passive_pressed() -> void:
 		
 		var dmg = 3
 		if GameData.is_attack_resisted(defender.type, defender.resistant, "NORMAL"):
-			dmg = max(1, dmg - RESISTANCE_REDUCTION)
+			dmg = max(1, int(round(float(dmg) * RESISTANCE_MULTIPLIER)))
 		defender.current_hp = max(0, defender.current_hp - dmg)
 		
 		var prefix = "🔵 Player 2's " if is_p2 else ""
@@ -7137,11 +7139,11 @@ func update_single_move_ui(move_idx: int, move, slots_container: BoxContainer, b
 		var type_tag = ""
 		if active_e and dmg > 0:
 			if p.held_item == "dragon_fang" and GameData.is_pokemon_dragon(p):
-				type_tag = " (+%d)" % WEAKNESS_BONUS
+				type_tag = " (x2)"
 			elif GameData.types_match(active_e.weakness, move.type):
-				type_tag = " (+%d)" % WEAKNESS_BONUS
+				type_tag = " (x2)"
 			elif GameData.is_attack_resisted(active_e.type, active_e.resistant, move.type):
-				type_tag = " (-%d)" % RESISTANCE_REDUCTION
+				type_tag = " (x0.5)"
 		var is_partial = (spend_val < base_cost and base_cost > 1)
 		var partial_tag = " [Parcial]" if GameData.is_spanish() else " [Partial]"
 		var title_line = (move.name + partial_tag) if is_partial else move.name
@@ -8729,7 +8731,7 @@ func _build_type_chart_matrix() -> void:
 			if dt != "NORMAL" and not r_list.has(TYPE_NAMES_EN.get(dt, dt)):
 				r_list.append("%s (Natural)" % TYPE_NAMES_EN.get(dt, dt))
 			var r_str = ", ".join(r_list) if not r_list.is_empty() else "None / Variable"
-			type_chart_detail_lbl.text = "🛡️ [b]%s (Defender):[/b] Weak to [color=#69f0ae]%s (+2)[/color] | Resists [color=#ff8a80]%s (-2)[/color]" % [TYPE_NAMES_EN.get(dt, dt), w_str, r_str]
+			type_chart_detail_lbl.text = "🛡️ [b]%s (Defender):[/b] Weak to [color=#69f0ae]%s (x2)[/color] | Resists [color=#ff8a80]%s (x0.5)[/color]" % [TYPE_NAMES_EN.get(dt, dt), w_str, r_str]
 		)
 		type_chart_matrix_grid.add_child(hdr_btn)
 		
@@ -8773,27 +8775,27 @@ func _build_type_chart_matrix() -> void:
 			var at_copy = atk_type
 			
 			if is_weak:
-				cell_btn.text = "+2"
+				cell_btn.text = "x2"
 				cell_btn.add_theme_color_override("font_color", Color("#a7f3d0"))
 				cell_btn.add_theme_font_size_override("font_size", 11)
 				cell_sb.bg_color = Color(0.08, 0.35, 0.18, 0.95)
 				cell_sb.border_color = Color(0.2, 0.7, 0.4, 0.9)
 				cell_sb.set_border_width_all(1)
 				cell_btn.pressed.connect(func():
-					type_chart_detail_lbl.text = "⚔️ [color=#ffab91]%s[/color] vs 🛡️ [color=#80deea]%s[/color]: [color=#69f0ae][b]SUPER EFFECTIVE! (+2 DMG)[/b][/color]" % [TYPE_NAMES_EN.get(at_copy, at_copy), TYPE_NAMES_EN.get(dt, dt)]
+					type_chart_detail_lbl.text = "⚔️ [color=#ffab91]%s[/color] vs 🛡️ [color=#80deea]%s[/color]: [color=#69f0ae][b]SUPER EFFECTIVE! (x2 DMG)[/b][/color]" % [TYPE_NAMES_EN.get(at_copy, at_copy), TYPE_NAMES_EN.get(dt, dt)]
 				)
 			elif is_resist:
-				cell_btn.text = "-2"
+				cell_btn.text = "x0.5"
 				cell_btn.add_theme_color_override("font_color", Color("#fca5a5"))
-				cell_btn.add_theme_font_size_override("font_size", 11)
+				cell_btn.add_theme_font_size_override("font_size", 10)
 				cell_sb.bg_color = Color(0.38, 0.12, 0.12, 0.95)
 				cell_sb.border_color = Color(0.75, 0.25, 0.25, 0.9)
 				cell_sb.set_border_width_all(1)
 				cell_btn.pressed.connect(func():
 					if is_same_type_resist:
-						type_chart_detail_lbl.text = "⚔️ [color=#ffab91]%s[/color] vs 🛡️ [color=#80deea]%s[/color]: [color=#ff8a80][b]RESISTED! (-2 DMG)[/b][/color] (Natural same-type resistance)" % [TYPE_NAMES_EN.get(at_copy, at_copy), TYPE_NAMES_EN.get(dt, dt)]
+						type_chart_detail_lbl.text = "⚔️ [color=#ffab91]%s[/color] vs 🛡️ [color=#80deea]%s[/color]: [color=#ff8a80][b]RESISTED! (x0.5 DMG)[/b][/color] (Natural same-type resistance)" % [TYPE_NAMES_EN.get(at_copy, at_copy), TYPE_NAMES_EN.get(dt, dt)]
 					else:
-						type_chart_detail_lbl.text = "⚔️ [color=#ffab91]%s[/color] vs 🛡️ [color=#80deea]%s[/color]: [color=#ff8a80][b]RESISTED! (-2 DMG)[/b][/color]" % [TYPE_NAMES_EN.get(at_copy, at_copy), TYPE_NAMES_EN.get(dt, dt)]
+						type_chart_detail_lbl.text = "⚔️ [color=#ffab91]%s[/color] vs 🛡️ [color=#80deea]%s[/color]: [color=#ff8a80][b]RESISTED! (x0.5 DMG)[/b][/color]" % [TYPE_NAMES_EN.get(at_copy, at_copy), TYPE_NAMES_EN.get(dt, dt)]
 				)
 			else:
 				cell_btn.text = "·"
@@ -8859,7 +8861,7 @@ func _update_type_chart_matchup() -> void:
 		e_res_list.append("%s (Natural)" % TYPE_NAMES_EN.get(e_type, e_type))
 	var e_res_str = ", ".join(e_res_list) if not e_res_list.is_empty() else "None"
 	
-	type_chart_matchup_body.text = "[b]Your Pokémon:[/b] [color=#66bb6a]%s (%s)[/color] ➔ Weak to: [color=#ff7043]%s (+2)[/color] | Resists: [color=#d7ccc8]%s (-2)[/color]\n[b]Rival:[/b] [color=#ff7043]%s (%s)[/color] ➔ Weak to: [color=#4fc3f7]%s (+2)[/color] | Resists: [color=#66bb6a]%s (-2)[/color]" % [
+	type_chart_matchup_body.text = "[b]Your Pokémon:[/b] [color=#66bb6a]%s (%s)[/color] ➔ Weak to: [color=#ff7043]%s (x2)[/color] | Resists: [color=#d7ccc8]%s (x0.5)[/color]\n[b]Rival:[/b] [color=#ff7043]%s (%s)[/color] ➔ Weak to: [color=#4fc3f7]%s (x2)[/color] | Resists: [color=#66bb6a]%s (x0.5)[/color]" % [
 		active_p.name, TYPE_NAMES_EN.get(p_type, p_type), p_weak_str, p_res_str,
 		active_e.name, TYPE_NAMES_EN.get(e_type, e_type), e_weak_str, e_res_str
 	]
@@ -8881,7 +8883,7 @@ func _update_type_chart_matchup() -> void:
 		pe_sb.set_border_width_all(2)
 		pe_btn.add_theme_stylebox_override("normal", pe_sb)
 		
-		var eff_text = "SUPER EFFECTIVE! (+2 DMG)" if pe_data["is_weak"] else ("RESISTED! (-2 DMG)" if pe_data["is_resist"] else "Standard Neutral Damage")
+		var eff_text = "SUPER EFFECTIVE! (x2 DMG)" if pe_data["is_weak"] else ("RESISTED! (x0.5 DMG)" if pe_data["is_resist"] else "Standard Neutral Damage")
 		if pe_data.get("is_same_type_resist", false):
 			eff_text += " (Natural same-type)"
 		type_chart_detail_lbl.text = "🎯 [b]%s[/b] (%s) attacking [b]%s[/b] (%s): [color=#ffd700]%s[/color]" % [

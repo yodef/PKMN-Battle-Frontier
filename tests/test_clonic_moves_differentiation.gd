@@ -33,6 +33,14 @@ func test_clonic_moves() -> void:
 	
 	battle.player_team = [blastoise]
 	battle.enemy_team = [rattata, pidgey, caterpie]
+	blastoise.attack = 10
+	blastoise.defense = 10
+	rattata.attack = 10
+	rattata.defense = 10
+	pidgey.attack = 10
+	pidgey.defense = 10
+	caterpie.attack = 10
+	caterpie.defense = 10
 	rattata.current_hp = 30
 	rattata.max_hp = 30
 	pidgey.current_hp = 20
@@ -84,13 +92,13 @@ func test_clonic_moves() -> void:
 	blastoise.current_hp = 30
 	blastoise.max_hp = 30
 	rattata.current_hp = 30
-	battle.perform_attack(blastoise, rattata, spout, false, 3, dummy_v1, dummy_v2)
+	battle.perform_attack(blastoise, rattata, spout, false, spout.cost, dummy_v1, dummy_v2)
 	assert(rattata.current_hp == 10, "Water Spout at 100% HP should deal 16 + 4 = 20 DMG (30 - 20 = 10)")
 	
 	# Case B: User HP < 50% (16 - 4 = 12 DMG)
 	blastoise.current_hp = 10
 	rattata.current_hp = 30
-	battle.perform_attack(blastoise, rattata, spout, false, 3, dummy_v1, dummy_v2)
+	battle.perform_attack(blastoise, rattata, spout, false, spout.cost, dummy_v1, dummy_v2)
 	assert(rattata.current_hp == 18, "Water Spout at <50% HP should deal 16 - 4 = 12 DMG (30 - 12 = 18)")
 	print("✓ Test Water Spout / Eruption (FULL_HP_POWER) passed: +4 at high HP, -4 at low HP")
 
@@ -153,14 +161,17 @@ func test_clonic_moves() -> void:
 	assert(rattata.current_hp == 12, "Shock Wave should pierce evasion dealing 8 DMG (20 - 8 = 12)")
 	print("✓ Test Shock Wave (CANNOT_MISS) passed: pierced evasion")
 
-	# 10. Test Weather Ball in Sandstorm (+6 DMG and Ground element)
+	# 10. Test Weather Ball in Sandstorm (+6 DMG and Ground element with x2 Weakness Multiplier)
 	var wb = get_test_move("Weather Ball")
 	assert(wb != null, "Weather Ball should exist")
 	assert(wb.effect_type == "WEATHER_BALL", "Weather Ball should be WEATHER_BALL")
 	battle.sandstorm_turns = 2
 	var pikachu = GameData.create_pokemon_instance(25) # Electric type (weak to Ground)
-	pikachu.current_hp = 30
-	# 8 base + 6 sandstorm = 14 GROUND dmg. Ground vs Electric is weakness (+2 WEAKNESS_BONUS) = 16 DMG!
+	pikachu.attack = 10
+	pikachu.defense = 10
+	pikachu.current_hp = 60
+	pikachu.max_hp = 60
+	# 8 base + 6 sandstorm = 14 GROUND dmg. Ground vs Electric weakness (x2 multiplier) = 28 DMG! (60 - 28 = 32)
 	battle.perform_attack(blastoise, pikachu, wb, false, 2, dummy_v1, dummy_v2)
-	assert(pikachu.current_hp == 14, "Weather Ball in sandstorm should deal 8 + 6 + 2 (weakness) = 16 DMG (30 - 16 = 14)")
-	print("✓ Test Weather Ball in Sandstorm passed: +6 DMG and adopted Ground element hitting Electric weakness")
+	assert(pikachu.current_hp == 32, "Weather Ball in sandstorm should deal 14 * 2 = 28 DMG (60 - 28 = 32). Actual: %d" % pikachu.current_hp)
+	print("✓ Test Weather Ball in Sandstorm passed: +6 DMG and adopted Ground element hitting Electric weakness with x2 multiplier")

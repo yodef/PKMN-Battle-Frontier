@@ -376,7 +376,7 @@ func setup(d: Dictionary, is_unlocked: bool = true) -> void:
 	if weak_key != "NONE" and GameData.TYPE_ICON_FILES.has(weak_key):
 		weak_icon.visible = true
 		weak_icon.texture = GameData.get_type_icon_texture(weak_key)
-		weak_val.text = "+2"
+		weak_val.text = "x2"
 	else:
 		weak_icon.visible = false
 		weak_val.text = "—"
@@ -385,7 +385,7 @@ func setup(d: Dictionary, is_unlocked: bool = true) -> void:
 	if res_key != "NONE" and GameData.TYPE_ICON_FILES.has(res_key):
 		res_icon.visible = true
 		res_icon.texture = GameData.get_type_icon_texture(res_key)
-		res_val.text = "-2"
+		res_val.text = "x0.5"
 	else:
 		res_icon.visible = false
 		res_val.text = "—"
