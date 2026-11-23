@@ -1932,7 +1932,7 @@ func start_new_round() -> void:
 				GameData.tr_text("TUTORIAL • PHASE 2", "TUTORIAL • FASE 2"),
 				GameData.tr_text("🎒 Using Items & Potions in Battle", "🎒 Usar Objetos y Pociones en Batalla"),
 				GameData.tr_text(
-					"You can use battle items from your Bag during your turn!\n\n• Tap [b]Bag 🎒[/b] below to view your inventory.\n• Select a [b]Potion[/b] to heal your active or benched Pokémon (+10 HP) without losing your attack action!\n• You can also use other battle items like Remedies or Ethers when needed.",
+					"You can use battle items from your Bag during your turn!\n\n• Tap [b]Bag 🎒[/b] below to view your inventory.\n• Select a [b]Potion[/b] to heal your active or benched Pokémon (+25 HP) without losing your attack action!\n• You can also use other battle items like Remedies or Ethers when needed.",
 					"¡Puedes usar objetos de combate desde tu Mochila durante tu turno!\n\n• Toca [b]Mochila 🎒[/b] abajo para ver tu inventario.\n• ¡Selecciona una [b]Poción[/b] para curar a tu Pokémon activo o de la banca (+10 HP) sin perder tu acción de ataque!\n• También puedes usar otros objetos como Antídotos o Éteres cuando sea necesario."
 				),
 				GameData.tr_text("Next ➡️", "Siguiente ➡️"),
@@ -2688,9 +2688,9 @@ func execute_enemy_ai() -> void:
 		return
 	
 	# Super Potion de Líder Giovanni / Rival / Boss:
-	if enemy_super_potions > 0 and e.current_hp > 0 and (e.max_hp - e.current_hp) >= 15:
+	if enemy_super_potions > 0 and e.current_hp > 0 and (e.max_hp - e.current_hp) >= 30:
 		enemy_super_potions -= 1
-		var healed = min(25, e.max_hp - e.current_hp)
+		var healed = min(60, e.max_hp - e.current_hp)
 		e.current_hp += healed
 		var user_title = get_enemy_trainer_name()
 		log_action("[b]%s[/b] used [color=#29B6F6]Super Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [user_title, e.name, healed, e.current_hp, e.max_hp])
@@ -8531,12 +8531,12 @@ func apply_item_in_battle(item_id: String, target_idx: int) -> void:
 		var p_tname = get_player_trainer_name()
 		log_action("[b]%s[/b] used [color=lightgreen]Remedy[/color] on [b]%s[/b]! All negative status conditions were cleansed! 🌿" % [p_tname, target_pkmn.name])
 	elif item_id == "potion":
-		healed = min(10, target_pkmn.max_hp - target_pkmn.current_hp)
+		healed = min(25, target_pkmn.max_hp - target_pkmn.current_hp)
 		target_pkmn.current_hp += healed
 		var p_tname = get_player_trainer_name()
 		log_action("[b]%s[/b] used [color=cyan]Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [p_tname, target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])
 	elif item_id == "super_potion":
-		healed = min(25, target_pkmn.max_hp - target_pkmn.current_hp)
+		healed = min(60, target_pkmn.max_hp - target_pkmn.current_hp)
 		target_pkmn.current_hp += healed
 		var p_tname = get_player_trainer_name()
 		log_action("[b]%s[/b] used [color=#29B6F6]Super Potion[/color] on [b]%s[/b], restoring [color=green]+%d HP[/color]! 🧪 (%d/%d)" % [p_tname, target_pkmn.name, healed, target_pkmn.current_hp, target_pkmn.max_hp])

@@ -8274,7 +8274,7 @@ func use_potion_on_campaign_pkmn(index: int) -> bool:
 	if p_data["current_hp"] >= p_data["max_hp"]:
 		return false # Ya está al máximo
 		
-	p_data["current_hp"] = min(p_data["max_hp"], p_data["current_hp"] + 10)
+	p_data["current_hp"] = min(p_data["max_hp"], p_data["current_hp"] + 25)
 	inv["potion"] -= 1
 	return true
 
