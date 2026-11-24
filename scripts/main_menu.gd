@@ -14290,14 +14290,16 @@ func show_collection_card(index: int) -> void:
 		
 	# 3. Cadena evolutiva estilo Pokédex
 	if details_box:
-		var old_evo = details_box.get_node_or_null("EvoChainPanel")
-		if old_evo:
-			old_evo.queue_free()
+		for child in details_box.get_children():
+			if child.name.begins_with("EvoChainPanel") or child.has_meta("is_evo_chain_panel"):
+				details_box.remove_child(child)
+				child.queue_free()
 		var evo_view = GameData.build_evolution_chain_view(cid, func(target_id: int):
 			_on_evolution_chain_card_clicked(target_id)
 		)
 		if evo_view:
 			evo_view.name = "EvoChainPanel"
+			evo_view.set_meta("is_evo_chain_panel", true)
 			details_box.add_child(evo_view)
 
 	# 4. Actualizar página y botones
@@ -14327,9 +14329,10 @@ var nature_selection_modal: Control = null
 func _setup_detail_card_upgrade_panel(cid: int, card: Dictionary, is_unlocked: bool, current_idx: int) -> void:
 	if not details_box:
 		return
-	var old = details_box.get_node_or_null("CardUpgradePanel")
-	if old:
-		old.queue_free()
+	for child in details_box.get_children():
+		if child.name.begins_with("CardUpgradePanel") or child.has_meta("is_card_upgrade_panel"):
+			details_box.remove_child(child)
+			child.queue_free()
 		
 	if not is_unlocked:
 		return
@@ -14344,6 +14347,7 @@ func _setup_detail_card_upgrade_panel(cid: int, card: Dictionary, is_unlocked: b
 	
 	var panel = PanelContainer.new()
 	panel.name = "CardUpgradePanel"
+	panel.set_meta("is_card_upgrade_panel", true)
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = Color(0.09, 0.13, 0.20, 0.95)
 	sb.border_color = Color(0.3, 0.55, 0.8, 0.7)
@@ -14405,10 +14409,13 @@ func _setup_detail_card_upgrade_panel(cid: int, card: Dictionary, is_unlocked: b
 		else:
 			_apply_retro_button_style(btn_lvl, Color(0.3, 0.35, 0.4), Color(0.4, 0.45, 0.5), false)
 		btn_lvl.pressed.connect(func():
+			btn_lvl.disabled = true
 			var u_res = GameData.upgrade_pokemon_line_level(cid)
 			if u_res.get("success", false):
 				GameData.play_combat_sfx("level_up")
 				show_collection_card(current_idx)
+			else:
+				btn_lvl.disabled = false
 		)
 		lvl_row.add_child(btn_lvl)
 	else:
@@ -14609,6 +14616,7 @@ func _open_nature_selection_modal(cid: int, card_idx: int) -> void:
 			row_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 			var chosen_key = nat_key
 			row_btn.pressed.connect(func():
+				row_btn.disabled = true
 				var use_mint_item = (GameData.player_mints > 0)
 				if not use_mint_item:
 					GameData.add_active_campaign_gold(-500)
