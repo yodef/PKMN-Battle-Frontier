@@ -64,8 +64,8 @@ func _ready() -> void:
 	assert(surf_dmg >= 50, "Surf super efectivo contra Charizard debe superar 50 DMG")
 	assert(ceil(float(charizard.max_hp) / float(surf_dmg)) <= 2, "Con ventaja de tipo un Stage 2 cae en 1-2 golpes")
 	
-	# --- TEST 3: Flujo de energía pasiva al final de ronda ---
-	print("\n--- TEST 3: Flujo de Energía Pasiva para Activos y Banca ---")
+	# --- TEST 3: Flujo de energía pasiva al final de ronda (Solo Banca) ---
+	print("\n--- TEST 3: Flujo de Energía Pasiva para Banca (Activos no regeneran pasivo) ---")
 	var p_act = battle_scene.get_active_player()
 	var e_act = battle_scene.get_active_enemy()
 	p_act.current_hp = 50
@@ -75,15 +75,27 @@ func _ready() -> void:
 	e_act.max_energy = 5
 	e_act.current_energy = 2
 	
-	# Simular regeneración de fin de ronda
-	for team in [battle_scene.player_team, battle_scene.enemy_team]:
-		for pkmn in team:
-			if pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
-				pkmn.current_energy = min(pkmn.max_energy, pkmn.current_energy + 1)
+	# Agregar un Pokémon en la banca para el jugador
+	var benched_pkmn = GameData.create_pokemon_instance(0)
+	benched_pkmn.current_hp = 40
+	benched_pkmn.max_energy = 5
+	benched_pkmn.current_energy = 1
+	battle_scene.player_team.append(benched_pkmn)
+	
+	# Simular regeneración de fin de ronda según las reglas actuales (solo banca)
+	var active_p = battle_scene.get_active_player()
+	var active_e = battle_scene.get_active_enemy()
+	for pkmn in battle_scene.player_team:
+		if pkmn != active_p and pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
+			pkmn.current_energy = min(pkmn.max_energy, pkmn.current_energy + 1)
+	for pkmn in battle_scene.enemy_team:
+		if pkmn != active_e and pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
+			pkmn.current_energy = min(pkmn.max_energy, pkmn.current_energy + 1)
 				
-	assert(p_act.current_energy == 2, "El activo del jugador debe regenerar +1⚡ pasivo")
-	assert(e_act.current_energy == 3, "El activo rival debe regenerar +1⚡ pasivo")
-	print("✓ 3.1 Pokémon activos regeneran +1⚡ pasivo al final de ronda")
+	assert(p_act.current_energy == 1, "El activo del jugador NO debe regenerar energía pasiva")
+	assert(e_act.current_energy == 2, "El activo rival NO debe regenerar energía pasiva")
+	assert(benched_pkmn.current_energy == 2, "El Pokémon en la banca SÍ debe regenerar +1⚡ pasivo")
+	print("✓ 3.1 Pokémon activos no reciben pasivo; Pokémon en banca recarga +1⚡ al final de ronda")
 	
 	print("\n=======================================================")
 	print("🎉 TODOS LOS TESTS DE BALANCE Y RITMO DE COMBATE PASARON CON ÉXITO 🎉")

@@ -2579,20 +2579,20 @@ func _finish_round() -> void:
 			pkmn.was_flinched_last_round = pkmn.flinched_this_round
 			pkmn.flinched_this_round = false
 
-	# Regeneración pasiva de energía (+1⚡ al final de cada ronda para todos los Pokémon vivos: activos y banca)
+	# Regeneración pasiva de banca (+1⚡ al final de cada ronda para Pokémon vivos en la banca)
 	active_p = get_active_player()
 	active_e = get_active_enemy()
-	var recharged_names: Array[String] = []
+	var bench_recharged_names: Array[String] = []
 	for pkmn in player_team:
-		if pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
+		if pkmn != active_p and pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
 			pkmn.current_energy = min(pkmn.max_energy, pkmn.current_energy + 1)
-			recharged_names.append("%s (⚡%d/%d)" % [pkmn.name, pkmn.current_energy, pkmn.max_energy])
+			bench_recharged_names.append("%s (⚡%d/%d)" % [pkmn.name, pkmn.current_energy, pkmn.max_energy])
 	for pkmn in enemy_team:
-		if pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
+		if pkmn != active_e and pkmn.current_hp > 0 and pkmn.current_energy < pkmn.max_energy:
 			pkmn.current_energy = min(pkmn.max_energy, pkmn.current_energy + 1)
-			recharged_names.append("Rival %s (⚡%d/%d)" % [pkmn.name, pkmn.current_energy, pkmn.max_energy])
-	if not recharged_names.is_empty():
-		log_action("🔋 [color=#FFD54F]" + (GameData.tr_text("Energy Recharge (+1⚡):", "Recarga de Energía (+1⚡):") + "[/color] %s") % ", ".join(recharged_names))
+			bench_recharged_names.append("Rival %s (⚡%d/%d)" % [pkmn.name, pkmn.current_energy, pkmn.max_energy])
+	if not bench_recharged_names.is_empty():
+		log_action("🔋 [color=#FFD54F]" + (GameData.tr_text("Bench Recharge (+1⚡):", "Recarga en Banca (+1⚡):") + "[/color] %s") % ", ".join(bench_recharged_names))
 
 	update_ui()
 	
@@ -3113,7 +3113,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			
 		raw_damage = total_multi_dmg
 		var rolls_text = "+".join(hit_dmgs)
-		var crit_tag = " [color=orange](%d Critical Hit%s!)[/color]" % [crits_landed, "s" if crits_landed > 1 else ""] if crits_landed > 0 else ""
+		var crit_tag = " [color=orange](%d Critical Hit%s! +50%% DMG)[/color]" % [crits_landed, "s" if crits_landed > 1 else ""] if crits_landed > 0 else ""
 		note_text += " [color=yellow](%d hits: %s = %d DMG)%s[/color]" % [num_hits, rolls_text, raw_damage, crit_tag]
 	elif move.effect_type == "ANTI_TANK":
 		var is_boss_target = (defender.id in GameData.ALL_BOSS_IDS or defender.id in [GameData.CRYSTAL_ONIX_ID, GameData.RED_GYARADOS_BOSS_ID] or defender.max_hp >= 100)
@@ -3509,7 +3509,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		var max_heal_cap = max(6, int(round(float(attacker.max_hp) * 0.20)))
 		var heal_amount = clamp(int(round(float(heal_base) * drain_ratio)), 1, max_heal_cap)
 		attacker.current_hp = min(attacker.max_hp, attacker.current_hp + heal_amount)
-		note_text += " [color=green]Drained health and recovered +%d HP![/color]" % heal_amount
+		note_text += " [color=green]Drained health and recovered +%d HP! (30%% heal)[/color]" % heal_amount
 		spawn_floating_combat_number(attacker_visual, heal_amount, true)
 		GameData.play_combat_sfx("heal")
 		if attacker == get_active_player() and GameData.is_campaign_mode:
@@ -3528,7 +3528,8 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		if not avoid_recoil:
 			var rec_dmg = max(1, int(round(final_damage * recoil_pct)))
 			attacker.current_hp = max(0, attacker.current_hp - rec_dmg)
-			note_text += " [color=red]Recoil: takes %d DMG![/color]" % rec_dmg
+			var rec_tag = "30% recoil" if recoil_pct == 0.30 else "25% recoil"
+			note_text += " [color=red]Recoil: takes %d DMG! (%s)[/color]" % [rec_dmg, rec_tag]
 			spawn_floating_combat_number(attacker_visual, -rec_dmg, false)
 
 	# Doble Golpe (DOUBLE_HIT / EXTRA_HIT)
