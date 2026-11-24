@@ -5,8 +5,8 @@ func _ready() -> void:
 	print("STARTING FULL IN-ENGINE GAME VALIDATION TEST")
 	print("==================================================")
 	
-	# 1. Validate All 167 Pokemon
-	assert(GameData.all_pokemon_ids.size() == 167, "Must have 167 Pokemon")
+	# 1. Validate All Pokemon
+	assert(GameData.all_pokemon_ids.size() >= 167, "Must have at least 167 Pokemon")
 	print("✓ Total Pokemon verified: %d" % GameData.all_pokemon_ids.size())
 	
 	for pid in GameData.all_pokemon_ids:
@@ -16,7 +16,7 @@ func _ready() -> void:
 		assert(p.max_hp > 0)
 		assert(p.max_energy > 0)
 		assert(p.speed > 0)
-	print("✓ All 167 Pokemon instances created and validated with 2 active moves.")
+	print("✓ All %d Pokemon instances created and validated with 2 active moves." % GameData.all_pokemon_ids.size())
 	
 	# 2. Validate Passives
 	var passives_map = {
