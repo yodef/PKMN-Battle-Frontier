@@ -8051,6 +8051,10 @@ func _open_camp_pokemon_inspector(p: Dictionary) -> void:
 	open_pokemon_inspector(p, true)
 
 func open_pokemon_inspector(p: Dictionary, from_camp: bool = false) -> void:
+	if not from_camp:
+		var target_cid = int(p.get("id", 1))
+		open_card_detail_from_team_select(target_cid)
+		return
 	if not camp_pokemon_inspector_modal:
 		_setup_camp_pokemon_inspector_modal()
 	if not camp_pokemon_inspector_modal:
@@ -9404,7 +9408,7 @@ func build_team_select_cards_grid() -> void:
 		btn_inspect.pressed.connect(func():
 			if GameData.is_drag_scrolling():
 				return
-			open_pokemon_inspector(card, false)
+			open_card_detail_from_team_select(cid)
 		)
 		btn_inspect.gui_input.connect(func(ev: InputEvent):
 			if ev is InputEventMouseButton and ev.pressed:
@@ -14072,13 +14076,65 @@ func _render_collection_pagination(total_cards: int, start_idx: int, end_idx: in
 	info_lbl.add_theme_color_override("font_color", Color("#90A4AE"))
 	bar_vbox.add_child(info_lbl)
 
+var _detail_return_to_team_select: bool = false
+
+func open_card_detail_from_team_select(cid: int) -> void:
+	_detail_return_to_team_select = true
+	if all_catalog_cards.is_empty():
+		refresh_cards_data_from_catalog()
+	if current_sorted_collection.is_empty():
+		current_sorted_collection = get_sorted_cards(all_catalog_cards, collection_sort_mode)
+		
+	var target_idx = -1
+	for i in range(current_sorted_collection.size()):
+		if int(current_sorted_collection[i].get("id", -1)) == cid:
+			target_idx = i
+			break
+	if target_idx == -1:
+		col_filter_owned = "ALL"
+		current_sorted_collection = get_sorted_cards(all_catalog_cards, collection_sort_mode)
+		for i in range(current_sorted_collection.size()):
+			if int(current_sorted_collection[i].get("id", -1)) == cid:
+				target_idx = i
+				break
+	if target_idx == -1:
+		target_idx = 0
+		
+	current_collection_index = target_idx
+	team_select_modal.visible = false
+	collection_modal.visible = true
+	collection_grid_view.visible = false
+	collection_detail_view.visible = true
+	
+	var is_es = (GameData.settings_language == "es")
+	if btn_back_to_grid:
+		btn_back_to_grid.text = "⬅ " + ("Volver a Selección de Equipo" if is_es else "Back to Team Select")
+		
+	show_collection_card(current_collection_index)
+
 func open_collection_detail(index: int) -> void:
+	_detail_return_to_team_select = false
+	var is_es = (GameData.settings_language == "es")
+	if btn_back_to_grid:
+		btn_back_to_grid.text = "⬅ " + ("Volver a la Pokédex" if is_es else "Back to Grid")
 	current_collection_index = index
 	collection_grid_view.visible = false
 	collection_detail_view.visible = true
 	show_collection_card(current_collection_index)
 
 func _on_back_to_grid_pressed() -> void:
+	if _detail_return_to_team_select:
+		_detail_return_to_team_select = false
+		collection_detail_view.visible = false
+		collection_modal.visible = false
+		team_select_modal.visible = true
+		build_team_select_cards_grid()
+		update_team_select_ui()
+		var is_es = (GameData.settings_language == "es")
+		if btn_back_to_grid:
+			btn_back_to_grid.text = "⬅ " + ("Volver a la Pokédex" if is_es else "Back to Grid")
+		return
+		
 	collection_detail_view.visible = false
 	collection_grid_view.visible = true
 	var target_page = int(current_collection_index / COL_CARDS_PER_PAGE)
@@ -14207,12 +14263,15 @@ func show_collection_card(index: int) -> void:
 		# Movimiento 1 con Icono Oficial
 		move1_panel.visible = true
 		var m1_name_val = str(card.get("m1_name", "Attack 1"))
-		var m1_dmg_val = int(card.get("m1_dmg", 0))
-		var m1_acc_val = int(card.get("m1_acc", 100))
-		var m1_type_val = str(card.get("m1_type", "NORMAL")).to_upper()
-		var m1_cost_val = int(card.get("m1_cost", 1))
-		var m1_req_val = int(card.get("m1_req", 0))
-		var m1_desc_val = str(card.get("m1_effect", "")).strip_edges()
+		var m1_data = GameData.get_move_data(m1_name_val)
+		var m1_dmg_val = int(m1_data.get("dmg", card.get("m1_dmg", 0)))
+		var m1_acc_val = int(m1_data.get("accuracy", card.get("m1_acc", 100)))
+		var m1_type_val = str(m1_data.get("type", card.get("m1_type", "NORMAL"))).to_upper()
+		var m1_cost_val = int(m1_data.get("cost", card.get("m1_cost", 1)))
+		var m1_req_val = int(m1_data.get("req", card.get("m1_req", 0)))
+		var m1_desc_val = GameData.get_move_description(m1_data)
+		if m1_desc_val == "":
+			m1_desc_val = str(card.get("m1_effect", "")).strip_edges()
 		
 		m1_type_icon.visible = true
 		m1_type_icon.texture = GameData.get_type_icon_texture(m1_type_val)
@@ -14224,14 +14283,17 @@ func show_collection_card(index: int) -> void:
 		# Movimiento 2 con Icono Oficial
 		move2_panel.visible = true
 		var m2_name_val = str(card.get("m2_name", "Attack 2"))
-		var m2_dmg_val = int(card.get("m2_dmg", 0))
-		var m2_acc_val = int(card.get("m2_acc", 100))
-		var m2_type_val = str(card.get("m2_type", "NORMAL")).to_upper()
-		var m2_cost_val = int(card.get("m2_cost", 1))
-		var m2_req_val = int(card.get("m2_req", 0))
-		var m2_bcost = int(card.get("m2_boost_cost", 0))
-		var m2_bdmg = int(card.get("m2_boost_dmg", 0))
-		var m2_desc_val = str(card.get("m2_effect", "")).strip_edges()
+		var m2_data = GameData.get_move_data(m2_name_val)
+		var m2_dmg_val = int(m2_data.get("dmg", card.get("m2_dmg", 0)))
+		var m2_acc_val = int(m2_data.get("accuracy", card.get("m2_acc", 100)))
+		var m2_type_val = str(m2_data.get("type", card.get("m2_type", "NORMAL"))).to_upper()
+		var m2_cost_val = int(m2_data.get("cost", card.get("m2_cost", 1)))
+		var m2_req_val = int(m2_data.get("req", card.get("m2_req", 0)))
+		var m2_bcost = int(m2_data.get("boost_cost", card.get("m2_boost_cost", 0)))
+		var m2_bdmg = int(m2_data.get("boost_dmg", card.get("m2_boost_dmg", 0)))
+		var m2_desc_val = GameData.get_move_description(m2_data)
+		if m2_desc_val == "":
+			m2_desc_val = str(card.get("m2_effect", "")).strip_edges()
 		
 		m2_type_icon.visible = true
 		m2_type_icon.texture = GameData.get_type_icon_texture(m2_type_val)
@@ -14240,7 +14302,7 @@ func show_collection_card(index: int) -> void:
 		m2_sub.text = "Type: %s | Cost: ⚡ %d%s" % [m2_type_val, m2_cost_val, req_text2]
 		if m2_bcost > 0:
 			m2_boost.visible = true
-			var boost_txt = GameData.format_move_boost_summary(m2_bcost, m2_bdmg, str(card.get("m2_effect_type", "")), m2_desc_val)
+			var boost_txt = GameData.format_move_boost_summary(m2_bcost, m2_bdmg, str(m2_data.get("effect_type", card.get("m2_effect_type", ""))), m2_desc_val)
 			m2_boost.text = "🔥 Boost (+%d⚡): %s" % [m2_bcost, boost_txt]
 		else:
 			m2_boost.visible = false

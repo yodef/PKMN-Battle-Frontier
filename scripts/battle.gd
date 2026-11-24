@@ -3100,7 +3100,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				
 			var is_crit = (randf() < 0.25)
 			if is_crit:
-				var crit_bonus = 6 if move.name in ["Bone Rush", "Icicle Spear"] else 5
+				var crit_bonus = max(1, int(round(float(base_roll) * 0.50)))
 				base_roll += crit_bonus
 				crits_landed += 1
 			base_roll = max(1, int(round(float(base_roll) * ad_ratio)))
@@ -3232,14 +3232,15 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			raw_damage += rev_bonus
 			note_text += " [color=orange]Revenge (+%d DMG)![/color]" % rev_bonus
 	elif move.effect_type == "RAGE" and attacker.took_damage_last_turn:
-		raw_damage += 4
+		raw_damage += 6
 		attacker.temp_speed_mod += 1
-		note_text += " [color=orange]Outrage (+4 DMG & +1 Speed)![/color]"
+		note_text += " [color=orange]Outrage (+6 DMG & +1 Speed)![/color]"
 
 	# Aerial Ace y similares (BOOST_IF_FASTER)
 	if move.effect_type == "BOOST_IF_FASTER" and move.name != "Quick Attack" and is_full_energy and att_spd > def_spd:
-		raw_damage += 3
-		note_text += " [color=cyan]Speed Advantage (+3 DMG)![/color]"
+		var bonus = 6 if move.name == "Extreme Speed" else (4 if "+4" in move.description else 3)
+		raw_damage += bonus
+		note_text += " [color=cyan]Speed Advantage (+%d DMG)![/color]" % bonus
 
 	# Gyro Ball (BOOST_IF_SLOWER)
 	if (move.effect_type == "BOOST_IF_SLOWER" or move.name == "Gyro Ball") and is_full_energy and att_spd < def_spd:
@@ -3325,12 +3326,12 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 
 	# Golpe Crítico (CRITICAL)
 	if move.effect_type == "CRITICAL":
-		var crit_chance = 0.35 if ("35%" in move.description or move.name in ["Crabhammer", "Psycho Cut"]) else 0.25
+		var crit_chance = 0.35 if ("35%" in move.description or move.name in ["Crabhammer", "Psycho Cut", "Blaze Kick", "Spacial Rend", "Aeroblast", "Stone Edge"]) else 0.25
 		if randf() < crit_chance:
-			var crit_b = 5 if ("+5" in move.description or move.name in ["Crabhammer", "Psycho Cut"]) else (4 if "+4" in move.description else 3)
+			var crit_b = max(1, int(round(float(raw_damage) * 0.50)))
 			raw_damage += crit_b
 			single_hit_crit = true
-			note_text += " [color=yellow]Critical Hit! (+%d DMG)[/color]" % crit_b
+			note_text += " [color=yellow]Critical Hit! (+50%% DMG: +%d)[/color]" % crit_b
 
 	# Tirada de dado de Pichu Shock (Thunder Shock)
 	if ("is_pichu_shock" in move and move.is_pichu_shock):
@@ -6938,7 +6939,8 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 	elif eff == "DOUBLE_TYPE" or eff == "TRIPLE_TYPE":
 		return "Multi-element attack"
 	elif eff == "CRITICAL":
-		return "25%% Critical (+%d DMG)" % (4 if "+4" in desc else 3)
+		var pct = "35%" if ("35%" in desc or move.name in ["Crabhammer", "Psycho Cut", "Blaze Kick", "Spacial Rend", "Aeroblast", "Stone Edge"]) else "25%"
+		return "%s Critical (+50%% DMG)" % pct
 	elif eff == "MULTI_ATTACK":
 		return "Hits = ⚡ spent (25% Crit)"
 	elif eff in ["DOUBLE_HIT", "EXTRA_HIT"]:
@@ -6953,8 +6955,6 @@ func get_move_effect_summary(move, boosted: bool) -> String:
 		return "x2 DMG consecutive"
 	elif eff in ["REVENGE", "RAGE"]:
 		return "+6 DMG if moved 2nd" if move.name == "Payback" else "Bonus DMG if took hit"
-	elif eff == "CRITICAL":
-		return "+5 DMG on Crit (35%)" if ("35%" in desc or move.name in ["Crabhammer", "Psycho Cut"]) else "+4 DMG on Crit"
 	elif eff == "FULL_HP_POWER":
 		return "+4 DMG if HP >= 80%"
 	elif eff == "SHELL_SMASH":
