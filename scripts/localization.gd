@@ -6,6 +6,7 @@ const EXACT_EN_TO_ES: Dictionary = {
 	# --- Menú Principal (Lobby) ---
 	"TCG Mobile Edition • Fan Game": "Edición Móvil TCG • Fan Game",
 	"TCG Mobile Edition • Cloud Sync": "Edición Móvil TCG • Sincronización en la Nube",
+	"Non-profit fan project • v0.7.41": "Proyecto fan sin fines de lucro • v0.7.41",
 	"Non-profit fan project • v0.7.4": "Proyecto fan sin fines de lucro • v0.7.4",
 	"Non-profit fan project • v0.7.3": "Proyecto fan sin fines de lucro • v0.7.3",
 	"Non-profit fan project • v0.7.2": "Proyecto fan sin fines de lucro • v0.7.2",
