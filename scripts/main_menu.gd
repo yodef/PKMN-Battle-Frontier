@@ -906,6 +906,9 @@ func _ready() -> void:
 	btn_col_sort_owned.pressed.connect(func(): _on_col_sort_pressed("OWNED"))
 	update_collection_sort_buttons_ui()
 	_setup_collection_filters()
+	_update_collection_detail_view_layout()
+	if not get_viewport().size_changed.is_connected(_update_collection_detail_view_layout):
+		get_viewport().size_changed.connect(_update_collection_detail_view_layout)
 	
 	# Modal Tienda (Sobre de Prueba)
 	_setup_showcase_timer()
@@ -14076,6 +14079,18 @@ func _render_collection_pagination(total_cards: int, start_idx: int, end_idx: in
 	info_lbl.add_theme_color_override("font_color", Color("#90A4AE"))
 	bar_vbox.add_child(info_lbl)
 
+func _update_collection_detail_view_layout() -> void:
+	if not collection_detail_view:
+		return
+	var vp_w = get_viewport_rect().size.x
+	var target_w = minf(430.0, vp_w - 24.0)
+	var half_w = target_w * 0.5
+	collection_detail_view.anchor_left = 0.5
+	collection_detail_view.anchor_right = 0.5
+	collection_detail_view.offset_left = -half_w
+	collection_detail_view.offset_right = half_w
+	collection_detail_view.grow_horizontal = Control.GROW_DIRECTION_BOTH
+
 var _detail_return_to_team_select: bool = false
 
 func open_card_detail_from_team_select(cid: int) -> void:
@@ -14105,15 +14120,17 @@ func open_card_detail_from_team_select(cid: int) -> void:
 	collection_modal.visible = true
 	collection_grid_view.visible = false
 	collection_detail_view.visible = true
+	_update_collection_detail_view_layout()
 	
 	var is_es = (GameData.settings_language == "es")
 	if btn_back_to_grid:
-		btn_back_to_grid.text = "⬅ " + ("Volver a Selección de Equipo" if is_es else "Back to Team Select")
+		btn_back_to_grid.text = "⬅ " + ("Volver a Selección" if is_es else "Back to Team")
 		
 	show_collection_card(current_collection_index)
 
 func open_collection_detail(index: int) -> void:
 	_detail_return_to_team_select = false
+	_update_collection_detail_view_layout()
 	var is_es = (GameData.settings_language == "es")
 	if btn_back_to_grid:
 		btn_back_to_grid.text = "⬅ " + ("Volver a la Pokédex" if is_es else "Back to Grid")
@@ -14164,7 +14181,7 @@ func show_collection_card(index: int) -> void:
 		if top_nav:
 			btn_col_fav_toggle = Button.new()
 			btn_col_fav_toggle.name = "BtnDetailFavToggle"
-			btn_col_fav_toggle.custom_minimum_size = Vector2(150, 36)
+			btn_col_fav_toggle.custom_minimum_size = Vector2(125, 36)
 			btn_col_fav_toggle.add_theme_font_size_override("font_size", 12)
 			top_nav.add_child(btn_col_fav_toggle)
 			top_nav.move_child(btn_col_fav_toggle, 1)
@@ -14441,6 +14458,7 @@ func _setup_detail_card_upgrade_panel(cid: int, card: Dictionary, is_unlocked: b
 	line_lbl.text = "🔗 " + ("Afecta a toda la línea: %s" if is_es else "Shared by evolution line: %s") % ", ".join(line_names)
 	line_lbl.add_theme_font_size_override("font_size", 9)
 	line_lbl.add_theme_color_override("font_color", Color(0.5, 0.85, 0.95))
+	line_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(line_lbl)
 	
 	# Level Row
@@ -14456,6 +14474,7 @@ func _setup_detail_card_upgrade_panel(cid: int, card: Dictionary, is_unlocked: b
 	lvl_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	lvl_lbl.add_theme_font_size_override("font_size", 11)
 	lvl_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4))
+	lvl_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lvl_row.add_child(lvl_lbl)
 	
 	if lvl < GameData.MAX_CARD_LEVEL:
@@ -14501,6 +14520,7 @@ func _setup_detail_card_upgrade_panel(cid: int, card: Dictionary, is_unlocked: b
 	nat_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nat_lbl.add_theme_font_size_override("font_size", 11)
 	nat_lbl.add_theme_color_override("font_color", Color(0.65, 0.95, 0.7))
+	nat_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	nat_row.add_child(nat_lbl)
 	
 	var btn_nat = Button.new()
@@ -14696,11 +14716,12 @@ func _open_nature_selection_modal(cid: int, card_idx: int) -> void:
 func _update_detail_fav_button_visuals(is_fav: bool) -> void:
 	if not btn_col_fav_toggle:
 		return
+	var is_es = (GameData.settings_language == "es")
 	if is_fav:
-		btn_col_fav_toggle.text = "⭐ Favorited"
+		btn_col_fav_toggle.text = "⭐ " + ("En Favoritos" if is_es else "Favorited")
 		_apply_retro_button_style(btn_col_fav_toggle, Color(0.85, 0.70, 0.15), Color(1.0, 0.85, 0.25))
 	else:
-		btn_col_fav_toggle.text = "☆ Add to Favorites"
+		btn_col_fav_toggle.text = "☆ " + ("Añadir Favorito" if is_es else "Add to Favorites")
 		_apply_retro_button_style(btn_col_fav_toggle, Color(0.25, 0.40, 0.55), Color(0.35, 0.55, 0.75))
 
 func _on_prev_card_pressed() -> void:

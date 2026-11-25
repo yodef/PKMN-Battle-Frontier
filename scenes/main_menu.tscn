@@ -2390,13 +2390,14 @@ text = "⬅ Back to Main Menu"
 [node name="DetailView" type="VBoxContainer" parent="CollectionModal"]
 visible = false
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = 15.0
-offset_top = 20.0
-offset_right = -15.0
-offset_bottom = -20.0
+offset_left = -215.0
+offset_top = 18.0
+offset_right = 215.0
+offset_bottom = -18.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 8
@@ -2407,7 +2408,7 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="BtnBackToGrid" type="Button" parent="CollectionModal/DetailView/TopNav"]
-custom_minimum_size = Vector2(170, 36)
+custom_minimum_size = Vector2(140, 36)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "⬅ Back to Grid"
@@ -2474,6 +2475,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.78, 0.85, 1)
 theme_override_font_sizes/font_size = 12
 text = "No. 001 • Stage: Basic • GRASS"
+autowrap_mode = 2
 
 [node name="LockedNoticePanel" type="PanelContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox"]
 visible = false
@@ -2519,16 +2521,19 @@ text = "📊 BASE STATS"
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "❤️ Max HP: 10 HP"
+autowrap_mode = 2
 
 [node name="StatsSpd" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "👟 Speed: 1 SPD (Turn order)"
+autowrap_mode = 2
 
 [node name="StatsEnergy" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "🔋 Recovery: +1 Energy / turn"
+autowrap_mode = 2
 
 [node name="DebRow" type="HBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox"]
 layout_mode = 2
@@ -2549,9 +2554,11 @@ stretch_mode = 5
 
 [node name="DebVal" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox/DebRow"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.98, 0.65, 0.65, 1)
 theme_override_font_sizes/font_size = 13
 text = "(+2 damage taken)"
+autowrap_mode = 2
 
 [node name="ResRow" type="HBoxContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox"]
 layout_mode = 2
@@ -2572,9 +2579,11 @@ stretch_mode = 5
 
 [node name="ResVal" type="Label" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox/StatsPanel/StatsMargin/StatsVBox/ResRow"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.65, 0.8, 1, 1)
 theme_override_font_sizes/font_size = 13
 text = "(-2 damage taken)"
+autowrap_mode = 2
 
 [node name="PassivePanel" type="PanelContainer" parent="CollectionModal/DetailView/DetailsScroll/DetailsBox"]
 layout_mode = 2
