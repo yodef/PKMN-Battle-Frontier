@@ -3335,7 +3335,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			var crit_b = max(1, int(round(float(raw_damage) * 0.50)))
 			raw_damage += crit_b
 			single_hit_crit = true
-			note_text += " [color=yellow]" + (GameData.tr_text("Critical Hit! (+50% DMG: +%d)", "¡Golpe Crítico! (+50% DMG: +%d)") % crit_b) + "[/color]"
+			note_text += " [color=yellow]" + (GameData.tr_text("Critical Hit! (+50%% DMG: +%d)", "¡Golpe Crítico! (+50%% DMG: +%d)") % crit_b) + "[/color]"
 
 	# Tirada de dado de Pichu Shock (Thunder Shock)
 	if ("is_pichu_shock" in move and move.is_pichu_shock):
@@ -3513,7 +3513,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		var max_heal_cap = max(6, int(round(float(attacker.max_hp) * 0.20)))
 		var heal_amount = clamp(int(round(float(heal_base) * drain_ratio)), 1, max_heal_cap)
 		attacker.current_hp = min(attacker.max_hp, attacker.current_hp + heal_amount)
-		note_text += " [color=green]" + (GameData.tr_text("Drained health and recovered +%d HP! (30% heal)", "¡Drenó salud y recuperó +%d HP! (30% curación)") % heal_amount) + "[/color]"
+		note_text += " [color=green]" + (GameData.tr_text("Drained health and recovered +%d HP! (30%% heal)", "¡Drenó salud y recuperó +%d HP! (30%% curación)") % heal_amount) + "[/color]"
 		spawn_floating_combat_number(attacker_visual, heal_amount, true)
 		GameData.play_combat_sfx("heal")
 		if attacker == get_active_player() and GameData.is_campaign_mode:
@@ -4199,7 +4199,11 @@ func process_defeated_enemies() -> void:
 			var drop_str = "+%d G" % g_drop
 			if d_drop > 0:
 				drop_str += " & 💎 +%d Diamond%s" % [d_drop, "s" if d_drop > 1 else ""]
-			log_action("💥 [b]%s[/b] KO'd! [color=#FFD54F]Foe dropped: %s[/color]" % [e.name, drop_str])
+			var ko_msg = GameData.tr_text(
+				"💥 [b]%s[/b] KO'd! [color=#FFD54F]Foe dropped: %s[/color]",
+				"💥 ¡[b]%s[/b] fue derrotado! [color=#FFD54F]Recompensa obtenida: %s[/color]"
+			)
+			log_action(ko_msg % [e.name, drop_str])
 
 # --- REVISIÓN DE CAÍDAS Y DERROTAS ---
 func _animate_faint_and_replacement(is_player: bool, fainted_pkmn, next_idx: int) -> void:

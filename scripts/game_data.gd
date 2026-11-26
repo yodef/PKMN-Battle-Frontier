@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.7.43"
+const GAME_VERSION: String = "v0.7.44"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -444,6 +444,11 @@ func tr_text(en_text: String, es_text: String = "") -> String:
 			return es_text
 		return GameLocalizationScript.translate_en_to_es(en_text)
 	return en_text
+
+func tr_type(t: String) -> String:
+	if settings_language == "es":
+		return GameLocalizationScript.translate_en_to_es(t.strip_edges().to_upper())
+	return t.strip_edges().to_upper()
 
 func set_language(lang: String, persist: bool = true) -> void:
 	var norm = normalize_language_code(lang)
@@ -6173,27 +6178,27 @@ func calculate_pkmn_defeat_reward(rarity_str: String, stage_str: String = "") ->
 	var diamonds = 0
 	
 	if r in ["epic", "epica", "epico", "sr", "super rare"] or st == "stage 2":
-		# Epic / Stage 2: 8-12 G, high chance (~75%) for 2-4 Diamonds
-		gold = randi_range(8, 12)
+		# Epic / Stage 2: 20-30 G (antes 8-12 G), high chance (~75%) for 2-4 Diamonds
+		gold = randi_range(20, 30)
 		if randf() < 0.75:
 			diamonds = randi_range(2, 4)
 	elif r in ["rare", "rara", "raro", "r"] or st == "stage 1":
-		# Rare / Stage 1: 4-7 G, moderate-high chance (~45%) for 1-3 Diamonds
-		gold = randi_range(4, 7)
+		# Rare / Stage 1: 12-18 G (antes 4-7 G), moderate-high chance (~45%) for 1-3 Diamonds
+		gold = randi_range(12, 18)
 		if randf() < 0.45:
 			diamonds = randi_range(1, 3)
 	elif r in ["uncommon", "poco común", "poco comun"]:
-		# Uncommon: 2-5 G, moderate chance (~25%) for 1-2 Diamonds
-		gold = randi_range(2, 5)
+		# Uncommon: 7-12 G (antes 2-5 G), moderate chance (~25%) for 1-2 Diamonds
+		gold = randi_range(7, 12)
 		if randf() < 0.25:
 			diamonds = randi_range(1, 2)
-	elif r in ["legendary", "legendaria", "legendario", "ur", "ultra rare"]:
-		# Legendary: 15-25 G, 100% chance for 3-5 Diamonds
-		gold = randi_range(15, 25)
+	elif r in ["legendary", "legendaria", "legendario", "ur", "ultra rare", "boss"]:
+		# Legendary / Boss: 35-50 G (antes 15-25 G), 100% chance for 3-5 Diamonds
+		gold = randi_range(35, 50)
 		diamonds = randi_range(3, 5)
 	else:
-		# Common (default): 1-3 G, low chance (~15%) for 1 Diamond
-		gold = randi_range(1, 3)
+		# Common (default): 4-8 G (antes 1-3 G), low chance (~15%) for 1 Diamond
+		gold = randi_range(4, 8)
 		if randf() < 0.15:
 			diamonds = 1
 			
