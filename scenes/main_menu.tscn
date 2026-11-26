@@ -280,7 +280,7 @@ text = "🚪 EXIT"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.45, 0.55, 1)
 theme_override_font_sizes/font_size = 11
-text = "Non-profit fan project • v0.7.44"
+text = "Non-profit fan project • v0.7.45"
 horizontal_alignment = 1
 
 [node name="TeamSelectModal" type="Control" parent="."]
@@ -1991,7 +1991,7 @@ custom_minimum_size = Vector2(0, 310)
 layout_mode = 2
 size_flags_vertical = 1
 horizontal_scroll_mode = 0
-vertical_scroll_mode = 0
+vertical_scroll_mode = 3
 
 [node name="TeamList" type="VBoxContainer" parent="CampaignModal/Box/TeamScroll"]
 layout_mode = 2
@@ -2981,7 +2981,7 @@ text = "🌐  REGISTER GOOGLE ACCOUNT
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.45, 0.55, 1)
 theme_override_font_sizes/font_size = 11
-text = "Non-profit fan project • v0.7.44"
+text = "Non-profit fan project • v0.7.45"
 horizontal_alignment = 1
 
 [node name="ProfileModal" type="Control" parent="."]

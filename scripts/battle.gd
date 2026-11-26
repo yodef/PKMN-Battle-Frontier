@@ -2090,7 +2090,8 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		# Fatigue recharge: only +1 Energy during forced rest to prevent infinite 25 DMG cycling
 		var rec = min(1, actor.max_energy - actor.current_energy)
 		actor.current_energy += rec
-		log_action("😴 [b]%s[/b] [color=cyan]" + (GameData.tr_text("must rest this round and recharged +%d Energy (⚡ %d/%d).", "debe descansar esta ronda y recuperó +%d de Energía (⚡ %d/%d).") % [actor.name, rec, actor.current_energy, actor.max_energy]) + "[/color]", st_side)
+		var rest_msg = GameData.tr_text("must rest this round and recharged +%d Energy (⚡ %d/%d).", "debe descansar esta ronda y recuperó +%d de Energía (⚡ %d/%d).")
+		log_action("😴 [b]%s[/b] [color=cyan]%s[/color]" % [actor.name, rest_msg % [rec, actor.current_energy, actor.max_energy]], st_side)
 		if rec > 0:
 			GameData.play_combat_sfx("power up.wav")
 			var actor_vis = player_card_img if is_player else enemy_card_img
@@ -2142,7 +2143,8 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		actor.is_flinched = false
 		var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
 		actor.current_energy += rec
-		log_action("💫 [b]%s[/b] [color=yellow]" + (GameData.tr_text("flinched and was forced to Recharge! +%d Energy (⚡ %d/%d).", "¡retrocedió y fue forzado a Recargar! +%d de Energía (⚡ %d/%d).") % [actor.name, rec, actor.current_energy, actor.max_energy]) + "[/color]", st_side)
+		var flinch_msg = GameData.tr_text("flinched and was forced to Recharge! +%d Energy (⚡ %d/%d).", "¡retrocedió y fue forzado a Recargar! +%d de Energía (⚡ %d/%d).")
+		log_action("💫 [b]%s[/b] [color=yellow]%s[/color]" % [actor.name, flinch_msg % [rec, actor.current_energy, actor.max_energy]], st_side)
 		if rec > 0:
 			GameData.play_combat_sfx("power up.wav")
 			var actor_vis = player_card_img if is_player else enemy_card_img
@@ -2166,13 +2168,15 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 	if actor.is_asleep_turns > 0:
 		actor.is_asleep_turns -= 1
 		if actor.is_asleep_turns > 0:
-			log_action("💤 [b]%s[/b] [color=lightblue]" + (GameData.tr_text("is fast asleep and cannot move! (%d rounds remaining)", "¡está profundamente dormido y no puede atacar! (%d rondas restantes)") % [actor.name, actor.is_asleep_turns]) + "[/color]", st_side)
+			var sleep_msg = GameData.tr_text("is fast asleep and cannot move! (%d rounds remaining)", "¡está profundamente dormido y no puede atacar! (%d rondas restantes)")
+			log_action("💤 [b]%s[/b] [color=lightblue]%s[/color]" % [actor.name, sleep_msg % actor.is_asleep_turns], st_side)
 			update_ui()
 			_end_failed_action_turn(is_player)
 			return false
 		else:
 			actor.immune_sleep_rounds = 1
-			log_action("✨ [b]%s[/b] [color=green]" + (GameData.tr_text("woke up from sleep and gained 1 round Sleep immunity!", "¡se despertó del sueño y obtuvo 1 ronda de inmunidad al sueño!") % actor.name) + "[/color]", st_side)
+			var wake_msg = GameData.tr_text("woke up from sleep and gained 1 round Sleep immunity!", "¡se despertó del sueño y obtuvo 1 ronda de inmunidad al sueño!")
+			log_action("✨ [b]%s[/b] [color=green]%s[/color]" % [actor.name, wake_msg], st_side)
 			update_ui()
 
 	# 2. Freeze: Thaw check (20% natural thaw or Fire hit)
@@ -2181,10 +2185,12 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 		if randf() < 0.20:
 			actor.is_frozen = false
 			actor.frozen_turns = 0
-			log_action("🔥 [b]%s[/b] [color=orange]" + (GameData.tr_text("thawed out and can move!", "¡se descongeló y puede atacar!") % actor.name) + "[/color]", st_side)
+			var thaw_msg = GameData.tr_text("thawed out and can move!", "¡se descongeló y puede atacar!")
+			log_action("🔥 [b]%s[/b] [color=orange]%s[/color]" % [actor.name, thaw_msg], st_side)
 			update_ui()
 		else:
-			log_action("❄️ [b]%s[/b] [color=cyan]" + (GameData.tr_text("is frozen solid and cannot move!", "¡está completamente congelado y no puede atacar!") % actor.name) + "[/color]", st_side)
+			var frozen_msg = GameData.tr_text("is frozen solid and cannot move!", "¡está completamente congelado y no puede atacar!")
+			log_action("❄️ [b]%s[/b] [color=cyan]%s[/color]" % [actor.name, frozen_msg], st_side)
 			update_ui()
 			_end_failed_action_turn(is_player)
 			return false
@@ -2192,7 +2198,8 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 	# 3. Paralysis: 25% chance unable to act & -50% Speed
 	if actor.is_paralyzed:
 		if randf() < 0.25:
-			log_action("⚡ [b]%s[/b] [color=yellow]" + (GameData.tr_text("is fully paralyzed! It cannot move!", "¡está totalmente paralizado y no puede atacar!") % actor.name) + "[/color]", st_side)
+			var par_msg = GameData.tr_text("is fully paralyzed! It cannot move!", "¡está totalmente paralizado y no puede atacar!")
+			log_action("⚡ [b]%s[/b] [color=yellow]%s[/color]" % [actor.name, par_msg], st_side)
 			var target_overlay = player_status_overlay if (actor == get_active_player()) else enemy_status_overlay
 			if target_overlay:
 				target_overlay.trigger_paralyze_effect(1.4)
@@ -2200,7 +2207,8 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 			_end_failed_action_turn(is_player)
 			return false
 		else:
-			log_action("⚡ [b]%s[/b] [color=yellow]" + (GameData.tr_text("is paralyzed but pushed through the paralysis!", "¡está paralizado pero logró sobreponerse a la parálisis!") % actor.name) + "[/color]", st_side)
+			var par_push_msg = GameData.tr_text("is paralyzed but pushed through the paralysis!", "¡está paralizado pero logró sobreponerse a la parálisis!")
+			log_action("⚡ [b]%s[/b] [color=yellow]%s[/color]" % [actor.name, par_push_msg], st_side)
 			update_ui()
 
 	# 4. Confusion: 35% snap out or max 3 turns, else self-inflicts 2 DMG
@@ -2209,12 +2217,14 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 		if actor.confused_turns >= 3 or randf() < 0.35:
 			actor.is_confused = false
 			actor.confused_turns = 0
-			log_action("✨ [b]%s[/b] [color=green]" + (GameData.tr_text("snapped out of confusion!", "¡se libró de la confusión!") % actor.name) + "[/color]", st_side)
+			var snap_msg = GameData.tr_text("snapped out of confusion!", "¡se libró de la confusión!")
+			log_action("✨ [b]%s[/b] [color=green]%s[/color]" % [actor.name, snap_msg], st_side)
 			update_ui()
 		else:
 			var self_dmg = 2
 			actor.current_hp = max(0, actor.current_hp - self_dmg)
-			log_action("🌀 [b]%s[/b] [color=magenta]" + (GameData.tr_text("is confused! It hurt itself in its confusion for %d DMG! (%d/3)", "¡está confuso y se hirió a sí mismo en su confusión por %d DMG! (%d/3)") % [actor.name, self_dmg, actor.confused_turns]) + "[/color]", st_side)
+			var conf_msg = GameData.tr_text("is confused! It hurt itself in its confusion for %d DMG! (%d/3)", "¡está confuso y se hirió a sí mismo en su confusión por %d DMG! (%d/3)")
+			log_action("🌀 [b]%s[/b] [color=magenta]%s[/color]" % [actor.name, conf_msg % [self_dmg, actor.confused_turns]], st_side)
 			var actor_img = player_card_img if (actor == get_active_player()) else enemy_card_img
 			play_damage_hit(actor_img, "NORMAL", self_dmg)
 			spawn_floating_combat_number(actor_img, -self_dmg, false)
@@ -3863,7 +3873,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		if move.effect_type == "MUD_SLAP":
 			defender.temp_accuracy_mod -= 15
 			defender.stat_mod_turns = max(defender.stat_mod_turns, 3)
-			note_text += " [color=orange]Mud splashed in foe's eyes! -15%% Accuracy for 3 rounds![/color]"
+			note_text += " [color=orange]Mud splashed in foe's eyes! -15% Accuracy for 3 rounds![/color]"
 			spawn_floating_combat_text(defender_visual, "-15% ACC", Color("#f59e0b"))
 
 		# Disparo de tinta (OCTAZOOKA)
@@ -3871,14 +3881,14 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			if randf() < 0.50:
 				defender.temp_accuracy_mod -= 30
 				defender.stat_mod_turns = max(defender.stat_mod_turns, 3)
-				note_text += " [color=orange]Ink blasted into foe's eyes! -30%% Accuracy for 3 rounds![/color]"
+				note_text += " [color=orange]Ink blasted into foe's eyes! -30% Accuracy for 3 rounds![/color]"
 				spawn_floating_combat_text(defender_visual, "-30% ACC", Color("#f59e0b"))
 
 		# Aumento de evasión propio (EVASION_UP e.g. Double Team / Minimize)
 		if move.effect_type == "EVASION_UP":
 			attacker.temp_evasion_mod += 20
 			attacker.stat_mod_turns = 5
-			note_text += " [color=cyan]Created elusive illusions! +20%% Evasion for 5 rounds![/color]"
+			note_text += " [color=cyan]Created elusive illusions! +20% Evasion for 5 rounds![/color]"
 			spawn_floating_combat_text(attacker_visual, "+20% EVA", Color("#a855f7"))
 
 		# Triturar (CRUNCH)
@@ -4835,12 +4845,22 @@ func _resolve_battle_victory() -> void:
 			else:
 				GameData.psychic_duel_player_team_state.clear()
 				for p in player_team:
-					GameData.psychic_duel_player_team_state.append({
+					GameData.psychic_duel_player_team_state.append(GameData.normalize_campaign_pokemon_state({
 						"id": p.id,
+						"name": p.name,
+						"stage": p.stage,
+						"type": p.type,
+						"speed": p.speed,
+						"texture_path": p.texture_path,
 						"current_hp": max(0, p.current_hp),
 						"max_hp": p.max_hp,
+						"current_exp": int(p.get("current_exp", 0)),
+						"max_exp": GameData.get_pokemon_required_exp(p.id),
+						"burn_turns": int(p.get("burn_turns", 0)),
+						"is_poisoned": bool(p.get("is_poisoned", false)),
+						"is_flinched": false,
 						"held_item": p.held_item
-					})
+					}))
 				GameData.psychic_duel_current_round += 1
 				GameData.save_profile()
 				var next_enemy_desc = "Mew Místico" if cur_round == 1 else "Mewtwo Enfurecido (Boss 65 HP)"
@@ -4873,12 +4893,22 @@ func _resolve_battle_victory() -> void:
 			else:
 				GameData.celestial_flight_player_team_state.clear()
 				for p in player_team:
-					GameData.celestial_flight_player_team_state.append({
+					GameData.celestial_flight_player_team_state.append(GameData.normalize_campaign_pokemon_state({
 						"id": p.id,
+						"name": p.name,
+						"stage": p.stage,
+						"type": p.type,
+						"speed": p.speed,
+						"texture_path": p.texture_path,
 						"current_hp": max(0, p.current_hp),
 						"max_hp": p.max_hp,
+						"current_exp": int(p.get("current_exp", 0)),
+						"max_exp": GameData.get_pokemon_required_exp(p.id),
+						"burn_turns": int(p.get("burn_turns", 0)),
+						"is_poisoned": bool(p.get("is_poisoned", false)),
+						"is_flinched": false,
 						"held_item": p.held_item
-					})
+					}))
 				GameData.celestial_flight_current_round += 1
 				GameData.save_profile()
 				var next_enemy_desc = "Trío de Aves Legendarias (Articuno, Zapdos y Moltres)" if cur_round == 1 else "Señores Celestiales: Lugia & Ho-Oh (Bosses)"
@@ -4911,12 +4941,22 @@ func _resolve_battle_victory() -> void:
 			else:
 				GameData.primal_call_player_team_state.clear()
 				for p in player_team:
-					GameData.primal_call_player_team_state.append({
+					GameData.primal_call_player_team_state.append(GameData.normalize_campaign_pokemon_state({
 						"id": p.id,
+						"name": p.name,
+						"stage": p.stage,
+						"type": p.type,
+						"speed": p.speed,
+						"texture_path": p.texture_path,
 						"current_hp": max(0, p.current_hp),
 						"max_hp": p.max_hp,
+						"current_exp": int(p.get("current_exp", 0)),
+						"max_exp": GameData.get_pokemon_required_exp(p.id),
+						"burn_turns": int(p.get("burn_turns", 0)),
+						"is_poisoned": bool(p.get("is_poisoned", false)),
+						"is_flinched": false,
 						"held_item": p.held_item
-					})
+					}))
 				GameData.primal_call_current_round += 1
 				GameData.save_profile()
 				var next_enemy_desc = "Team Aqua" if cur_round == 1 else ("Dúo Primigenio: Kyogre & Groudon" if cur_round == 2 else "Señores del Cosmos: Rayquaza & Deoxys (Boss Final)")

@@ -6233,14 +6233,21 @@ func update_campaign_ui() -> void:
 		card_hbox.add_theme_constant_override("separation", 8)
 		item_panel.add_child(card_hbox)
 		
+		var p_cat_entry = GameData.pokemon_catalog.get(int(p.get("id", -1)), {})
+		var p_name = str(p.get("name", p_cat_entry.get("name", "Unknown")))
+		var p_type = str(p.get("type", p_cat_entry.get("type", "NORMAL")))
+		var p_stage = str(p.get("stage", p_cat_entry.get("stage", "Basic")))
+		var p_cur_hp = int(p.get("current_hp", 0))
+		var p_max_hp = max(1, int(p.get("max_hp", p_cat_entry.get("hp", 20))))
+
 		# 1. Sprite thumbnail
 		var thumb_rect = TextureRect.new()
 		thumb_rect.custom_minimum_size = Vector2(52, 52)
 		thumb_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		thumb_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		var p_tex = GameData.get_pokemon_texture(p.get("texture_path", ""))
+		var p_tex = GameData.get_pokemon_texture(str(p.get("texture_path", p_cat_entry.get("texture_path", ""))))
 		if p_tex: thumb_rect.texture = p_tex
-		if p["current_hp"] <= 0:
+		if p_cur_hp <= 0:
 			thumb_rect.modulate = Color(0.45, 0.45, 0.45, 0.70)
 		card_hbox.add_child(thumb_rect)
 		
@@ -6265,7 +6272,6 @@ func update_campaign_ui() -> void:
 			role_badge.add_theme_color_override("font_color", Color("#80DEEA"))
 		top_row.add_child(role_badge)
 		
-		var p_cat_entry = GameData.pokemon_catalog.get(int(p["id"]), {})
 		var p_tier = str(p.get("tier", p_cat_entry.get("tier", "C"))).strip_edges().to_upper()
 		if p_tier == "": p_tier = "C"
 		var tier_badge = Label.new()
@@ -6278,17 +6284,17 @@ func update_campaign_ui() -> void:
 		type_ico.custom_minimum_size = Vector2(16, 16)
 		type_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		type_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		type_ico.texture = GameData.get_type_icon_texture(p["type"])
+		type_ico.texture = GameData.get_type_icon_texture(p_type)
 		top_row.add_child(type_ico)
 		
 		var top_lbl = Label.new()
-		top_lbl.text = p["name"]
+		top_lbl.text = p_name
 		top_lbl.add_theme_font_size_override("font_size", 12)
 		top_lbl.add_theme_color_override("font_color", Color("#E2E8F0"))
 		top_row.add_child(top_lbl)
 		
 		var stage_lbl = Label.new()
-		stage_lbl.text = "• %s" % p["stage"]
+		stage_lbl.text = "• %s" % p_stage
 		stage_lbl.add_theme_font_size_override("font_size", 10)
 		stage_lbl.add_theme_color_override("font_color", Color("#90A4AE"))
 		top_row.add_child(stage_lbl)
@@ -6311,8 +6317,8 @@ func update_campaign_ui() -> void:
 		var hp_bar = ProgressBar.new()
 		hp_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		hp_bar.custom_minimum_size = Vector2(0, 8)
-		hp_bar.max_value = max(1, p["max_hp"])
-		hp_bar.value = p["current_hp"]
+		hp_bar.max_value = p_max_hp
+		hp_bar.value = p_cur_hp
 		hp_bar.show_percentage = false
 		
 		var hp_bg = StyleBoxFlat.new()
@@ -6322,7 +6328,7 @@ func update_campaign_ui() -> void:
 		hp_bg.set_corner_radius_all(3)
 		hp_bar.add_theme_stylebox_override("background", hp_bg)
 		
-		var ratio = float(p["current_hp"]) / float(max(1, p["max_hp"]))
+		var ratio = float(p_cur_hp) / float(p_max_hp)
 		var fill_color = Color("#58d858")
 		var highlight = Color("#88f888")
 		if ratio <= 0.2:
@@ -6340,7 +6346,7 @@ func update_campaign_ui() -> void:
 		hp_row.add_child(hp_bar)
 		
 		var hp_lbl = Label.new()
-		hp_lbl.text = "%d / %d HP" % [p["current_hp"], p["max_hp"]]
+		hp_lbl.text = "%d / %d HP" % [p_cur_hp, p_max_hp]
 		hp_lbl.add_theme_font_size_override("font_size", 10)
 		hp_lbl.add_theme_color_override("font_color", Color("#E2E8F0"))
 		hp_row.add_child(hp_lbl)
@@ -6418,7 +6424,7 @@ func update_campaign_ui() -> void:
 		status_row.add_theme_constant_override("separation", 6)
 		var stat_lbl = Label.new()
 		stat_lbl.add_theme_font_size_override("font_size", 10)
-		if p["current_hp"] <= 0:
+		if p_cur_hp <= 0:
 			top_lbl.modulate = Color(0.6, 0.6, 0.6)
 			stat_lbl.text = "💀 Fainted (Needs Revive)"
 			stat_lbl.add_theme_color_override("font_color", Color("#EF5350"))
@@ -6472,8 +6478,6 @@ func update_campaign_ui() -> void:
 		card_btns_vbox.add_child(btn_status)
 		
 		# 3.1.5 Quick Heal / Revive Button if damaged
-		var p_cur_hp = int(p.get("current_hp", 0))
-		var p_max_hp = int(p.get("max_hp", 1))
 		var c_inv = GameData.get_active_campaign_inventory()
 		var has_heals = (c_inv.get("potion", 0) > 0 or c_inv.get("super_potion", 0) > 0 or c_inv.get("hyper_potion", 0) > 0 or c_inv.get("revive", 0) > 0)
 		if p_cur_hp < p_max_hp and has_heals:
@@ -6518,7 +6522,7 @@ func update_campaign_ui() -> void:
 			order_hbox.add_theme_constant_override("separation", 4)
 			order_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			var cur_idx = i
-			var is_fainted = (p["current_hp"] <= 0)
+			var is_fainted = (p_cur_hp <= 0)
 			
 			if is_leader:
 				var btn_demote = Button.new()
@@ -6732,11 +6736,11 @@ func _setup_camp_modals() -> void:
 		var sc_idx = status_card.get_index()
 		camp_box.move_child(camp_toolbar, sc_idx + 1)
 		
-	# Disable horizontal/vertical scrollbars on TeamScroll permanently
+	# Disable horizontal scrollbar; enable vertical scrolling with hidden scrollbars on TeamScroll
 	var team_scroll = camp_box.get_node_or_null("TeamScroll")
 	if team_scroll is ScrollContainer:
 		team_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-		team_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		team_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 		var hbar = team_scroll.get_h_scroll_bar()
 		if hbar:
 			hbar.visible = false
@@ -7660,6 +7664,13 @@ func _show_camp_bag_targets(item_id: String) -> void:
 		var p = team[i]
 		var pkmn_idx = i
 		
+		var p_cat = GameData.pokemon_catalog.get(int(p.get("id", -1)), {})
+		var p_name = str(p.get("name", p_cat.get("name", "Unknown")))
+		var p_stage = str(p.get("stage", p_cat.get("stage", "Basic")))
+		var p_type = str(p.get("type", p_cat.get("type", "NORMAL")))
+		var p_cur_hp = int(p.get("current_hp", 0))
+		var p_max_hp = max(1, int(p.get("max_hp", p_cat.get("hp", 20))))
+
 		var panel = PanelContainer.new()
 		var p_sb = StyleBoxFlat.new()
 		p_sb.bg_color = Color(0.07, 0.10, 0.16, 0.95)
@@ -7681,9 +7692,9 @@ func _show_camp_bag_targets(item_id: String) -> void:
 		thumb.custom_minimum_size = Vector2(44, 44)
 		thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		var tex = GameData.get_pokemon_texture(p.get("texture_path", ""))
+		var tex = GameData.get_pokemon_texture(str(p.get("texture_path", p_cat.get("texture_path", ""))))
 		if tex: thumb.texture = tex
-		if p["current_hp"] <= 0:
+		if p_cur_hp <= 0:
 			thumb.modulate = Color(0.5, 0.5, 0.5, 0.7)
 		hbox.add_child(thumb)
 		
@@ -7701,11 +7712,11 @@ func _show_camp_bag_targets(item_id: String) -> void:
 		type_ico.custom_minimum_size = Vector2(16, 16)
 		type_ico.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		type_ico.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		type_ico.texture = GameData.get_type_icon_texture(p["type"])
+		type_ico.texture = GameData.get_type_icon_texture(p_type)
 		head_row.add_child(type_ico)
 		
 		var name_lbl = Label.new()
-		name_lbl.text = "%dº %s [%s]" % [i + 1, p["name"], p["stage"]]
+		name_lbl.text = "%dº %s [%s]" % [i + 1, p_name, p_stage]
 		name_lbl.add_theme_font_size_override("font_size", 12)
 		name_lbl.add_theme_color_override("font_color", Color.WHITE)
 		head_row.add_child(name_lbl)
@@ -7718,13 +7729,13 @@ func _show_camp_bag_targets(item_id: String) -> void:
 		var hp_bar = ProgressBar.new()
 		hp_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		hp_bar.custom_minimum_size = Vector2(0, 10)
-		hp_bar.max_value = max(1, p["max_hp"])
-		hp_bar.value = p["current_hp"]
+		hp_bar.max_value = p_max_hp
+		hp_bar.value = p_cur_hp
 		hp_bar.show_percentage = false
 		hp_row.add_child(hp_bar)
 		
 		var hp_lbl = Label.new()
-		hp_lbl.text = "%d / %d HP" % [p["current_hp"], p["max_hp"]]
+		hp_lbl.text = "%d / %d HP" % [p_cur_hp, p_max_hp]
 		hp_lbl.add_theme_font_size_override("font_size", 11)
 		hp_lbl.add_theme_color_override("font_color", Color("#E0E0E0"))
 		hp_row.add_child(hp_lbl)
@@ -7732,7 +7743,7 @@ func _show_camp_bag_targets(item_id: String) -> void:
 		# Status indicator
 		var stat_lbl = Label.new()
 		stat_lbl.add_theme_font_size_override("font_size", 10)
-		if p["current_hp"] <= 0:
+		if p_cur_hp <= 0:
 			stat_lbl.text = "💀 Fainted"
 			stat_lbl.add_theme_color_override("font_color", Color("#EF5350"))
 		elif int(p.get("burn_turns", 0)) > 0 or bool(p.get("is_poisoned", false)) or bool(p.get("is_paralyzed", false)) or bool(p.get("is_frozen", false)) or int(p.get("is_asleep_turns", 0)) > 0 or bool(p.get("is_confused", false)):
@@ -7763,37 +7774,37 @@ func _show_camp_bag_targets(item_id: String) -> void:
 			can_apply = false
 			btn_text = "No Stock"
 		elif item_id == "potion":
-			if p["current_hp"] <= 0:
+			if p_cur_hp <= 0:
 				can_apply = false
 				btn_text = "Fainted"
-			elif p["current_hp"] >= p["max_hp"]:
+			elif p_cur_hp >= p_max_hp:
 				can_apply = false
 				btn_text = "Full HP"
 			else:
 				can_apply = true
 				btn_text = "Use (+25 HP)"
 		elif item_id == "super_potion":
-			if p["current_hp"] <= 0:
+			if p_cur_hp <= 0:
 				can_apply = false
 				btn_text = "Fainted"
-			elif p["current_hp"] >= p["max_hp"]:
+			elif p_cur_hp >= p_max_hp:
 				can_apply = false
 				btn_text = "Full HP"
 			else:
 				can_apply = true
 				btn_text = "Use (+60 HP)"
 		elif item_id == "hyper_potion":
-			if p["current_hp"] <= 0:
+			if p_cur_hp <= 0:
 				can_apply = false
 				btn_text = "Fainted"
-			elif p["current_hp"] >= p["max_hp"]:
+			elif p_cur_hp >= p_max_hp:
 				can_apply = false
 				btn_text = "Full HP"
 			else:
 				can_apply = true
 				btn_text = "Use (Full HP)"
 		elif item_id == "poke_flute":
-			if p["current_hp"] <= 0:
+			if p_cur_hp <= 0:
 				can_apply = false
 				btn_text = "Fainted"
 			elif int(p.get("is_asleep_turns", 0)) <= 0:
@@ -7803,7 +7814,7 @@ func _show_camp_bag_targets(item_id: String) -> void:
 				can_apply = true
 				btn_text = "Awaken 🎶"
 		elif item_id == "revive":
-			if p["current_hp"] > 0:
+			if p_cur_hp > 0:
 				can_apply = false
 				btn_text = "Not Fainted"
 			else:
@@ -7814,7 +7825,7 @@ func _show_camp_bag_targets(item_id: String) -> void:
 			if not has_stat:
 				can_apply = false
 				btn_text = "No Status"
-			elif p["current_hp"] <= 0:
+			elif p_cur_hp <= 0:
 				can_apply = false
 				btn_text = "Fainted"
 			else:
@@ -7895,11 +7906,13 @@ func _show_camp_bag_held_item_targets(item_id: String) -> void:
 		hbox.add_theme_constant_override("separation", 10)
 		panel.add_child(hbox)
 		
+		var p_cat = GameData.pokemon_catalog.get(int(p.get("id", -1)), {})
+		var p_name = str(p.get("name", p_cat.get("name", "Unknown")))
 		var spr = TextureRect.new()
 		spr.custom_minimum_size = Vector2(40, 40)
 		spr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		spr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		var p_tex = GameData.get_pokemon_texture(p.get("texture_path", ""))
+		var p_tex = GameData.get_pokemon_texture(str(p.get("texture_path", p_cat.get("texture_path", ""))))
 		if p_tex: spr.texture = p_tex
 		hbox.add_child(spr)
 		
@@ -7910,7 +7923,7 @@ func _show_camp_bag_held_item_targets(item_id: String) -> void:
 		
 		var name_lbl = Label.new()
 		var role_tag = "👑 Líder" if i == 0 else "🔄 Banca %d" % i
-		name_lbl.text = "%s • %s" % [p["name"], role_tag]
+		name_lbl.text = "%s • %s" % [p_name, role_tag]
 		name_lbl.add_theme_font_size_override("font_size", 13)
 		name_lbl.add_theme_color_override("font_color", Color.WHITE)
 		info_vbox.add_child(name_lbl)

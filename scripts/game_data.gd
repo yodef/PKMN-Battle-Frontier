@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.7.44"
+const GAME_VERSION: String = "v0.7.45"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -7622,22 +7622,69 @@ func get_active_campaign_inventory() -> Dictionary:
 		return primal_call_inventory
 	return campaign_inventory
 
+func normalize_campaign_pokemon_state(p: Dictionary) -> Dictionary:
+	var cid = int(p.get("id", -1))
+	var cat = pokemon_catalog.get(cid, {})
+	var cat_hp = int(cat.get("hp", 20))
+	var max_hp = int(p.get("max_hp", cat_hp))
+	if max_hp <= 0: max_hp = cat_hp
+	
+	p["id"] = cid
+	if not p.has("name") or str(p.get("name", "")).strip_edges() == "":
+		p["name"] = str(cat.get("name", "Unknown"))
+	if not p.has("stage") or str(p.get("stage", "")).strip_edges() == "":
+		p["stage"] = str(cat.get("stage", "Basic"))
+	if not p.has("type") or str(p.get("type", "")).strip_edges() == "":
+		p["type"] = str(cat.get("type", "NORMAL"))
+	if not p.has("speed"):
+		p["speed"] = int(cat.get("speed", 1))
+	if not p.has("texture_path") or str(p.get("texture_path", "")).strip_edges() == "":
+		p["texture_path"] = str(cat.get("texture_path", ""))
+	if not p.has("tier") or str(p.get("tier", "")).strip_edges() == "":
+		p["tier"] = str(cat.get("tier", "C"))
+	if not p.has("max_hp"):
+		p["max_hp"] = max_hp
+	if not p.has("current_hp"):
+		p["current_hp"] = max_hp
+	else:
+		p["current_hp"] = clamp(int(p["current_hp"]), 0, int(p["max_hp"]))
+	if not p.has("current_exp"):
+		p["current_exp"] = 0
+	if not p.has("max_exp"):
+		p["max_exp"] = get_pokemon_required_exp(cid)
+	if not p.has("burn_turns"):
+		p["burn_turns"] = 0
+	if not p.has("is_poisoned"):
+		p["is_poisoned"] = false
+	if not p.has("is_flinched"):
+		p["is_flinched"] = false
+	if not p.has("held_item"):
+		p["held_item"] = ""
+	return p
+
 func get_active_campaign_team_state() -> Array:
+	var team: Array = []
 	if campaign_submode == "ADVENTURE":
-		return adventure_player_team_state
+		team = adventure_player_team_state
 	elif campaign_submode == "CHAOS":
-		return chaos_player_team_state
+		team = chaos_player_team_state
 	elif campaign_submode == "CHAMPIONSHIP":
-		return championship_player_team_state
+		team = championship_player_team_state
 	elif campaign_submode == "LAKE_OF_RAGE":
-		return []
+		team = []
 	elif campaign_submode == "PSYCHIC_DUEL":
-		return psychic_duel_player_team_state
+		team = psychic_duel_player_team_state
 	elif campaign_submode == "CELESTIAL_FLIGHT":
-		return celestial_flight_player_team_state
+		team = celestial_flight_player_team_state
 	elif campaign_submode == "PRIMAL_CALL":
-		return primal_call_player_team_state
-	return campaign_player_team_state
+		team = primal_call_player_team_state
+	else:
+		team = campaign_player_team_state
+
+	for elem in team:
+		if elem is Dictionary:
+			normalize_campaign_pokemon_state(elem)
+	return team
 
 func swap_campaign_team_members(idx_a: int, idx_b: int) -> bool:
 	var team = get_active_campaign_team_state()
@@ -8529,12 +8576,12 @@ func init_psychic_duel_run(chosen_ids: Array, held_items: Array = []) -> void:
 		var h_item = ""
 		if i < held_items.size():
 			h_item = str(held_items[i])
-		psychic_duel_player_team_state.append({
+		psychic_duel_player_team_state.append(normalize_campaign_pokemon_state({
 			"id": pid,
 			"current_hp": max_hp,
 			"max_hp": max_hp,
 			"held_item": h_item
-		})
+		}))
 	save_profile()
 
 func get_psychic_duel_round_rival_team(round_num: int) -> Array[int]:
@@ -8600,12 +8647,12 @@ func init_celestial_flight_run(chosen_ids: Array, held_items: Array = []) -> voi
 		var h_item = ""
 		if i < held_items.size():
 			h_item = str(held_items[i])
-		celestial_flight_player_team_state.append({
+		celestial_flight_player_team_state.append(normalize_campaign_pokemon_state({
 			"id": pid,
 			"current_hp": max_hp,
 			"max_hp": max_hp,
 			"held_item": h_item
-		})
+		}))
 	save_profile()
 
 func get_celestial_flight_round_rival_team(round_num: int) -> Array[int]:
@@ -8689,12 +8736,12 @@ func init_primal_call_run(chosen_ids: Array, held_items: Array = []) -> void:
 		var h_item = ""
 		if i < held_items.size():
 			h_item = str(held_items[i])
-		primal_call_player_team_state.append({
+		primal_call_player_team_state.append(normalize_campaign_pokemon_state({
 			"id": pid,
 			"current_hp": max_hp,
 			"max_hp": max_hp,
 			"held_item": h_item
-		})
+		}))
 	save_profile()
 
 func get_primal_call_round_rival_team(round_num: int) -> Array[int]:
