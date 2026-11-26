@@ -2315,8 +2315,8 @@ func start_player_turn() -> void:
 					move_lines.append("• [b]%s[/b]: Deals %d DMG. (Cost: %d ⚡)" % [m_name, m_dmg, m_cost])
 			var moves_desc = "\n".join(move_lines)
 			var type_hint = GameData.tr_text(
-				"⭐ [color=yellow][b]Type Weakness (x2 DMG):[/b][/color] %s is weak to %s attacks! Using your effective move triggers the Weakness multiplier for [b]DOUBLE DAMAGE (x2)[/b]!" % [e.name, p.type],
-				"⭐ [color=yellow][b]Debilidad de Tipo (x2 DMG):[/b][/color] ¡%s es débil a los ataques de tipo %s! ¡Usar tu ataque supereficaz activa el multiplicador de debilidad de [b]DOBLE DAÑO (x2)[/b]!" % [e.name, p.type]
+				"⭐ [color=yellow][b]Type Weakness (x2 DMG):[/b][/color] %s is weak to %s attacks! Using your effective move triggers the Weakness multiplier for [b]DOUBLE DAMAGE (x2)[/b]!" % [e.name, e.weakness],
+				"⭐ [color=yellow][b]Debilidad de Tipo (x2 DMG):[/b][/color] ¡%s es débil a los ataques de tipo %s! ¡Usar tu ataque supereficaz activa el multiplicador de debilidad de [b]DOBLE DAÑO (x2)[/b]!" % [e.name, e.weakness]
 			)
 			_show_tutorial_callout(
 				"step3",
@@ -2636,8 +2636,7 @@ func is_pokemon_at_elemental_disadvantage(defender, attacker) -> bool:
 	if not defender or not attacker:
 		return false
 	if defender.weakness != "" and defender.weakness != "NONE":
-		if GameData.types_match(defender.weakness, attacker.type):
-			return true
+		# La ventaja elemental la determina el tipo del Move, NO el tipo del atacante
 		for m in attacker.moves:
 			if m and GameData.types_match(defender.weakness, m.type):
 				return true
@@ -2647,8 +2646,7 @@ func is_pokemon_weak_to(defender, attacker) -> bool:
 	if not defender or not attacker:
 		return false
 	if defender.weakness != "" and defender.weakness != "NONE":
-		if GameData.types_match(defender.weakness, attacker.type):
-			return true
+		# La debilidad la activa el tipo del Move, NO el tipo del atacante
 		for m in attacker.moves:
 			if m and GameData.types_match(defender.weakness, m.type):
 				return true
@@ -2802,14 +2800,14 @@ func execute_enemy_ai() -> void:
 					for c_idx in safe_candidates:
 						var bp = enemy_team[c_idx]
 						var score = 0
-						if GameData.types_match(p.weakness, bp.type):
-							score += 3
 						for m in bp.moves:
 							if m and GameData.types_match(p.weakness, m.type):
+								score += 5
+								break
+						for pm in p.moves:
+							if pm and GameData.is_attack_resisted(bp.type, bp.resistant, pm.type):
 								score += 2
 								break
-						if GameData.is_attack_resisted(bp.type, bp.resistant, p.type):
-							score += 2
 						score += int(bp.current_hp / 10)
 						if score > best_score:
 							best_score = score
@@ -9025,29 +9023,26 @@ func _update_type_chart_matchup() -> void:
 		var base_sb: StyleBoxFlat = c_data["base_sb"]
 		btn.add_theme_stylebox_override("normal", base_sb)
 		
-	# Resaltar la celda donde el jugador ataca al rival (P -> E)
-	var pe_key = "%s_%s" % [p_type, e_type]
-	if type_chart_cell_buttons.has(pe_key):
-		var pe_data = type_chart_cell_buttons[pe_key]
-		var pe_btn: Button = pe_data["btn"]
-		var pe_sb: StyleBoxFlat = pe_data["base_sb"].duplicate()
-		pe_sb.border_color = Color("#ffd700") # Bright gold
-		pe_sb.set_border_width_all(2)
-		pe_btn.add_theme_stylebox_override("normal", pe_sb)
-		
-		var eff_text = "SUPER EFFECTIVE! (x2 DMG)" if pe_data["is_weak"] else ("RESISTED! (x0.5 DMG)" if pe_data["is_resist"] else "Standard Neutral Damage")
-		if pe_data.get("is_same_type_resist", false):
-			eff_text += " (Natural same-type)"
-		type_chart_detail_lbl.text = "🎯 [b]%s[/b] (%s) attacking [b]%s[/b] (%s): [color=#ffd700]%s[/color]" % [
-			active_p.name, TYPE_NAMES_EN.get(p_type, p_type), active_e.name, TYPE_NAMES_EN.get(e_type, e_type), eff_text
+	# Resaltar en la tabla los movimientos del jugador según el tipo del Move (Move Type -> Defender Type)
+	var move_hints: Array[String] = []
+	for m in active_p.moves:
+		if not m:
+			continue
+		var m_type = GameData.normalize_type_key(str(m.type))
+		var key = "%s_%s" % [m_type, e_type]
+		if type_chart_cell_buttons.has(key):
+			var c_data = type_chart_cell_buttons[key]
+			var btn: Button = c_data["btn"]
+			var sb: StyleBoxFlat = c_data["base_sb"].duplicate()
+			sb.border_color = Color("#ffd700") # Bright gold
+			sb.set_border_width_all(2)
+			btn.add_theme_stylebox_override("normal", sb)
+		var is_weak = GameData.types_match(active_e.weakness, m.type)
+		var is_res = GameData.is_attack_resisted(active_e.type, active_e.resistant, m.type)
+		var eff_tag = "[color=#69f0ae]SUPER EFFECTIVE! (x2 DMG)[/color]" if is_weak else ("[color=#ff8a80]RESISTED (x0.5 DMG)[/color]" if is_res else "[color=#ffffff]Neutral (x1.0 DMG)[/color]")
+		move_hints.append("• [b]%s[/b] (%s): %s" % [m.name, TYPE_NAMES_EN.get(m_type, m_type), eff_tag])
+	
+	if not move_hints.is_empty():
+		type_chart_detail_lbl.text = "🎯 [b]%s's Moves vs %s (%s):[/b]\n%s" % [
+			active_p.name, active_e.name, TYPE_NAMES_EN.get(e_type, e_type), "\n".join(move_hints)
 		]
-		
-	# Resaltar la celda donde el rival ataca al jugador (E -> P)
-	var ep_key = "%s_%s" % [e_type, p_type]
-	if type_chart_cell_buttons.has(ep_key) and ep_key != pe_key:
-		var ep_data = type_chart_cell_buttons[ep_key]
-		var ep_btn: Button = ep_data["btn"]
-		var ep_sb: StyleBoxFlat = ep_data["base_sb"].duplicate()
-		ep_sb.border_color = Color("#00e5ff") # Electric cyan
-		ep_sb.set_border_width_all(2)
-		ep_btn.add_theme_stylebox_override("normal", ep_sb)

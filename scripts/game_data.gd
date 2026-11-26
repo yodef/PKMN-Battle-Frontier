@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.7.45"
+const GAME_VERSION: String = "v0.7.46"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---
@@ -4387,7 +4387,7 @@ var global_type_chart: Dictionary = {
 	"FIRE": { "weakness": "WATER", "resistance": "GRASS" },
 	"GRASS": { "weakness": "FIRE", "resistance": "GROUND" },
 	"GROUND": { "weakness": "GRASS", "resistance": "ELECTRIC" },
-	"NORMAL": { "weakness": "FIGHTING", "resistance": "VARIABLE" },
+	"NORMAL": { "weakness": "FIGHTING", "resistance": "NONE" },
 	"PSYCHIC": { "weakness": "DARK", "resistance": "FIGHTING" },
 	"WATER": { "weakness": "ELECTRIC", "resistance": "FIRE" }
 }
@@ -4408,7 +4408,8 @@ func get_effective_resistances(pkmn_type: String, pkmn_resistant: String) -> Arr
 	var list: Array[String] = []
 	if pkmn_resistant != "" and pkmn_resistant != "NONE" and pkmn_resistant != "VARIABLE":
 		var norm_r = normalize_type_key(pkmn_resistant)
-		if norm_r != "" and norm_r != "NONE" and not list.has(norm_r):
+		# NORMAL nunca resiste NORMAL ni defensiva ni ofensivamente
+		if norm_r != "" and norm_r != "NONE" and not (norm_type == "NORMAL" and norm_r == "NORMAL") and not list.has(norm_r):
 			list.append(norm_r)
 	# Resistencia por naturaleza: mismo tipo excepto NORMAL
 	if norm_type != "" and norm_type != "NONE" and norm_type != "NORMAL" and not list.has(norm_type):
@@ -4418,6 +4419,10 @@ func get_effective_resistances(pkmn_type: String, pkmn_resistant: String) -> Arr
 func is_attack_resisted(def_type: String, def_resistant: String, atk_type: String) -> bool:
 	var norm_atk = normalize_type_key(atk_type)
 	if norm_atk == "" or norm_atk == "NONE":
+		return false
+	var norm_def = normalize_type_key(def_type)
+	# Tipo NORMAL es completamente neutral consigo mismo (nunca resiste ataques NORMAL)
+	if norm_def == "NORMAL" and norm_atk == "NORMAL":
 		return false
 	var resists = get_effective_resistances(def_type, def_resistant)
 	return resists.has(norm_atk)
@@ -5425,7 +5430,7 @@ func get_pokemon_required_exp(pkmn_id: int) -> int:
 	if st == "basic":
 		var target1_id = get_evolution_target_id(pkmn_id)
 		var target2_id = get_evolution_target_id(target1_id) if target1_id != -1 else -1
-		return 50 if target2_id != -1 else 80
+		return 35 if target2_id != -1 else 80
 	elif st == "stage 1":
 		return 120
 	return 0
