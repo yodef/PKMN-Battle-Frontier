@@ -1,7 +1,7 @@
 extends Node
 
 # --- VERSION DEL JUEGO & ACTUALIZACIONES ---
-const GAME_VERSION: String = "v0.7.41"
+const GAME_VERSION: String = "v0.7.43"
 var update_direct_fallback_url: String = ""
 
 # --- CLASES DE DATOS ---

@@ -2068,7 +2068,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		if actor.name == "Crystal Onix":
 			register_boss_damage(bdmg)
 			actor.current_hp = actor.max_hp
-		log_action("🔥 [color=orange]%s takes %d Burn damage![/color]" % [actor.name, bdmg], st_side)
+		log_action("🔥 [color=orange]" + (GameData.tr_text("%s takes %d Burn damage!", "¡%s recibe %d de daño por Quemadura!") % [actor.name, bdmg]) + "[/color]", st_side)
 		var target_overlay = player_status_overlay if actor == get_active_player() else enemy_status_overlay
 		if target_overlay:
 			target_overlay.trigger_burn_effect()
@@ -2090,7 +2090,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		# Fatigue recharge: only +1 Energy during forced rest to prevent infinite 25 DMG cycling
 		var rec = min(1, actor.max_energy - actor.current_energy)
 		actor.current_energy += rec
-		log_action("😴 [b]%s[/b] [color=cyan]must rest this round and recharged +%d Energy (⚡ %d/%d).[/color]" % [actor.name, rec, actor.current_energy, actor.max_energy], st_side)
+		log_action("😴 [b]%s[/b] [color=cyan]" + (GameData.tr_text("must rest this round and recharged +%d Energy (⚡ %d/%d).", "debe descansar esta ronda y recuperó +%d de Energía (⚡ %d/%d).") % [actor.name, rec, actor.current_energy, actor.max_energy]) + "[/color]", st_side)
 		if rec > 0:
 			GameData.play_combat_sfx("power up.wav")
 			var actor_vis = player_card_img if is_player else enemy_card_img
@@ -2142,7 +2142,7 @@ func _process_turn_start_status(actor, opponent, actor_img: Node, opponent_img: 
 		actor.is_flinched = false
 		var rec = min(actor.recover_amount, actor.max_energy - actor.current_energy)
 		actor.current_energy += rec
-		log_action("💫 [b]%s[/b] [color=yellow]flinched and was forced to Recharge! +%d Energy (⚡ %d/%d).[/color]" % [actor.name, rec, actor.current_energy, actor.max_energy], st_side)
+		log_action("💫 [b]%s[/b] [color=yellow]" + (GameData.tr_text("flinched and was forced to Recharge! +%d Energy (⚡ %d/%d).", "¡retrocedió y fue forzado a Recargar! +%d de Energía (⚡ %d/%d).") % [actor.name, rec, actor.current_energy, actor.max_energy]) + "[/color]", st_side)
 		if rec > 0:
 			GameData.play_combat_sfx("power up.wav")
 			var actor_vis = player_card_img if is_player else enemy_card_img
@@ -2166,13 +2166,13 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 	if actor.is_asleep_turns > 0:
 		actor.is_asleep_turns -= 1
 		if actor.is_asleep_turns > 0:
-			log_action("💤 [b]%s[/b] [color=lightblue]is fast asleep and cannot move! (%d rounds remaining)[/color]" % [actor.name, actor.is_asleep_turns], st_side)
+			log_action("💤 [b]%s[/b] [color=lightblue]" + (GameData.tr_text("is fast asleep and cannot move! (%d rounds remaining)", "¡está profundamente dormido y no puede atacar! (%d rondas restantes)") % [actor.name, actor.is_asleep_turns]) + "[/color]", st_side)
 			update_ui()
 			_end_failed_action_turn(is_player)
 			return false
 		else:
 			actor.immune_sleep_rounds = 1
-			log_action("✨ [b]%s[/b] [color=green]woke up from sleep and gained 1 round Sleep immunity![/color]" % actor.name, st_side)
+			log_action("✨ [b]%s[/b] [color=green]" + (GameData.tr_text("woke up from sleep and gained 1 round Sleep immunity!", "¡se despertó del sueño y obtuvo 1 ronda de inmunidad al sueño!") % actor.name) + "[/color]", st_side)
 			update_ui()
 
 	# 2. Freeze: Thaw check (20% natural thaw or Fire hit)
@@ -2181,10 +2181,10 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 		if randf() < 0.20:
 			actor.is_frozen = false
 			actor.frozen_turns = 0
-			log_action("🔥 [b]%s[/b] [color=orange]thawed out and can move![/color]" % actor.name, st_side)
+			log_action("🔥 [b]%s[/b] [color=orange]" + (GameData.tr_text("thawed out and can move!", "¡se descongeló y puede atacar!") % actor.name) + "[/color]", st_side)
 			update_ui()
 		else:
-			log_action("❄️ [b]%s[/b] [color=cyan]is frozen solid and cannot move![/color]" % actor.name, st_side)
+			log_action("❄️ [b]%s[/b] [color=cyan]" + (GameData.tr_text("is frozen solid and cannot move!", "¡está completamente congelado y no puede atacar!") % actor.name) + "[/color]", st_side)
 			update_ui()
 			_end_failed_action_turn(is_player)
 			return false
@@ -2192,7 +2192,7 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 	# 3. Paralysis: 25% chance unable to act & -50% Speed
 	if actor.is_paralyzed:
 		if randf() < 0.25:
-			log_action("⚡ [b]%s[/b] [color=yellow]is fully paralyzed! It cannot move![/color]" % actor.name, st_side)
+			log_action("⚡ [b]%s[/b] [color=yellow]" + (GameData.tr_text("is fully paralyzed! It cannot move!", "¡está totalmente paralizado y no puede atacar!") % actor.name) + "[/color]", st_side)
 			var target_overlay = player_status_overlay if (actor == get_active_player()) else enemy_status_overlay
 			if target_overlay:
 				target_overlay.trigger_paralyze_effect(1.4)
@@ -2200,7 +2200,7 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 			_end_failed_action_turn(is_player)
 			return false
 		else:
-			log_action("⚡ [b]%s[/b] [color=yellow]is paralyzed but pushed through the paralysis![/color]" % actor.name, st_side)
+			log_action("⚡ [b]%s[/b] [color=yellow]" + (GameData.tr_text("is paralyzed but pushed through the paralysis!", "¡está paralizado pero logró sobreponerse a la parálisis!") % actor.name) + "[/color]", st_side)
 			update_ui()
 
 	# 4. Confusion: 35% snap out or max 3 turns, else self-inflicts 2 DMG
@@ -2209,12 +2209,12 @@ func _check_action_impeding_status(actor, is_player: bool) -> bool:
 		if actor.confused_turns >= 3 or randf() < 0.35:
 			actor.is_confused = false
 			actor.confused_turns = 0
-			log_action("✨ [b]%s[/b] [color=green]snapped out of confusion![/color]" % actor.name, st_side)
+			log_action("✨ [b]%s[/b] [color=green]" + (GameData.tr_text("snapped out of confusion!", "¡se libró de la confusión!") % actor.name) + "[/color]", st_side)
 			update_ui()
 		else:
 			var self_dmg = 2
 			actor.current_hp = max(0, actor.current_hp - self_dmg)
-			log_action("🌀 [b]%s[/b] [color=magenta]is confused! It hurt itself in its confusion for %d DMG! (%d/3)[/color]" % [actor.name, self_dmg, actor.confused_turns], st_side)
+			log_action("🌀 [b]%s[/b] [color=magenta]" + (GameData.tr_text("is confused! It hurt itself in its confusion for %d DMG! (%d/3)", "¡está confuso y se hirió a sí mismo en su confusión por %d DMG! (%d/3)") % [actor.name, self_dmg, actor.confused_turns]) + "[/color]", st_side)
 			var actor_img = player_card_img if (actor == get_active_player()) else enemy_card_img
 			play_damage_hit(actor_img, "NORMAL", self_dmg)
 			spawn_floating_combat_number(actor_img, -self_dmg, false)
@@ -2926,7 +2926,11 @@ func enemy_do_recover() -> void:
 			
 	var rec = min(e.recover_amount, e.max_energy - e.current_energy)
 	e.current_energy += rec
-	log_action("[b]%s[/b] used [color=cyan]Recharge[/color] and restored [b]+%d[/b] Energy (⚡ %d/%d)." % [e.name, rec, e.current_energy, e.max_energy])
+	var rec_msg = GameData.tr_text(
+		"[b]%s[/b] used [color=cyan]Recharge[/color] and restored [b]+%d[/b] Energy (⚡ %d/%d).",
+		"[b]%s[/b] usó [color=cyan]Recargar[/color] y recuperó [b]+%d[/b] de Energía (⚡ %d/%d)."
+	)
+	log_action(rec_msg % [e.name, rec, e.current_energy, e.max_energy])
 	GameData.play_combat_sfx("power up.wav")
 	spawn_floating_combat_number(enemy_card_img, rec, false, false, true)
 	update_ui()
@@ -3240,58 +3244,58 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 	if move.effect_type == "BOOST_IF_FASTER" and move.name != "Quick Attack" and is_full_energy and att_spd > def_spd:
 		var bonus = 6 if move.name == "Extreme Speed" else (4 if "+4" in move.description else 3)
 		raw_damage += bonus
-		note_text += " [color=cyan]Speed Advantage (+%d DMG)![/color]" % bonus
+		note_text += " [color=cyan]" + (GameData.tr_text("Speed Advantage (+%d DMG)!", "¡Ventaja de Velocidad (+%d DMG)!") % bonus) + "[/color]"
 
 	# Gyro Ball (BOOST_IF_SLOWER)
 	if (move.effect_type == "BOOST_IF_SLOWER" or move.name == "Gyro Ball") and is_full_energy and att_spd < def_spd:
 		raw_damage += 5
-		note_text += " [color=cyan]Gyro Ball Momentum (+5 DMG for lower Speed)![/color]"
+		note_text += " [color=cyan]" + GameData.tr_text("Gyro Ball Momentum (+5 DMG for lower Speed)!", "¡Inercia Giro Bola (+5 DMG por menor Velocidad)!") + "[/color]"
 
 	# Brine / Execution (EXECUTE)
 	if (move.effect_type == "EXECUTE" or move.name == "Brine") and is_full_energy:
 		if float(defender.current_hp) < (float(defender.max_hp) * 0.50):
 			raw_damage += 6
-			note_text += " [color=cyan]Brine Execution (+6 DMG for foe HP < 50%)![/color]"
+			note_text += " [color=cyan]" + GameData.tr_text("Brine Execution (+6 DMG for foe HP < 50%)!", "¡Ejecución Salmuera (+6 DMG por rival con HP < 50%)!") + "[/color]"
 
 	# Eruption / Water Spout (FULL_HP_POWER)
 	if (move.effect_type == "FULL_HP_POWER" or move.name in ["Eruption", "Water Spout"]) and is_full_energy:
 		var hp_ratio = float(attacker.current_hp) / float(attacker.max_hp)
 		if hp_ratio >= 0.80:
 			raw_damage += 4
-			note_text += " [color=cyan]Full HP Surge (+4 DMG for HP >= 80%)![/color]"
+			note_text += " [color=cyan]" + GameData.tr_text("Full HP Surge (+4 DMG for HP >= 80%)!", "¡Poder a Plena Salud (+4 DMG por HP >= 80%)!") + "[/color]"
 		elif hp_ratio < 0.50:
 			raw_damage = max(1, raw_damage - 4)
-			note_text += " [color=orange]Low HP Exhaustion (-4 DMG for HP < 50%)![/color]"
+			note_text += " [color=orange]" + GameData.tr_text("Low HP Exhaustion (-4 DMG for HP < 50%)!", "¡Agotamiento por Bajo HP (-4 DMG por HP < 50%)!") + "[/color]"
 
 	# Flail / Desperation (Si este PKMN tiene menos del 50% de su HP)
 	if move.effect_type == "DESPERATION" or move.name == "Flail":
 		if float(attacker.current_hp) < (float(attacker.max_hp) * 0.50):
 			var bonus_dmg = 6 if "+6" in move.description else (4 if "+4" in move.description else (3 if "+3" in move.description else 2))
 			raw_damage += bonus_dmg
-			note_text += " [color=orange]Desperation (+%d DMG for HP < 50%%)![/color]" % bonus_dmg
+			note_text += " [color=orange]" + (GameData.tr_text("Desperation (+%d DMG for HP < 50%)!", "¡Desesperación (+%d DMG por HP < 50%)!") % bonus_dmg) + "[/color]"
 
 	# Sinergias con estados negativos del rival
 	if move.effect_type == "BLAZE" and defender.burn_turns > 0:
 		var blaze_bonus = 6 if "+6" in move.description else 3
 		raw_damage += blaze_bonus
-		note_text += " [color=orange]Blaze vs Burn (+%d DMG)![/color]" % blaze_bonus
+		note_text += " [color=orange]" + (GameData.tr_text("Blaze vs Burn (+%d DMG)!", "¡Llamarada vs Quemadura (+%d DMG)!") % blaze_bonus) + "[/color]"
 	if move.effect_type == "BOOST_IF_PARALYZED" and defender.is_paralyzed:
 		raw_damage += 4
-		note_text += " [color=yellow]Bonus vs Paralyzed (+4 DMG)![/color]"
+		note_text += " [color=yellow]" + GameData.tr_text("Bonus vs Paralyzed (+4 DMG)!", "¡Bono vs Paralizado (+4 DMG)!") + "[/color]"
 	if move.effect_type == "OVERCHARGE" and defender.is_paralyzed:
 		raw_damage += 6
-		note_text += " [color=yellow]Overcharge (+6 DMG vs Paralyzed)![/color]"
+		note_text += " [color=yellow]" + GameData.tr_text("Overcharge (+6 DMG vs Paralyzed)!", "¡Sobrecarga (+6 DMG vs Paralizado)!") + "[/color]"
 	if move.effect_type == "DOUBLE_DMG" and "extra energy" in move.description.to_lower():
 		if boosted:
 			raw_damage *= 2
-			note_text += " [color=orange]Boosted Tantrum (x2 DMG)![/color]"
+			note_text += " [color=orange]" + GameData.tr_text("Boosted Tantrum (x2 DMG)!", "¡Berrinche Potenciado (x2 DMG)!") + "[/color]"
 	elif defender.is_poisoned:
 		if move.effect_type in ["DOUBLE_DMG", "SHOCK"]:
 			raw_damage *= 2
-			note_text += " [color=purple]Poison Synergy (x2 DMG)![/color]"
+			note_text += " [color=purple]" + GameData.tr_text("Poison Synergy (x2 DMG)!", "¡Sinergia Veneno (x2 DMG)!") + "[/color]"
 		elif move.effect_type == "DROWN":
 			raw_damage += 4
-			note_text += " [color=purple]Drown vs Poison (+4 DMG)![/color]"
+			note_text += " [color=purple]" + GameData.tr_text("Drown vs Poison (+4 DMG)!", "¡Ahogo vs Veneno (+4 DMG)!") + "[/color]"
 	if move.effect_type == "BOOST_CONFUSED" and defender.is_confused:
 		var conf_bonus = 4 if "+4" in move.description else 3
 		raw_damage += conf_bonus
@@ -3326,12 +3330,12 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 
 	# Golpe Crítico (CRITICAL)
 	if move.effect_type == "CRITICAL":
-		var crit_chance = 0.35 if ("35%" in move.description or move.name in ["Crabhammer", "Psycho Cut", "Blaze Kick", "Spacial Rend", "Aeroblast", "Stone Edge"]) else 0.25
+		var crit_chance = 0.35 if ("35%" in move.description or move.name in ["Crabhammer", "Psycho Cut", "Blaze Kick", "Spacial Rend", "Aeroblast", "Stone Edge", "Leaf Blade"]) else 0.25
 		if randf() < crit_chance:
 			var crit_b = max(1, int(round(float(raw_damage) * 0.50)))
 			raw_damage += crit_b
 			single_hit_crit = true
-			note_text += " [color=yellow]Critical Hit! (+50%% DMG: +%d)[/color]" % crit_b
+			note_text += " [color=yellow]" + (GameData.tr_text("Critical Hit! (+50% DMG: +%d)", "¡Golpe Crítico! (+50% DMG: +%d)") % crit_b) + "[/color]"
 
 	# Tirada de dado de Pichu Shock (Thunder Shock)
 	if ("is_pichu_shock" in move and move.is_pichu_shock):
@@ -3393,17 +3397,17 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		# Tipo estándar
 		elif GameData.types_match(defender.weakness, attack_type):
 			final_damage = int(round(float(final_damage) * WEAKNESS_MULTIPLIER))
-			note_text += " [color=yellow]It's super effective! (x2 DMG)[/color]"
+			note_text += " [color=yellow]" + GameData.tr_text("It's super effective! (x2 DMG)", "¡Es muy eficaz! (x2 DMG)") + "[/color]"
 			if defender.has_passive and defender.passive_name == "Protect":
 				defender.weakness = "NONE"
-				note_text += " [color=cyan]%s's Protect removes its weakness for the rest of battle![/color]" % defender.name
+				note_text += " [color=cyan]" + (GameData.tr_text("%s's Protect removes its weakness for the rest of battle!", "¡Protect de %s elimina su debilidad por el resto del combate!") % defender.name) + "[/color]"
 		elif GameData.is_attack_resisted(defender.type, defender.resistant, attack_type):
 			final_damage = max(MIN_DAMAGE_AFTER_RESIST, int(round(float(final_damage) * RESISTANCE_MULTIPLIER)))
 			var is_same_type_resist = (GameData.normalize_type_key(attack_type) == GameData.normalize_type_key(defender.type)) and not GameData.types_match(defender.resistant, attack_type)
 			if is_same_type_resist:
-				note_text += " [color=gray]It's not very effective... Same-type resistance (x0.5 DMG)[/color]"
+				note_text += " [color=gray]" + GameData.tr_text("It's not very effective... Same-type resistance (x0.5 DMG)", "No es muy eficaz... Resistencia de mismo tipo (x0.5 DMG)") + "[/color]"
 			else:
-				note_text += " [color=gray]It's not very effective... (x0.5 DMG)[/color]"
+				note_text += " [color=gray]" + GameData.tr_text("It's not very effective... (x0.5 DMG)", "No es muy eficaz... (x0.5 DMG)") + "[/color]"
 
 		# 10. Reducciones y Pasivas defensivas (omitidas si es daño verdadero fijo)
 		if move.effect_type != "FIXED_DMG" and not (move.name in ["Sonic Boom", "Night Shade"]):
@@ -3509,7 +3513,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		var max_heal_cap = max(6, int(round(float(attacker.max_hp) * 0.20)))
 		var heal_amount = clamp(int(round(float(heal_base) * drain_ratio)), 1, max_heal_cap)
 		attacker.current_hp = min(attacker.max_hp, attacker.current_hp + heal_amount)
-		note_text += " [color=green]Drained health and recovered +%d HP! (30%% heal)[/color]" % heal_amount
+		note_text += " [color=green]" + (GameData.tr_text("Drained health and recovered +%d HP! (30% heal)", "¡Drenó salud y recuperó +%d HP! (30% curación)") % heal_amount) + "[/color]"
 		spawn_floating_combat_number(attacker_visual, heal_amount, true)
 		GameData.play_combat_sfx("heal")
 		if attacker == get_active_player() and GameData.is_campaign_mode:
@@ -3528,8 +3532,8 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 		if not avoid_recoil:
 			var rec_dmg = max(1, int(round(final_damage * recoil_pct)))
 			attacker.current_hp = max(0, attacker.current_hp - rec_dmg)
-			var rec_tag = "30% recoil" if recoil_pct == 0.30 else "25% recoil"
-			note_text += " [color=red]Recoil: takes %d DMG! (%s)[/color]" % [rec_dmg, rec_tag]
+			var rec_tag = GameData.tr_text("30% recoil", "30% retroceso") if recoil_pct == 0.30 else GameData.tr_text("25% recoil", "25% retroceso")
+			note_text += " [color=red]" + (GameData.tr_text("Recoil: takes %d DMG! (%s)", "¡Retroceso: recibe %d DMG! (%s)") % [rec_dmg, rec_tag]) + "[/color]"
 			spawn_floating_combat_number(attacker_visual, -rec_dmg, false)
 
 	# Doble Golpe (DOUBLE_HIT / EXTRA_HIT)
@@ -3599,7 +3603,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			else:
 				defender.burn_turns = 2
 				defender.burn_dmg = 3 if ("3 DMG" in move.description or move.name == "Inferno") else (2 if ("2 DMG" in move.description or move.name in ["Burn Up", "Fire Fang", "Fire Blast"]) else 1)
-				note_text += " [color=orange]Inflicted BURN (%d DMG x 2 turns)![/color]" % defender.burn_dmg
+				note_text += " [color=orange]" + (GameData.tr_text("Inflicted BURN (%d DMG x 2 turns)!", "¡Causa QUEMADURA (%d DMG x 2 rondas)!") % defender.burn_dmg) + "[/color]"
 				var def_overlay = player_status_overlay if defender == get_active_player() else enemy_status_overlay
 				if def_overlay:
 					def_overlay.trigger_burn_effect()
@@ -3618,7 +3622,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				spawn_floating_combat_text(defender_visual, "Already Poisoned!", Color("#a855f7"))
 			else:
 				defender.is_poisoned = true
-				note_text += " [color=purple]Inflicted POISON (-1 permanent DMG)![/color]"
+				note_text += " [color=purple]" + GameData.tr_text("Inflicted POISON (-1 permanent DMG)!", "¡Causa ENVENENAMIENTO (-1 DMG permanente)!") + "[/color]"
 				var def_overlay = player_status_overlay if defender == get_active_player() else enemy_status_overlay
 				if def_overlay:
 					def_overlay.trigger_poison_effect()
@@ -3635,7 +3639,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 					spawn_floating_combat_text(defender_visual, "Already Poisoned!", Color("#a855f7"))
 				else:
 					defender.is_poisoned = true
-					note_text += " [color=purple]Inflicted POISON (-1 permanent DMG)![/color]"
+					note_text += " [color=purple]" + GameData.tr_text("Inflicted POISON (-1 permanent DMG)!", "¡Causa ENVENENAMIENTO (-1 DMG permanente)!") + "[/color]"
 					var def_overlay = player_status_overlay if defender == get_active_player() else enemy_status_overlay
 					if def_overlay:
 						def_overlay.trigger_poison_effect()
@@ -3655,7 +3659,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				spawn_floating_combat_text(defender_visual, "Already Envenomed!", Color("#9333ea"))
 			elif defender.is_poisoned:
 				defender.toxic_envenomed = true
-				note_text += " [color=purple]Envenomed with Toxic (1 extra DMG at round end)![/color]"
+				note_text += " [color=purple]" + GameData.tr_text("Envenomed with Toxic (1 extra DMG at round end)!", "¡Intoxicado con Toxina (1 DMG extra al final de ronda)!") + "[/color]"
 			else:
 				note_text += " [color=gray](Toxic requires foe to be poisoned first)[/color]"
 				
@@ -3667,7 +3671,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			else:
 				defender.is_frozen = true
 				defender.frozen_turns = 0
-				note_text += " [color=cyan]Inflicted FREEZE (foe cannot move, max 2 rounds or thaw on Fire)![/color]"
+				note_text += " [color=cyan]" + GameData.tr_text("Inflicted FREEZE (foe cannot move, max 2 rounds or thaw on Fire)!", "¡Causa CONGELACIÓN (no puede atacar, máx 2 rondas o descongela con Fuego)!") + "[/color]"
 			
 		# Sueño (SLEEP)
 		if move.effect_type == "SLEEP":
@@ -3679,7 +3683,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				spawn_floating_combat_text(defender_visual, "Already Asleep!", Color("#818cf8"))
 			else:
 				defender.is_asleep_turns = 2
-				note_text += " [color=lightblue]Put foe to SLEEP (2 rounds)![/color]"
+				note_text += " [color=lightblue]" + GameData.tr_text("Put foe to SLEEP (2 rounds)!", "¡Pone a DORMIR al rival (2 rondas)!") + "[/color]"
 			
 		# Parálisis (PARALYZE / THUNDER / BOUNCE)
 		if (move.effect_type in ["PARALYZE", "THUNDER", "BOUNCE"] or move.name in ["Thunder", "Bounce"]) and _roll_status_proc(move):
@@ -3692,7 +3696,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			else:
 				defender.is_paralyzed = true
 				defender.paralyze_turns = 2
-				note_text += " [color=yellow]Inflicted PARALYZE (25% chance cannot act, 2 rounds)![/color]"
+				note_text += " [color=yellow]" + GameData.tr_text("Inflicted PARALYZE (-50% SPD, 25% chance cannot act, 2 rounds)!", "¡Causa PARÁLISIS (-50% VEL, 25% prob. de perder turno, 2 rondas)!") + "[/color]"
 				if defender.has_passive and defender.passive_name == "Synchronize" and not attacker.is_paralyzed and attacker.immune_paralyze_rounds <= 0:
 					attacker.is_paralyzed = true
 					attacker.paralyze_turns = 2
@@ -3706,7 +3710,7 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 			else:
 				defender.is_confused = true
 				defender.confused_turns = 0
-				note_text += " [color=magenta]Inflicted CONFUSION (35% snap out, max 3 rounds, 2 self-DMG)![/color]"
+				note_text += " [color=magenta]" + GameData.tr_text("Inflicted CONFUSION (35% snap out, max 3 rounds, 2 self-DMG)!", "¡Causa CONFUSIÓN (35% prob. de recuperarse, máx 3 rondas, 2 de autodaño)!") + "[/color]"
 				if defender.has_passive and defender.passive_name == "Synchronize" and not attacker.is_confused:
 					attacker.is_confused = true
 					attacker.confused_turns = 0
@@ -4094,8 +4098,13 @@ func perform_attack(attacker, defender, move, boosted: bool, energy_to_spend: in
 				attacker.name, move.name, final_damage, note_text, exp_log_str
 			], move_side)
 	else:
-		log_action("[b]%s[/b] used [color=cyan]%s[/color] [%s]%s dealing [b]%d[/b] damage.%s%s" % [
-			attacker.name, move.name, move.type, boost_str, final_damage, note_text, exp_log_str
+		var move_disp_type = GameData.tr_type(move.type)
+		var attack_msg = GameData.tr_text(
+			"[b]%s[/b] used [color=cyan]%s[/color] [%s]%s dealing [b]%d[/b] damage.%s%s",
+			"[b]%s[/b] usó [color=cyan]%s[/color] [%s]%s e infligió [b]%d[/b] de daño.%s%s"
+		)
+		log_action(attack_msg % [
+			attacker.name, move.name, move_disp_type, boost_str, final_damage, note_text, exp_log_str
 		], move_side)
 	
 	lunge_card(attacker_visual, attacker == get_active_player())
@@ -5896,7 +5905,11 @@ func _on_recover_pressed() -> void:
 	if not is_p2 and GameData.is_campaign_mode:
 		GameData.add_daily_mission_progress("recharge_energy", 1)
 	var prefix = "🔵 Player 2's " if is_p2 else ""
-	log_action("%s[b]%s[/b] used [color=cyan]Recharge[/color] and restored [b]+%d[/b] Energy (⚡ %d/%d)." % [prefix, actor.name, rec, actor.current_energy, actor.max_energy])
+	var p_rec_msg = GameData.tr_text(
+		"%s[b]%s[/b] used [color=cyan]Recharge[/color] and restored [b]+%d[/b] Energy (⚡ %d/%d).",
+		"%s[b]%s[/b] usó [color=cyan]Recargar[/color] y recuperó [b]+%d[/b] de Energía (⚡ %d/%d)."
+	)
+	log_action(p_rec_msg % [prefix, actor.name, rec, actor.current_energy, actor.max_energy])
 	GameData.play_combat_sfx("power up.wav")
 	var actor_visual = enemy_card_img if is_p2 else player_card_img
 	spawn_floating_combat_number(actor_visual, rec, false, false, true)

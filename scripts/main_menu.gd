@@ -14181,8 +14181,8 @@ func show_collection_card(index: int) -> void:
 		if top_nav:
 			btn_col_fav_toggle = Button.new()
 			btn_col_fav_toggle.name = "BtnDetailFavToggle"
-			btn_col_fav_toggle.custom_minimum_size = Vector2(125, 36)
-			btn_col_fav_toggle.add_theme_font_size_override("font_size", 12)
+			btn_col_fav_toggle.custom_minimum_size = Vector2(115, 34)
+			btn_col_fav_toggle.add_theme_font_size_override("font_size", 11)
 			top_nav.add_child(btn_col_fav_toggle)
 			top_nav.move_child(btn_col_fav_toggle, 1)
 			

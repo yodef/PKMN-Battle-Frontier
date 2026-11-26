@@ -1,504 +1,504 @@
-﻿"id","pokedex_num","Stage","name","hp","attack","defense","energy","speed","type","weakness","resistant","recover","texture_file","passive_name","passive_desc","move1","move2","unlocked_start","rarity","evolves_from","evolves_to","required_stone","required_exp","tier","region"
-"0","1","Basic","Bulbasaur","36","20","20","3","23","GRASS","","","2","001.png","","","Tackle","Razor Leaf","FALSE","Initial","","Ivysaur","Leaf","50","D","Kanto"
-"1","4","Basic","Charmander","35","20","18","3","28","FIRE","","","2","004.png","","","Scratch","Ember","FALSE","Initial","","Charmeleon","Fire","50","D","Kanto"
-"2","7","Basic","Squirtle","35","19","20","3","23","WATER","","","2","007.png","","","Tackle","Bubble","FALSE","Initial","","Wartortle","Water","50","D","Kanto"
-"3","172","Basic","Pichu","32","18","16","3","27","ELECTRIC","","","2","172.png","Charm","Reduces -1 DMG taken from NORMAL type attacks.","Scratch","Thunder Shock","FALSE","Initial","","Pikachu","Thunder","50","D","Johto"
-"4","2","Stage 1","Ivysaur","58","33","31","5","34","GRASS","","","3","002.png","","","Poison Powder","Vine Whip","FALSE","Rare","Bulbasaur","Venusaur","Leaf","120","C","Kanto"
-"5","3","Stage 2","Venusaur","112","52","49","8","53","GRASS","","","4","003.png","","","Giga Drain","Solar Beam","FALSE","Epic","Ivysaur","","","0","S","Kanto"
-"6","5","Stage 1","Charmeleon","57","33","29","5","40","FIRE","","","3","005.png","","","Slash","Fire Fang","FALSE","Rare","Charmander","Charizard","Fire","120","C","Kanto"
-"7","6","Stage 2","Charizard","111","54","47","8","60","FIRE","","","4","006.png","","","Aerial Ace","Flamethrower","FALSE","Epic","Charmeleon","","","0","S","Kanto"
-"8","8","Stage 1","Wartortle","58","31","31","5","33","WATER","","","3","008.png","Protect","If this PKMN receives DMG from its weakness type, it is swaped to NONE during the rest of this combat.","Rapid Spin","Water Pulse","FALSE","Rare","Squirtle","Blastoise","Water","120","C","Kanto"
-"9","9","Stage 2","Blastoise","111","50","50","8","53","WATER","","","4","009.png","","","Water Pulse","Hydro Pump","FALSE","Epic","Wartortle","","","0","S","Kanto"
-"10","10","Basic","Caterpie","36","17","16","3","23","GRASS","","","2","010.png","String Shot","Reduces foe's Speed by 1.","Tackle","Bug Bite","FALSE","Common","","Metapod","Night","50","D","Kanto"
-"11","11","Stage 1","Metapod","55","26","28","5","25","GRASS","","","3","011.png","","","Harden","Bug Bite","FALSE","Uncommon","Caterpie","Butterfree","Leaf","120","C","Kanto"
-"12","12","Stage 2","Butterfree","81","44","39","8","42","GRASS","","","4","012.png","","","Air Slash","Bug Buzz","FALSE","Rare","Metapod","","","0","A","Kanto"
-"13","13","Basic","Weedle","35","17","16","3","24","DARK","FIRE","","2","013.png","String Shot","Reduces foe's Speed by 1.","Tackle","Poison Sting","FALSE","Common","","Kakuna","Night","50","D","Kanto"
-"14","14","Stage 1","Kakuna","53","26","27","5","26","DARK","","","3","014.png","","","Harden","Toxic Spikes","FALSE","Uncommon","Weedle","Beedrill","Night","120","C","Kanto"
-"15","15","Stage 2","Beedrill","82","44","39","8","44","DARK","","","4","015.png","","","Poison Jab","Venoshock","FALSE","Rare","Kakuna","","","0","A","Kanto"
-"16","16","Basic","Pidgey","35","18","17","3","26","NORMAL","ELECTRIC","NONE","2","016.png","","","Scratch","Gust","FALSE","Common","","Pidgeotto","Heart","50","D","Kanto"
-"17","17","Stage 1","Pidgeotto","65","34","30","5","39","NORMAL","ELECTRIC","GROUND","3","017.png","","","Quick Attack","Wing Attack","FALSE","Rare","Pidgey","Pidgeot","Heart","120","B","Kanto"
-"18","18","Stage 2","Pidgeot","113","49","46","8","60","NORMAL","ELECTRIC","GROUND","4","018.png","Agility","","Air Slash","Hurricane","FALSE","Epic","Pidgeotto","","","0","S","Kanto"
-"19","19","Basic","Rattata","33","19","17","4","29","NORMAL","","NONE","1","019.png","Focus Energy","If this PKMN is faster than foe's, increase this PKMN's next Move DMG +1.","Scratch","Bite","FALSE","Common","","Raticate","Heart","80","D","Kanto"
-"20","20","Stage 1","Raticate","62","36","32","6","49","NORMAL","","PSYCHIC","3","020.png","","","Crunch","Hyper Fang","FALSE","Rare","Rattata","","","0","B","Kanto"
-"21","21","Basic","Spearow","35","19","16","4","29","NORMAL","","NONE","1","021.png","","","Peck","Fury Attack","FALSE","Common","","Fearow","Heart","80","D","Kanto"
-"22","22","Stage 1","Fearow","82","44","38","6","50","NORMAL","ELECTRIC","GROUND","3","022.png","","","Drill Peck","Take Down","FALSE","Rare","Spearow","","","0","A","Kanto"
-"23","23","Basic","Ekans","34","19","19","4","26","DARK","","","1","023.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Poison Sting","Bite","FALSE","Common","","Arbok","Night","80","D","Kanto"
-"24","24","Stage 1","Arbok","64","38","34","6","43","DARK","","","3","024.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Crunch","Acid","FALSE","Rare","Ekans","","","0","B","Kanto"
-"25","25","Stage 1","Pikachu","50","30","28","5","43","ELECTRIC","","","3","025.png","","","Quick Attack","Thunder","FALSE","Rare","Pichu","Raichu","Thunder","120","C","Kanto"
-"26","26","Stage 2","Raichu","81","45","39","8","52","ELECTRIC","","","4","026.png","","","Discharge","Thunder Punch","FALSE","Epic","Pikachu","","","0","A","Kanto"
-"27","27","Basic","Sandshrew","36","20","21","4","22","GROUND","","","1","027.png","","","Sand Attack","Swift","FALSE","Common","","Sandslash","Ground","80","D","Kanto"
-"28","28","Stage 1","Sandslash","68","38","37","6","37","GROUND","","","3","028.png","","","Double Edge","Bulldoze","FALSE","Rare","Sandshrew","","","0","B","Kanto"
-"29","29","Basic","Nidoran F","37","18","18","3","23","GROUND","","","1","029.png","","","Scratch","Fury Swipes","FALSE","Common","","Nidorina","Ground","50","D","Kanto"
-"30","30","Stage 1","Nidorina","61","31","29","5","33","GROUND","","","3","030.png","","","Flatter","Earth Power","FALSE","Rare","Nidoran F","Nidoqueen","Ground","120","C","Kanto"
-"31","31","Stage 2","Nidoqueen","115","51","47","8","52","GROUND","","","5","031.png","","","Earth Power","Earthquake","FALSE","Epic","Nidorina","","","0","S","Kanto"
-"32","32","Basic","Nidoran M","36","19","17","3","24","GROUND","","","1","032.png","","","Tackle","Mud-Slap","FALSE","Common","","Nidorino","Ground","50","D","Kanto"
-"33","33","Stage 1","Nidorino","64","35","30","5","37","GROUND","","","3","033.png","","","Horn Attack","Rock Tomb","FALSE","Rare","Nidoran M","Nidoking","Ground","120","B","Kanto"
-"34","34","Stage 2","Nidoking","112","53","46","8","55","GROUND","","","5","034.png","","","Mega Punch","Earthquake","FALSE","Epic","Nidorino","","","0","S","Kanto"
-"35","173","Basic","Cleffa","36","18","18","3","17","NORMAL","","DARK","1","173.png","","","Pound","Sweet Kiss","FALSE","Common","","Clefairy","Heart","50","D","Johto"
-"36","35","Stage 1","Clefairy","61","30","29","5","26","NORMAL","","DARK","3","035.png","","","Double Slap","Disarming Voice","FALSE","Rare","Cleffa","Clefable","Heart","120","C","Kanto"
-"37","36","Stage 2","Clefable","89","45","41","8","40","NORMAL","","DARK","5","036.png","","","Moonblast","Metronome","FALSE","Rare","Clefairy","","","0","A","Kanto"
-"38","37","Basic","Vulpix","34","19","19","4","28","FIRE","","","2","037.png","","","Will-O-Wisp","Incinerate","FALSE","Uncommon","","Ninetales","Fire","80","D","Kanto"
-"39","38","Stage 1","Ninetales","84","44","42","6","50","FIRE","","","4","038.png","","","Fire Spin","Inferno","FALSE","Rare","Vulpix","","","0","A","Kanto"
-"40","174","Basic","Igglybuff","43","18","15","3","17","NORMAL","","NORMAL","1","174.png","","","Pound","Defense Curl","FALSE","Common","","Jigglypuff","Heart","50","D","Johto"
-"41","39","Stage 1","Jigglypuff","75","28","25","5","22","NORMAL","","NORMAL","3","039.png","","","Echoed Voice","Sing","FALSE","Rare","Igglybuff","Wigglytuff","Heart","120","C","Kanto"
-"42","40","Stage 2","Wigglytuff","99","44","36","8","36","NORMAL","","NORMAL","5","040.png","","","Hyper Voice","Play Rough","FALSE","Rare","Jigglypuff","","","0","A","Kanto"
-"43","41","Basic","Zubat","35","18","17","3","26","DARK","ELECTRIC","","1","041.png","Inner Focus","Immune to flinching.","Supersonic","Poison Fang","FALSE","Common","","Golbat","Night","50","D","Kanto"
-"44","42","Stage 1","Golbat","68","36","33","5","46","DARK","ELECTRIC","","3","042.png","Inner Focus","Immune to flinching.","Air Cutter","Bite","FALSE","Rare","Zubat","Crobat","Night","120","B","Kanto"
-"45","169","Stage 2","Crobat","113","50","47","8","70","DARK","ELECTRIC","","5","169.png","Inner Focus","Immune to flinching.","Leech Life","Cross Poison","FALSE","Epic","Golbat","","","0","S","Johto"
-"46","43","Basic","Oddish","36","21","20","3","20","GRASS","","","1","043.png","Chlorophyll","Increases Speed (+2 SPD) during Weather.","Stun Spore","Absorb","FALSE","Common","","Gloom","Leaf","50","D","Kanto"
-"47","44","Stage 1","Gloom","64","37","33","5","29","GRASS","","","3","044.png","Chlorophyll","Increases Speed (+2 SPD) during Weather.","Sleep Powder","Mega Drain","FALSE","Rare","Oddish","Vileplume, Bellossom","Night, Leaf","120","B","Kanto"
-"48","45","Stage 2","Vileplume","110","54","48","8","43","GRASS","","","5","045.png","Chlorophyll","Increases Speed (+2 SPD) during Weather.","Grassy Terrain","Petal Dance","FALSE","Epic","Gloom","","","0","S","Kanto"
-"49","46","Basic","Paras","34","20","19","3","19","GRASS","","","2","046.png","","","Poison Powder","Slash","FALSE","Common","","Parasect","Night","80","D","Kanto"
-"50","47","Stage 1","Parasect","81","45","40","6","32","GRASS","","","4","047.png","","","Fury Cutter","Poison Claw","FALSE","Rare","Paras","","","0","A","Kanto"
-"51","48","Basic","Venonat","38","19","19","4","23","DARK","","","2","048.png","","","Supersonic","Struggle Bug","FALSE","Uncommon","","Venomoth","Psyche","80","D","Kanto"
-"52","49","Stage 1","Venomoth","83","44","39","6","48","PSYCHIC","","","4","049.png","","","Gust","Psybeam","FALSE","Rare","Venonat","","","0","A","Kanto"
-"53","50","Basic","Digglet","30","19","17","3","34","GROUND","","","1","050.png","","","Dig","Mud-Slap","FALSE","Common","","Dugtrio","Ground","80","D","Kanto"
-"54","51","Stage 1","Dugtrio","75","45","38","6","55","GROUND","","","4","051.png","","","Sand Tomb","Fissure","FALSE","Rare","Digglet","","","0","A","Kanto"
-"55","52","Basic","Meowth","35","18","17","4","33","NORMAL","","","2","052.png","","","Growl","Fury Swipes","FALSE","Uncommon","","Persian","Night","80","D","Kanto"
-"56","53","Stage 1","Persian","82","42","38","6","54","DARK","","","4","053.png","","","Pay Day","Assurance","FALSE","Rare","Meowth","","","0","A","Kanto"
-"57","54","Basic","Psyduck","36","20","18","4","26","WATER","","","2","054.png","","","Water Gun","Water Pulse","FALSE","Uncommon","","Golduck","Psyche","80","D","Kanto"
-"58","55","Stage 1","Golduck","70","38","34","6","44","PSYCHIC","","","4","055.png","","","Water Pulse","High Confusion","FALSE","Rare","Psyduck","","","0","B","Kanto"
-"59","56","Basic","Mankey","35","21","18","4","29","FIGHTING","","","2","056.png","","","Covet","Low Kick","FALSE","Uncommon","","Primeape","Punch","80","D","Kanto"
-"60","57","Stage 1","Primeape","82","46","38","6","49","FIGHTING","","","4","057.png","","","Cross Chop","Close Combat","FALSE","Rare","Mankey","","","0","A","Kanto"
-"61","58","Basic","Growlithe","37","21","18","4","27","FIRE","","","2","058.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Bite","Fire Fang","FALSE","Uncommon","","Arcanine","Fire","80","D","Kanto"
-"62","59","Stage 1","Arcanine","87","47","40","6","49","FIRE","","","5","059.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Flame Wheel","Flare Blitz","FALSE","Epic","Growlithe","","","0","A","Kanto"
-"63","60","Basic","Poliwag","35","19","17","3","33","WATER","","","1","060.png","","","Hypnosis","Water Gun","FALSE","Common","","Poliwhirl","Water","50","D","Kanto"
-"64","61","Stage 1","Poliwhirl","59","31","29","5","43","WATER","","","3","061.png","","","Bubble Beam","Ice Punch","FALSE","Uncommon","Poliwag","Poliwrath, Politoed","Water, Scale","120","C","Kanto"
-"65","62","Stage 2","Poliwrath","115","51","48","8","50","WATER","","","5","062.png","","","Dynamic Punch","Hydro Pump","FALSE","Epic","Poliwhirl","","","0","S","Kanto"
-"66","63","Basic","Abra","32","23","18","3","33","PSYCHIC","","","1","063.png","Synchronize","Passes status ailments back to foe.","Teleport","Zen Headbutt","FALSE","Common","","Kadabra","Psyche","50","D","Kanto"
-"67","64","Stage 1","Kadabra","58","40","31","5","51","PSYCHIC","","","3","064.png","Synchronize","Passes status ailments back to foe.","Reflect","Psybeam","FALSE","Rare","Abra","Alakazam","Psyche","120","B","Kanto"
-"68","65","Stage 2","Alakazam","103","57","47","8","67","PSYCHIC","","","5","065.png","Synchronize","Passes status ailments back to foe.","Psychic","Future Sight","FALSE","Epic","Kadabra","","","0","S","Kanto"
-"69","66","Basic","Machop","40","21","18","4","21","FIGHTING","","","1","066.png","Guts","Boosts attack (+3 DMG) under status ailments.","Bulk Up","Low Sweep","FALSE","Common","","Machoke","Punch","50","D","Kanto"
-"70","67","Stage 1","Machoke","64","35","30","5","29","FIGHTING","","","3","067.png","Guts","Boosts attack (+3 DMG) under status ailments.","Vital Throw","Revenge","FALSE","Rare","Machop","Machamp","Punch","120","C","Kanto"
-"71","68","Stage 2","Machamp","115","56","47","8","45","FIGHTING","","","5","068.png","Guts","Boosts attack (+3 DMG) under status ailments.","Dynamic Punch","Close Combat","FALSE","Epic","Machoke","","","0","S","Kanto"
-"72","69","Basic","Bellsprout","36","21","17","3","22","GRASS","","","1","069.png","","","Razor Leaf","Wrap","FALSE","Common","","Weepinbell","Leaf","50","D","Kanto"
-"73","70","Stage 1","Weepinbell","59","34","28","5","32","GRASS","","","3","070.png","","","Razor Leaf","Acid","FALSE","Rare","Bellsprout","Victreebel","Leaf","120","C","Kanto"
-"74","71","Stage 2","Victreebel","112","54","45","8","50","GRASS","","","5","071.png","","","Leaf Blade","Leaf Tornado","FALSE","Epic","Weepinbell","","","0","S","Kanto"
-"75","72","Basic","Tentacool","35","19","22","4","29","WATER","","","2","072.png","","","Water Gun","Acid","FALSE","Uncommon","","Tentacruel","Water","80","D","Kanto"
-"76","73","Stage 1","Tentacruel","85","43","43","6","50","WATER","","","4","073.png","","","Water Pulse","Surf","FALSE","Rare","Tentacool","","","0","A","Kanto"
-"77","74","Basic","Geodude","35","21","22","3","18","GROUND","","","1","074.png","Rock Head","Protects the Pokemon from recoil damage.","Tackle","Rock Throw","FALSE","Common","","Graveler","Ground","50","D","Kanto"
-"78","75","Stage 1","Graveler","62","38","37","5","27","GROUND","","","3","075.png","Rock Head","Protects the Pokemon from recoil damage.","Rock Throw","Smack Down","FALSE","Rare","Geodude","Golem","Ground","120","B","Kanto"
-"79","76","Stage 2","Golem","112","55","50","8","42","GROUND","","","5","076.png","Rock Head","Protects the Pokemon from recoil damage.","Stone Edge","Rock Slide","FALSE","Epic","Graveler","","","0","S","Kanto"
-"80","77","Basic","Ponyta","36","22","20","4","33","FIRE","","","2","077.png","","","Tail Whip","Flame Charge","FALSE","Uncommon","","Rapidash","Fire","80","D","Kanto"
-"81","78","Stage 1","Rapidash","82","46","40","6","51","FIRE","","","4","078.png","","","Agility","Fire Blast","FALSE","Rare","Ponyta","","","0","A","Kanto"
-"82","79","Basic","Slowpoke","43","20","19","4","17","WATER","","","2","079.png","","","Water Gun","Headbutt","FALSE","Uncommon","","Slowbro, Slowking","Water, Scale","80","D","Kanto"
-"83","80","Stage 1","Slowbro","74","39","38","6","25","WATER","","","4","080.png","","","Amnesia","Surf","FALSE","Rare","Slowpoke","","","0","B","Kanto"
-"84","81","Basic","Magnemite","32","22","20","3","23","ELECTRIC","","","1","081.png","Sturdy","Endures a lethal 1-hit KO with 1 HP.","Thunder Shock","Gyro Ball","FALSE","Common","","Magneton","Thunder","50","D","Kanto"
-"85","82","Stage 1","Magneton","61","41","36","5","39","ELECTRIC","","","3","082.png","Sturdy","Endures a lethal 1-hit KO with 1 HP.","Sonic Boom","Spark","FALSE","Rare","Magnemite","Magnezone","Thunder","120","B","Kanto"
-"86","462","Stage 2","Magnezone","108","57","50","8","47","ELECTRIC","","","5","462.png","Sturdy","Endures a lethal 1-hit KO with 1 HP.","Tri Attack","Zap Cannon","FALSE","Epic","Magneton","","","0","S","Sinnoh"
-"87","83","Basic","Farfetch'd","62","37","31","4","36","NORMAL","","","2","083.png","","","Counter-Cut","False Swipe","FALSE","Uncommon","","","","0","B","Kanto"
-"88","84","Basic","Doduo","34","22","18","4","30","NORMAL","","","2","084.png","","","Double Hit","Pluck","FALSE","Common","","Dodrio","Heart","80","D","Kanto"
-"89","85","Stage 1","Dodrio","81","46","38","6","52","NORMAL","","","4","085.png","","","Drill Peck","Tri Attack","FALSE","Rare","Doduo","","","0","A","Kanto"
-"90","86","Basic","Seel","39","18","20","4","23","WATER","","","2","086.png","","","Water Gun","Ice Shard","FALSE","Common","","Dewgong","Water","80","D","Kanto"
-"91","87","Stage 1","Dewgong","87","42","41","6","42","WATER","","","4","087.png","","","Aurora Beam","Brine","FALSE","Rare","Seel","","","0","A","Kanto"
-"92","88","Basic","Grimer","41","21","18","4","19","DARK","","","2","088.png","","","Poison Gas","Sludge","FALSE","Common","","Muk","Night","80","D","Kanto"
-"93","89","Stage 1","Muk","91","46","42","6","38","DARK","","","4","089.png","","","Venom Drench","Sludge Bomb","FALSE","Rare","Grimer","","","0","A","Kanto"
-"94","90","Basic","Shellder","33","20","22","4","22","WATER","","","2","090.png","","","Shell Smash","Razor Shell","FALSE","Uncommon","","Cloyster","Water","80","D","Kanto"
-"95","91","Stage 1","Cloyster","78","45","47","6","42","WATER","","","4","091.png","","","Protect","Icicle Spear","FALSE","Rare","Shellder","","","0","A","Kanto"
-"96","92","Basic","Ghastly","33","23","17","3","31","DARK","","","1","092.png","Levitate","Immune to Ground moves and sandstorm.","Spite","Lick","FALSE","Common","","Haunter","Night","50","D","Kanto"
-"97","93","Stage 1","Haunter","77","47","37","5","49","DARK","","","3","093.png","Levitate","Immune to Ground moves and sandstorm.","Confuse Ray","Shadow Punch","FALSE","Rare","Ghastly","Gengar","Night","120","A","Kanto"
-"98","94","Stage 2","Gengar","105","56","45","8","63","DARK","","","5","094.png","Levitate","Immune to Ground moves and sandstorm.","Hypnosis","Dream Eater","FALSE","Epic","Haunter","","","0","S","Kanto"
-"99","95","Basic","Onix","56","31","42","4","39","GROUND","","","3","095.png","Rock Head","Protects the Pokemon from recoil damage.","Bind","Smack Down","FALSE","Rare","","Steelix","Ground","80","B","Kanto"
-"100","208","Stage 1","Steelix","84","44","50","6","32","GROUND","","","4","208.png","","","Iron Head","Rock Slide","FALSE","Epic","Onix","","","0","A","Johto"
-"101","96","Basic","Drowzee","38","18","21","4","23","PSYCHIC","","","2","096.png","","","Yawn","Headbutt","FALSE","Uncommon","","Hypno","Psyche","80","D","Kanto"
-"102","97","Stage 1","Hypno","72","36","38","6","38","PSYCHIC","","","4","097.png","","","Hypnosis","Confusion","FALSE","Rare","Drowzee","","","0","B","Kanto"
-"103","98","Basic","Krabby","33","23","21","4","24","WATER","","","2","098.png","","","Mud Shot","Razor Shell","FALSE","Common","","Kingler","Water","80","D","Kanto"
-"104","99","Stage 1","Kingler","62","42","37","6","41","WATER","","","4","099.png","","","Guillotine","Crabhammer","FALSE","Rare","Krabby","","","0","B","Kanto"
-"105","100","Basic","Voltorb","35","19","19","4","35","ELECTRIC","","","2","100.png","","","Swift","Spark","FALSE","Uncommon","","Electrode","Thunder","80","D","Kanto"
-"106","101","Stage 1","Electrode","81","43","40","6","62","ELECTRIC","","","4","101.png","","","Rollout","Electro Ball","FALSE","Rare","Voltorb","","","0","A","Kanto"
-"107","102","Basic","Exeggcute","38","19","21","4","22","GRASS","","","2","102.png","","","Leech Seed","Bullet Seed","FALSE","Common","","Exeggcutor","Leaf","80","D","Kanto"
-"108","103","Stage 1","Exeggcutor","89","48","40","6","39","GRASS","","","4","103.png","","","Seed Bomb","Extrasensory","FALSE","Rare","Exeggcute","","","0","A","Kanto"
-"109","104","Basic","Cubone","36","19","22","4","21","GROUND","","","2","104.png","","","False Swipe","Bone Rush","FALSE","Common","","Marowak","Ground","80","D","Kanto"
-"110","105","Stage 1","Marowak","64","36","38","6","30","GROUND","","","4","105.png","","","Bonemerang","Stomping Tantrum","FALSE","Rare","Cubone","","","0","B","Kanto"
-"111","106","Stage 1","Hitmonlee","78","47","42","5","47","FIGHTING","","","4","106.png","","","Double Kick","High Jump Kick","FALSE","Epic","Tyrogue","","","0","A","Kanto"
-"112","107","Stage 1","Hitmonchan","78","45","43","5","44","FIGHTING","","","3","107.png","","","Drain Punch","Special Punch","FALSE","Epic","Tyrogue","","","0","A","Kanto"
-"113","108","Basic","Lickitung","73","34","34","4","25","NORMAL","","","2","108.png","","","Belly Drum","Slam","FALSE","Rare","","Lickilicky","Heart","80","B","Kanto"
-"114","109","Basic","Koffing","35","20","22","4","21","DARK","","","2","109.png","Levitate","Immune to Ground moves and sandstorm.","Clear Smog","Smog","FALSE","Uncommon","","Weezing","Night","80","D","Kanto"
-"115","110","Stage 1","Weezing","82","45","43","6","40","DARK","","","4","110.png","Levitate","Immune to Ground moves and sandstorm.","Toxic","Belch","FALSE","Rare","Koffing","","","0","A","Kanto"
-"116","111","Basic","Rhyhorn","41","22","21","3","19","GROUND","","","2","111.png","","","Tackle","Rock Blast","FALSE","Common","","Rhydon","Ground","50","D","Kanto"
-"117","112","Stage 1","Rhydon","78","42","37","5","29","GROUND","","","3","112.png","","","Horn Attack","Drill Run","FALSE","Rare","Rhyhorn","Rhyperior","Ground","120","B","Kanto"
-"118","464","Stage 2","Rhyperior","123","58","50","8","40","GROUND","","","5","464.png","","","Hammer Arm","Rock Wrecker","FALSE","Epic","Rhydon","","","0","S","Sinnoh"
-"119","113","Stage 1","Chansey","105","22","24","5","35","NORMAL","","","3","113.png","","","Echoed Voice","Take Down","FALSE","Rare","Happiny","Blissey","Heart","120","B","Kanto"
-"120","114","Basic","Tangela","39","23","23","4","27","GRASS","","","2","114.png","","","Growth","Vine Whip","FALSE","Uncommon","","Tangrowth","Leaf","80","D","Kanto"
-"121","465","Stage 1","Tangrowth","90","47","43","6","38","GRASS","","","4","465.png","","","Mega Drain","Power Whip","FALSE","Epic","Tangela","","","0","A","Sinnoh"
-"122","115","Basic","Kangaskhan","91","44","40","6","48","NORMAL","","","3","115.png","","","Stomp","Last Resort","FALSE","Rare","","","","0","A","Kanto"
-"123","116","Basic","Horsea","33","20","19","4","27","WATER","","","1","116.png","","","Smokescreen","Water Gun","FALSE","Common","","Seadra","Water","50","D","Kanto"
-"124","117","Stage 1","Seadra","56","35","31","5","42","WATER","","","3","117.png","","","Bubble Beam","Twister","FALSE","Rare","Horsea","Kingdra","Scale","120","C","Kanto"
-"125","230","Stage 2","Kingdra","110","52","49","8","55","WATER","","","5","230.png","","","Dragon Pulse","Hydro Pump","FALSE","Epic","Seadra","","","0","S","Johto"
-"126","118","Basic","Goldeen","36","20","19","4","27","WATER","","","2","118.png","","","Peck","Flail","FALSE","Common","","Seaking","Water","80","D","Kanto"
-"127","119","Stage 1","Seaking","70","38","34","6","38","WATER","","","4","119.png","","","Aqua Ring","Megahorn","FALSE","Rare","Goldeen","","","0","B","Kanto"
-"128","120","Basic","Staryu","33","20","19","4","32","WATER","","","2","120.png","Natural Cure","Cleanses all status ailments on switch.","Water Gun","Rapid Spin","FALSE","Uncommon","","Starmie","Water","80","D","Kanto"
-"129","121","Stage 1","Starmie","81","46","41","6","54","WATER","","","4","121.png","Natural Cure","Cleanses all status ailments on switch.","Cosmic Power","Brine","FALSE","Rare","Staryu","","","0","A","Kanto"
-"130","439","Basic","Mime Jr.","32","20","21","3","27","PSYCHIC","","","2","439.png","","","Tackle","Trick Room","FALSE","Uncommon","","Mr. Mime","Psyche","80","D","Sinnoh"
-"131","122","Stage 1","Mr. Mime","58","38","38","8","46","PSYCHIC","","","5","122.png","","","Light Screen","Psybeam","FALSE","Epic","Mime Jr.","","","0","B","Kanto"
-"132","123","Basic","Scyther","83","46","40","5","51","GRASS","","","3","123.png","","","Wing Attack","X-Scissor","FALSE","Rare","","Scizor","Ground","80","A","Kanto"
-"133","212","Stage 1","Scizor","83","48","42","8","41","GROUND","","","4","212.png","","","Bullet Punch","X-Scissor","FALSE","Epic","Scyther","","","0","A","Johto"
-"134","238","Basic","Smoochum","36","22","18","3","28","PSYCHIC","","","2","238.png","","","Powder Snow","Psywave","FALSE","Common","","Jynx","Psyche","80","D","Johto"
-"135","124","Stage 1","Jynx","82","47","40","6","49","PSYCHIC","","","4","124.png","","","Psycho Cut","Blizzard","FALSE","Epic","Smoochum","","","0","A","Kanto"
-"136","239","Basic","Elekid","36","20","18","3","34","ELECTRIC","","","1","239.png","","","Thunder Shock","Quick Attack","FALSE","Common","","Electabuzz","Thunder","50","D","Johto"
-"137","125","Stage 1","Electabuzz","66","38","34","5","51","ELECTRIC","","","3","125.png","","","Thunder Wave","Thunderbolt","FALSE","Rare","Elekid","Electivire","Thunder","120","B","Kanto"
-"138","466","Stage 2","Electivire","110","56","47","8","58","ELECTRIC","","","5","466.png","","","Shock Wave","Grand Thunder","FALSE","Epic","Electabuzz","","","0","S","Sinnoh"
-"139","240","Basic","Magby","36","21","18","3","31","FIRE","","","1","240.png","","","Poison Gas","Ember","FALSE","Common","","Magmar","Fire","50","D","Johto"
-"140","126","Stage 1","Magmar","66","39","34","5","47","FIRE","","","3","126.png","","","Fire Punch","Lava Plume","FALSE","Rare","Magby","Magmortar","Fire","120","B","Kanto"
-"141","467","Stage 2","Magmortar","110","57","47","8","54","FIRE","","","5","467.png","","","Heat Wave","Fire Blast","FALSE","Epic","Magmar","","","0","S","Sinnoh"
-"142","127","Basic","Pinsir","82","48","41","5","46","DARK","","","3","127.png","","","Bug Bite","Guillotine","FALSE","Rare","","","","0","A","Kanto"
-"143","128","Basic","Tauros","84","45","41","5","52","NORMAL","","","3","128.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Payback","Thrash","FALSE","Rare","","","","0","A","Kanto"
-"144","129","Basic","Magikarp","32","15","18","3","31","WATER","","","1","129.png","","","Tackle","Flail","FALSE","Common","","Gyarados","Scale","80","D","Kanto"
-"145","130","Stage 1","Gyarados","89","48","42","8","45","WATER","","","5","130.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Aqua Tail","Hyper Beam","FALSE","Epic","Magikarp","","","0","A","Kanto"
-"146","131","Basic","Lapras","96","44","41","6","40","WATER","","","4","131.png","","","Mist","Ice Beam","FALSE","Epic","","","","0","A","Kanto"
-"147","132","Basic","Ditto","36","19","18","5","24","NORMAL","","","3","132.png","Slimy","This PKMN receives half of the DMG it receives.","Transform","Tackle","FALSE","Epic","","","","0","D","Kanto"
-"148","133","Basic","Eevee","62","33","31","5","34","NORMAL","","","3","133.png","","","Tackle","Quick Attack","FALSE","Rare","","Vaporeon, Jolteon, Flareon, Espeon, Umbreon, Leafeon, Glaceon","Water, Thunder, Fire, Psyche, Night, Leaf, Water","80","B","Kanto"
-"149","134","Stage 1","Vaporeon","85","40","35","8","37","WATER","","","5","134.png","","","Water Gun","Muddy Water","FALSE","Epic","Eevee","","","0","B","Kanto"
-"150","135","Stage 1","Jolteon","82","46","41","8","58","ELECTRIC","","","5","135.png","","","Thunder Shock","Thunder Fang","FALSE","Epic","Eevee","","","0","A","Kanto"
-"151","136","Stage 1","Flareon","82","49","42","8","41","FIRE","","","5","136.png","","","Ember","Fire Fang","FALSE","Epic","Eevee","","","0","A","Kanto"
-"152","137","Basic","Porygon","82","44","39","5","35","PSYCHIC","","","3","137.png","Conversion","If this PKMN receives DMG from any type, this PKMN becomes that type.","Recycle","Kinetic Beam","FALSE","Rare","","Porygon2","Psyche","50","A","Kanto"
-"153","138","Basic","Omanyte","34","22","23","4","21","WATER","","","2","138.png","","","Withdraw","Rollout","FALSE","Uncommon","","Omastar","Water","80","D","Kanto"
-"154","139","Stage 1","Omastar","83","47","44","6","39","WATER","","","4","139.png","","","Withdraw","Brine","FALSE","Epic","Omanyte","","","0","A","Kanto"
-"155","140","Basic","Kabuto","33","21","21","4","26","GROUND","","","2","140.png","","","Aqua Jet","Mud Shot","FALSE","Uncommon","","Kabutops","Ground","80","D","Kanto"
-"156","141","Stage 1","Kabutops","64","40","37","6","43","GROUND","","","4","141.png","","","Slash","Liquidation","FALSE","Epic","Kabuto","","","0","B","Kanto"
-"157","142","Legendary","Aerodactyl","132","57","53","10","68","NORMAL","NONE","","5","142.png","Rock Head","Protects the Pokemon from recoil damage.","Ancient Power","Giga Impact","FALSE","Legendary","","","","0","S+","Kanto"
-"158","143","Stage 1","Snorlax","103","46","42","6","32","NORMAL","","","4","143.png","","","Yawn","Hammer Arm","FALSE","Epic","Munchlax","","","0","A","Kanto"
-"159","144","Legendary","Articuno","115","52","51","10","55","WATER","NONE","","6","144.png","","","Agility","Blizzard","FALSE","Legendary","","","","0","S","Kanto"
-"160","145","Legendary","Zapdos","115","56","48","10","60","ELECTRIC","NONE","","6","145.png","","","Discharge","Thunder","FALSE","Legendary","","","","0","S","Kanto"
-"161","146","Legendary","Moltres","136","63","56","10","55","FIRE","NONE","","6","146.png","","","Incinerate","Burn Up","FALSE","Legendary","","","","0","S+","Kanto"
-"162","147","Basic","Dratini","35","20","18","3","24","NORMAL","","","2","147.png","","","Thunder Wave","Dragon Breath","FALSE","Uncommon","","Dragonair","Scale","50","D","Kanto"
-"163","148","Stage 1","Dragonair","81","44","39","5","42","NORMAL","","","4","148.png","","","Dragon Tail","Dragon Rush","FALSE","Epic","Dratini","Dragonite","Scale","120","A","Kanto"
-"164","149","Stage 2","Dragonite","136","65","58","8","51","NORMAL","","","6","149.png","Inner Focus","Immune to flinching.","Dragon Claw","Outrage","FALSE","Legendary","Dragonair","","","0","S+","Kanto"
-"165","150","Legendary","Mewtwo","142","69","56","10","68","PSYCHIC","NONE","","5","150.png","","","Aura Sphere","Mind Bending","FALSE","Legendary","","","","0","S+","Kanto"
-"166","151","Legendary","Mew","118","53","49","10","60","PSYCHIC","GRASS","NONE","5","151.png","Synchronize","Passes status ailments back to foe.","Primal Coat","Might Sphere","FALSE","Legendary","","","","0","S","Kanto"
-"167","152","Basic","Chikorita","36","19","20","3","23","GRASS","","","2","152.png","","","Tackle","Razor Leaf","FALSE","Uncommon","","Bayleef","Leaf","50","D","Johto"
-"168","153","Stage 1","Bayleef","58","31","31","5","34","GRASS","","","3","153.png","","","Poison Powder","Magical Leaf","FALSE","Rare","Chikorita","Meganium","Leaf","120","C","Johto"
-"169","154","Stage 2","Meganium","112","50","49","8","53","GRASS","","","4","154.png","","","Body Slam","Petal Blizzard","FALSE","Epic","Bayleef","","","0","S","Johto"
-"170","155","Basic","Cyndaquil","35","20","18","3","28","FIRE","","","2","155.png","","","Scratch","Ember","FALSE","Uncommon","","Quilava","Fire","50","D","Johto"
-"171","156","Stage 1","Quilava","57","33","29","5","40","FIRE","","","3","156.png","","","Flame Wheel","Flame Charge","FALSE","Rare","Cyndaquil","Typhlosion","Fire","120","C","Johto"
-"172","157","Stage 2","Typhlosion","111","54","47","8","60","FIRE","","","4","157.png","","","Smokescreen","Flamethrower","FALSE","Epic","Quilava","","","0","S","Johto"
-"173","158","Basic","Totodile","36","20","19","3","23","WATER","","","2","158.png","","","Scratch","Water Gun","FALSE","Uncommon","","Croconaw","Water","50","D","Johto"
-"174","159","Stage 1","Croconaw","59","33","31","5","33","WATER","","","3","159.png","","","Slash","Aqua Tail","FALSE","Rare","Totodile","Feraligatr","Water","120","C","Johto"
-"175","160","Stage 2","Feraligatr","113","53","49","8","53","WATER","","","4","160.png","","","Crunch","Hydro Pump","FALSE","Epic","Croconaw","","","0","S","Johto"
-"176","161","Basic","Sentret","34","18","18","3","18","NORMAL","","NONE","2","161.png","","","Scratch","Quick Attack","FALSE","Common","","Furret","Heart","80","D","Johto"
-"177","162","Stage 1","Furret","66","32","29","6","43","NORMAL","","NONE","3","162.png","","","Quick Attack","Slam","FALSE","Rare","Sentret","","","0","C","Johto"
-"178","163","Basic","Hoothoot","38","17","18","4","24","NORMAL","ELECTRIC","GROUND","2","163.png","Keen Eye","Ignores evasion and negative accuracy.","Peck","Hypnosis","FALSE","Common","","Noctowl","Night","80","D","Johto"
-"179","164","Stage 1","Noctowl","76","37","35","6","39","NORMAL","ELECTRIC","GROUND","4","164.png","Insomnia","Cannot be put to sleep.","Air Slash","Extrasensory","FALSE","Rare","Hoothoot","","","0","B","Johto"
-"180","165","Basic","Ledyba","35","17","20","3","26","DARK","FIRE","","2","165.png","","","Tackle","Supersonic","FALSE","Common","","Ledian","Leaf","80","D","Johto"
-"181","166","Stage 1","Ledian","56","29","33","5","42","DARK","FIRE","","3","166.png","","","Comet Punch","Bug Buzz","FALSE","Rare","Ledyba","","","0","C","Johto"
-"182","167","Basic","Spinarak","35","19","17","3","20","DARK","FIRE","","2","167.png","Swarm","Boosts Bug moves when at low HP.","Poison Sting","Night Shade","FALSE","Common","","Ariados","Leaf","80","D","Johto"
-"183","168","Stage 1","Ariados","67","37","33","6","29","DARK","FIRE","","3","168.png","","","Poison Jab","Cross Poison","FALSE","Rare","Spinarak","","","0","B","Johto"
-"184","170","Basic","Chinchou","40","19","19","4","28","WATER","GRASS","","2","170.png","","","Bubble","Spark","FALSE","Common","","Lanturn","Water","80","D","Johto"
-"185","171","Stage 1","Lanturn","95","43","39","6","42","WATER","GRASS","","4","171.png","Volt Absorb","Heals when struck by electric attacks.","Water Pulse","Discharge","FALSE","Rare","Chinchou","","","0","A","Johto"
-"186","175","Basic","Togepi","34","17","20","3","18","NORMAL","","DARK","1","175.png","Serene Grace","Doubles the chance of secondary move effects.","Pound","Metronome","FALSE","Uncommon","","Togetic","Heart","50","D","Johto"
-"187","176","Stage 1","Togetic","62","36","38","5","29","NORMAL","ELECTRIC","GROUND","3","176.png","","","Disarming Voice","Ancient Power","FALSE","Rare","Togepi","Togekiss","Heart","120","B","Johto"
-"188","177","Basic","Natu","35","21","18","3","29","PSYCHIC","DARK","GROUND","2","177.png","","","Peck","Psywave","FALSE","Common","","Xatu","Psyche","80","D","Johto"
-"189","178","Stage 1","Xatu","82","45","39","6","49","PSYCHIC","DARK","GROUND","4","178.png","Synchronize","Passes status conditions to attacker.","Air Slash","Psychic","FALSE","Rare","Natu","","","0","A","Johto"
-"190","179","Basic","Mareep","37","20","18","3","21","ELECTRIC","GROUND","","2","179.png","Static","May paralyze on contact.","Tackle","Thunder Shock","FALSE","Common","","Flaaffy","Thunder","50","D","Johto"
-"191","180","Stage 1","Flaaffy","61","33","29","5","29","ELECTRIC","GROUND","","3","180.png","","","Thunder Shock","Electro Ball","FALSE","Rare","Mareep","Ampharos","Thunder","120","C","Johto"
-"192","181","Stage 2","Ampharos","115","54","48","8","45","ELECTRIC","GROUND","","5","181.png","","","Discharge","Thunder","FALSE","Epic","Flaaffy","","","0","S","Johto"
-"193","182","Stage 2","Bellossom","84","45","42","8","38","GRASS","FIRE","WATER","5","182.png","Chlorophyll","Doubles speed under sun.","Magical Leaf","Petal Blizzard","FALSE","Epic","Gloom","","","0","A","Johto"
-"194","183","Stage 1","Marill","61","25","28","5","28","WATER","ELECTRIC","","3","183.png","Huge Power","Doubles base attack strength.","Bubble Beam","Slam","FALSE","Rare","Azurill","Azumarill","Water","120","C","Johto"
-"195","184","Stage 2","Azumarill","90","41","40","8","38","WATER","ELECTRIC","","5","184.png","Huge Power","Doubles base attack strength.","Aqua Tail","Play Rough","FALSE","Epic","Marill","","","0","A","Johto"
-"196","185","Stage 1","Sudowoodo","83","45","43","6","32","GROUND","WATER","NORMAL","3","185.png","Rock Head","Protects the Pokemon from recoil damage.","Rock Throw","Wood Hammer","FALSE","Rare","Bonsly","","","0","A","Johto"
-"197","186","Stage 2","Politoed","87","45","42","8","42","WATER","ELECTRIC","FIRE","5","186.png","Drizzle","Summons rain when entering battle.","Muddy Water","Hyper Voice","FALSE","Epic","Poliwhirl","","","0","A","Johto"
-"198","187","Basic","Hoppip","34","17","19","3","24","GRASS","FIRE","GROUND","2","187.png","","","Tackle","Absorb","FALSE","Common","","Skiploom","Leaf","50","D","Johto"
-"199","188","Stage 1","Skiploom","56","28","29","5","40","GRASS","FIRE","GROUND","3","188.png","","","Bullet Seed","Mega Drain","FALSE","Uncommon","Hoppip","Jumpluff","Leaf","120","C","Johto"
-"200","189","Stage 2","Jumpluff","84","41","41","8","52","GRASS","FIRE","GROUND","4","189.png","Chlorophyll","Doubles speed under sunlight.","Giga Drain","Acrobatics","FALSE","Epic","Skiploom","","","0","A","Johto"
-"201","190","Basic","Aipom","62","34","30","4","44","NORMAL","","NONE","2","190.png","Run Away","Guarantees escape from wild battles.","Scratch","Swift","FALSE","Common","","Ambipom","Heart","80","B","Johto"
-"202","191","Basic","Sunkern","33","17","16","3","20","GRASS","FIRE","WATER","2","191.png","Solar Power","Boosts Sp. Atk in sunshine.","Absorb","Growth","FALSE","Common","","Sunflora","Leaf","80","D","Johto"
-"203","192","Stage 1","Sunflora","62","36","31","6","25","GRASS","FIRE","WATER","4","192.png","Chlorophyll","Doubles speed in sunny weather.","Giga Drain","Solar Beam","FALSE","Rare","Sunkern","","","0","C","Johto"
-"204","193","Basic","Yanma","66","36","29","4","48","DARK","FIRE","GROUND","2","193.png","Speed Boost","Its Speed stat is boosted every turn.","Quick Attack","Air Cutter","FALSE","Uncommon","","Yanmega","Night","80","B","Johto"
-"205","194","Basic","Wooper","37","18","17","3","17","WATER","GRASS","ELECTRIC","2","194.png","Water Absorb","Restores HP if hit by water moves.","Mud-Slap","Water Gun","FALSE","Common","","Quagsire","Water","80","D","Johto"
-"206","195","Stage 1","Quagsire","89","44","40","6","34","WATER","GRASS","ELECTRIC","4","195.png","Unaware","Ignores foe stat changes.","Bulldoze","Earthquake","FALSE","Rare","Wooper","","","0","A","Johto"
-"207","196","Stage 1","Espeon","82","48","41","8","52","PSYCHIC","DARK","","5","196.png","Magic Bounce","Reflects status-changing moves.","Psybeam","Psychic","FALSE","Epic","Eevee","","","0","A","Johto"
-"208","197","Stage 1","Umbreon","89","42","46","8","41","DARK","FIGHTING","PSYCHIC","5","197.png","Synchronize","Passes poison or burn to attacker.","Payback","Dark Pulse","FALSE","Epic","Eevee","","","0","A","Johto"
-"209","198","Basic","Murkrow","64","37","28","4","47","DARK","ELECTRIC","GROUND","2","198.png","Super Luck","Heightens critical-hit ratios.","Peck","Night Shade","FALSE","Uncommon","","Honchkrow","Night","80","B","Johto"
-"210","199","Stage 1","Slowking","89","46","43","7","32","WATER","GRASS","FIRE","5","199.png","Oblivious","Immune to infatuation and taunt.","Confusion","Surf","FALSE","Epic","Slowpoke","","","0","A","Johto"
-"211","200","Basic","Misdreavus","64","37","34","4","44","DARK","DARK","NORMAL","2","200.png","Levitate","Immunity to Ground-type attacks.","Spite","Shadow Ball","FALSE","Uncommon","","Mismagius","Night","80","B","Johto"
-"212","201","Basic","Unown","36","21","18","4","24","PSYCHIC","DARK","","2","201.png","Levitate","Floating immunity to Ground.","Hidden Power","Cosmic Power","FALSE","Common","","","","0","D","Johto"
-"213","202","Stage 1","Wobbuffet","110","38","37","6","33","PSYCHIC","DARK","","3","202.png","Shadow Tag","Prevents foe from escaping or switching.","Counter-Cut","Destiny Bond","FALSE","Rare","Wynaut","","","0","A","Johto"
-"214","203","Basic","Girafarig","83","45","38","5","46","NORMAL","DARK","PSYCHIC","3","203.png","Early Bird","Awakens quickly from sleep.","Stomp","Psybeam","FALSE","Rare","","","","0","A","Johto"
-"215","204","Basic","Pineco","36","20","21","3","17","GRASS","FIRE","","2","204.png","Sturdy","Cannot be knocked out in one hit.","Tackle","Self-Destruct","FALSE","Common","","Forretress","Leaf","80","D","Johto"
-"216","205","Stage 1","Forretress","68","37","40","6","29","GRASS","FIRE","NORMAL","4","205.png","Overcoat","Protects from sandstorm damage.","Spikes","Explosion","FALSE","Rare","Pineco","","","0","B","Johto"
-"217","206","Basic","Dunsparce","76","35","32","4","30","NORMAL","","NONE","2","206.png","Serene Grace","Boosts the likelihood of added effects.","Defense Curl","Rollout","FALSE","Uncommon","","","","0","B","Johto"
-"218","207","Basic","Gligar","66","35","37","4","44","GROUND","WATER","ELECTRIC","3","207.png","Hyper Cutter","Prevents Attack reduction.","Sand Attack","Slash","FALSE","Uncommon","","Gliscor","Ground","80","B","Johto"
-"219","209","Basic","Snubbull","38","21","18","4","20","NORMAL","","DARK","2","209.png","Intimidate","Lowers the opposing Pokemon's attack.","Bite","Headbutt","FALSE","Common","","Granbull","Heart","80","D","Johto"
-"220","210","Stage 1","Granbull","73","41","33","6","30","NORMAL","","DARK","4","210.png","Intimidate","Lowers the opposing Pokemon's attack.","Crunch","Play Rough","FALSE","Rare","Snubbull","","","0","B","Johto"
-"221","211","Basic","Qwilfish","66","38","34","4","44","WATER","ELECTRIC","","3","211.png","Poison Point","Contact with Pokemon may poison attacker.","Poison Sting","Aqua Tail","FALSE","Uncommon","","","","0","B","Johto"
-"222","213","Basic","Shuckle","35","18","85","4","15","GRASS","FIRE","NORMAL","4","213.png","Sturdy","Cannot be knocked out in one hit.","Withdraw","Rock Slide","FALSE","Rare","","","","0","A","Johto"
-"223","214","Basic","Heracross","85","47","41","6","46","GRASS","FIRE","GROUND","4","214.png","Guts","Boosts attack if afflicted with status.","Megahorn","Close Combat","FALSE","Epic","","","","0","A","Johto"
-"224","215","Basic","Sneasel","80","44","39","4","54","DARK","FIGHTING","PSYCHIC","3","215.png","Inner Focus","Prevents flinching.","Quick Attack","Ice Shard","FALSE","Uncommon","","Weavile","Night","80","A","Johto"
-"225","216","Basic","Teddiursa","38","21","18","4","22","NORMAL","","NONE","2","216.png","Pickup","May find items after battle.","Scratch","Fury Swipes","FALSE","Common","","Ursaring","Heart","80","D","Johto"
-"226","217","Stage 1","Ursaring","87","49","39","7","39","NORMAL","","NONE","4","217.png","Guts","Boosts attack if afflicted with status.","Slash","Hammer Arm","FALSE","Epic","Teddiursa","","","0","A","Johto"
-"227","218","Basic","Slugma","35","20","17","3","18","FIRE","WATER","GRASS","2","218.png","Flame Body","Contact may cause a burn.","Smog","Ember","FALSE","Common","","Magcargo","Fire","80","D","Johto"
-"228","219","Stage 1","Magcargo","58","34","34","6","25","FIRE","WATER","GRASS","3","219.png","Flame Body","Contact may cause a burn.","Lava Plume","Ancient Power","FALSE","Rare","Slugma","","","0","C","Johto"
-"229","220","Basic","Swinub","36","18","17","3","24","WATER","GRASS","ELECTRIC","2","220.png","Oblivious","Immune to infatuation and taunt.","Tackle","Powder Snow","FALSE","Common","","Piloswine","Water","50","D","Johto"
-"230","221","Stage 1","Piloswine","76","39","33","6","32","WATER","GRASS","ELECTRIC","4","221.png","Thick Fat","Boosts resistance to Fire and Ice.","Ice Fang","Bulldoze","FALSE","Rare","Swinub","Mamoswine","Ground","120","B","Johto"
-"231","222","Basic","Corsola","66","34","37","4","27","WATER","GRASS","FIRE","3","222.png","Natural Cure","Cures status on switching out.","Bubble Beam","Rock Slide","FALSE","Uncommon","","","","0","B","Johto"
-"232","223","Basic","Remoraid","34","20","17","3","28","WATER","ELECTRIC","FIRE","2","223.png","Hustle","Boosts attack at cost of accuracy.","Water Gun","Aurora Beam","FALSE","Common","","Octillery","Water","80","D","Johto"
-"233","224","Stage 1","Octillery","68","40","34","6","30","WATER","ELECTRIC","FIRE","4","224.png","Sniper","Powers up critical hits.","Octazooka","Signal Beam","FALSE","Rare","Remoraid","","","0","B","Johto"
-"234","225","Basic","Delibird","60","34","29","4","41","WATER","ELECTRIC","GROUND","3","225.png","Vital Spirit","Prevents the Pokemon from falling asleep.","Present","Ice Punch","FALSE","Rare","","","","0","B","Johto"
-"235","226","Stage 1","Mantine","86","43","45","6","42","WATER","ELECTRIC","GROUND","4","226.png","Water Absorb","Restores HP if hit by Water moves.","Air Slash","Surf","FALSE","Rare","Mantyke","","","0","A","Johto"
-"236","227","Basic","Skarmory","82","43","45","5","42","GROUND","FIRE","GRASS","3","227.png","Sturdy","Cannot be knocked out in one hit.","Metal Claw","Steel Wing","FALSE","Rare","","","","0","A","Johto"
-"237","228","Basic","Houndour","36","22","18","4","28","DARK","WATER","PSYCHIC","2","228.png","Early Bird","Awakens quickly from sleep.","Ember","Bite","FALSE","Uncommon","","Houndoom","Fire","80","D","Johto"
-"238","229","Stage 1","Houndoom","84","47","39","6","49","DARK","WATER","PSYCHIC","4","229.png","Flash Fire","Powers up Fire moves if hit by Fire.","Flamethrower","Crunch","FALSE","Epic","Houndour","","","0","A","Johto"
-"239","231","Basic","Phanpy","43","19","19","4","22","GROUND","WATER","ELECTRIC","2","231.png","Pickup","May find items after battle.","Tackle","Rollout","FALSE","Common","","Donphan","Ground","80","D","Johto"
-"240","232","Stage 1","Donphan","87","47","43","7","38","GROUND","WATER","ELECTRIC","4","232.png","Sturdy","Cannot be knocked out in one hit.","Bulldoze","Earthquake","FALSE","Epic","Phanpy","","","0","A","Johto"
-"241","233","Stage 1","Porygon2","86","46","42","6","40","NORMAL","","NONE","4","233.png","Download","Adjusts power based on foe defense.","Tri Attack","Recover","FALSE","Epic","Porygon","Porygon-Z","Psyche","120","A","Johto"
-"242","234","Basic","Stantler","84","45","38","5","46","NORMAL","","NONE","3","234.png","Intimidate","Lowers the opposing Pokemon's attack.","Stomp","Zen Headbutt","FALSE","Rare","","","","0","A","Johto"
-"243","235","Basic","Smeargle","62","28","28","4","41","NORMAL","","NONE","3","235.png","Own Tempo","Prevents the Pokemon from becoming confused.","Sketch","Baton Pass","FALSE","Rare","","","","0","B","Johto"
-"244","236","Basic","Tyrogue","34","17","17","3","21","FIGHTING","PSYCHIC","DARK","2","236.png","Guts","Boosts attack if afflicted with status.","Tackle","Low Kick","FALSE","Uncommon","","Hitmonlee, Hitmonchan, Hitmontop","Punch, Punch, Punch","80","D","Johto"
-"245","237","Stage 1","Hitmontop","78","44","43","6","42","FIGHTING","PSYCHIC","DARK","4","237.png","Technician","Powers up weaker moves.","Triple Kick","Rapid Spin","FALSE","Rare","Tyrogue","","","0","A","Johto"
-"246","241","Basic","Miltank","89","43","42","6","50","NORMAL","","NONE","4","241.png","Thick Fat","Boosts resistance to Fire and Ice.","Milk Drink","Body Slam","FALSE","Rare","","","","0","A","Johto"
-"247","242","Stage 2","Blissey","135","26","28","8","40","NORMAL","","NONE","6","242.png","Natural Cure","Cures all status ailments upon switching.","Soft-Boiled","Hyper Voice","FALSE","Epic","Chansey","","","0","S","Johto"
-"248","243","Legendary","Raikou","115","55","48","10","65","ELECTRIC","GROUND","","6","243.png","Pressure","Exerts pressure to increase energy demand.","Spark","Grand Thunder","FALSE","Legendary","","","","0","S","Johto"
-"249","244","Legendary","Entei","123","55","47","10","60","FIRE","WATER","GRASS","6","244.png","Pressure","Exerts pressure to increase energy demand.","Flame Wheel","Sacred Fire","FALSE","Legendary","","","","0","S","Johto"
-"250","245","Legendary","Suicune","118","50","51","10","55","WATER","ELECTRIC","FIRE","6","245.png","Pressure","Exerts pressure to increase energy demand.","Aurora Beam","Hydro Pump","FALSE","Legendary","","","","0","S","Johto"
-"251","246","Basic","Larvitar","36","20","18","3","23","GROUND","WATER","ELECTRIC","2","246.png","Guts","Boosts attack if afflicted with status.","Rock Throw","Bite","FALSE","Uncommon","","Pupitar","Scale","50","D","Johto"
-"252","247","Stage 1","Pupitar","67","37","33","5","32","GROUND","WATER","ELECTRIC","3","247.png","Shed Skin","Has a chance to cure status conditions.","Rock Slide","Crunch","FALSE","Rare","Larvitar","Tyranitar","Scale","120","B","Johto"
-"253","248","Stage 2","Tyranitar","140","65","59","8","45","GROUND","WATER","ELECTRIC","5","248.png","Sand Stream","Summons a sandstorm upon entering battle.","Stone Edge","Earthquake","FALSE","Legendary","Pupitar","","","0","S+","Johto"
-"254","249","Legendary","Lugia","142","55","65","10","62","PSYCHIC","DARK","GROUND","6","249.png","Multiscale","Reduces damage taken when HP is full.","Aeroblast","Hydro Pump","FALSE","Legendary","","","","0","S+","Johto"
-"255","250","Legendary","Ho-oh","142","64","63","10","55","FIRE","WATER","GROUND","6","250.png","Regenerator","Restores HP when withdrawn from battle.","Sacred Fire","Brave Bird","FALSE","Legendary","","","","0","S+","Johto"
-"256","251","Legendary","Celebi","118","53","49","10","60","PSYCHIC","DARK","GRASS","5","251.png","Natural Cure","Cures all status conditions upon switching.","Leaf Blade","Future Sight","FALSE","Legendary","","","","0","S","Johto"
-"257","252","Basic","Treecko","35","20","18","3","29","GRASS","FIRE","GROUND","2","252.png","","","Pound","Absorb","FALSE","Uncommon","","Grovyle","Leaf","50","D","Hoenn"
-"258","253","Stage 1","Grovyle","55","33","29","5","45","GRASS","FIRE","GROUND","3","253.png","","","Quick Attack","Leaf Blade","FALSE","Rare","Treecko","Sceptile","Leaf","120","C","Hoenn"
-"259","254","Stage 2","Sceptile","108","53","47","8","67","GRASS","FIRE","GROUND","4","254.png","","","Slam","Leaf Blade","FALSE","Epic","Grovyle","","","0","S","Hoenn"
-"260","255","Basic","Torchic","36","21","18","3","23","FIRE","WATER","GRASS","2","255.png","","","Scratch","Ember","FALSE","Uncommon","","Combusken","Fire","50","D","Hoenn"
-"261","256","Stage 1","Combusken","58","34","29","5","32","FIRE","WATER","DARK","3","256.png","","","Double Kick","Flame Wheel","FALSE","Rare","Torchic","Blaziken","Fire","120","C","Hoenn"
-"262","257","Stage 2","Blaziken","112","56","45","8","53","FIRE","WATER","DARK","4","257.png","","","Sky Uppercut","Blaze Kick","FALSE","Epic","Combusken","","","0","S","Hoenn"
-"263","258","Basic","Mudkip","36","21","18","3","22","WATER","ELECTRIC","FIRE","2","258.png","","","Tackle","Water Gun","FALSE","Uncommon","","Marshtomp","Water","50","D","Hoenn"
-"264","259","Stage 1","Marshtomp","61","33","30","5","31","WATER","GRASS","ELECTRIC","3","259.png","","","Mud Shot","Water Pulse","FALSE","Rare","Mudkip","Swampert","Water","120","C","Hoenn"
-"265","260","Stage 2","Swampert","118","54","48","8","47","WATER","GRASS","ELECTRIC","4","260.png","","","Earthquake","Muddy Water","FALSE","Epic","Marshtomp","","","0","S","Hoenn"
-"266","261","Basic","Poochyena","34","19","17","3","21","DARK","FIGHTING","PSYCHIC","2","261.png","","","Tackle","Bite","FALSE","Common","","Mightyena","Night","80","D","Hoenn"
-"267","262","Stage 1","Mightyena","61","34","30","6","37","DARK","FIGHTING","PSYCHIC","3","262.png","","","Bite","Crunch","FALSE","Rare","Poochyena","","","0","C","Hoenn"
-"268","263","Basic","Zigzagoon","34","17","17","3","27","NORMAL","FIGHTING","NONE","2","263.png","","","Tackle","Headbutt","FALSE","Common","","Linoone","Heart","80","D","Hoenn"
-"269","264","Stage 1","Linoone","69","35","31","6","50","NORMAL","FIGHTING","NONE","3","264.png","","","Slash","Belly Drum","FALSE","Rare","Zigzagoon","","","0","B","Hoenn"
-"270","265","Basic","Wurmple","36","18","17","3","18","GRASS","FIRE","GROUND","2","265.png","","","Tackle","Poison Sting","FALSE","Common","","Silcoon, Cascoon","Leaf, Night","50","D","Hoenn"
-"271","266","Stage 1","Silcoon","55","27","28","4","20","GRASS","FIRE","GROUND","2","266.png","","","Harden","Bug Bite","FALSE","Common","Wurmple","Beautifly","Leaf","120","C","Hoenn"
-"272","267","Stage 2","Beautifly","81","45","36","8","41","GRASS","FIRE","FIGHTING","4","267.png","","","Gust","Silver Wind","FALSE","Rare","Silcoon","","","0","A","Hoenn"
-"273","268","Stage 1","Cascoon","55","27","28","4","20","DARK","FIRE","PSYCHIC","2","268.png","","","Harden","Poison Sting","FALSE","Common","Wurmple","Dustox","Night","120","C","Hoenn"
-"274","269","Stage 2","Dustox","81","40","41","8","41","DARK","FIRE","GRASS","4","269.png","","","Confusion","Bug Buzz","FALSE","Rare","Cascoon","","","0","A","Hoenn"
-"275","270","Basic","Lotad","35","18","18","3","20","WATER","FIRE","WATER","2","270.png","Swift Swim","Increases Speed (+2 SPD) during Weather.","Astonish","Absorb","FALSE","Common","","Lombre","Water","50","D","Hoenn"
-"276","271","Stage 1","Lombre","58","30","30","5","31","WATER","FIRE","WATER","3","271.png","Swift Swim","Increases Speed (+2 SPD) during Weather.","Water Pulse","Mega Drain","FALSE","Rare","Lotad","Ludicolo","Leaf","120","C","Hoenn"
-"277","272","Stage 2","Ludicolo","85","44","41","8","42","WATER","FIRE","WATER","4","272.png","Swift Swim","Increases Speed (+2 SPD) during Weather.","Giga Drain","Hydro Pump","FALSE","Epic","Lombre","","","0","A","Hoenn"
-"278","273","Basic","Seedot","35","18","18","3","20","GRASS","FIRE","GROUND","2","273.png","","","Tackle","Bullet Seed","FALSE","Common","","Nuzleaf","Leaf","50","D","Hoenn"
-"279","274","Stage 1","Nuzleaf","61","32","27","5","34","GRASS","FIRE","PSYCHIC","3","274.png","","","Razor Leaf","Night Slash","FALSE","Rare","Seedot","Shiftry","Night","120","C","Hoenn"
-"280","275","Stage 2","Shiftry","87","46","38","8","45","GRASS","FIRE","PSYCHIC","4","275.png","","","Leaf Blade","Extrasensory","FALSE","Epic","Nuzleaf","","","0","A","Hoenn"
-"281","276","Basic","Taillow","35","19","16","3","32","NORMAL","ELECTRIC","GROUND","2","276.png","","","Peck","Quick Attack","FALSE","Common","","Swellow","Heart","80","D","Hoenn"
-"282","277","Stage 1","Swellow","81","44","37","6","56","NORMAL","ELECTRIC","GROUND","3","277.png","","","Wing Attack","Aerial Ace","FALSE","Rare","Taillow","","","0","A","Hoenn"
-"283","278","Basic","Wingull","35","19","16","3","32","WATER","ELECTRIC","GROUND","2","278.png","","","Water Gun","Wing Attack","FALSE","Common","","Pelipper","Water","80","D","Hoenn"
-"284","279","Stage 1","Pelipper","58","34","33","6","36","WATER","ELECTRIC","GROUND","4","279.png","","","Water Pulse","Hydro Pump","FALSE","Rare","Wingull","","","0","C","Hoenn"
-"285","280","Basic","Ralts","33","18","16","3","22","PSYCHIC","DARK","FIGHTING","2","280.png","Synchronize","Passes status ailments back to foe.","Disarming Voice","Teleport","FALSE","Uncommon","","Kirlia","Psyche","50","D","Hoenn"
-"286","281","Stage 1","Kirlia","51","31","28","5","31","PSYCHIC","DARK","FIGHTING","3","281.png","Synchronize","Passes status ailments back to foe.","Psybeam","Magical Leaf","FALSE","Rare","Ralts","Gardevoir, Gallade","Psyche, Punch","120","C","Hoenn"
-"287","282","Stage 2","Gardevoir","108","56","49","8","53","PSYCHIC","DARK","FIGHTING","5","282.png","Synchronize","Passes status ailments back to foe.","Psychic","Future Sight","FALSE","Epic","Kirlia","","","0","S","Hoenn"
-"288","283","Basic","Surskit","35","18","18","3","28","GRASS","FIRE","GROUND","2","283.png","","","Bubble","Quick Attack","FALSE","Common","","Masquerain","Water","80","D","Hoenn"
-"289","284","Stage 1","Masquerain","61","35","31","6","40","WATER","ELECTRIC","GROUND","3","284.png","","","Silver Wind","Air Slash","FALSE","Rare","Surskit","","","0","C","Hoenn"
-"290","285","Basic","Shroomish","38","18","20","3","21","GRASS","FIRE","GROUND","2","285.png","","","Absorb","Tackle","FALSE","Common","","Breloom","Punch","80","D","Hoenn"
-"291","286","Stage 1","Breloom","81","48","39","6","42","GRASS","FIRE","DARK","4","286.png","","","Drain Punch","Spore","FALSE","Epic","Shroomish","","","0","A","Hoenn"
-"292","287","Basic","Slakoth","38","19","19","3","20","NORMAL","FIGHTING","NONE","2","287.png","","","Scratch","Yawn","FALSE","Uncommon","","Vigoroth","Heart","50","D","Hoenn"
-"293","288","Stage 1","Vigoroth","70","36","33","5","46","NORMAL","FIGHTING","NONE","3","288.png","","","Slash","Fury Swipes","FALSE","Rare","Slakoth","Slaking","Heart","120","B","Hoenn"
-"294","289","Stage 2","Slaking","135","62","48","8","60","NORMAL","FIGHTING","NONE","5","289.png","Truant","Skips attacking every other turn or requires high focus.","Hammer Arm","Giga Impact","FALSE","Epic","Vigoroth","","","0","S","Hoenn"
-"295","290","Basic","Nincada","33","18","21","3","22","DARK","FIRE","GROUND","2","290.png","","","Scratch","Mud-Slap","FALSE","Common","","Ninjask, Shedinja","Leaf, Night","80","D","Hoenn"
-"296","291","Stage 1","Ninjask","81","44","36","6","65","DARK","ELECTRIC","GROUND","3","291.png","Speed Boost","Gains +1 Speed at the start of each round.","Fury Swipes","X-Scissor","FALSE","Rare","Nincada","","","0","A","Hoenn"
-"297","292","Stage 1","Shedinja","1","45","35","6","45","DARK","FIRE","NONE","1","292.png","Wonder Guard","Takes DMG only from attacks that match its weakness.","Shadow Sneak","Shadow Ball","FALSE","Epic","Nincada","","","0","A","Hoenn"
-"298","293","Basic","Whismur","39","19","15","3","20","NORMAL","FIGHTING","NONE","2","293.png","","","Pound","Astonish","FALSE","Common","","Loudred","Heart","50","D","Hoenn"
-"299","294","Stage 1","Loudred","65","32","27","5","30","NORMAL","FIGHTING","NONE","3","294.png","","","Bite","Stomp","FALSE","Rare","Whismur","Exploud","Heart","120","C","Hoenn"
-"300","295","Stage 2","Exploud","91","45","39","8","42","NORMAL","FIGHTING","NONE","4","295.png","","","Hyper Voice","Hyper Beam","FALSE","Epic","Loudred","","","0","A","Hoenn"
-"301","296","Basic","Makuhita","40","19","16","3","19","FIGHTING","PSYCHIC","DARK","2","296.png","","","Tackle","Arm Thrust","FALSE","Common","","Hariyama","Punch","80","D","Hoenn"
-"302","297","Stage 1","Hariyama","100","47","38","6","38","FIGHTING","PSYCHIC","DARK","4","297.png","","","Fake Out","Close Combat","FALSE","Epic","Makuhita","","","0","A","Hoenn"
-"303","298","Basic","Azurill","36","16","17","3","18","NORMAL","FIGHTING","NONE","2","298.png","","","Bubble","Tail Whip","FALSE","Common","","Marill","Water","50","D","Hoenn"
-"304","299","Basic","Nosepass","55","32","41","4","25","GROUND","GRASS","ELECTRIC","3","299.png","","","Rock Throw","Rock Slide","FALSE","Uncommon","","Probopass","Ground","80","B","Hoenn"
-"305","300","Basic","Skitty","36","18","18","3","24","NORMAL","FIGHTING","NONE","2","300.png","","","Fake Out","Double Slap","FALSE","Common","","Delcatty","Heart","80","D","Hoenn"
-"306","301","Stage 1","Delcatty","61","31","29","6","43","NORMAL","FIGHTING","NONE","3","301.png","","","Double Slap","Play Rough","FALSE","Rare","Skitty","","","0","C","Hoenn"
-"307","302","Basic","Sableye","61","36","33","5","32","DARK","NONE","PSYCHIC","3","302.png","Prankster","Moves have increased priority in combat.","Shadow Sneak","Knock Off","FALSE","Rare","","","","0","B","Hoenn"
-"308","303","Basic","Mawile","61","37","34","5","32","GROUND","FIRE","GRASS","3","303.png","Hyper Cutter","Prevents attack reduction.","Bite","Iron Head","FALSE","Rare","","","","0","B","Hoenn"
-"309","304","Basic","Aron","36","20","22","3","20","GROUND","GRASS","ELECTRIC","2","304.png","Sturdy","Endures a lethal 1-hit KO with 1 HP.","Tackle","Metal Claw","FALSE","Uncommon","","Lairon","Ground","50","D","Hoenn"
-"310","305","Stage 1","Lairon","58","34","35","5","28","GROUND","GRASS","ELECTRIC","3","305.png","Sturdy","Endures a lethal 1-hit KO with 1 HP.","Iron Head","Take Down","FALSE","Rare","Aron","Aggron","Ground","120","C","Hoenn"
-"311","306","Stage 2","Aggron","108","53","55","8","43","GROUND","GRASS","ELECTRIC","5","306.png","Sturdy","Endures a lethal 1-hit KO with 1 HP.","Iron Head","Earthquake","FALSE","Epic","Lairon","","","0","S","Hoenn"
-"312","307","Basic","Meditite","33","18","19","3","27","FIGHTING","PSYCHIC","DARK","2","307.png","","","Confusion","Drain Punch","FALSE","Uncommon","","Medicham","Punch","80","D","Hoenn"
-"313","308","Stage 1","Medicham","81","41","39","6","45","FIGHTING","PSYCHIC","DARK","3","308.png","","","High Jump Kick","Zen Headbutt","FALSE","Rare","Meditite","","","0","A","Hoenn"
-"314","309","Basic","Electrike","35","20","17","3","28","ELECTRIC","GROUND","WATER","2","309.png","","","Tackle","Thunder Shock","FALSE","Common","","Manectric","Thunder","80","D","Hoenn"
-"315","310","Stage 1","Manectric","83","46","38","6","51","ELECTRIC","GROUND","WATER","3","310.png","","","Spark","Thunderbolt","FALSE","Epic","Electrike","","","0","A","Hoenn"
-"316","311","Basic","Plusle","64","37","32","4","48","ELECTRIC","GROUND","WATER","2","311.png","","","Spark","Helping Hand","FALSE","Uncommon","","","","0","B","Hoenn"
-"317","312","Basic","Minun","64","35","33","4","48","ELECTRIC","GROUND","WATER","2","312.png","","","Spark","Helping Hand","FALSE","Uncommon","","","","0","B","Hoenn"
-"318","313","Basic","Volbeat","66","35","35","4","44","DARK","FIRE","PSYCHIC","2","313.png","","","Signal Beam","Silver Wind","FALSE","Uncommon","","","","0","B","Hoenn"
-"319","314","Basic","Illumise","66","35","35","4","44","DARK","FIRE","PSYCHIC","2","314.png","","","Signal Beam","Bug Buzz","FALSE","Uncommon","","","","0","B","Hoenn"
-"320","315","Stage 1","Roselia","55","35","30","5","36","GRASS","FIRE","GROUND","3","315.png","Natural Cure","Cleanses all status ailments on switch.","Mega Drain","Poison Powder","FALSE","Rare","Budew","Roserade","Leaf","120","C","Hoenn"
-"321","316","Basic","Gulpin","40","18","19","3","22","DARK","GROUND","GRASS","2","316.png","","","Pound","Acid","FALSE","Common","","Swalot","Night","80","D","Hoenn"
-"322","317","Stage 1","Swalot","76","36","35","6","34","DARK","GROUND","GRASS","4","317.png","","","Acid","Sludge Bomb","FALSE","Rare","Gulpin","","","0","B","Hoenn"
-"323","318","Basic","Carvanha","36","22","15","3","28","WATER","ELECTRIC","PSYCHIC","2","318.png","","","Bite","Aqua Jet","FALSE","Common","","Sharpedo","Water","80","D","Hoenn"
-"324","319","Stage 1","Sharpedo","83","48","35","6","49","WATER","ELECTRIC","PSYCHIC","3","319.png","","","Crunch","Aqua Tail","FALSE","Rare","Carvanha","","","0","A","Hoenn"
-"325","320","Basic","Wailmer","49","21","17","3","27","WATER","ELECTRIC","FIRE","2","320.png","","","Water Gun","Rollout","FALSE","Common","","Wailord","Water","80","D","Hoenn"
-"326","321","Stage 1","Wailord","105","45","36","6","40","WATER","ELECTRIC","FIRE","5","321.png","","","Water Spout","Hydro Pump","FALSE","Epic","Wailmer","","","0","A","Hoenn"
-"327","322","Basic","Numel","38","20","18","3","21","FIRE","WATER","ELECTRIC","2","322.png","","","Ember","Bulldoze","FALSE","Common","","Camerupt","Fire","80","D","Hoenn"
-"328","323","Stage 1","Camerupt","67","40","33","6","29","FIRE","WATER","ELECTRIC","4","323.png","","","Lava Plume","Eruption","FALSE","Rare","Numel","","","0","B","Hoenn"
-"329","324","Basic","Torkoal","83","44","45","5","30","FIRE","WATER","GRASS","4","324.png","","","Flame Wheel","Overheat","FALSE","Epic","","","","0","A","Hoenn"
-"330","325","Basic","Spoink","38","20","20","3","27","PSYCHIC","DARK","FIGHTING","2","325.png","","","Psywave","Bounce","FALSE","Common","","Grumpig","Psyche","80","D","Hoenn"
-"331","326","Stage 1","Grumpig","70","37","37","6","43","PSYCHIC","DARK","FIGHTING","4","326.png","","","Psybeam","Psychic","FALSE","Rare","Spoink","","","0","B","Hoenn"
-"332","327","Basic","Spinda","64","34","31","4","36","NORMAL","FIGHTING","NONE","2","327.png","","","Teeter Dance","Double Edge","FALSE","Uncommon","","","","0","B","Hoenn"
-"333","328","Basic","Trapinch","36","23","18","3","16","GROUND","GRASS","ELECTRIC","2","328.png","","","Bite","Sand Tomb","FALSE","Uncommon","","Vibrava","Ground","50","D","Hoenn"
-"334","329","Stage 1","Vibrava","55","31","28","5","37","GROUND","WATER","ELECTRIC","3","329.png","","","Dragon Breath","Earth Power","FALSE","Rare","Trapinch","Flygon","Scale","120","C","Hoenn"
-"335","330","Stage 2","Flygon","112","52","47","8","60","GROUND","WATER","ELECTRIC","4","330.png","Levitate","Immune to GROUND type attacks.","Dragon Claw","Earthquake","FALSE","Epic","Vibrava","","","0","S","Hoenn"
-"336","331","Basic","Cacnea","36","22","17","3","21","GRASS","FIRE","GROUND","2","331.png","","","Poison Sting","Needle Arm","FALSE","Common","","Cacturne","Leaf","80","D","Hoenn"
-"337","332","Stage 1","Cacturne","67","42","31","6","34","GRASS","FIRE","PSYCHIC","3","332.png","","","Needle Arm","Crunch","FALSE","Rare","Cacnea","","","0","B","Hoenn"
-"338","333","Basic","Swablu","36","18","21","3","24","NORMAL","ELECTRIC","GROUND","2","333.png","","","Peck","Mist","FALSE","Common","","Altaria","Scale","80","D","Hoenn"
-"339","334","Stage 1","Altaria","84","42","43","6","45","NORMAL","WATER","GRASS","4","334.png","Natural Cure","Cleanses all status ailments on switch.","Dragon Breath","Dragon Pulse","FALSE","Rare","Swablu","","","0","A","Hoenn"
-"340","335","Basic","Zangoose","84","47","38","5","48","NORMAL","FIGHTING","NONE","3","335.png","","","Quick Attack","Crush Claw","FALSE","Rare","","","","0","A","Hoenn"
-"341","336","Basic","Seviper","84","46","38","5","41","DARK","GROUND","GRASS","3","336.png","","","Bite","Poison Tail","FALSE","Rare","","","","0","A","Hoenn"
-"342","337","Basic","Lunatone","87","45","40","5","42","GROUND","WATER","ELECTRIC","3","337.png","","","Confusion","Rock Slide","FALSE","Rare","","","","0","A","Hoenn"
-"343","338","Basic","Solrock","87","45","40","5","42","GROUND","WATER","ELECTRIC","3","338.png","","","Confusion","Rock Slide","FALSE","Rare","","","","0","A","Hoenn"
-"344","339","Basic","Barboach","36","19","18","3","27","WATER","GRASS","ELECTRIC","2","339.png","","","Water Gun","Mud-Slap","FALSE","Common","","Whiscash","Ground","80","D","Hoenn"
-"345","340","Stage 1","Whiscash","79","36","33","6","36","WATER","GRASS","ELECTRIC","4","340.png","","","Aqua Tail","Earthquake","FALSE","Rare","Barboach","","","0","B","Hoenn"
-"346","341","Basic","Corphish","35","21","19","3","21","WATER","ELECTRIC","FIRE","2","341.png","","","Bubble","Knock Off","FALSE","Common","","Crawdaunt","Water","80","D","Hoenn"
-"347","342","Stage 1","Crawdaunt","81","48","40","6","39","WATER","ELECTRIC","PSYCHIC","3","342.png","","","Crabhammer","Night Slash","FALSE","Rare","Corphish","","","0","A","Hoenn"
-"348","343","Basic","Baltoy","35","18","20","3","26","GROUND","WATER","ELECTRIC","2","343.png","Levitate","Immune to Ground moves and sandstorm.","Rapid Spin","Mud-Slap","FALSE","Common","","Claydol","Psyche","80","D","Hoenn"
-"349","344","Stage 1","Claydol","81","42","44","6","44","GROUND","WATER","ELECTRIC","4","344.png","Levitate","Immune to Ground moves and sandstorm.","Ancient Power","Earth Power","FALSE","Epic","Baltoy","","","0","A","Hoenn"
-"350","345","Basic","Lileep","39","20","22","3","19","GROUND","GRASS","ELECTRIC","2","345.png","","","Astonish","Acid","FALSE","Uncommon","","Cradily","Leaf","80","D","Hoenn"
-"351","346","Stage 1","Cradily","87","44","43","6","36","GROUND","GRASS","ELECTRIC","4","346.png","","","Ancient Power","Giga Drain","FALSE","Epic","Lileep","","","0","A","Hoenn"
-"352","347","Basic","Anorith","36","23","18","3","30","GROUND","GRASS","ELECTRIC","2","347.png","","","Scratch","Mud-Slap","FALSE","Uncommon","","Armaldo","Ground","80","D","Hoenn"
-"353","348","Stage 1","Armaldo","84","48","42","6","36","GROUND","GRASS","ELECTRIC","4","348.png","","","Ancient Power","X-Scissor","FALSE","Epic","Anorith","","","0","A","Hoenn"
-"354","349","Basic","Feebas","32","15","18","3","31","WATER","ELECTRIC","FIRE","1","349.png","","","Tackle","Water Gun","FALSE","Common","","Milotic","Scale","80","D","Hoenn"
-"355","350","Stage 1","Milotic","89","45","44","6","45","WATER","ELECTRIC","FIRE","5","350.png","","","Water Pulse","Hydro Pump","FALSE","Epic","Feebas","","","0","A","Hoenn"
-"356","351","Basic","Castform","67","35","33","4","39","NORMAL","FIGHTING","NONE","3","351.png","Forecast","Adapts its elemental essence to match the environment.","Tackle","Weather Ball","FALSE","Uncommon","","","","0","B","Hoenn"
-"357","352","Basic","Kecleon","81","44","43","5","35","NORMAL","FIGHTING","NONE","3","352.png","Color Change","Changes its type to match the attack it receives.","Slash","Shadow Sneak","FALSE","Rare","","","","0","A","Hoenn"
-"358","353","Basic","Shuppet","35","21","17","3","23","DARK","DARK","PSYCHIC","2","353.png","","","Knock Off","Astonish","FALSE","Common","","Banette","Night","80","D","Hoenn"
-"359","354","Stage 1","Banette","65","41","32","6","37","DARK","DARK","PSYCHIC","3","354.png","","","Shadow Sneak","Shadow Claw","FALSE","Rare","Shuppet","","","0","B","Hoenn"
-"360","355","Basic","Duskull","32","18","23","3","19","DARK","DARK","PSYCHIC","2","355.png","","","Astonish","Night Shade","FALSE","Common","","Dusclops","Night","50","D","Hoenn"
-"361","356","Stage 1","Dusclops","76","42","46","6","31","DARK","DARK","PSYCHIC","4","356.png","","","Shadow Punch","Shadow Ball","FALSE","Epic","Duskull","Dusknoir","Night","120","A","Hoenn"
-"362","357","Basic","Tropius","89","43","41","5","38","GRASS","FIRE","GROUND","4","357.png","","","Razor Leaf","Air Slash","FALSE","Epic","","","","0","A","Hoenn"
-"363","358","Stage 1","Chimecho","62","34","32","5","36","PSYCHIC","DARK","FIGHTING","3","358.png","Levitate","Immune to Ground moves and sandstorm.","Astonish","Psybeam","FALSE","Rare","Chingling","","","0","C","Hoenn"
-"364","359","Basic","Absol","82","49","38","5","44","DARK","FIGHTING","PSYCHIC","3","359.png","Super Luck","Increases Critical Hit chance by 25%.","Slash","Night Slash","FALSE","Epic","","","","0","A","Hoenn"
-"365","360","Basic","Wynaut","44","16","18","3","19","PSYCHIC","DARK","FIGHTING","1","360.png","","","Counter-Cut","Destiny Bond","FALSE","Common","","Wobbuffet","Psyche","80","D","Hoenn"
-"366","361","Basic","Snorunt","36","19","18","3","24","WATER","FIRE","WATER","2","361.png","","","Powder Snow","Bite","FALSE","Common","","Glalie, Froslass","Water, Night","80","D","Hoenn"
-"367","362","Stage 1","Glalie","70","37","34","6","43","WATER","FIRE","WATER","3","362.png","","","Ice Fang","Blizzard","FALSE","Rare","Snorunt","","","0","B","Hoenn"
-"368","363","Basic","Spheal","40","19","18","3","19","WATER","ELECTRIC","FIRE","2","363.png","","","Powder Snow","Water Gun","FALSE","Common","","Sealeo","Water","50","D","Hoenn"
-"369","364","Stage 1","Sealeo","67","32","30","5","29","WATER","ELECTRIC","FIRE","3","364.png","","","Aurora Beam","Body Slam","FALSE","Rare","Spheal","Walrein","Water","120","C","Hoenn"
-"370","365","Stage 2","Walrein","122","51","48","8","48","WATER","ELECTRIC","FIRE","5","365.png","","","Ice Beam","Hydro Pump","FALSE","Epic","Sealeo","","","0","S","Hoenn"
-"371","366","Basic","Clamperl","34","21","21","3","21","WATER","ELECTRIC","FIRE","2","366.png","","","Water Gun","Withdraw","FALSE","Uncommon","","Huntail, Gorebyss","Heart, Scale","80","D","Hoenn"
-"372","367","Stage 1","Huntail","62","40","37","6","33","WATER","ELECTRIC","FIRE","3","367.png","","","Bite","Aqua Tail","FALSE","Rare","Clamperl","","","0","B","Hoenn"
-"373","368","Stage 1","Gorebyss","62","41","37","6","33","WATER","ELECTRIC","FIRE","3","368.png","","","Water Pulse","Psychic","FALSE","Rare","Clamperl","","","0","B","Hoenn"
-"374","369","Basic","Relicanth","90","44","44","5","39","WATER","GRASS","FIRE","4","369.png","","","Ancient Power","Double Edge","FALSE","Epic","","","","0","A","Hoenn"
-"375","370","Basic","Luvdisc","35","18","20","3","34","WATER","ELECTRIC","FIRE","2","370.png","","","Water Gun","Water Pulse","FALSE","Common","","","","0","D","Hoenn"
-"376","371","Basic","Bagon","36","21","19","3","24","NORMAL","FIGHTING","FIRE","2","371.png","Rock Head","Protects the Pokemon from recoil damage.","Bite","Dragon Breath","FALSE","Uncommon","","Shelgon","Scale","50","D","Hoenn"
-"377","372","Stage 1","Shelgon","59","35","32","5","31","NORMAL","FIGHTING","FIRE","3","372.png","Rock Head","Protects the Pokemon from recoil damage.","Dragon Breath","Slash","FALSE","Rare","Bagon","Salamence","Scale","120","C","Hoenn"
-"378","373","Stage 2","Salamence","138","65","55","8","58","NORMAL","WATER","FIRE","5","373.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Dragon Claw","Draco Meteor","FALSE","Legendary","Shelgon","","","0","S+","Hoenn"
-"379","374","Basic","Beldum","35","19","21","3","20","GROUND","FIRE","PSYCHIC","2","374.png","","","Take Down","Metal Claw","FALSE","Uncommon","","Metang","Psyche","50","D","Hoenn"
-"380","375","Stage 1","Metang","58","32","33","5","31","GROUND","FIRE","PSYCHIC","3","375.png","","","Metal Claw","Zen Headbutt","FALSE","Rare","Beldum","Metagross","Psyche","120","C","Hoenn"
-"381","376","Stage 2","Metagross","132","65","61","8","48","GROUND","FIRE","PSYCHIC","5","376.png","Clear Body","Immune to stat-lowering and debuff effects.","Zen Headbutt","Meteor Mash","FALSE","Legendary","Metang","","","0","S+","Hoenn"
-"382","377","Legendary","Regirock","112","51","58","10","43","GROUND","NONE","ELECTRIC","5","377.png","","","Ancient Power","Stone Edge","FALSE","Legendary","","","","0","S","Hoenn"
-"383","378","Legendary","Regice","112","51","58","10","43","WATER","NONE","WATER","5","378.png","","","Ancient Power","Blizzard","FALSE","Legendary","","","","0","S","Hoenn"
-"384","379","Legendary","Registeel","112","48","55","10","43","GROUND","NONE","PSYCHIC","5","379.png","","","Ancient Power","Flash Cannon","FALSE","Legendary","","","","0","S","Hoenn"
-"385","380","Legendary","Latias","112","54","51","10","63","NORMAL","DARK","FIGHTING","5","380.png","Levitate","Immune to Ground moves and sandstorm.","Dragon Breath","Mist Ball","FALSE","Legendary","","","","0","S","Hoenn"
-"386","381","Legendary","Latios","112","57","49","10","63","NORMAL","DARK","FIGHTING","5","381.png","Levitate","Immune to Ground moves and sandstorm.","Dragon Breath","Luster Purge","FALSE","Legendary","","","","0","S","Hoenn"
-"387","382","Legendary","Kyogre","140","68","62","10","55","WATER","ELECTRIC","FIRE","6","382.png","Drizzle","Boosts WATER moves DMG by +2.","Water Spout","Hydro Pump","FALSE","Legendary","","","","0","S+","Hoenn"
-"388","383","Legendary","Groudon","140","68","62","10","55","GROUND","WATER","ELECTRIC","6","383.png","Drought","Boosts FIRE & GROUND moves DMG by +2.","Earthquake","Eruption","FALSE","Legendary","","","","0","S+","Hoenn"
-"389","384","Legendary","Rayquaza","142","70","56","10","56","NORMAL","WATER","GROUND","6","384.png","Air Lock","Cancels all weather and field effects.","Extreme Speed","Dragon Ascent","FALSE","Legendary","","","","0","S+","Hoenn"
-"390","385","Legendary","Jirachi","118","53","49","10","60","GROUND","FIRE","PSYCHIC","5","385.png","Serene Grace","Secondary effects occur more frequently.","Swift","Doom Desire","FALSE","Legendary","","","","0","S","Hoenn"
-"391","386","Legendary","Deoxys","120","70","50","10","75","PSYCHIC","DARK","FIGHTING","5","386.png","Pressure","Forces opponent to expend energy quicker.","Psychic","Psycho Boost","FALSE","Legendary","","","","0","S+","Hoenn"
-"392","387","Basic","Turtwig","37","20","20","3","20","GRASS","FIRE","GROUND","2","387.png","","","Tackle","Razor Leaf","FALSE","Uncommon","","Grotle","Leaf","50","D","Sinnoh"
-"393","388","Stage 1","Grotle","62","34","31","5","27","GRASS","FIRE","GROUND","3","388.png","","","Bite","Mega Drain","FALSE","Rare","Turtwig","Torterra","Leaf","120","C","Sinnoh"
-"394","389","Stage 2","Torterra","117","53","49","8","45","GRASS","FIRE","ELECTRIC","5","389.png","","","Earthquake","Wood Hammer","FALSE","Epic","Grotle","","","0","S","Sinnoh"
-"395","390","Basic","Chimchar","35","20","18","3","27","FIRE","WATER","GRASS","2","390.png","","","Scratch","Ember","FALSE","Uncommon","","Monferno","Fire","50","D","Sinnoh"
-"396","391","Stage 1","Monferno","59","33","28","5","41","FIRE","WATER","DARK","3","391.png","","","Double Kick","Flame Wheel","FALSE","Rare","Chimchar","Infernape","Fire","120","C","Sinnoh"
-"397","392","Stage 2","Infernape","110","53","46","8","63","FIRE","WATER","DARK","4","392.png","","","Close Combat","Flare Blitz","FALSE","Epic","Monferno","","","0","S","Sinnoh"
-"398","393","Basic","Piplup","37","20","19","3","22","WATER","ELECTRIC","FIRE","2","393.png","","","Pound","Water Gun","FALSE","Uncommon","","Prinplup","Water","50","D","Sinnoh"
-"399","394","Stage 1","Prinplup","59","33","31","5","31","WATER","ELECTRIC","FIRE","3","394.png","","","Metal Claw","Bubble Beam","FALSE","Rare","Piplup","Empoleon","Water","120","C","Sinnoh"
-"400","395","Stage 2","Empoleon","113","54","49","8","47","WATER","ELECTRIC","PSYCHIC","5","395.png","","","Flash Cannon","Hydro Pump","FALSE","Epic","Prinplup","","","0","S","Sinnoh"
-"401","396","Basic","Starly","35","19","16","3","27","NORMAL","ELECTRIC","GROUND","2","396.png","","","Tackle","Quick Attack","FALSE","Common","","Staravia","Heart","50","D","Sinnoh"
-"402","397","Stage 1","Staravia","56","32","28","5","40","NORMAL","ELECTRIC","GROUND","3","397.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Wing Attack","Aerial Ace","FALSE","Rare","Starly","Staraptor","Heart","120","C","Sinnoh"
-"403","398","Stage 2","Staraptor","113","54","45","8","60","NORMAL","ELECTRIC","GROUND","4","398.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Close Combat","Brave Bird","FALSE","Epic","Staravia","","","0","S","Sinnoh"
-"404","399","Basic","Bidoof","38","18","17","3","20","NORMAL","FIGHTING","NONE","2","399.png","","","Tackle","Headbutt","FALSE","Common","","Bibarel","Heart","80","D","Sinnoh"
-"405","400","Stage 1","Bibarel","64","33","29","6","38","NORMAL","FIGHTING","FIRE","3","400.png","","","Water Pulse","Hyper Fang","FALSE","Rare","Bidoof","","","0","C","Sinnoh"
-"406","401","Basic","Kricketot","34","16","17","3","19","DARK","FIRE","PSYCHIC","2","401.png","","","Growl","Bug Bite","FALSE","Common","","Kricketune","Leaf","80","D","Sinnoh"
-"407","402","Stage 1","Kricketune","63","33","28","6","36","DARK","FIRE","PSYCHIC","3","402.png","","","Fury Cutter","Bug Buzz","FALSE","Rare","Kricketot","","","0","C","Sinnoh"
-"408","403","Basic","Shinx","36","20","17","3","23","ELECTRIC","GROUND","WATER","2","403.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Tackle","Thunder Shock","FALSE","Common","","Luxio","Thunder","50","D","Sinnoh"
-"409","404","Stage 1","Luxio","58","33","28","5","34","ELECTRIC","GROUND","WATER","3","404.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Spark","Bite","FALSE","Rare","Shinx","Luxray","Thunder","120","C","Sinnoh"
-"410","405","Stage 2","Luxray","112","56","47","8","50","ELECTRIC","GROUND","WATER","4","405.png","Intimidate","Lowers foe's attack on entry (-2 DMG).","Thunder Fang","Discharge","FALSE","Epic","Luxio","","","0","S","Sinnoh"
-"411","406","Basic","Budew","35","18","20","3","26","GRASS","FIRE","GROUND","2","406.png","","","Absorb","Stun Spore","FALSE","Common","","Roselia","Leaf","50","D","Sinnoh"
-"412","407","Stage 2","Roserade","105","56","48","8","57","GRASS","FIRE","GROUND","5","407.png","Natural Cure","Cleanses all status ailments on switch.","Giga Drain","Petal Blizzard","FALSE","Epic","Roselia","","","0","S","Sinnoh"
-"413","408","Basic","Cranidos","39","25","17","3","26","GROUND","GRASS","ELECTRIC","2","408.png","","","Headbutt","Rock Slide","FALSE","Uncommon","","Rampardos","Ground","80","D","Sinnoh"
-"414","409","Stage 1","Rampardos","89","52","37","6","40","GROUND","GRASS","ELECTRIC","4","409.png","","","Zen Headbutt","Head Smash","FALSE","Epic","Cranidos","","","0","A","Sinnoh"
-"415","410","Basic","Shieldon","33","18","25","3","20","GROUND","GRASS","ELECTRIC","2","410.png","","","Tackle","Iron Head","FALSE","Uncommon","","Bastiodon","Ground","80","D","Sinnoh"
-"416","411","Stage 1","Bastiodon","81","40","50","6","32","GROUND","GRASS","ELECTRIC","5","411.png","","","Iron Head","Stone Edge","FALSE","Epic","Shieldon","","","0","A","Sinnoh"
-"417","412","Basic","Burmy","35","17","18","3","22","DARK","FIRE","PSYCHIC","2","412.png","","","Protect","Bug Bite","FALSE","Common","","Wormadam, Mothim","Leaf, Leaf","80","D","Sinnoh"
-"418","413","Stage 1","Wormadam","58","33","33","6","27","DARK","FIRE","PSYCHIC","3","413.png","","","Confusion","Bug Buzz","FALSE","Rare","Burmy","","","0","C","Sinnoh"
-"419","414","Stage 1","Mothim","61","35","28","6","36","DARK","FIRE","PSYCHIC","3","414.png","","","Air Slash","Silver Wind","FALSE","Rare","Burmy","","","0","C","Sinnoh"
-"420","415","Basic","Combee","33","17","18","3","29","DARK","FIRE","PSYCHIC","2","415.png","","","Gust","Bug Bite","FALSE","Common","","Vespiquen","Leaf","80","D","Sinnoh"
-"421","416","Stage 1","Vespiquen","83","44","43","6","35","DARK","FIRE","PSYCHIC","4","416.png","","","Attack Order","Defend Order","FALSE","Epic","Combee","","","0","A","Sinnoh"
-"422","417","Basic","Pachirisu","64","32","35","4","48","ELECTRIC","GROUND","WATER","2","417.png","","","Spark","Discharge","FALSE","Uncommon","","","","0","B","Sinnoh"
-"423","418","Basic","Buizel","37","20","17","3","32","WATER","ELECTRIC","FIRE","2","418.png","","","Quick Attack","Aqua Jet","FALSE","Common","","Floatzel","Water","80","D","Sinnoh"
-"424","419","Stage 1","Floatzel","86","46","37","6","54","WATER","ELECTRIC","FIRE","3","419.png","","","Aqua Jet","Crunch","FALSE","Rare","Buizel","","","0","A","Sinnoh"
-"425","420","Basic","Cherubi","36","20","19","3","21","GRASS","FIRE","GROUND","2","420.png","","","Tackle","Magical Leaf","FALSE","Common","","Cherrim","Leaf","80","D","Sinnoh"
-"426","421","Stage 1","Cherrim","61","34","31","6","42","GRASS","FIRE","GROUND","3","421.png","","","Solar Beam","Petal Dance","FALSE","Rare","Cherubi","","","0","C","Sinnoh"
-"427","422","Basic","Shellos","41","19","19","3","21","WATER","GRASS","ELECTRIC","2","422.png","","","Mud-Slap","Water Pulse","FALSE","Common","","Gastrodon","Water","80","D","Sinnoh"
-"428","423","Stage 1","Gastrodon","79","38","34","6","28","WATER","GRASS","ELECTRIC","4","423.png","","","Muddy Water","Earth Power","FALSE","Rare","Shellos","","","0","B","Sinnoh"
-"429","424","Stage 1","Ambipom","68","39","32","6","55","NORMAL","FIGHTING","NONE","3","424.png","","","Double Hit","Acrobatics","FALSE","Rare","Aipom","","","0","B","Sinnoh"
-"430","425","Basic","Drifloon","43","20","17","3","29","DARK","ELECTRIC","GROUND","2","425.png","","","Gust","Ominous Wind","FALSE","Common","","Drifblim","Night","80","D","Sinnoh"
-"431","426","Stage 1","Drifblim","101","45","36","6","45","DARK","ELECTRIC","GROUND","4","426.png","","","Ominous Wind","Shadow Ball","FALSE","Rare","Drifloon","","","0","A","Sinnoh"
-"432","427","Basic","Buneary","37","20","19","3","32","NORMAL","FIGHTING","NONE","2","427.png","","","Pound","Quick Attack","FALSE","Common","","Lopunny","Heart","80","D","Sinnoh"
-"433","428","Stage 1","Lopunny","82","43","42","6","51","NORMAL","FIGHTING","NONE","3","428.png","","","High Jump Kick","Bounce","FALSE","Rare","Buneary","","","0","A","Sinnoh"
-"434","429","Stage 1","Mismagius","81","46","41","6","51","DARK","DARK","PSYCHIC","4","429.png","","","Psywave","Shadow Ball","FALSE","Rare","Misdreavus","","","0","A","Sinnoh"
-"435","430","Stage 1","Honchkrow","90","49","37","6","43","DARK","ELECTRIC","GROUND","4","430.png","","","Night Slash","Dark Pulse","FALSE","Rare","Murkrow","","","0","A","Sinnoh"
-"436","431","Basic","Glameow","36","19","17","3","32","NORMAL","FIGHTING","NONE","2","431.png","","","Scratch","Fake Out","FALSE","Common","","Purugly","Heart","80","D","Sinnoh"
-"437","432","Stage 1","Purugly","67","36","31","6","54","NORMAL","FIGHTING","NONE","3","432.png","","","Slash","Body Slam","FALSE","Rare","Glameow","","","0","B","Sinnoh"
-"438","433","Basic","Chingling","36","20","18","3","23","PSYCHIC","DARK","FIGHTING","2","433.png","","","Astonish","Psywave","FALSE","Common","","Chimecho","Psyche","80","D","Sinnoh"
-"439","434","Basic","Stunky","38","20","18","3","30","DARK","GROUND","PSYCHIC","2","434.png","","","Scratch","Acid","FALSE","Common","","Skuntank","Night","80","D","Sinnoh"
-"440","435","Stage 1","Skuntank","77","38","32","6","44","DARK","GROUND","PSYCHIC","4","435.png","","","Poison Jab","Flamethrower","FALSE","Rare","Stunky","","","0","B","Sinnoh"
-"441","436","Basic","Bronzor","38","16","22","3","19","GROUND","FIRE","PSYCHIC","2","436.png","","","Tackle","Confusion","FALSE","Common","","Bronzong","Psyche","80","D","Sinnoh"
-"442","437","Stage 1","Bronzong","66","38","40","6","26","GROUND","FIRE","PSYCHIC","4","437.png","","","Extrasensory","Flash Cannon","FALSE","Rare","Bronzor","","","0","B","Sinnoh"
-"443","438","Basic","Bonsly","36","21","22","3","16","GROUND","GRASS","ELECTRIC","2","438.png","","","Tackle","Rock Throw","FALSE","Common","","Sudowoodo","Ground","80","D","Sinnoh"
-"444","440","Basic","Happiny","44","15","18","3","20","NORMAL","FIGHTING","NONE","2","440.png","","","Pound","Sweet Kiss","FALSE","Common","","Chansey","Heart","50","D","Sinnoh"
-"445","441","Basic","Chatot","69","38","28","4","47","NORMAL","ELECTRIC","GROUND","2","441.png","","","Peck","Chatter","FALSE","Uncommon","","","","0","B","Sinnoh"
-"446","442","Basic","Spiritomb","78","45","44","5","34","DARK","NONE","PSYCHIC","4","442.png","Pressure","Forces opponent to expend energy quicker.","Shadow Sneak","Dark Pulse","FALSE","Epic","","","","0","A","Sinnoh"
-"447","443","Basic","Gible","38","20","18","3","23","NORMAL","WATER","FIRE","2","443.png","","","Tackle","Dragon Breath","FALSE","Uncommon","","Gabite","Scale","50","D","Sinnoh"
-"448","444","Stage 1","Gabite","60","34","29","5","41","NORMAL","WATER","FIRE","3","444.png","","","Slash","Dragon Claw","FALSE","Rare","Gible","Garchomp","Scale","120","C","Sinnoh"
-"449","445","Stage 2","Garchomp","143","63","57","8","59","NORMAL","WATER","FIRE","5","445.png","","","Earthquake","Draco Meteor","FALSE","Legendary","Gabite","","","0","S+","Sinnoh"
-"450","446","Basic","Munchlax","50","22","21","3","15","NORMAL","FIGHTING","NONE","2","446.png","","","Tackle","Body Slam","FALSE","Uncommon","","Snorlax","Heart","80","D","Sinnoh"
-"451","447","Basic","Riolu","35","20","17","3","27","FIGHTING","PSYCHIC","DARK","2","447.png","Inner Focus","Immune to flinching.","Quick Attack","Drain Punch","FALSE","Uncommon","","Lucario","Punch","80","D","Sinnoh"
-"452","448","Stage 1","Lucario","83","48","39","6","48","FIGHTING","FIRE","DARK","4","448.png","Inner Focus","Immune to flinching.","Bullet Punch","Aura Sphere","FALSE","Epic","Riolu","","","0","A","Sinnoh"
-"453","449","Basic","Hippopotas","39","20","20","3","21","GROUND","GRASS","ELECTRIC","2","449.png","","","Tackle","Sand Tomb","FALSE","Common","","Hippowdon","Ground","80","D","Sinnoh"
-"454","450","Stage 1","Hippowdon","91","47","43","6","37","GROUND","GRASS","ELECTRIC","4","450.png","Sand Stream","Summons a persistent sandstorm in battle.","Crunch","Earthquake","FALSE","Rare","Hippopotas","","","0","A","Sinnoh"
-"455","451","Basic","Skorupi","35","18","22","3","28","DARK","FIRE","PSYCHIC","2","451.png","","","Poison Sting","Bite","FALSE","Common","","Drapion","Night","80","D","Sinnoh"
-"456","452","Stage 1","Drapion","83","44","42","6","49","DARK","GROUND","PSYCHIC","4","452.png","","","Cross Poison","Night Slash","FALSE","Epic","Skorupi","","","0","A","Sinnoh"
-"457","453","Basic","Croagunk","36","20","17","3","24","DARK","PSYCHIC","DARK","2","453.png","","","Poison Sting","Mud-Slap","FALSE","Common","","Toxicroak","Punch","80","D","Sinnoh"
-"458","454","Stage 1","Toxicroak","86","46","38","6","46","DARK","PSYCHIC","DARK","3","454.png","","","Poison Jab","Drain Punch","FALSE","Rare","Croagunk","","","0","A","Sinnoh"
-"459","455","Basic","Carnivine","68","39","33","4","31","GRASS","FIRE","GROUND","2","455.png","","","Bite","Energy Ball","FALSE","Uncommon","","","","0","B","Sinnoh"
-"460","456","Basic","Finneon","36","19","20","3","28","WATER","ELECTRIC","FIRE","2","456.png","","","Water Gun","Pound","FALSE","Common","","Lumineon","Water","80","D","Sinnoh"
-"461","457","Stage 1","Lumineon","61","32","32","6","44","WATER","ELECTRIC","FIRE","3","457.png","","","Water Pulse","Silver Wind","FALSE","Rare","Finneon","","","0","C","Sinnoh"
-"462","458","Basic","Mantyke","36","19","24","3","24","WATER","ELECTRIC","GROUND","2","458.png","","","Tackle","Bubble Beam","FALSE","Common","","Mantine","Water","80","D","Sinnoh"
-"463","459","Basic","Snover","38","20","19","3","22","GRASS","FIRE","WATER","2","459.png","","","Powder Snow","Razor Leaf","FALSE","Common","","Abomasnow","Leaf","80","D","Sinnoh"
-"464","460","Stage 1","Abomasnow","87","45","40","6","40","GRASS","FIRE","WATER","4","460.png","Snow Warning","Summons a persistent hailstorm in battle.","Ice Punch","Wood Hammer","FALSE","Rare","Snover","","","0","A","Sinnoh"
-"465","461","Stage 1","Weavile","83","47","40","6","56","DARK","FIGHTING","PSYCHIC","3","461.png","","","Ice Shard","Night Slash","FALSE","Epic","Sneasel","","","0","A","Sinnoh"
-"466","463","Stage 1","Lickilicky","92","44","42","6","38","NORMAL","FIGHTING","NONE","4","463.png","","","Lick","Slam","FALSE","Rare","Lickitung","","","0","A","Sinnoh"
-"467","468","Stage 2","Togekiss","113","54","50","8","53","NORMAL","ELECTRIC","GROUND","5","468.png","Serene Grace","Secondary effects occur more frequently.","Air Slash","Aura Sphere","FALSE","Epic","Togetic","","","0","S","Sinnoh"
-"468","469","Stage 1","Yanmega","87","47","40","6","49","DARK","ELECTRIC","GROUND","3","469.png","Speed Boost","Gains +1 Speed at the start of each round.","Air Slash","Bug Buzz","FALSE","Epic","Yanma","","","0","A","Sinnoh"
-"469","470","Stage 1","Leafeon","82","46","44","8","49","GRASS","FIRE","GROUND","5","470.png","","","Quick Attack","Leaf Blade","FALSE","Epic","Eevee","","","0","A","Sinnoh"
-"470","471","Stage 1","Glaceon","82","48","43","8","41","WATER","FIRE","WATER","5","471.png","","","Ice Shard","Blizzard","FALSE","Epic","Eevee","","","0","A","Sinnoh"
-"471","472","Stage 1","Gliscor","84","45","44","6","49","GROUND","WATER","ELECTRIC","4","472.png","Poison Heal","Restores HP instead of taking damage from poison.","Earthquake","X-Scissor","FALSE","Epic","Gligar","","","0","A","Sinnoh"
-"472","473","Stage 2","Mamoswine","122","57","46","8","53","WATER","GRASS","FIRE","5","473.png","","","Ice Fang","Earthquake","FALSE","Epic","Piloswine","","","0","S","Sinnoh"
-"473","474","Stage 2","Porygon-Z","113","58","46","8","57","NORMAL","FIGHTING","NONE","4","474.png","","","Tri Attack","Hyper Beam","FALSE","Epic","Porygon2","","","0","S","Sinnoh"
-"474","475","Stage 2","Gallade","108","56","49","8","53","PSYCHIC","DARK","FIGHTING","4","475.png","","","Psycho Cut","Close Combat","FALSE","Epic","Kirlia","","","0","S","Sinnoh"
-"475","476","Stage 1","Probopass","81","43","49","6","35","GROUND","GRASS","ELECTRIC","5","476.png","","","Magnet Bomb","Rock Slide","FALSE","Rare","Nosepass","","","0","A","Sinnoh"
-"476","477","Stage 2","Dusknoir","100","52","54","8","42","DARK","DARK","PSYCHIC","5","477.png","Pressure","Forces opponent to expend energy quicker.","Shadow Punch","Shadow Ball","FALSE","Epic","Dusclops","","","0","S","Sinnoh"
-"477","478","Stage 1","Froslass","67","37","33","6","53","WATER","FIRE","WATER","3","478.png","","","Ice Shard","Ominous Wind","FALSE","Rare","Snorunt","","","0","B","Sinnoh"
-"478","479","Basic","Rotom","78","45","40","5","48","ELECTRIC","GROUND","WATER","3","479.png","Levitate","Immune to GROUND type attacks.","Thunder Shock","Ominous Wind","FALSE","Rare","","","","0","A","Sinnoh"
-"479","480","Legendary","Uxie","110","48","53","10","58","PSYCHIC","DARK","FIGHTING","6","480.png","","","Swift","Extrasensory","FALSE","Legendary","","","","0","S","Sinnoh"
-"480","481","Legendary","Mesprit","112","54","50","10","53","PSYCHIC","DARK","FIGHTING","5","481.png","","","Swift","Extrasensory","FALSE","Legendary","","","","0","S","Sinnoh"
-"481","482","Legendary","Azelf","110","57","45","10","65","PSYCHIC","DARK","FIGHTING","5","482.png","","","Swift","Extrasensory","FALSE","Legendary","","","","0","S","Sinnoh"
-"482","483","Legendary","Dialga","140","69","60","10","55","GROUND","NONE","PSYCHIC","6","483.png","Pressure","Forces opponent to expend energy quicker.","Dragon Pulse","Roar of Time","FALSE","Legendary","","","","0","S+","Sinnoh"
-"483","484","Legendary","Palkia","136","69","60","10","58","WATER","ELECTRIC","FIRE","6","484.png","Pressure","Forces opponent to expend energy quicker.","Dragon Pulse","Spacial Rend","FALSE","Legendary","","","","0","S+","Sinnoh"
-"484","485","Legendary","Heatran","136","64","59","10","50","FIRE","WATER","GRASS","6","485.png","Flash Fire","Grants immunity to FIRE and boosts user fire damage.","Earth Power","Magma Storm","FALSE","Legendary","","","","0","S+","Sinnoh"
-"485","486","Legendary","Regigigas","122","62","50","10","60","NORMAL","FIGHTING","NONE","6","486.png","Slow Start","Starts combat with reduced stats for initial rounds.","Hammer Arm","Crush Grip","FALSE","Legendary","","","","0","S","Sinnoh"
-"486","487","Legendary","Giratina","160","58","61","10","55","DARK","DARK","PSYCHIC","6","487.png","Pressure","Forces opponent to expend energy quicker.","Dragon Claw","Shadow Force","FALSE","Legendary","","","","0","S+","Sinnoh"
-"487","488","Legendary","Cresselia","125","48","53","10","55","PSYCHIC","DARK","FIGHTING","6","488.png","Levitate","Immune to GROUND type attacks.","Psychic","Calm Mind","FALSE","Legendary","","","","0","S","Sinnoh"
-"488","489","Legendary","Phione","112","49","47","8","53","WATER","ELECTRIC","FIRE","4","489.png","","","Bubble Beam","Water Pulse","FALSE","Epic","","","","0","S","Sinnoh"
-"489","490","Legendary","Manaphy","118","53","49","10","60","WATER","ELECTRIC","FIRE","5","490.png","Hydration","Heals negative status effects naturally.","Water Pulse","Hydro Pump","FALSE","Legendary","","","","0","S","Sinnoh"
-"490","491","Legendary","Darkrai","128","65","56","10","67","DARK","FIGHTING","PSYCHIC","5","491.png","Bad Dreams","Reduces HP of sleeping opposing Pokémon.","Dark Pulse","Dark Void","FALSE","Legendary","","","","0","S+","Sinnoh"
-"491","492","Legendary","Shaymin","118","53","49","10","60","GRASS","FIRE","GROUND","5","492.png","Natural Cure","Cures status ailments when switching to the bench.","Energy Ball","Seed Flare","FALSE","Legendary","","","","0","S","Sinnoh"
-"492","493","Legendary","Arceus","148","62","61","10","65","NORMAL","NONE","NONE","6","493.png","Multitype","Adapts its typing dynamically to master all elements.","Hyper Beam","Judgment","FALSE","Legendary","","","","0","S+","Sinnoh"
-"493","95","Boss","Crystal Onix","900","65","80","8","3","ROCK","NONE","WATER","4","X Crystal Onix.png","Diamond Hoard","Invincible crystalline titan. Endure the battle and strike it to mine 20-50 Diamonds!","Rock Slide","Crystal Blast","FALSE","Boss","","","","0","S+","Special"
-"494","130","Legendary","Red Gyarados","138","61","57","8","52","WATER","","","5","130 (Shiny).png","Furia","Whenever this PKMN takes damage or falls below 50% HP, its Move DMG increases by +2.","Aqua Tail","Hyper Beam","FALSE","Legendary","","","","0","S+","Johto"
-"495","130","Boss","Red Gyarados (Boss)","600","70","65","10","50","WATER","","","5","130 (Shiny).png","Furia Desatada","Enraged lake guardian! Deals +3 extra damage with all attacks and gains relentless power.","Aqua Tail","Hyper Beam","FALSE","Boss","","","","0","S+","Special"
-"496","150","Boss","Enraged Mewtwo","750","80","65","10","75","PSYCHIC","NONE","","5","150.png","Escalada Furiosa","Increases +1 DMG for each round the battle lasts.","Aura Sphere","Mind Bending","FALSE","Boss","","","","0","S+","Special"
-"497","249","Boss","Celestial Lugia","800","65","85","10","65","PSYCHIC","DARK","GROUND","6","249.png","Ira Celestial","If partner faints, becomes enraged and increases base DMG and Speed.","Aeroblast","Hydro Pump","FALSE","Boss","","","","0","S+","Special"
-"498","250","Boss","Celestial Ho-Oh","800","75","75","10","65","FIRE","WATER","GROUND","6","250.png","Ira Celestial","If partner faints, becomes enraged and increases base DMG and Speed.","Sacred Fire","Brave Bird","FALSE","Boss","","","","0","S+","Special"
-"499","382","Boss","Primal Kyogre","850","85","75","10","60","WATER","ELECTRIC","FIRE","6","382.png","Drizzle","Boosts WATER moves DMG by +2.","Water Spout","Hydro Pump","FALSE","Boss","","","","0","S+","Special"
-"500","383","Boss","Primal Groudon","850","85","80","10","60","GROUND","WATER","ELECTRIC","6","383.png","Drought","Boosts FIRE & GROUND moves DMG by +2.","Earthquake","Eruption","FALSE","Boss","","","","0","S+","Special"
-"501","384","Boss","Apex Rayquaza","900","90","70","10","75","NORMAL","WATER","GROUND","6","384.png","Air Lock","Cancels all weather and field effects.","Extreme Speed","Dragon Ascent","FALSE","Boss","","","","0","S+","Special"
-"502","386","Boss","Cosmic Deoxys","900","95","60","10","85","PSYCHIC","DARK","FIGHTING","6","386.png","Pressure","Forces opponent to expend energy quicker.","Psycho Boost","Psychic","FALSE","Boss","","","","0","S+","Special"
+id,pokedex_num,Stage,name,hp,attack,defense,energy,speed,type,weakness,resistant,recover,texture_file,passive_name,passive_desc,move1,move2,unlocked_start,rarity,evolves_from,evolves_to,required_stone,required_exp,tier,region
+0,1,Basic,Bulbasaur,36,20,20,3,23,GRASS,,,2,001.png,,,Tackle,Razor Leaf,FALSE,Initial,,Ivysaur,Leaf,50,D,Kanto
+1,4,Basic,Charmander,35,20,18,3,28,FIRE,,,2,004.png,,,Scratch,Ember,FALSE,Initial,,Charmeleon,Fire,50,D,Kanto
+2,7,Basic,Squirtle,35,19,20,3,23,WATER,,,2,007.png,,,Tackle,Bubble,FALSE,Initial,,Wartortle,Water,50,D,Kanto
+3,172,Basic,Pichu,32,18,16,3,27,ELECTRIC,,,2,172.png,Charm,Reduces -1 DMG taken from NORMAL type attacks.,Scratch,Thunder Shock,FALSE,Initial,,Pikachu,Thunder,50,D,Johto
+4,2,Stage 1,Ivysaur,58,33,31,5,34,GRASS,,,3,002.png,,,Poison Powder,Vine Whip,FALSE,Rare,Bulbasaur,Venusaur,Leaf,120,C,Kanto
+5,3,Stage 2,Venusaur,112,52,49,8,53,GRASS,,,4,003.png,,,Giga Drain,Solar Beam,FALSE,Epic,Ivysaur,,,0,S,Kanto
+6,5,Stage 1,Charmeleon,57,33,29,5,40,FIRE,,,3,005.png,,,Slash,Fire Fang,FALSE,Rare,Charmander,Charizard,Fire,120,C,Kanto
+7,6,Stage 2,Charizard,111,54,47,8,60,FIRE,,,4,006.png,,,Aerial Ace,Flamethrower,FALSE,Epic,Charmeleon,,,0,S,Kanto
+8,8,Stage 1,Wartortle,58,31,31,5,33,WATER,,,3,008.png,Protect,"If this PKMN receives DMG from its weakness type, it is swapped to NONE during the rest of this combat.",Rapid Spin,Water Pulse,FALSE,Rare,Squirtle,Blastoise,Water,120,C,Kanto
+9,9,Stage 2,Blastoise,111,50,50,8,53,WATER,,,4,009.png,,,Water Pulse,Hydro Pump,FALSE,Epic,Wartortle,,,0,S,Kanto
+10,10,Basic,Caterpie,36,17,16,3,23,GRASS,,,2,010.png,String Shot,Reduces foe's Speed by 1.,Tackle,Bug Bite,FALSE,Common,,Metapod,Night,50,D,Kanto
+11,11,Stage 1,Metapod,55,26,28,5,25,GRASS,,,3,011.png,,,Harden,Bug Bite,FALSE,Uncommon,Caterpie,Butterfree,Leaf,120,C,Kanto
+12,12,Stage 2,Butterfree,81,44,39,8,42,GRASS,,,4,012.png,,,Air Slash,Bug Buzz,FALSE,Rare,Metapod,,,0,A,Kanto
+13,13,Basic,Weedle,35,17,16,3,24,DARK,FIRE,,2,013.png,String Shot,Reduces foe's Speed by 1.,Tackle,Poison Sting,FALSE,Common,,Kakuna,Night,50,D,Kanto
+14,14,Stage 1,Kakuna,53,26,27,5,26,DARK,,,3,014.png,,,Harden,Toxic Spikes,FALSE,Uncommon,Weedle,Beedrill,Night,120,C,Kanto
+15,15,Stage 2,Beedrill,84,52,38,8,56,DARK,,,4,015.png,,,Poison Sting,X-Scissor,FALSE,Rare,Kakuna,,,0,A,Kanto
+16,16,Basic,Pidgey,35,18,17,3,26,NORMAL,ELECTRIC,NONE,2,016.png,,,Scratch,Gust,FALSE,Common,,Pidgeotto,Heart,50,D,Kanto
+17,17,Stage 1,Pidgeotto,65,34,30,5,39,NORMAL,ELECTRIC,GROUND,3,017.png,,,Quick Attack,Wing Attack,FALSE,Rare,Pidgey,Pidgeot,Heart,120,B,Kanto
+18,18,Stage 2,Pidgeot,113,49,46,8,60,NORMAL,ELECTRIC,GROUND,4,018.png,Agility,,Air Slash,Hurricane,FALSE,Epic,Pidgeotto,,,0,S,Kanto
+19,19,Basic,Rattata,33,19,17,4,29,NORMAL,,NONE,1,019.png,Focus Energy,"If this PKMN is faster than foe's, increase this PKMN's next Move DMG +1.",Scratch,Bite,FALSE,Common,,Raticate,Heart,80,D,Kanto
+20,20,Stage 1,Raticate,62,36,32,6,49,NORMAL,,PSYCHIC,3,020.png,,,Crunch,Hyper Fang,FALSE,Rare,Rattata,,,0,B,Kanto
+21,21,Basic,Spearow,35,19,16,4,29,NORMAL,,NONE,1,021.png,,,Peck,Fury Attack,FALSE,Common,,Fearow,Heart,80,D,Kanto
+22,22,Stage 1,Fearow,82,44,38,6,50,NORMAL,ELECTRIC,GROUND,3,022.png,,,Drill Peck,Take Down,FALSE,Rare,Spearow,,,0,A,Kanto
+23,23,Basic,Ekans,34,19,19,4,26,DARK,,,1,023.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Poison Sting,Bite,FALSE,Common,,Arbok,Night,80,D,Kanto
+24,24,Stage 1,Arbok,64,38,34,6,43,DARK,,,3,024.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Crunch,Acid,FALSE,Rare,Ekans,,,0,B,Kanto
+25,25,Stage 1,Pikachu,50,30,28,5,43,ELECTRIC,,,3,025.png,,,Quick Attack,Thunder,FALSE,Rare,Pichu,Raichu,Thunder,120,C,Kanto
+26,26,Stage 2,Raichu,81,45,39,8,52,ELECTRIC,,,4,026.png,,,Thunder Punch,Volt Tackle,FALSE,Epic,Pikachu,,,0,A,Kanto
+27,27,Basic,Sandshrew,36,20,21,4,22,GROUND,,,1,027.png,,,Sand Attack,Swift,FALSE,Common,,Sandslash,Ground,80,D,Kanto
+28,28,Stage 1,Sandslash,68,38,37,6,37,GROUND,,,3,028.png,,,Double Edge,Bulldoze,FALSE,Rare,Sandshrew,,,0,B,Kanto
+29,29,Basic,Nidoran F,37,18,18,3,23,GROUND,,,1,029.png,,,Scratch,Fury Swipes,FALSE,Common,,Nidorina,Ground,50,D,Kanto
+30,30,Stage 1,Nidorina,61,31,29,5,33,GROUND,,,3,030.png,,,Flatter,Earth Power,FALSE,Rare,Nidoran F,Nidoqueen,Ground,120,C,Kanto
+31,31,Stage 2,Nidoqueen,115,51,47,8,52,GROUND,,,5,031.png,,,Earth Power,Earthquake,FALSE,Epic,Nidorina,,,0,S,Kanto
+32,32,Basic,Nidoran M,36,19,17,3,24,GROUND,,,1,032.png,,,Tackle,Mud-Slap,FALSE,Common,,Nidorino,Ground,50,D,Kanto
+33,33,Stage 1,Nidorino,64,35,30,5,37,GROUND,,,3,033.png,,,Horn Attack,Rock Tomb,FALSE,Rare,Nidoran M,Nidoking,Ground,120,B,Kanto
+34,34,Stage 2,Nidoking,112,53,46,8,55,GROUND,,,5,034.png,,,Mega Punch,Earthquake,FALSE,Epic,Nidorino,,,0,S,Kanto
+35,173,Basic,Cleffa,36,18,18,3,17,NORMAL,,DARK,1,173.png,,,Pound,Sweet Kiss,FALSE,Common,,Clefairy,Heart,50,D,Johto
+36,35,Stage 1,Clefairy,61,30,29,5,26,NORMAL,,DARK,3,035.png,,,Double Slap,Disarming Voice,FALSE,Rare,Cleffa,Clefable,Heart,120,C,Kanto
+37,36,Stage 2,Clefable,89,45,41,8,40,NORMAL,,DARK,5,036.png,,,Moonblast,Metronome,FALSE,Rare,Clefairy,,,0,A,Kanto
+38,37,Basic,Vulpix,34,19,19,4,28,FIRE,,,2,037.png,,,Will-O-Wisp,Incinerate,FALSE,Uncommon,,Ninetales,Fire,80,D,Kanto
+39,38,Stage 1,Ninetales,84,44,42,6,50,FIRE,,,4,038.png,,,Fire Spin,Inferno,FALSE,Rare,Vulpix,,,0,A,Kanto
+40,174,Basic,Igglybuff,43,18,15,3,17,NORMAL,,NORMAL,1,174.png,,,Pound,Defense Curl,FALSE,Common,,Jigglypuff,Heart,50,D,Johto
+41,39,Stage 1,Jigglypuff,75,28,25,5,22,NORMAL,,NORMAL,3,039.png,,,Echoed Voice,Sing,FALSE,Rare,Igglybuff,Wigglytuff,Heart,120,C,Kanto
+42,40,Stage 2,Wigglytuff,99,44,36,8,36,NORMAL,,NORMAL,5,040.png,,,Hyper Voice,Play Rough,FALSE,Rare,Jigglypuff,,,0,A,Kanto
+43,41,Basic,Zubat,35,18,17,3,26,DARK,ELECTRIC,,1,041.png,Inner Focus,Immune to flinching.,Supersonic,Poison Fang,FALSE,Common,,Golbat,Night,50,D,Kanto
+44,42,Stage 1,Golbat,68,36,33,5,46,DARK,ELECTRIC,,3,042.png,Inner Focus,Immune to flinching.,Air Cutter,Bite,FALSE,Rare,Zubat,Crobat,Night,120,B,Kanto
+45,169,Stage 2,Crobat,113,50,47,8,70,DARK,ELECTRIC,,5,169.png,Inner Focus,Immune to flinching.,Leech Life,Cross Poison,FALSE,Epic,Golbat,,,0,S,Johto
+46,43,Basic,Oddish,36,21,20,3,20,GRASS,,,1,043.png,Chlorophyll,Increases Speed (+2 SPD) during Weather.,Stun Spore,Absorb,FALSE,Common,,Gloom,Leaf,50,D,Kanto
+47,44,Stage 1,Gloom,64,37,33,5,29,GRASS,,,3,044.png,Chlorophyll,Increases Speed (+2 SPD) during Weather.,Sleep Powder,Mega Drain,FALSE,Rare,Oddish,"Vileplume, Bellossom","Night, Leaf",120,B,Kanto
+48,45,Stage 2,Vileplume,110,54,48,8,43,GRASS,,,5,045.png,Chlorophyll,Increases Speed (+2 SPD) during Weather.,Grassy Terrain,Petal Dance,FALSE,Epic,Gloom,,,0,S,Kanto
+49,46,Basic,Paras,34,20,19,3,19,GRASS,,,2,046.png,,,Poison Powder,Slash,FALSE,Common,,Parasect,Night,80,D,Kanto
+50,47,Stage 1,Parasect,81,45,40,6,32,GRASS,,,4,047.png,,,Fury Cutter,Poison Claw,FALSE,Rare,Paras,,,0,A,Kanto
+51,48,Basic,Venonat,38,19,19,4,23,DARK,,,2,048.png,,,Supersonic,Struggle Bug,FALSE,Uncommon,,Venomoth,Psyche,80,D,Kanto
+52,49,Stage 1,Venomoth,83,44,39,6,48,PSYCHIC,,,4,049.png,,,Gust,Psybeam,FALSE,Rare,Venonat,,,0,A,Kanto
+53,50,Basic,Digglet,30,19,17,3,34,GROUND,,,1,050.png,,,Dig,Mud-Slap,FALSE,Common,,Dugtrio,Ground,80,D,Kanto
+54,51,Stage 1,Dugtrio,75,45,38,6,55,GROUND,,,4,051.png,,,Sand Tomb,Fissure,FALSE,Rare,Digglet,,,0,A,Kanto
+55,52,Basic,Meowth,35,18,17,4,33,NORMAL,,,2,052.png,,,Growl,Fury Swipes,FALSE,Uncommon,,Persian,Night,80,D,Kanto
+56,53,Stage 1,Persian,82,42,38,6,54,DARK,,,4,053.png,,,Pay Day,Assurance,FALSE,Rare,Meowth,,,0,A,Kanto
+57,54,Basic,Psyduck,36,20,18,4,26,WATER,,,2,054.png,,,Water Gun,Water Pulse,FALSE,Uncommon,,Golduck,Psyche,80,D,Kanto
+58,55,Stage 1,Golduck,70,38,34,6,44,PSYCHIC,,,4,055.png,,,Water Pulse,High Confusion,FALSE,Rare,Psyduck,,,0,B,Kanto
+59,56,Basic,Mankey,35,21,18,4,29,FIGHTING,,,2,056.png,,,Covet,Low Kick,FALSE,Uncommon,,Primeape,Punch,80,D,Kanto
+60,57,Stage 1,Primeape,82,46,38,6,49,FIGHTING,,,4,057.png,,,Cross Chop,Close Combat,FALSE,Rare,Mankey,,,0,A,Kanto
+61,58,Basic,Growlithe,37,21,18,4,27,FIRE,,,2,058.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Bite,Fire Fang,FALSE,Uncommon,,Arcanine,Fire,80,D,Kanto
+62,59,Stage 1,Arcanine,87,47,40,6,49,FIRE,,,5,059.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Flame Wheel,Flare Blitz,FALSE,Epic,Growlithe,,,0,A,Kanto
+63,60,Basic,Poliwag,35,19,17,3,33,WATER,,,1,060.png,,,Hypnosis,Water Gun,FALSE,Common,,Poliwhirl,Water,50,D,Kanto
+64,61,Stage 1,Poliwhirl,59,31,29,5,43,WATER,,,3,061.png,,,Bubble Beam,Ice Punch,FALSE,Uncommon,Poliwag,"Poliwrath, Politoed","Water, Scale",120,C,Kanto
+65,62,Stage 2,Poliwrath,115,51,48,8,50,WATER,,,5,062.png,,,Dynamic Punch,Hydro Pump,FALSE,Epic,Poliwhirl,,,0,S,Kanto
+66,63,Basic,Abra,32,23,18,3,33,PSYCHIC,,,1,063.png,Synchronize,Passes status ailments back to foe.,Teleport,Zen Headbutt,FALSE,Common,,Kadabra,Psyche,50,D,Kanto
+67,64,Stage 1,Kadabra,58,40,31,5,51,PSYCHIC,,,3,064.png,Synchronize,Passes status ailments back to foe.,Reflect,Psybeam,FALSE,Rare,Abra,Alakazam,Psyche,120,B,Kanto
+68,65,Stage 2,Alakazam,103,57,47,8,67,PSYCHIC,,,5,065.png,Synchronize,Passes status ailments back to foe.,Psychic,Future Sight,FALSE,Epic,Kadabra,,,0,S,Kanto
+69,66,Basic,Machop,40,21,18,4,21,FIGHTING,,,1,066.png,Guts,Boosts attack (+3 DMG) under status ailments.,Bulk Up,Low Sweep,FALSE,Common,,Machoke,Punch,50,D,Kanto
+70,67,Stage 1,Machoke,64,35,30,5,29,FIGHTING,,,3,067.png,Guts,Boosts attack (+3 DMG) under status ailments.,Vital Throw,Revenge,FALSE,Rare,Machop,Machamp,Punch,120,C,Kanto
+71,68,Stage 2,Machamp,115,56,47,8,45,FIGHTING,,,5,068.png,Guts,Boosts attack (+3 DMG) under status ailments.,Dynamic Punch,Close Combat,FALSE,Epic,Machoke,,,0,S,Kanto
+72,69,Basic,Bellsprout,36,21,17,3,22,GRASS,,,1,069.png,,,Razor Leaf,Wrap,FALSE,Common,,Weepinbell,Leaf,50,D,Kanto
+73,70,Stage 1,Weepinbell,59,34,28,5,32,GRASS,,,3,070.png,,,Razor Leaf,Acid,FALSE,Rare,Bellsprout,Victreebel,Leaf,120,C,Kanto
+74,71,Stage 2,Victreebel,112,54,45,8,50,GRASS,,,5,071.png,,,Leaf Blade,Leaf Tornado,FALSE,Epic,Weepinbell,,,0,S,Kanto
+75,72,Basic,Tentacool,35,19,22,4,29,WATER,,,2,072.png,,,Water Gun,Acid,FALSE,Uncommon,,Tentacruel,Water,80,D,Kanto
+76,73,Stage 1,Tentacruel,85,43,43,6,50,WATER,,,4,073.png,,,Water Pulse,Surf,FALSE,Rare,Tentacool,,,0,A,Kanto
+77,74,Basic,Geodude,35,21,22,3,18,GROUND,,,1,074.png,Rock Head,Protects the Pokemon from recoil damage.,Tackle,Rock Throw,FALSE,Common,,Graveler,Ground,50,D,Kanto
+78,75,Stage 1,Graveler,62,38,37,5,27,GROUND,,,3,075.png,Rock Head,Protects the Pokemon from recoil damage.,Rock Throw,Smack Down,FALSE,Rare,Geodude,Golem,Ground,120,B,Kanto
+79,76,Stage 2,Golem,112,55,50,8,42,GROUND,,,5,076.png,Rock Head,Protects the Pokemon from recoil damage.,Stone Edge,Rock Slide,FALSE,Epic,Graveler,,,0,S,Kanto
+80,77,Basic,Ponyta,36,22,20,4,33,FIRE,,,2,077.png,,,Tail Whip,Flame Charge,FALSE,Uncommon,,Rapidash,Fire,80,D,Kanto
+81,78,Stage 1,Rapidash,82,46,40,6,51,FIRE,,,4,078.png,,,Agility,Fire Blast,FALSE,Rare,Ponyta,,,0,A,Kanto
+82,79,Basic,Slowpoke,43,20,19,4,17,WATER,,,2,079.png,,,Water Gun,Headbutt,FALSE,Uncommon,,"Slowbro, Slowking","Water, Scale",80,D,Kanto
+83,80,Stage 1,Slowbro,74,39,38,6,25,WATER,,,4,080.png,,,Amnesia,Surf,FALSE,Rare,Slowpoke,,,0,B,Kanto
+84,81,Basic,Magnemite,32,22,20,3,23,ELECTRIC,,,1,081.png,Sturdy,Endures a lethal 1-hit KO with 1 HP.,Thunder Shock,Gyro Ball,FALSE,Common,,Magneton,Thunder,50,D,Kanto
+85,82,Stage 1,Magneton,61,41,36,5,39,ELECTRIC,,,3,082.png,Sturdy,Endures a lethal 1-hit KO with 1 HP.,Sonic Boom,Spark,FALSE,Rare,Magnemite,Magnezone,Thunder,120,B,Kanto
+86,462,Stage 2,Magnezone,108,57,50,8,47,ELECTRIC,,,5,462.png,Sturdy,Endures a lethal 1-hit KO with 1 HP.,Tri Attack,Zap Cannon,FALSE,Epic,Magneton,,,0,S,Sinnoh
+87,83,Basic,Farfetch'd,62,37,31,4,36,NORMAL,,,2,083.png,,,Counter-Cut,False Swipe,FALSE,Uncommon,,,,0,B,Kanto
+88,84,Basic,Doduo,34,22,18,4,30,NORMAL,,,2,084.png,,,Double Hit,Pluck,FALSE,Common,,Dodrio,Heart,80,D,Kanto
+89,85,Stage 1,Dodrio,81,46,38,6,52,NORMAL,,,4,085.png,,,Drill Peck,Tri Attack,FALSE,Rare,Doduo,,,0,A,Kanto
+90,86,Basic,Seel,39,18,20,4,23,WATER,,,2,086.png,,,Water Gun,Ice Shard,FALSE,Common,,Dewgong,Water,80,D,Kanto
+91,87,Stage 1,Dewgong,87,42,41,6,42,WATER,,,4,087.png,,,Aurora Beam,Brine,FALSE,Rare,Seel,,,0,A,Kanto
+92,88,Basic,Grimer,41,21,18,4,19,DARK,,,2,088.png,,,Poison Gas,Sludge,FALSE,Common,,Muk,Night,80,D,Kanto
+93,89,Stage 1,Muk,91,46,42,6,38,DARK,,,4,089.png,,,Venom Drench,Sludge Bomb,FALSE,Rare,Grimer,,,0,A,Kanto
+94,90,Basic,Shellder,33,20,22,4,22,WATER,,,2,090.png,,,Shell Smash,Razor Shell,FALSE,Uncommon,,Cloyster,Water,80,D,Kanto
+95,91,Stage 1,Cloyster,78,45,47,6,42,WATER,,,4,091.png,,,Icicle Spear,Hydro Pump,FALSE,Rare,Shellder,,,0,A,Kanto
+96,92,Basic,Ghastly,33,23,17,3,31,DARK,,,1,092.png,Levitate,Immune to Ground moves and sandstorm.,Spite,Lick,FALSE,Common,,Haunter,Night,50,D,Kanto
+97,93,Stage 1,Haunter,77,47,37,5,49,DARK,,,3,093.png,Levitate,Immune to Ground moves and sandstorm.,Confuse Ray,Shadow Punch,FALSE,Rare,Ghastly,Gengar,Night,120,A,Kanto
+98,94,Stage 2,Gengar,105,56,45,8,63,DARK,,,5,094.png,Levitate,Immune to Ground moves and sandstorm.,Hypnosis,Dream Eater,FALSE,Epic,Haunter,,,0,S,Kanto
+99,95,Basic,Onix,56,31,42,4,39,GROUND,,,3,095.png,Rock Head,Protects the Pokemon from recoil damage.,Bind,Smack Down,FALSE,Rare,,Steelix,Ground,80,B,Kanto
+100,208,Stage 1,Steelix,84,44,50,6,32,GROUND,,,4,208.png,,,Iron Head,Rock Slide,FALSE,Epic,Onix,,,0,A,Johto
+101,96,Basic,Drowzee,38,18,21,4,23,PSYCHIC,,,2,096.png,,,Yawn,Headbutt,FALSE,Uncommon,,Hypno,Psyche,80,D,Kanto
+102,97,Stage 1,Hypno,72,36,38,6,38,PSYCHIC,,,4,097.png,,,Hypnosis,Confusion,FALSE,Rare,Drowzee,,,0,B,Kanto
+103,98,Basic,Krabby,33,23,21,4,24,WATER,,,2,098.png,,,Mud Shot,Razor Shell,FALSE,Common,,Kingler,Water,80,D,Kanto
+104,99,Stage 1,Kingler,62,42,37,6,41,WATER,,,4,099.png,,,Guillotine,Crabhammer,FALSE,Rare,Krabby,,,0,B,Kanto
+105,100,Basic,Voltorb,35,19,19,4,35,ELECTRIC,,,2,100.png,,,Swift,Spark,FALSE,Uncommon,,Electrode,Thunder,80,D,Kanto
+106,101,Stage 1,Electrode,81,43,40,6,62,ELECTRIC,,,4,101.png,,,Rollout,Electro Ball,FALSE,Rare,Voltorb,,,0,A,Kanto
+107,102,Basic,Exeggcute,38,19,21,4,22,GRASS,,,2,102.png,,,Leech Seed,Bullet Seed,FALSE,Common,,Exeggcutor,Leaf,80,D,Kanto
+108,103,Stage 1,Exeggcutor,89,48,40,6,39,GRASS,,,4,103.png,,,Seed Bomb,Extrasensory,FALSE,Rare,Exeggcute,,,0,A,Kanto
+109,104,Basic,Cubone,36,19,22,4,21,GROUND,,,2,104.png,,,False Swipe,Bone Rush,FALSE,Common,,Marowak,Ground,80,D,Kanto
+110,105,Stage 1,Marowak,64,36,38,6,30,GROUND,,,4,105.png,,,Bonemerang,Stomping Tantrum,FALSE,Rare,Cubone,,,0,B,Kanto
+111,106,Stage 1,Hitmonlee,78,47,42,5,47,FIGHTING,,,4,106.png,,,Double Kick,High Jump Kick,FALSE,Epic,Tyrogue,,,0,A,Kanto
+112,107,Stage 1,Hitmonchan,78,45,43,5,44,FIGHTING,,,3,107.png,,,Drain Punch,Special Punch,FALSE,Epic,Tyrogue,,,0,A,Kanto
+113,108,Basic,Lickitung,73,34,34,4,25,NORMAL,,,2,108.png,,,Belly Drum,Slam,FALSE,Rare,,Lickilicky,Heart,80,B,Kanto
+114,109,Basic,Koffing,35,20,22,4,21,DARK,,,2,109.png,Levitate,Immune to Ground moves and sandstorm.,Clear Smog,Smog,FALSE,Uncommon,,Weezing,Night,80,D,Kanto
+115,110,Stage 1,Weezing,82,45,43,6,40,DARK,,,4,110.png,Levitate,Immune to Ground moves and sandstorm.,Toxic,Belch,FALSE,Rare,Koffing,,,0,A,Kanto
+116,111,Basic,Rhyhorn,41,22,21,3,19,GROUND,,,2,111.png,,,Tackle,Rock Blast,FALSE,Common,,Rhydon,Ground,50,D,Kanto
+117,112,Stage 1,Rhydon,78,42,37,5,29,GROUND,,,3,112.png,,,Horn Attack,Drill Run,FALSE,Rare,Rhyhorn,Rhyperior,Ground,120,B,Kanto
+118,464,Stage 2,Rhyperior,123,58,50,8,40,GROUND,,,5,464.png,,,Hammer Arm,Rock Wrecker,FALSE,Epic,Rhydon,,,0,S,Sinnoh
+119,113,Stage 1,Chansey,105,22,24,5,35,NORMAL,,,3,113.png,,,Echoed Voice,Take Down,FALSE,Rare,Happiny,Blissey,Heart,120,B,Kanto
+120,114,Basic,Tangela,39,23,23,4,27,GRASS,,,2,114.png,,,Growth,Vine Whip,FALSE,Uncommon,,Tangrowth,Leaf,80,D,Kanto
+121,465,Stage 1,Tangrowth,90,47,43,6,38,GRASS,,,4,465.png,,,Mega Drain,Power Whip,FALSE,Epic,Tangela,,,0,A,Sinnoh
+122,115,Basic,Kangaskhan,91,44,40,6,48,NORMAL,,,3,115.png,,,Stomp,Last Resort,FALSE,Rare,,,,0,A,Kanto
+123,116,Basic,Horsea,33,20,19,4,27,WATER,,,1,116.png,,,Smokescreen,Water Gun,FALSE,Common,,Seadra,Water,50,D,Kanto
+124,117,Stage 1,Seadra,56,35,31,5,42,WATER,,,3,117.png,,,Bubble Beam,Twister,FALSE,Rare,Horsea,Kingdra,Scale,120,C,Kanto
+125,230,Stage 2,Kingdra,110,52,49,8,55,WATER,,,5,230.png,,,Dragon Pulse,Hydro Pump,FALSE,Epic,Seadra,,,0,S,Johto
+126,118,Basic,Goldeen,36,20,19,4,27,WATER,,,2,118.png,,,Peck,Flail,FALSE,Common,,Seaking,Water,80,D,Kanto
+127,119,Stage 1,Seaking,70,38,34,6,38,WATER,,,4,119.png,,,Aqua Ring,Megahorn,FALSE,Rare,Goldeen,,,0,B,Kanto
+128,120,Basic,Staryu,33,20,19,4,32,WATER,,,2,120.png,Natural Cure,Cleanses all status ailments on switch.,Water Gun,Rapid Spin,FALSE,Uncommon,,Starmie,Water,80,D,Kanto
+129,121,Stage 1,Starmie,81,46,41,6,54,WATER,,,4,121.png,Natural Cure,Cleanses all status ailments on switch.,Cosmic Power,Brine,FALSE,Rare,Staryu,,,0,A,Kanto
+130,439,Basic,Mime Jr.,32,20,21,3,27,PSYCHIC,,,2,439.png,,,Tackle,Trick Room,FALSE,Uncommon,,Mr. Mime,Psyche,80,D,Sinnoh
+131,122,Stage 1,Mr. Mime,58,38,38,8,46,PSYCHIC,,,5,122.png,,,Light Screen,Psybeam,FALSE,Epic,Mime Jr.,,,0,B,Kanto
+132,123,Basic,Scyther,83,46,40,5,51,GRASS,,,3,123.png,,,Wing Attack,X-Scissor,FALSE,Rare,,Scizor,Ground,80,A,Kanto
+133,212,Stage 1,Scizor,83,58,58,8,41,GROUND,,,4,212.png,,,Metal Claw,X-Scissor,FALSE,Epic,Scyther,,,0,S,Johto
+134,238,Basic,Smoochum,36,22,18,3,28,PSYCHIC,,,2,238.png,,,Powder Snow,Psywave,FALSE,Common,,Jynx,Psyche,80,D,Johto
+135,124,Stage 1,Jynx,82,47,40,6,49,PSYCHIC,,,4,124.png,,,Psycho Cut,Blizzard,FALSE,Epic,Smoochum,,,0,A,Kanto
+136,239,Basic,Elekid,36,20,18,3,34,ELECTRIC,,,1,239.png,,,Thunder Shock,Quick Attack,FALSE,Common,,Electabuzz,Thunder,50,D,Johto
+137,125,Stage 1,Electabuzz,66,38,34,5,51,ELECTRIC,,,3,125.png,,,Thunder Wave,Thunderbolt,FALSE,Rare,Elekid,Electivire,Thunder,120,B,Kanto
+138,466,Stage 2,Electivire,110,56,47,8,58,ELECTRIC,,,5,466.png,,,Shock Wave,Grand Thunder,FALSE,Epic,Electabuzz,,,0,S,Sinnoh
+139,240,Basic,Magby,36,21,18,3,31,FIRE,,,1,240.png,,,Poison Gas,Ember,FALSE,Common,,Magmar,Fire,50,D,Johto
+140,126,Stage 1,Magmar,66,39,34,5,47,FIRE,,,3,126.png,,,Fire Punch,Lava Plume,FALSE,Rare,Magby,Magmortar,Fire,120,B,Kanto
+141,467,Stage 2,Magmortar,110,57,47,8,54,FIRE,,,5,467.png,,,Heat Wave,Fire Blast,FALSE,Epic,Magmar,,,0,S,Sinnoh
+142,127,Basic,Pinsir,82,48,41,5,46,DARK,,,3,127.png,,,Bug Bite,Guillotine,FALSE,Rare,,,,0,A,Kanto
+143,128,Basic,Tauros,84,45,41,5,52,NORMAL,,,3,128.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Payback,Thrash,FALSE,Rare,,,,0,A,Kanto
+144,129,Basic,Magikarp,32,15,18,3,31,WATER,,,1,129.png,,,Tackle,Flail,FALSE,Common,,Gyarados,Scale,80,D,Kanto
+145,130,Stage 1,Gyarados,89,48,42,8,45,WATER,,,5,130.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Aqua Tail,Hyper Beam,FALSE,Epic,Magikarp,,,0,A,Kanto
+146,131,Basic,Lapras,96,44,41,6,40,WATER,,,4,131.png,,,Mist,Ice Beam,FALSE,Epic,,,,0,A,Kanto
+147,132,Basic,Ditto,36,19,18,5,24,NORMAL,,,3,132.png,Slimy,This PKMN receives half of the DMG it receives.,Transform,Tackle,FALSE,Epic,,,,0,D,Kanto
+148,133,Basic,Eevee,62,33,31,5,34,NORMAL,,,3,133.png,,,Tackle,Quick Attack,FALSE,Rare,,"Vaporeon, Jolteon, Flareon, Espeon, Umbreon, Leafeon, Glaceon","Water, Thunder, Fire, Psyche, Night, Leaf, Water",80,B,Kanto
+149,134,Stage 1,Vaporeon,85,40,35,8,37,WATER,,,5,134.png,,,Water Gun,Muddy Water,FALSE,Epic,Eevee,,,0,B,Kanto
+150,135,Stage 1,Jolteon,82,46,41,8,58,ELECTRIC,,,5,135.png,,,Thunder Shock,Thunder Fang,FALSE,Epic,Eevee,,,0,A,Kanto
+151,136,Stage 1,Flareon,82,49,42,8,41,FIRE,,,5,136.png,,,Ember,Fire Fang,FALSE,Epic,Eevee,,,0,A,Kanto
+152,137,Basic,Porygon,82,44,39,5,35,PSYCHIC,,,3,137.png,Conversion,"If this PKMN receives DMG from any type, this PKMN becomes that type.",Recycle,Kinetic Beam,FALSE,Rare,,Porygon2,Psyche,50,A,Kanto
+153,138,Basic,Omanyte,34,22,23,4,21,WATER,,,2,138.png,,,Withdraw,Rollout,FALSE,Uncommon,,Omastar,Water,80,D,Kanto
+154,139,Stage 1,Omastar,83,47,44,6,39,WATER,,,4,139.png,,,Withdraw,Brine,FALSE,Epic,Omanyte,,,0,A,Kanto
+155,140,Basic,Kabuto,33,21,21,4,26,GROUND,,,2,140.png,,,Aqua Jet,Mud Shot,FALSE,Uncommon,,Kabutops,Ground,80,D,Kanto
+156,141,Stage 1,Kabutops,64,40,37,6,43,GROUND,,,4,141.png,,,Slash,Liquidation,FALSE,Epic,Kabuto,,,0,B,Kanto
+157,142,Legendary,Aerodactyl,132,57,53,10,68,NORMAL,NONE,,5,142.png,Rock Head,Protects the Pokemon from recoil damage.,Ancient Power,Giga Impact,FALSE,Legendary,,,,0,S+,Kanto
+158,143,Stage 1,Snorlax,103,46,42,6,32,NORMAL,,,4,143.png,,,Yawn,Hammer Arm,FALSE,Epic,Munchlax,,,0,A,Kanto
+159,144,Legendary,Articuno,115,52,51,10,55,WATER,NONE,,6,144.png,,,Agility,Blizzard,FALSE,Legendary,,,,0,S,Kanto
+160,145,Legendary,Zapdos,115,56,48,10,60,ELECTRIC,NONE,,6,145.png,,,Discharge,Thunder,FALSE,Legendary,,,,0,S,Kanto
+161,146,Legendary,Moltres,136,63,56,10,55,FIRE,NONE,,6,146.png,,,Incinerate,Burn Up,FALSE,Legendary,,,,0,S+,Kanto
+162,147,Basic,Dratini,35,20,18,3,24,NORMAL,,,2,147.png,,,Thunder Wave,Dragon Breath,FALSE,Uncommon,,Dragonair,Scale,50,D,Kanto
+163,148,Stage 1,Dragonair,81,44,39,5,42,NORMAL,,,4,148.png,,,Dragon Tail,Dragon Rush,FALSE,Epic,Dratini,Dragonite,Scale,120,A,Kanto
+164,149,Stage 2,Dragonite,136,65,58,8,51,NORMAL,,,6,149.png,Inner Focus,Immune to flinching.,Dragon Claw,Outrage,FALSE,Legendary,Dragonair,,,0,S+,Kanto
+165,150,Legendary,Mewtwo,142,69,56,10,68,PSYCHIC,NONE,,5,150.png,,,Aura Sphere,Mind Bending,FALSE,Legendary,,,,0,S+,Kanto
+166,151,Legendary,Mew,118,53,49,10,60,PSYCHIC,GRASS,NONE,5,151.png,Synchronize,Passes status ailments back to foe.,Primal Coat,Might Sphere,FALSE,Legendary,,,,0,S,Kanto
+167,152,Basic,Chikorita,36,19,20,3,23,GRASS,,,2,152.png,,,Tackle,Razor Leaf,FALSE,Uncommon,,Bayleef,Leaf,50,D,Johto
+168,153,Stage 1,Bayleef,58,31,31,5,34,GRASS,,,3,153.png,,,Poison Powder,Magical Leaf,FALSE,Rare,Chikorita,Meganium,Leaf,120,C,Johto
+169,154,Stage 2,Meganium,112,50,49,8,53,GRASS,,,4,154.png,,,Body Slam,Petal Blizzard,FALSE,Epic,Bayleef,,,0,S,Johto
+170,155,Basic,Cyndaquil,35,20,18,3,28,FIRE,,,2,155.png,,,Scratch,Ember,FALSE,Uncommon,,Quilava,Fire,50,D,Johto
+171,156,Stage 1,Quilava,57,33,29,5,40,FIRE,,,3,156.png,,,Flame Wheel,Flame Charge,FALSE,Rare,Cyndaquil,Typhlosion,Fire,120,C,Johto
+172,157,Stage 2,Typhlosion,111,54,47,8,60,FIRE,,,4,157.png,,,Smokescreen,Flamethrower,FALSE,Epic,Quilava,,,0,S,Johto
+173,158,Basic,Totodile,36,20,19,3,23,WATER,,,2,158.png,,,Scratch,Water Gun,FALSE,Uncommon,,Croconaw,Water,50,D,Johto
+174,159,Stage 1,Croconaw,59,33,31,5,33,WATER,,,3,159.png,,,Slash,Aqua Tail,FALSE,Rare,Totodile,Feraligatr,Water,120,C,Johto
+175,160,Stage 2,Feraligatr,113,53,49,8,53,WATER,,,4,160.png,,,Crunch,Hydro Pump,FALSE,Epic,Croconaw,,,0,S,Johto
+176,161,Basic,Sentret,34,18,18,3,18,NORMAL,,NONE,2,161.png,,,Scratch,Quick Attack,FALSE,Common,,Furret,Heart,80,D,Johto
+177,162,Stage 1,Furret,66,32,29,6,43,NORMAL,,NONE,3,162.png,,,Quick Attack,Slam,FALSE,Rare,Sentret,,,0,C,Johto
+178,163,Basic,Hoothoot,38,17,18,4,24,NORMAL,ELECTRIC,GROUND,2,163.png,Keen Eye,Ignores evasion and negative accuracy.,Peck,Hypnosis,FALSE,Common,,Noctowl,Night,80,D,Johto
+179,164,Stage 1,Noctowl,76,37,35,6,39,NORMAL,ELECTRIC,GROUND,4,164.png,Insomnia,Cannot be put to sleep.,Air Slash,Extrasensory,FALSE,Rare,Hoothoot,,,0,B,Johto
+180,165,Basic,Ledyba,35,17,20,3,26,DARK,FIRE,,2,165.png,,,Tackle,Supersonic,FALSE,Common,,Ledian,Leaf,80,D,Johto
+181,166,Stage 1,Ledian,56,29,33,5,42,DARK,FIRE,,3,166.png,,,Comet Punch,Bug Buzz,FALSE,Rare,Ledyba,,,0,C,Johto
+182,167,Basic,Spinarak,35,19,17,3,20,DARK,FIRE,,2,167.png,Swarm,Boosts Bug moves when at low HP.,Poison Sting,Night Shade,FALSE,Common,,Ariados,Leaf,80,D,Johto
+183,168,Stage 1,Ariados,67,37,33,6,29,DARK,FIRE,,3,168.png,,,Poison Jab,Cross Poison,FALSE,Rare,Spinarak,,,0,B,Johto
+184,170,Basic,Chinchou,40,19,19,4,28,WATER,GRASS,,2,170.png,,,Bubble,Spark,FALSE,Common,,Lanturn,Water,80,D,Johto
+185,171,Stage 1,Lanturn,95,43,39,6,42,WATER,GRASS,,4,171.png,Volt Absorb,Heals when struck by electric attacks.,Water Pulse,Discharge,FALSE,Rare,Chinchou,,,0,A,Johto
+186,175,Basic,Togepi,34,17,20,3,18,NORMAL,,DARK,1,175.png,Serene Grace,Doubles the chance of secondary move effects.,Pound,Ancient Power,FALSE,Uncommon,,Togetic,Heart,50,D,Johto
+187,176,Stage 1,Togetic,62,36,38,5,29,NORMAL,ELECTRIC,GROUND,3,176.png,,,Sweet Kiss,Moonblast,FALSE,Rare,Togepi,Togekiss,Heart,120,B,Johto
+188,177,Basic,Natu,35,21,18,3,29,PSYCHIC,DARK,GROUND,2,177.png,,,Peck,Psywave,FALSE,Common,,Xatu,Psyche,80,D,Johto
+189,178,Stage 1,Xatu,82,45,39,6,49,PSYCHIC,DARK,GROUND,4,178.png,Synchronize,Passes status conditions to attacker.,Air Slash,Psychic,FALSE,Rare,Natu,,,0,A,Johto
+190,179,Basic,Mareep,37,20,18,3,21,ELECTRIC,GROUND,,2,179.png,Static,May paralyze on contact.,Tackle,Thunder Shock,FALSE,Common,,Flaaffy,Thunder,50,D,Johto
+191,180,Stage 1,Flaaffy,61,33,29,5,29,ELECTRIC,GROUND,,3,180.png,,,Thunder Shock,Electro Ball,FALSE,Rare,Mareep,Ampharos,Thunder,120,C,Johto
+192,181,Stage 2,Ampharos,115,54,48,8,45,ELECTRIC,GROUND,,5,181.png,,,Discharge,Thunder,FALSE,Epic,Flaaffy,,,0,S,Johto
+193,182,Stage 2,Bellossom,84,45,42,8,38,GRASS,FIRE,WATER,5,182.png,Chlorophyll,Doubles speed under sun.,Magical Leaf,Petal Blizzard,FALSE,Epic,Gloom,,,0,A,Johto
+194,183,Stage 1,Marill,61,25,28,5,28,WATER,ELECTRIC,,3,183.png,Huge Power,Doubles base attack strength.,Bubble Beam,Slam,FALSE,Rare,Azurill,Azumarill,Water,120,C,Johto
+195,184,Stage 2,Azumarill,90,41,40,8,38,WATER,ELECTRIC,,5,184.png,Huge Power,Doubles base attack strength.,Aqua Tail,Play Rough,FALSE,Epic,Marill,,,0,A,Johto
+196,185,Stage 1,Sudowoodo,83,45,43,6,32,GROUND,WATER,NORMAL,3,185.png,Rock Head,Protects the Pokemon from recoil damage.,Rock Throw,Wood Hammer,FALSE,Rare,Bonsly,,,0,A,Johto
+197,186,Stage 2,Politoed,92,46,48,8,48,WATER,ELECTRIC,FIRE,5,186.png,Drizzle,Summons rain when entering battle.,Bubble Beam,Hydro Pump,FALSE,Epic,Poliwhirl,,,0,A,Johto
+198,187,Basic,Hoppip,34,17,19,3,24,GRASS,FIRE,GROUND,2,187.png,,,Tackle,Absorb,FALSE,Common,,Skiploom,Leaf,50,D,Johto
+199,188,Stage 1,Skiploom,56,28,29,5,40,GRASS,FIRE,GROUND,3,188.png,,,Bullet Seed,Mega Drain,FALSE,Uncommon,Hoppip,Jumpluff,Leaf,120,C,Johto
+200,189,Stage 2,Jumpluff,84,41,41,8,56,GRASS,FIRE,GROUND,4,189.png,Chlorophyll,Doubles speed under sunlight.,Mega Drain,Acrobatics,FALSE,Epic,Skiploom,,,0,B,Johto
+201,190,Basic,Aipom,62,34,30,4,44,NORMAL,,NONE,2,190.png,Run Away,Guarantees escape from wild battles.,Scratch,Swift,FALSE,Common,,Ambipom,Heart,80,B,Johto
+202,191,Basic,Sunkern,33,17,16,3,20,GRASS,FIRE,WATER,2,191.png,Solar Power,Boosts Sp. Atk in sunshine.,Absorb,Growth,FALSE,Common,,Sunflora,Leaf,80,D,Johto
+203,192,Stage 1,Sunflora,62,36,31,6,25,GRASS,FIRE,WATER,4,192.png,Chlorophyll,Doubles speed in sunny weather.,Giga Drain,Solar Beam,FALSE,Rare,Sunkern,,,0,C,Johto
+204,193,Basic,Yanma,66,36,29,4,48,DARK,FIRE,GROUND,2,193.png,Speed Boost,Its Speed stat is boosted every turn.,Quick Attack,Air Cutter,FALSE,Uncommon,,Yanmega,Night,80,B,Johto
+205,194,Basic,Wooper,37,18,17,3,17,WATER,GRASS,ELECTRIC,2,194.png,Water Absorb,Restores HP if hit by water moves.,Mud-Slap,Water Gun,FALSE,Common,,Quagsire,Water,80,D,Johto
+206,195,Stage 1,Quagsire,89,44,40,6,34,WATER,GRASS,ELECTRIC,4,195.png,Unaware,Ignores foe stat changes.,Bulldoze,Earthquake,FALSE,Rare,Wooper,,,0,A,Johto
+207,196,Stage 1,Espeon,82,48,41,8,52,PSYCHIC,DARK,,5,196.png,Magic Bounce,Reflects status-changing moves.,Psybeam,Psychic,FALSE,Epic,Eevee,,,0,A,Johto
+208,197,Stage 1,Umbreon,89,42,46,8,41,DARK,FIGHTING,PSYCHIC,5,197.png,Synchronize,Passes poison or burn to attacker.,Payback,Dark Pulse,FALSE,Epic,Eevee,,,0,A,Johto
+209,198,Basic,Murkrow,64,37,28,4,47,DARK,ELECTRIC,GROUND,2,198.png,Super Luck,Heightens critical-hit ratios.,Peck,Night Shade,FALSE,Uncommon,,Honchkrow,Night,80,B,Johto
+210,199,Stage 1,Slowking,89,46,43,7,32,WATER,GRASS,FIRE,5,199.png,Oblivious,Immune to infatuation and taunt.,Confusion,Surf,FALSE,Epic,Slowpoke,,,0,A,Johto
+211,200,Basic,Misdreavus,64,37,34,4,44,DARK,DARK,NORMAL,2,200.png,Levitate,Immunity to Ground-type attacks.,Spite,Shadow Ball,FALSE,Uncommon,,Mismagius,Night,80,B,Johto
+212,201,Basic,Unown,36,21,18,4,24,PSYCHIC,DARK,,2,201.png,Levitate,Floating immunity to Ground.,Hidden Power,Cosmic Power,FALSE,Common,,,,0,D,Johto
+213,202,Stage 1,Wobbuffet,110,38,37,6,33,PSYCHIC,DARK,,3,202.png,Shadow Tag,Prevents foe from escaping or switching.,Counter-Cut,Destiny Bond,FALSE,Rare,Wynaut,,,0,A,Johto
+214,203,Basic,Girafarig,83,45,38,5,46,NORMAL,DARK,PSYCHIC,3,203.png,Early Bird,Awakens quickly from sleep.,Stomp,Psybeam,FALSE,Rare,,,,0,A,Johto
+215,204,Basic,Pineco,36,20,21,3,17,GRASS,FIRE,,2,204.png,Sturdy,Cannot be knocked out in one hit.,Tackle,Self-Destruct,FALSE,Common,,Forretress,Leaf,80,D,Johto
+216,205,Stage 1,Forretress,68,37,40,6,29,GRASS,FIRE,NORMAL,4,205.png,Overcoat,Protects from sandstorm damage.,Spikes,Explosion,FALSE,Rare,Pineco,,,0,B,Johto
+217,206,Basic,Dunsparce,76,35,32,4,30,NORMAL,,NONE,2,206.png,Serene Grace,Boosts the likelihood of added effects.,Defense Curl,Rollout,FALSE,Uncommon,,,,0,B,Johto
+218,207,Basic,Gligar,66,35,37,4,44,GROUND,WATER,ELECTRIC,3,207.png,Hyper Cutter,Prevents Attack reduction.,Sand Attack,Slash,FALSE,Uncommon,,Gliscor,Ground,80,B,Johto
+219,209,Basic,Snubbull,38,21,18,4,20,NORMAL,,DARK,2,209.png,Intimidate,Lowers the opposing Pokemon's attack.,Bite,Headbutt,FALSE,Common,,Granbull,Heart,80,D,Johto
+220,210,Stage 1,Granbull,73,41,33,6,30,NORMAL,,DARK,4,210.png,Intimidate,Lowers the opposing Pokemon's attack.,Crunch,Play Rough,FALSE,Rare,Snubbull,,,0,B,Johto
+221,211,Basic,Qwilfish,66,38,34,4,44,WATER,ELECTRIC,,3,211.png,Poison Point,Contact with Pokemon may poison attacker.,Poison Sting,Aqua Tail,FALSE,Uncommon,,,,0,B,Johto
+222,213,Basic,Shuckle,35,18,85,4,15,GRASS,FIRE,NORMAL,4,213.png,Sturdy,Cannot be knocked out in one hit.,Withdraw,Rock Slide,FALSE,Rare,,,,0,A,Johto
+223,214,Basic,Heracross,85,47,41,6,46,GRASS,FIRE,GROUND,4,214.png,Guts,Boosts attack if afflicted with status.,Megahorn,Close Combat,FALSE,Epic,,,,0,A,Johto
+224,215,Basic,Sneasel,80,44,39,4,54,DARK,FIGHTING,PSYCHIC,3,215.png,Inner Focus,Prevents flinching.,Quick Attack,Ice Shard,FALSE,Uncommon,,Weavile,Night,80,A,Johto
+225,216,Basic,Teddiursa,38,21,18,4,22,NORMAL,,NONE,2,216.png,Pickup,May find items after battle.,Scratch,Fury Swipes,FALSE,Common,,Ursaring,Heart,80,D,Johto
+226,217,Stage 1,Ursaring,87,49,39,7,39,NORMAL,,NONE,4,217.png,Guts,Boosts attack if afflicted with status.,Slash,Hammer Arm,FALSE,Epic,Teddiursa,,,0,A,Johto
+227,218,Basic,Slugma,35,20,17,3,18,FIRE,WATER,GRASS,2,218.png,Flame Body,Contact may cause a burn.,Smog,Ember,FALSE,Common,,Magcargo,Fire,80,D,Johto
+228,219,Stage 1,Magcargo,58,34,34,6,25,FIRE,WATER,GRASS,3,219.png,Flame Body,Contact may cause a burn.,Lava Plume,Ancient Power,FALSE,Rare,Slugma,,,0,C,Johto
+229,220,Basic,Swinub,36,18,17,3,24,WATER,GRASS,ELECTRIC,2,220.png,Oblivious,Immune to infatuation and taunt.,Tackle,Powder Snow,FALSE,Common,,Piloswine,Water,50,D,Johto
+230,221,Stage 1,Piloswine,76,39,33,6,32,WATER,GRASS,ELECTRIC,4,221.png,Thick Fat,Boosts resistance to Fire and Ice.,Ice Fang,Bulldoze,FALSE,Rare,Swinub,Mamoswine,Ground,120,B,Johto
+231,222,Basic,Corsola,66,34,37,4,27,WATER,GRASS,FIRE,3,222.png,Natural Cure,Cures status on switching out.,Bubble Beam,Rock Slide,FALSE,Uncommon,,,,0,B,Johto
+232,223,Basic,Remoraid,34,20,17,3,28,WATER,ELECTRIC,FIRE,2,223.png,Hustle,Boosts attack at cost of accuracy.,Water Gun,Aurora Beam,FALSE,Common,,Octillery,Water,80,D,Johto
+233,224,Stage 1,Octillery,68,40,34,6,30,WATER,ELECTRIC,FIRE,4,224.png,Sniper,Powers up critical hits.,Octazooka,Signal Beam,FALSE,Rare,Remoraid,,,0,B,Johto
+234,225,Basic,Delibird,60,34,29,4,41,WATER,ELECTRIC,GROUND,3,225.png,Vital Spirit,Prevents the Pokemon from falling asleep.,Present,Ice Punch,FALSE,Rare,,,,0,B,Johto
+235,226,Stage 1,Mantine,86,43,45,6,42,WATER,ELECTRIC,GROUND,4,226.png,Water Absorb,Restores HP if hit by Water moves.,Air Slash,Surf,FALSE,Rare,Mantyke,,,0,A,Johto
+236,227,Basic,Skarmory,82,43,45,5,42,GROUND,FIRE,GRASS,3,227.png,Sturdy,Cannot be knocked out in one hit.,Metal Claw,Steel Wing,FALSE,Rare,,,,0,A,Johto
+237,228,Basic,Houndour,36,22,18,4,28,DARK,WATER,PSYCHIC,2,228.png,Early Bird,Awakens quickly from sleep.,Ember,Bite,FALSE,Uncommon,,Houndoom,Fire,80,D,Johto
+238,229,Stage 1,Houndoom,84,47,39,6,49,DARK,WATER,PSYCHIC,4,229.png,Flash Fire,Powers up Fire moves if hit by Fire.,Flamethrower,Crunch,FALSE,Epic,Houndour,,,0,A,Johto
+239,231,Basic,Phanpy,43,19,19,4,22,GROUND,WATER,ELECTRIC,2,231.png,Pickup,May find items after battle.,Tackle,Rollout,FALSE,Common,,Donphan,Ground,80,D,Johto
+240,232,Stage 1,Donphan,87,47,43,7,38,GROUND,WATER,ELECTRIC,4,232.png,Sturdy,Cannot be knocked out in one hit.,Bulldoze,Earthquake,FALSE,Epic,Phanpy,,,0,A,Johto
+241,233,Stage 1,Porygon2,86,46,42,6,40,NORMAL,,NONE,4,233.png,Download,Adjusts power based on foe defense.,Recover,Tri Attack,FALSE,Epic,Porygon,Porygon-Z,Psyche,120,A,Johto
+242,234,Basic,Stantler,84,45,38,5,46,NORMAL,,NONE,3,234.png,Intimidate,Lowers the opposing Pokemon's attack.,Stomp,Zen Headbutt,FALSE,Rare,,,,0,A,Johto
+243,235,Basic,Smeargle,62,28,28,4,41,NORMAL,,NONE,3,235.png,Own Tempo,Prevents the Pokemon from becoming confused.,Sketch,Baton Pass,FALSE,Rare,,,,0,B,Johto
+244,236,Basic,Tyrogue,34,17,17,3,21,FIGHTING,PSYCHIC,DARK,2,236.png,Guts,Boosts attack if afflicted with status.,Tackle,Low Kick,FALSE,Uncommon,,"Hitmonlee, Hitmonchan, Hitmontop","Punch, Punch, Punch",80,D,Johto
+245,237,Stage 1,Hitmontop,78,44,43,6,42,FIGHTING,PSYCHIC,DARK,4,237.png,Technician,Powers up weaker moves.,Triple Kick,Rapid Spin,FALSE,Rare,Tyrogue,,,0,A,Johto
+246,241,Basic,Miltank,89,43,42,6,50,NORMAL,,NONE,4,241.png,Thick Fat,Boosts resistance to Fire and Ice.,Milk Drink,Body Slam,FALSE,Rare,,,,0,A,Johto
+247,242,Stage 2,Blissey,135,26,28,8,40,NORMAL,,NONE,6,242.png,Natural Cure,Cures all status ailments upon switching.,Soft-Boiled,Take Down,FALSE,Epic,Chansey,,,0,S,Johto
+248,243,Legendary,Raikou,115,55,48,10,65,ELECTRIC,GROUND,,6,243.png,Pressure,Exerts pressure to increase energy demand.,Spark,Grand Thunder,FALSE,Legendary,,,,0,S,Johto
+249,244,Legendary,Entei,123,55,47,10,60,FIRE,WATER,GRASS,6,244.png,Pressure,Exerts pressure to increase energy demand.,Flame Wheel,Sacred Fire,FALSE,Legendary,,,,0,S,Johto
+250,245,Legendary,Suicune,118,50,51,10,55,WATER,ELECTRIC,FIRE,6,245.png,Pressure,Exerts pressure to increase energy demand.,Aurora Beam,Hydro Pump,FALSE,Legendary,,,,0,S,Johto
+251,246,Basic,Larvitar,36,20,18,3,23,GROUND,WATER,ELECTRIC,2,246.png,Guts,Boosts attack if afflicted with status.,Rock Throw,Bite,FALSE,Uncommon,,Pupitar,Scale,50,D,Johto
+252,247,Stage 1,Pupitar,67,37,33,5,32,GROUND,WATER,ELECTRIC,3,247.png,Shed Skin,Has a chance to cure status conditions.,Rock Slide,Crunch,FALSE,Rare,Larvitar,Tyranitar,Scale,120,B,Johto
+253,248,Stage 2,Tyranitar,140,65,59,8,45,GROUND,WATER,ELECTRIC,5,248.png,Sand Stream,Summons a sandstorm upon entering battle.,Stone Edge,Earthquake,FALSE,Legendary,Pupitar,,,0,S+,Johto
+254,249,Legendary,Lugia,142,55,65,10,62,PSYCHIC,DARK,GROUND,6,249.png,Multiscale,Reduces damage taken when HP is full.,Aeroblast,Hydro Pump,FALSE,Legendary,,,,0,S+,Johto
+255,250,Legendary,Ho-oh,142,64,63,10,55,FIRE,WATER,GROUND,6,250.png,Regenerator,Restores HP when withdrawn from battle.,Sacred Fire,Brave Bird,FALSE,Legendary,,,,0,S+,Johto
+256,251,Legendary,Celebi,118,53,49,10,60,PSYCHIC,DARK,GRASS,5,251.png,Natural Cure,Cures all status conditions upon switching.,Leaf Blade,Future Sight,FALSE,Legendary,,,,0,S,Johto
+257,252,Basic,Treecko,35,20,18,3,29,GRASS,FIRE,GROUND,2,252.png,,,Pound,Absorb,FALSE,Uncommon,,Grovyle,Leaf,50,D,Hoenn
+258,253,Stage 1,Grovyle,55,33,29,5,45,GRASS,FIRE,GROUND,3,253.png,,,Quick Attack,Leaf Blade,FALSE,Rare,Treecko,Sceptile,Leaf,120,C,Hoenn
+259,254,Stage 2,Sceptile,108,53,47,8,67,GRASS,FIRE,GROUND,4,254.png,,,Quick Attack,Leaf Blade,FALSE,Epic,Grovyle,,,0,S,Hoenn
+260,255,Basic,Torchic,36,21,18,3,23,FIRE,WATER,GRASS,2,255.png,,,Scratch,Ember,FALSE,Uncommon,,Combusken,Fire,50,D,Hoenn
+261,256,Stage 1,Combusken,58,34,29,5,32,FIRE,WATER,DARK,3,256.png,,,Double Kick,Flame Wheel,FALSE,Rare,Torchic,Blaziken,Fire,120,C,Hoenn
+262,257,Stage 2,Blaziken,112,56,45,8,53,FIRE,WATER,DARK,4,257.png,,,Sky Uppercut,Blaze Kick,FALSE,Epic,Combusken,,,0,S,Hoenn
+263,258,Basic,Mudkip,36,21,18,3,22,WATER,ELECTRIC,FIRE,2,258.png,,,Tackle,Water Gun,FALSE,Uncommon,,Marshtomp,Water,50,D,Hoenn
+264,259,Stage 1,Marshtomp,61,33,30,5,31,WATER,GRASS,ELECTRIC,3,259.png,,,Mud Shot,Water Pulse,FALSE,Rare,Mudkip,Swampert,Water,120,C,Hoenn
+265,260,Stage 2,Swampert,118,54,48,8,47,WATER,GRASS,ELECTRIC,4,260.png,,,Earthquake,Muddy Water,FALSE,Epic,Marshtomp,,,0,S,Hoenn
+266,261,Basic,Poochyena,34,19,17,3,21,DARK,FIGHTING,PSYCHIC,2,261.png,,,Tackle,Bite,FALSE,Common,,Mightyena,Night,80,D,Hoenn
+267,262,Stage 1,Mightyena,61,34,30,6,37,DARK,FIGHTING,PSYCHIC,3,262.png,,,Bite,Crunch,FALSE,Rare,Poochyena,,,0,C,Hoenn
+268,263,Basic,Zigzagoon,34,17,17,3,27,NORMAL,FIGHTING,NONE,2,263.png,,,Tackle,Headbutt,FALSE,Common,,Linoone,Heart,80,D,Hoenn
+269,264,Stage 1,Linoone,69,35,31,6,50,NORMAL,FIGHTING,NONE,3,264.png,,,Belly Drum,Headbutt,FALSE,Rare,Zigzagoon,,,0,B,Hoenn
+270,265,Basic,Wurmple,36,18,17,3,18,GRASS,FIRE,GROUND,2,265.png,,,Tackle,Poison Sting,FALSE,Common,,"Silcoon, Cascoon","Leaf, Night",50,D,Hoenn
+271,266,Stage 1,Silcoon,55,27,28,4,20,GRASS,FIRE,GROUND,2,266.png,,,Harden,Bug Bite,FALSE,Common,Wurmple,Beautifly,Leaf,120,C,Hoenn
+272,267,Stage 2,Beautifly,86,48,40,8,48,GRASS,FIRE,FIGHTING,4,267.png,,,Mega Drain,Bug Buzz,FALSE,Rare,Silcoon,,,0,A,Hoenn
+273,268,Stage 1,Cascoon,55,27,28,4,20,DARK,FIRE,PSYCHIC,2,268.png,,,Harden,Poison Sting,FALSE,Common,Wurmple,Dustox,Night,120,C,Hoenn
+274,269,Stage 2,Dustox,81,40,41,8,41,DARK,FIRE,GRASS,4,269.png,,,Confusion,Bug Buzz,FALSE,Rare,Cascoon,,,0,A,Hoenn
+275,270,Basic,Lotad,35,18,18,3,20,WATER,FIRE,WATER,2,270.png,Swift Swim,Increases Speed (+2 SPD) during Weather.,Astonish,Absorb,FALSE,Common,,Lombre,Water,50,D,Hoenn
+276,271,Stage 1,Lombre,58,30,30,5,31,WATER,FIRE,WATER,3,271.png,Swift Swim,Increases Speed (+2 SPD) during Weather.,Water Pulse,Mega Drain,FALSE,Rare,Lotad,Ludicolo,Leaf,120,C,Hoenn
+277,272,Stage 2,Ludicolo,85,44,41,8,42,WATER,FIRE,WATER,4,272.png,Swift Swim,Increases Speed (+2 SPD) during Weather.,Giga Drain,Hydro Pump,FALSE,Epic,Lombre,,,0,A,Hoenn
+278,273,Basic,Seedot,35,18,18,3,20,GRASS,FIRE,GROUND,2,273.png,,,Tackle,Bullet Seed,FALSE,Common,,Nuzleaf,Leaf,50,D,Hoenn
+279,274,Stage 1,Nuzleaf,61,32,27,5,34,GRASS,FIRE,PSYCHIC,3,274.png,,,Razor Leaf,Night Slash,FALSE,Rare,Seedot,Shiftry,Night,120,C,Hoenn
+280,275,Stage 2,Shiftry,87,46,38,8,45,GRASS,FIRE,PSYCHIC,4,275.png,,,Leaf Blade,Extrasensory,FALSE,Epic,Nuzleaf,,,0,A,Hoenn
+281,276,Basic,Taillow,35,19,16,3,32,NORMAL,ELECTRIC,GROUND,2,276.png,,,Peck,Quick Attack,FALSE,Common,,Swellow,Heart,80,D,Hoenn
+282,277,Stage 1,Swellow,81,44,37,6,56,NORMAL,ELECTRIC,GROUND,3,277.png,,,Wing Attack,Aerial Ace,FALSE,Rare,Taillow,,,0,A,Hoenn
+283,278,Basic,Wingull,35,19,16,3,32,WATER,ELECTRIC,GROUND,2,278.png,,,Water Gun,Wing Attack,FALSE,Common,,Pelipper,Water,80,D,Hoenn
+284,279,Stage 1,Pelipper,58,34,33,6,36,WATER,ELECTRIC,GROUND,4,279.png,,,Water Pulse,Hydro Pump,FALSE,Rare,Wingull,,,0,C,Hoenn
+285,280,Basic,Ralts,33,18,16,3,22,PSYCHIC,DARK,FIGHTING,2,280.png,Synchronize,Passes status ailments back to foe.,Disarming Voice,Teleport,FALSE,Uncommon,,Kirlia,Psyche,50,D,Hoenn
+286,281,Stage 1,Kirlia,51,31,28,5,31,PSYCHIC,DARK,FIGHTING,3,281.png,Synchronize,Passes status ailments back to foe.,Psybeam,Magical Leaf,FALSE,Rare,Ralts,"Gardevoir, Gallade","Psyche, Punch",120,C,Hoenn
+287,282,Stage 2,Gardevoir,108,56,49,8,53,PSYCHIC,DARK,FIGHTING,5,282.png,Synchronize,Passes status ailments back to foe.,Psychic,Future Sight,FALSE,Epic,Kirlia,,,0,S,Hoenn
+288,283,Basic,Surskit,35,18,18,3,28,GRASS,FIRE,GROUND,2,283.png,,,Bubble,Quick Attack,FALSE,Common,,Masquerain,Water,80,D,Hoenn
+289,284,Stage 1,Masquerain,61,35,31,6,40,WATER,ELECTRIC,GROUND,3,284.png,,,Silver Wind,Air Slash,FALSE,Rare,Surskit,,,0,C,Hoenn
+290,285,Basic,Shroomish,38,18,20,3,21,GRASS,FIRE,GROUND,2,285.png,,,Absorb,Tackle,FALSE,Common,,Breloom,Punch,80,D,Hoenn
+291,286,Stage 1,Breloom,81,48,39,6,42,GRASS,FIRE,DARK,4,286.png,,,Spore,Sky Uppercut,FALSE,Epic,Shroomish,,,0,A,Hoenn
+292,287,Basic,Slakoth,38,19,19,3,20,NORMAL,FIGHTING,NONE,2,287.png,,,Scratch,Yawn,FALSE,Uncommon,,Vigoroth,Heart,50,D,Hoenn
+293,288,Stage 1,Vigoroth,70,36,33,5,46,NORMAL,FIGHTING,NONE,3,288.png,,,Slash,Fury Swipes,FALSE,Rare,Slakoth,Slaking,Heart,120,B,Hoenn
+294,289,Stage 2,Slaking,135,62,48,8,60,NORMAL,FIGHTING,NONE,5,289.png,Truant,Skips attacking every other turn or requires high focus.,Hammer Arm,Giga Impact,FALSE,Epic,Vigoroth,,,0,S,Hoenn
+295,290,Basic,Nincada,33,18,21,3,22,DARK,FIRE,GROUND,2,290.png,,,Scratch,Mud-Slap,FALSE,Common,,"Ninjask, Shedinja","Leaf, Night",80,D,Hoenn
+296,291,Stage 1,Ninjask,81,44,36,6,65,DARK,ELECTRIC,GROUND,3,291.png,Speed Boost,Gains +1 Speed at the start of each round.,Fury Swipes,X-Scissor,FALSE,Rare,Nincada,,,0,A,Hoenn
+297,292,Stage 1,Shedinja,1,45,35,6,45,DARK,FIRE,NONE,1,292.png,Wonder Guard,Takes DMG only from attacks that match its weakness.,Shadow Sneak,Shadow Ball,FALSE,Epic,Nincada,,,0,A,Hoenn
+298,293,Basic,Whismur,39,19,15,3,20,NORMAL,FIGHTING,NONE,2,293.png,,,Pound,Astonish,FALSE,Common,,Loudred,Heart,50,D,Hoenn
+299,294,Stage 1,Loudred,65,32,27,5,30,NORMAL,FIGHTING,NONE,3,294.png,,,Bite,Stomp,FALSE,Rare,Whismur,Exploud,Heart,120,C,Hoenn
+300,295,Stage 2,Exploud,91,45,39,8,42,NORMAL,FIGHTING,NONE,4,295.png,,,Hyper Voice,Hyper Beam,FALSE,Epic,Loudred,,,0,A,Hoenn
+301,296,Basic,Makuhita,40,19,16,3,19,FIGHTING,PSYCHIC,DARK,2,296.png,,,Tackle,Arm Thrust,FALSE,Common,,Hariyama,Punch,80,D,Hoenn
+302,297,Stage 1,Hariyama,100,47,38,6,38,FIGHTING,PSYCHIC,DARK,4,297.png,,,Fake Out,Close Combat,FALSE,Epic,Makuhita,,,0,A,Hoenn
+303,298,Basic,Azurill,36,16,17,3,18,NORMAL,FIGHTING,NONE,2,298.png,,,Bubble,Tail Whip,FALSE,Common,,Marill,Water,50,D,Hoenn
+304,299,Basic,Nosepass,55,32,41,4,25,GROUND,GRASS,ELECTRIC,3,299.png,,,Rock Throw,Rock Slide,FALSE,Uncommon,,Probopass,Ground,80,B,Hoenn
+305,300,Basic,Skitty,36,18,18,3,24,NORMAL,FIGHTING,NONE,2,300.png,,,Fake Out,Double Slap,FALSE,Common,,Delcatty,Heart,80,D,Hoenn
+306,301,Stage 1,Delcatty,61,31,29,6,43,NORMAL,FIGHTING,NONE,3,301.png,,,Double Slap,Play Rough,FALSE,Rare,Skitty,,,0,C,Hoenn
+307,302,Basic,Sableye,61,36,33,5,32,DARK,NONE,PSYCHIC,3,302.png,Prankster,Moves have increased priority in combat.,Shadow Sneak,Knock Off,FALSE,Rare,,,,0,B,Hoenn
+308,303,Basic,Mawile,61,37,34,5,32,GROUND,FIRE,GRASS,3,303.png,Hyper Cutter,Prevents attack reduction.,Bite,Iron Head,FALSE,Rare,,,,0,B,Hoenn
+309,304,Basic,Aron,36,20,22,3,20,GROUND,GRASS,ELECTRIC,2,304.png,Sturdy,Endures a lethal 1-hit KO with 1 HP.,Tackle,Metal Claw,FALSE,Uncommon,,Lairon,Ground,50,D,Hoenn
+310,305,Stage 1,Lairon,58,34,35,5,28,GROUND,GRASS,ELECTRIC,3,305.png,Sturdy,Endures a lethal 1-hit KO with 1 HP.,Iron Head,Take Down,FALSE,Rare,Aron,Aggron,Ground,120,C,Hoenn
+311,306,Stage 2,Aggron,108,53,55,8,43,GROUND,GRASS,ELECTRIC,5,306.png,Sturdy,Endures a lethal 1-hit KO with 1 HP.,Iron Defense,Rock Wrecker,FALSE,Epic,Lairon,,,0,S,Hoenn
+312,307,Basic,Meditite,33,18,19,3,27,FIGHTING,PSYCHIC,DARK,2,307.png,,,Confusion,Drain Punch,FALSE,Uncommon,,Medicham,Punch,80,D,Hoenn
+313,308,Stage 1,Medicham,81,41,39,6,45,FIGHTING,PSYCHIC,DARK,3,308.png,,,High Jump Kick,Zen Headbutt,FALSE,Rare,Meditite,,,0,A,Hoenn
+314,309,Basic,Electrike,35,20,17,3,28,ELECTRIC,GROUND,WATER,2,309.png,,,Tackle,Thunder Shock,FALSE,Common,,Manectric,Thunder,80,D,Hoenn
+315,310,Stage 1,Manectric,83,46,38,6,51,ELECTRIC,GROUND,WATER,3,310.png,,,Spark,Thunderbolt,FALSE,Epic,Electrike,,,0,A,Hoenn
+316,311,Basic,Plusle,64,37,32,4,48,ELECTRIC,GROUND,WATER,2,311.png,,,Spark,Helping Hand,FALSE,Uncommon,,,,0,B,Hoenn
+317,312,Basic,Minun,64,35,33,4,48,ELECTRIC,GROUND,WATER,2,312.png,,,Spark,Helping Hand,FALSE,Uncommon,,,,0,B,Hoenn
+318,313,Basic,Volbeat,66,35,35,4,44,DARK,FIRE,PSYCHIC,2,313.png,,,Signal Beam,Silver Wind,FALSE,Uncommon,,,,0,B,Hoenn
+319,314,Basic,Illumise,66,35,35,4,44,DARK,FIRE,PSYCHIC,2,314.png,,,Signal Beam,Bug Buzz,FALSE,Uncommon,,,,0,B,Hoenn
+320,315,Stage 1,Roselia,55,35,30,5,36,GRASS,FIRE,GROUND,3,315.png,Natural Cure,Cleanses all status ailments on switch.,Mega Drain,Poison Powder,FALSE,Rare,Budew,Roserade,Leaf,120,C,Hoenn
+321,316,Basic,Gulpin,40,18,19,3,22,DARK,GROUND,GRASS,2,316.png,,,Pound,Acid,FALSE,Common,,Swalot,Night,80,D,Hoenn
+322,317,Stage 1,Swalot,76,36,35,6,34,DARK,GROUND,GRASS,4,317.png,,,Acid,Sludge Bomb,FALSE,Rare,Gulpin,,,0,B,Hoenn
+323,318,Basic,Carvanha,36,22,15,3,28,WATER,ELECTRIC,PSYCHIC,2,318.png,,,Bite,Aqua Jet,FALSE,Common,,Sharpedo,Water,80,D,Hoenn
+324,319,Stage 1,Sharpedo,83,48,35,6,49,WATER,ELECTRIC,PSYCHIC,3,319.png,,,Crunch,Aqua Tail,FALSE,Rare,Carvanha,,,0,A,Hoenn
+325,320,Basic,Wailmer,49,21,17,3,27,WATER,ELECTRIC,FIRE,2,320.png,,,Water Gun,Rollout,FALSE,Common,,Wailord,Water,80,D,Hoenn
+326,321,Stage 1,Wailord,105,45,36,6,40,WATER,ELECTRIC,FIRE,5,321.png,,,Water Spout,Hydro Pump,FALSE,Epic,Wailmer,,,0,A,Hoenn
+327,322,Basic,Numel,38,20,18,3,21,FIRE,WATER,ELECTRIC,2,322.png,,,Ember,Bulldoze,FALSE,Common,,Camerupt,Fire,80,D,Hoenn
+328,323,Stage 1,Camerupt,67,40,33,6,29,FIRE,WATER,ELECTRIC,4,323.png,,,Lava Plume,Eruption,FALSE,Rare,Numel,,,0,B,Hoenn
+329,324,Basic,Torkoal,83,44,45,5,30,FIRE,WATER,GRASS,4,324.png,,,Flame Wheel,Overheat,FALSE,Epic,,,,0,A,Hoenn
+330,325,Basic,Spoink,38,20,20,3,27,PSYCHIC,DARK,FIGHTING,2,325.png,,,Psywave,Bounce,FALSE,Common,,Grumpig,Psyche,80,D,Hoenn
+331,326,Stage 1,Grumpig,70,37,37,6,43,PSYCHIC,DARK,FIGHTING,4,326.png,,,Psybeam,Psychic,FALSE,Rare,Spoink,,,0,B,Hoenn
+332,327,Basic,Spinda,64,34,31,4,36,NORMAL,FIGHTING,NONE,2,327.png,,,Teeter Dance,Double Edge,FALSE,Uncommon,,,,0,B,Hoenn
+333,328,Basic,Trapinch,36,23,18,3,16,GROUND,GRASS,ELECTRIC,2,328.png,,,Bite,Sand Tomb,FALSE,Uncommon,,Vibrava,Ground,50,D,Hoenn
+334,329,Stage 1,Vibrava,55,31,28,5,37,GROUND,WATER,ELECTRIC,3,329.png,,,Dragon Breath,Earth Power,FALSE,Rare,Trapinch,Flygon,Scale,120,C,Hoenn
+335,330,Stage 2,Flygon,112,52,47,8,60,GROUND,WATER,ELECTRIC,4,330.png,Levitate,Immune to GROUND type attacks.,Dragon Claw,Earthquake,FALSE,Epic,Vibrava,,,0,S,Hoenn
+336,331,Basic,Cacnea,36,22,17,3,21,GRASS,FIRE,GROUND,2,331.png,,,Poison Sting,Needle Arm,FALSE,Common,,Cacturne,Leaf,80,D,Hoenn
+337,332,Stage 1,Cacturne,67,42,31,6,34,GRASS,FIRE,PSYCHIC,3,332.png,,,Needle Arm,Crunch,FALSE,Rare,Cacnea,,,0,B,Hoenn
+338,333,Basic,Swablu,36,18,21,3,24,NORMAL,ELECTRIC,GROUND,2,333.png,,,Peck,Mist,FALSE,Common,,Altaria,Scale,80,D,Hoenn
+339,334,Stage 1,Altaria,84,42,43,6,45,NORMAL,WATER,GRASS,4,334.png,Natural Cure,Cleanses all status ailments on switch.,Dragon Breath,Dragon Pulse,FALSE,Rare,Swablu,,,0,A,Hoenn
+340,335,Basic,Zangoose,84,47,38,5,48,NORMAL,FIGHTING,NONE,3,335.png,,,Quick Attack,Crush Claw,FALSE,Rare,,,,0,A,Hoenn
+341,336,Basic,Seviper,84,46,38,5,41,DARK,GROUND,GRASS,3,336.png,,,Bite,Poison Tail,FALSE,Rare,,,,0,A,Hoenn
+342,337,Basic,Lunatone,87,45,40,5,42,GROUND,WATER,ELECTRIC,3,337.png,,,Confusion,Rock Slide,FALSE,Rare,,,,0,A,Hoenn
+343,338,Basic,Solrock,87,45,40,5,42,GROUND,WATER,ELECTRIC,3,338.png,,,Confusion,Rock Slide,FALSE,Rare,,,,0,A,Hoenn
+344,339,Basic,Barboach,36,19,18,3,27,WATER,GRASS,ELECTRIC,2,339.png,,,Water Gun,Mud-Slap,FALSE,Common,,Whiscash,Ground,80,D,Hoenn
+345,340,Stage 1,Whiscash,79,36,33,6,36,WATER,GRASS,ELECTRIC,4,340.png,,,Aqua Tail,Earthquake,FALSE,Rare,Barboach,,,0,B,Hoenn
+346,341,Basic,Corphish,35,21,19,3,21,WATER,ELECTRIC,FIRE,2,341.png,,,Bubble,Knock Off,FALSE,Common,,Crawdaunt,Water,80,D,Hoenn
+347,342,Stage 1,Crawdaunt,81,48,40,6,39,WATER,ELECTRIC,PSYCHIC,3,342.png,,,Crabhammer,Night Slash,FALSE,Rare,Corphish,,,0,A,Hoenn
+348,343,Basic,Baltoy,35,18,20,3,26,GROUND,WATER,ELECTRIC,2,343.png,Levitate,Immune to Ground moves and sandstorm.,Rapid Spin,Mud-Slap,FALSE,Common,,Claydol,Psyche,80,D,Hoenn
+349,344,Stage 1,Claydol,81,42,44,6,44,GROUND,WATER,ELECTRIC,4,344.png,Levitate,Immune to Ground moves and sandstorm.,Ancient Power,Earth Power,FALSE,Epic,Baltoy,,,0,A,Hoenn
+350,345,Basic,Lileep,39,20,22,3,19,GROUND,GRASS,ELECTRIC,2,345.png,,,Astonish,Acid,FALSE,Uncommon,,Cradily,Leaf,80,D,Hoenn
+351,346,Stage 1,Cradily,87,44,43,6,36,GROUND,GRASS,ELECTRIC,4,346.png,,,Ancient Power,Giga Drain,FALSE,Epic,Lileep,,,0,A,Hoenn
+352,347,Basic,Anorith,36,23,18,3,30,GROUND,GRASS,ELECTRIC,2,347.png,,,Scratch,Mud-Slap,FALSE,Uncommon,,Armaldo,Ground,80,D,Hoenn
+353,348,Stage 1,Armaldo,84,48,42,6,36,GROUND,GRASS,ELECTRIC,4,348.png,,,Ancient Power,X-Scissor,FALSE,Epic,Anorith,,,0,A,Hoenn
+354,349,Basic,Feebas,32,15,18,3,31,WATER,ELECTRIC,FIRE,1,349.png,,,Tackle,Water Gun,FALSE,Common,,Milotic,Scale,80,D,Hoenn
+355,350,Stage 1,Milotic,89,45,44,6,45,WATER,ELECTRIC,FIRE,5,350.png,,,Water Pulse,Hydro Pump,FALSE,Epic,Feebas,,,0,A,Hoenn
+356,351,Basic,Castform,67,35,33,4,39,NORMAL,FIGHTING,NONE,3,351.png,Forecast,Adapts its elemental essence to match the environment.,Tackle,Weather Ball,FALSE,Uncommon,,,,0,B,Hoenn
+357,352,Basic,Kecleon,81,44,43,5,35,NORMAL,FIGHTING,NONE,3,352.png,Color Change,Changes its type to match the attack it receives.,Slash,Shadow Sneak,FALSE,Rare,,,,0,A,Hoenn
+358,353,Basic,Shuppet,35,21,17,3,23,DARK,DARK,PSYCHIC,2,353.png,,,Knock Off,Astonish,FALSE,Common,,Banette,Night,80,D,Hoenn
+359,354,Stage 1,Banette,65,41,32,6,37,DARK,DARK,PSYCHIC,3,354.png,,,Shadow Sneak,Shadow Claw,FALSE,Rare,Shuppet,,,0,B,Hoenn
+360,355,Basic,Duskull,32,18,23,3,19,DARK,DARK,PSYCHIC,2,355.png,,,Astonish,Night Shade,FALSE,Common,,Dusclops,Night,50,D,Hoenn
+361,356,Stage 1,Dusclops,76,42,46,6,31,DARK,DARK,PSYCHIC,4,356.png,,,Shadow Punch,Shadow Ball,FALSE,Epic,Duskull,Dusknoir,Night,120,A,Hoenn
+362,357,Basic,Tropius,89,43,41,5,38,GRASS,FIRE,GROUND,4,357.png,,,Razor Leaf,Air Slash,FALSE,Epic,,,,0,A,Hoenn
+363,358,Stage 1,Chimecho,62,34,32,5,36,PSYCHIC,DARK,FIGHTING,3,358.png,Levitate,Immune to Ground moves and sandstorm.,Astonish,Psybeam,FALSE,Rare,Chingling,,,0,C,Hoenn
+364,359,Basic,Absol,82,49,38,5,44,DARK,FIGHTING,PSYCHIC,3,359.png,Super Luck,Increases Critical Hit chance by 25%.,Slash,Night Slash,FALSE,Epic,,,,0,A,Hoenn
+365,360,Basic,Wynaut,44,16,18,3,19,PSYCHIC,DARK,FIGHTING,1,360.png,,,Counter-Cut,Destiny Bond,FALSE,Common,,Wobbuffet,Psyche,80,D,Hoenn
+366,361,Basic,Snorunt,36,19,18,3,24,WATER,FIRE,WATER,2,361.png,,,Powder Snow,Bite,FALSE,Common,,"Glalie, Froslass","Water, Night",80,D,Hoenn
+367,362,Stage 1,Glalie,70,37,34,6,43,WATER,FIRE,WATER,3,362.png,,,Ice Fang,Blizzard,FALSE,Rare,Snorunt,,,0,B,Hoenn
+368,363,Basic,Spheal,40,19,18,3,19,WATER,ELECTRIC,FIRE,2,363.png,,,Powder Snow,Water Gun,FALSE,Common,,Sealeo,Water,50,D,Hoenn
+369,364,Stage 1,Sealeo,67,32,30,5,29,WATER,ELECTRIC,FIRE,3,364.png,,,Aurora Beam,Body Slam,FALSE,Rare,Spheal,Walrein,Water,120,C,Hoenn
+370,365,Stage 2,Walrein,122,51,48,8,48,WATER,ELECTRIC,FIRE,5,365.png,,,Ice Beam,Hydro Pump,FALSE,Epic,Sealeo,,,0,S,Hoenn
+371,366,Basic,Clamperl,34,21,21,3,21,WATER,ELECTRIC,FIRE,2,366.png,,,Water Gun,Withdraw,FALSE,Uncommon,,"Huntail, Gorebyss","Heart, Scale",80,D,Hoenn
+372,367,Stage 1,Huntail,62,40,37,6,33,WATER,ELECTRIC,FIRE,3,367.png,,,Bite,Aqua Tail,FALSE,Rare,Clamperl,,,0,B,Hoenn
+373,368,Stage 1,Gorebyss,62,41,37,6,33,WATER,ELECTRIC,FIRE,3,368.png,,,Water Pulse,Psychic,FALSE,Rare,Clamperl,,,0,B,Hoenn
+374,369,Basic,Relicanth,90,44,44,5,39,WATER,GRASS,FIRE,4,369.png,,,Ancient Power,Double Edge,FALSE,Epic,,,,0,A,Hoenn
+375,370,Basic,Luvdisc,35,18,20,3,34,WATER,ELECTRIC,FIRE,2,370.png,,,Water Gun,Water Pulse,FALSE,Common,,,,0,D,Hoenn
+376,371,Basic,Bagon,36,21,19,3,24,NORMAL,FIGHTING,FIRE,2,371.png,Rock Head,Protects the Pokemon from recoil damage.,Bite,Dragon Breath,FALSE,Uncommon,,Shelgon,Scale,50,D,Hoenn
+377,372,Stage 1,Shelgon,59,35,32,5,31,NORMAL,FIGHTING,FIRE,3,372.png,Rock Head,Protects the Pokemon from recoil damage.,Headbutt,Dragon Claw,FALSE,Rare,Bagon,Salamence,Scale,120,B,Hoenn
+378,373,Stage 2,Salamence,138,65,55,8,58,NORMAL,WATER,FIRE,5,373.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Dragon Claw,Draco Meteor,FALSE,Legendary,Shelgon,,,0,S+,Hoenn
+379,374,Basic,Beldum,35,19,21,3,20,GROUND,FIRE,PSYCHIC,2,374.png,,,Take Down,Metal Claw,FALSE,Uncommon,,Metang,Psyche,50,D,Hoenn
+380,375,Stage 1,Metang,58,32,33,5,31,GROUND,FIRE,PSYCHIC,3,375.png,,,Metal Claw,Zen Headbutt,FALSE,Rare,Beldum,Metagross,Psyche,120,C,Hoenn
+381,376,Stage 2,Metagross,132,65,61,8,48,GROUND,FIRE,PSYCHIC,5,376.png,Clear Body,Immune to stat-lowering and debuff effects.,Zen Headbutt,Meteor Mash,FALSE,Legendary,Metang,,,0,S+,Hoenn
+382,377,Legendary,Regirock,112,51,58,10,43,GROUND,NONE,ELECTRIC,5,377.png,,,Ancient Power,Stone Edge,FALSE,Legendary,,,,0,S,Hoenn
+383,378,Legendary,Regice,112,51,58,10,43,WATER,NONE,WATER,5,378.png,,,Ancient Power,Blizzard,FALSE,Legendary,,,,0,S,Hoenn
+384,379,Legendary,Registeel,112,48,55,10,43,GROUND,NONE,PSYCHIC,5,379.png,,,Ancient Power,Flash Cannon,FALSE,Legendary,,,,0,S,Hoenn
+385,380,Legendary,Latias,112,54,51,10,63,NORMAL,DARK,FIGHTING,5,380.png,Levitate,Immune to Ground moves and sandstorm.,Dragon Breath,Mist Ball,FALSE,Legendary,,,,0,S,Hoenn
+386,381,Legendary,Latios,112,57,49,10,63,NORMAL,DARK,FIGHTING,5,381.png,Levitate,Immune to Ground moves and sandstorm.,Dragon Breath,Luster Purge,FALSE,Legendary,,,,0,S,Hoenn
+387,382,Legendary,Kyogre,140,68,62,10,55,WATER,ELECTRIC,FIRE,6,382.png,Drizzle,Boosts WATER moves DMG by +2.,Water Spout,Hydro Pump,FALSE,Legendary,,,,0,S+,Hoenn
+388,383,Legendary,Groudon,140,68,62,10,55,GROUND,WATER,ELECTRIC,6,383.png,Drought,Boosts FIRE & GROUND moves DMG by +2.,Earthquake,Eruption,FALSE,Legendary,,,,0,S+,Hoenn
+389,384,Legendary,Rayquaza,142,70,56,10,56,NORMAL,WATER,GROUND,6,384.png,Air Lock,Cancels all weather and field effects.,Extreme Speed,Dragon Ascent,FALSE,Legendary,,,,0,S+,Hoenn
+390,385,Legendary,Jirachi,118,53,49,10,60,GROUND,FIRE,PSYCHIC,5,385.png,Serene Grace,Secondary effects occur more frequently.,Swift,Doom Desire,FALSE,Legendary,,,,0,S,Hoenn
+391,386,Legendary,Deoxys,120,70,50,10,75,PSYCHIC,DARK,FIGHTING,5,386.png,Pressure,Forces opponent to expend energy quicker.,Psychic,Psycho Boost,FALSE,Legendary,,,,0,S+,Hoenn
+392,387,Basic,Turtwig,37,20,20,3,20,GRASS,FIRE,GROUND,2,387.png,,,Tackle,Razor Leaf,FALSE,Uncommon,,Grotle,Leaf,50,D,Sinnoh
+393,388,Stage 1,Grotle,62,34,31,5,27,GRASS,FIRE,GROUND,3,388.png,,,Bite,Mega Drain,FALSE,Rare,Turtwig,Torterra,Leaf,120,C,Sinnoh
+394,389,Stage 2,Torterra,117,53,49,8,45,GRASS,FIRE,ELECTRIC,5,389.png,,,Earthquake,Wood Hammer,FALSE,Epic,Grotle,,,0,S,Sinnoh
+395,390,Basic,Chimchar,35,20,18,3,27,FIRE,WATER,GRASS,2,390.png,,,Scratch,Ember,FALSE,Uncommon,,Monferno,Fire,50,D,Sinnoh
+396,391,Stage 1,Monferno,59,33,28,5,41,FIRE,WATER,DARK,3,391.png,,,Double Kick,Flame Wheel,FALSE,Rare,Chimchar,Infernape,Fire,120,C,Sinnoh
+397,392,Stage 2,Infernape,110,53,46,8,63,FIRE,WATER,DARK,4,392.png,,,Close Combat,Flare Blitz,FALSE,Epic,Monferno,,,0,S,Sinnoh
+398,393,Basic,Piplup,37,20,19,3,22,WATER,ELECTRIC,FIRE,2,393.png,,,Pound,Water Gun,FALSE,Uncommon,,Prinplup,Water,50,D,Sinnoh
+399,394,Stage 1,Prinplup,59,33,31,5,31,WATER,ELECTRIC,FIRE,3,394.png,,,Metal Claw,Bubble Beam,FALSE,Rare,Piplup,Empoleon,Water,120,C,Sinnoh
+400,395,Stage 2,Empoleon,113,54,49,8,47,WATER,ELECTRIC,PSYCHIC,5,395.png,,,Flash Cannon,Hydro Pump,FALSE,Epic,Prinplup,,,0,S,Sinnoh
+401,396,Basic,Starly,35,19,16,3,27,NORMAL,ELECTRIC,GROUND,2,396.png,,,Tackle,Quick Attack,FALSE,Common,,Staravia,Heart,50,D,Sinnoh
+402,397,Stage 1,Staravia,56,32,28,5,40,NORMAL,ELECTRIC,GROUND,3,397.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Wing Attack,Aerial Ace,FALSE,Rare,Starly,Staraptor,Heart,120,C,Sinnoh
+403,398,Stage 2,Staraptor,113,54,45,8,60,NORMAL,ELECTRIC,GROUND,4,398.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Close Combat,Brave Bird,FALSE,Epic,Staravia,,,0,S,Sinnoh
+404,399,Basic,Bidoof,38,18,17,3,20,NORMAL,FIGHTING,NONE,2,399.png,,,Tackle,Headbutt,FALSE,Common,,Bibarel,Heart,80,D,Sinnoh
+405,400,Stage 1,Bibarel,64,33,29,6,38,NORMAL,FIGHTING,FIRE,3,400.png,,,Headbutt,Aqua Tail,FALSE,Rare,Bidoof,,,0,B,Sinnoh
+406,401,Basic,Kricketot,34,16,17,3,19,DARK,FIRE,PSYCHIC,2,401.png,,,Growl,Bug Bite,FALSE,Common,,Kricketune,Leaf,80,D,Sinnoh
+407,402,Stage 1,Kricketune,63,33,28,6,36,DARK,FIRE,PSYCHIC,3,402.png,,,Fury Cutter,Bug Buzz,FALSE,Rare,Kricketot,,,0,C,Sinnoh
+408,403,Basic,Shinx,36,20,17,3,23,ELECTRIC,GROUND,WATER,2,403.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Tackle,Thunder Shock,FALSE,Common,,Luxio,Thunder,50,D,Sinnoh
+409,404,Stage 1,Luxio,58,33,28,5,34,ELECTRIC,GROUND,WATER,3,404.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Spark,Bite,FALSE,Rare,Shinx,Luxray,Thunder,120,C,Sinnoh
+410,405,Stage 2,Luxray,112,56,47,8,50,ELECTRIC,GROUND,WATER,4,405.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Thunder Fang,Discharge,FALSE,Epic,Luxio,,,0,S,Sinnoh
+411,406,Basic,Budew,35,18,20,3,26,GRASS,FIRE,GROUND,2,406.png,,,Absorb,Stun Spore,FALSE,Common,,Roselia,Leaf,50,D,Sinnoh
+412,407,Stage 2,Roserade,105,56,48,8,57,GRASS,FIRE,GROUND,5,407.png,Natural Cure,Cleanses all status ailments on switch.,Giga Drain,Petal Blizzard,FALSE,Epic,Roselia,,,0,S,Sinnoh
+413,408,Basic,Cranidos,39,25,17,3,26,GROUND,GRASS,ELECTRIC,2,408.png,,,Headbutt,Rock Slide,FALSE,Uncommon,,Rampardos,Ground,80,D,Sinnoh
+414,409,Stage 1,Rampardos,89,52,37,6,40,GROUND,GRASS,ELECTRIC,4,409.png,,,Zen Headbutt,Head Smash,FALSE,Epic,Cranidos,,,0,A,Sinnoh
+415,410,Basic,Shieldon,33,18,25,3,20,GROUND,GRASS,ELECTRIC,2,410.png,,,Tackle,Iron Head,FALSE,Uncommon,,Bastiodon,Ground,80,D,Sinnoh
+416,411,Stage 1,Bastiodon,81,40,50,6,32,GROUND,GRASS,ELECTRIC,5,411.png,,,Iron Head,Stone Edge,FALSE,Epic,Shieldon,,,0,A,Sinnoh
+417,412,Basic,Burmy,35,17,18,3,22,DARK,FIRE,PSYCHIC,2,412.png,,,Protect,Bug Bite,FALSE,Common,,"Wormadam, Mothim","Leaf, Leaf",80,D,Sinnoh
+418,413,Stage 1,Wormadam,58,33,33,6,27,DARK,FIRE,PSYCHIC,3,413.png,,,Confusion,Bug Buzz,FALSE,Rare,Burmy,,,0,C,Sinnoh
+419,414,Stage 1,Mothim,61,35,28,6,36,DARK,FIRE,PSYCHIC,3,414.png,,,Air Slash,Silver Wind,FALSE,Rare,Burmy,,,0,C,Sinnoh
+420,415,Basic,Combee,33,17,18,3,29,DARK,FIRE,PSYCHIC,2,415.png,,,Gust,Bug Bite,FALSE,Common,,Vespiquen,Leaf,80,D,Sinnoh
+421,416,Stage 1,Vespiquen,83,44,43,6,35,DARK,FIRE,PSYCHIC,4,416.png,,,Defend Order,Bug Buzz,FALSE,Epic,Combee,,,0,A,Sinnoh
+422,417,Basic,Pachirisu,64,32,35,4,48,ELECTRIC,GROUND,WATER,2,417.png,,,Spark,Discharge,FALSE,Uncommon,,,,0,B,Sinnoh
+423,418,Basic,Buizel,37,20,17,3,32,WATER,ELECTRIC,FIRE,2,418.png,,,Quick Attack,Aqua Jet,FALSE,Common,,Floatzel,Water,80,D,Sinnoh
+424,419,Stage 1,Floatzel,86,46,37,6,54,WATER,ELECTRIC,FIRE,3,419.png,,,Aqua Jet,Crunch,FALSE,Rare,Buizel,,,0,A,Sinnoh
+425,420,Basic,Cherubi,36,20,19,3,21,GRASS,FIRE,GROUND,2,420.png,,,Tackle,Magical Leaf,FALSE,Common,,Cherrim,Leaf,80,D,Sinnoh
+426,421,Stage 1,Cherrim,61,34,31,6,42,GRASS,FIRE,GROUND,3,421.png,,,Solar Beam,Petal Dance,FALSE,Rare,Cherubi,,,0,C,Sinnoh
+427,422,Basic,Shellos,41,19,19,3,21,WATER,GRASS,ELECTRIC,2,422.png,,,Mud-Slap,Water Pulse,FALSE,Common,,Gastrodon,Water,80,D,Sinnoh
+428,423,Stage 1,Gastrodon,79,38,34,6,28,WATER,GRASS,ELECTRIC,4,423.png,,,Muddy Water,Earth Power,FALSE,Rare,Shellos,,,0,B,Sinnoh
+429,424,Stage 1,Ambipom,68,39,32,6,55,NORMAL,FIGHTING,NONE,3,424.png,,,Double Hit,Acrobatics,FALSE,Rare,Aipom,,,0,B,Sinnoh
+430,425,Basic,Drifloon,43,20,17,3,29,DARK,ELECTRIC,GROUND,2,425.png,,,Gust,Ominous Wind,FALSE,Common,,Drifblim,Night,80,D,Sinnoh
+431,426,Stage 1,Drifblim,101,45,36,6,45,DARK,ELECTRIC,GROUND,4,426.png,,,Ominous Wind,Shadow Ball,FALSE,Rare,Drifloon,,,0,A,Sinnoh
+432,427,Basic,Buneary,37,20,19,3,32,NORMAL,FIGHTING,NONE,2,427.png,,,Pound,Quick Attack,FALSE,Common,,Lopunny,Heart,80,D,Sinnoh
+433,428,Stage 1,Lopunny,82,43,42,6,51,NORMAL,FIGHTING,NONE,3,428.png,,,High Jump Kick,Bounce,FALSE,Rare,Buneary,,,0,A,Sinnoh
+434,429,Stage 1,Mismagius,81,46,41,6,51,DARK,DARK,PSYCHIC,4,429.png,,,Psywave,Shadow Ball,FALSE,Rare,Misdreavus,,,0,A,Sinnoh
+435,430,Stage 1,Honchkrow,90,49,37,6,43,DARK,ELECTRIC,GROUND,4,430.png,,,Night Slash,Dark Pulse,FALSE,Rare,Murkrow,,,0,A,Sinnoh
+436,431,Basic,Glameow,36,19,17,3,32,NORMAL,FIGHTING,NONE,2,431.png,,,Scratch,Fake Out,FALSE,Common,,Purugly,Heart,80,D,Sinnoh
+437,432,Stage 1,Purugly,67,36,31,6,54,NORMAL,FIGHTING,NONE,3,432.png,,,Slash,Body Slam,FALSE,Rare,Glameow,,,0,B,Sinnoh
+438,433,Basic,Chingling,36,20,18,3,23,PSYCHIC,DARK,FIGHTING,2,433.png,,,Astonish,Psywave,FALSE,Common,,Chimecho,Psyche,80,D,Sinnoh
+439,434,Basic,Stunky,38,20,18,3,30,DARK,GROUND,PSYCHIC,2,434.png,,,Scratch,Acid,FALSE,Common,,Skuntank,Night,80,D,Sinnoh
+440,435,Stage 1,Skuntank,77,38,32,6,44,DARK,GROUND,PSYCHIC,4,435.png,,,Poison Jab,Flamethrower,FALSE,Rare,Stunky,,,0,B,Sinnoh
+441,436,Basic,Bronzor,38,16,22,3,19,GROUND,FIRE,PSYCHIC,2,436.png,,,Tackle,Confusion,FALSE,Common,,Bronzong,Psyche,80,D,Sinnoh
+442,437,Stage 1,Bronzong,66,38,40,6,26,GROUND,FIRE,PSYCHIC,4,437.png,,,Tackle,Extrasensory,FALSE,Rare,Bronzor,,,0,B,Sinnoh
+443,438,Basic,Bonsly,36,21,22,3,16,GROUND,GRASS,ELECTRIC,2,438.png,,,Tackle,Rock Throw,FALSE,Common,,Sudowoodo,Ground,80,D,Sinnoh
+444,440,Basic,Happiny,44,15,18,3,20,NORMAL,FIGHTING,NONE,2,440.png,,,Pound,Sweet Kiss,FALSE,Common,,Chansey,Heart,50,D,Sinnoh
+445,441,Basic,Chatot,69,38,28,4,47,NORMAL,ELECTRIC,GROUND,2,441.png,,,Peck,Chatter,FALSE,Uncommon,,,,0,B,Sinnoh
+446,442,Basic,Spiritomb,78,45,44,5,34,DARK,NONE,PSYCHIC,4,442.png,Pressure,Forces opponent to expend energy quicker.,Shadow Sneak,Dark Pulse,FALSE,Epic,,,,0,A,Sinnoh
+447,443,Basic,Gible,38,20,18,3,23,NORMAL,WATER,FIRE,2,443.png,,,Tackle,Dragon Breath,FALSE,Uncommon,,Gabite,Scale,50,D,Sinnoh
+448,444,Stage 1,Gabite,60,34,29,5,41,NORMAL,WATER,FIRE,3,444.png,,,Slash,Dragon Claw,FALSE,Rare,Gible,Garchomp,Scale,120,C,Sinnoh
+449,445,Stage 2,Garchomp,143,63,57,8,59,NORMAL,WATER,FIRE,5,445.png,,,Earthquake,Draco Meteor,FALSE,Legendary,Gabite,,,0,S+,Sinnoh
+450,446,Basic,Munchlax,50,22,21,3,15,NORMAL,FIGHTING,NONE,2,446.png,,,Tackle,Body Slam,FALSE,Uncommon,,Snorlax,Heart,80,D,Sinnoh
+451,447,Basic,Riolu,35,20,17,3,27,FIGHTING,PSYCHIC,DARK,2,447.png,Inner Focus,Immune to flinching.,Quick Attack,Drain Punch,FALSE,Uncommon,,Lucario,Punch,80,D,Sinnoh
+452,448,Stage 1,Lucario,83,48,39,6,48,FIGHTING,FIRE,DARK,4,448.png,Inner Focus,Immune to flinching.,Bullet Punch,Aura Sphere,FALSE,Epic,Riolu,,,0,A,Sinnoh
+453,449,Basic,Hippopotas,39,20,20,3,21,GROUND,GRASS,ELECTRIC,2,449.png,,,Tackle,Sand Tomb,FALSE,Common,,Hippowdon,Ground,80,D,Sinnoh
+454,450,Stage 1,Hippowdon,91,47,43,6,37,GROUND,GRASS,ELECTRIC,4,450.png,Sand Stream,Summons a persistent sandstorm in battle.,Crunch,Earthquake,FALSE,Rare,Hippopotas,,,0,A,Sinnoh
+455,451,Basic,Skorupi,35,18,22,3,28,DARK,FIRE,PSYCHIC,2,451.png,,,Poison Sting,Bite,FALSE,Common,,Drapion,Night,80,D,Sinnoh
+456,452,Stage 1,Drapion,83,44,42,6,49,DARK,GROUND,PSYCHIC,4,452.png,,,Cross Poison,Night Slash,FALSE,Epic,Skorupi,,,0,A,Sinnoh
+457,453,Basic,Croagunk,36,20,17,3,24,DARK,PSYCHIC,DARK,2,453.png,,,Poison Sting,Mud-Slap,FALSE,Common,,Toxicroak,Punch,80,D,Sinnoh
+458,454,Stage 1,Toxicroak,86,46,38,6,46,DARK,PSYCHIC,DARK,3,454.png,,,Poison Jab,Drain Punch,FALSE,Rare,Croagunk,,,0,A,Sinnoh
+459,455,Basic,Carnivine,68,39,33,4,31,GRASS,FIRE,GROUND,2,455.png,,,Bite,Energy Ball,FALSE,Uncommon,,,,0,B,Sinnoh
+460,456,Basic,Finneon,36,19,20,3,28,WATER,ELECTRIC,FIRE,2,456.png,,,Water Gun,Pound,FALSE,Common,,Lumineon,Water,80,D,Sinnoh
+461,457,Stage 1,Lumineon,61,32,32,6,44,WATER,ELECTRIC,FIRE,3,457.png,,,Water Pulse,Silver Wind,FALSE,Rare,Finneon,,,0,C,Sinnoh
+462,458,Basic,Mantyke,36,19,24,3,24,WATER,ELECTRIC,GROUND,2,458.png,,,Tackle,Bubble Beam,FALSE,Common,,Mantine,Water,80,D,Sinnoh
+463,459,Basic,Snover,38,20,19,3,22,GRASS,FIRE,WATER,2,459.png,,,Powder Snow,Razor Leaf,FALSE,Common,,Abomasnow,Leaf,80,D,Sinnoh
+464,460,Stage 1,Abomasnow,87,45,40,6,40,GRASS,FIRE,WATER,4,460.png,Snow Warning,Summons a persistent hailstorm in battle.,Ice Punch,Wood Hammer,FALSE,Rare,Snover,,,0,A,Sinnoh
+465,461,Stage 1,Weavile,83,47,40,6,56,DARK,FIGHTING,PSYCHIC,3,461.png,,,Ice Shard,Night Slash,FALSE,Epic,Sneasel,,,0,A,Sinnoh
+466,463,Stage 1,Lickilicky,92,44,42,6,38,NORMAL,FIGHTING,NONE,4,463.png,,,Lick,Slam,FALSE,Rare,Lickitung,,,0,A,Sinnoh
+467,468,Stage 2,Togekiss,113,54,50,8,53,NORMAL,ELECTRIC,GROUND,5,468.png,Serene Grace,Secondary effects occur more frequently.,Air Slash,Aura Sphere,FALSE,Epic,Togetic,,,0,S,Sinnoh
+468,469,Stage 1,Yanmega,87,47,40,6,49,DARK,ELECTRIC,GROUND,3,469.png,Speed Boost,Gains +1 Speed at the start of each round.,Air Slash,Bug Buzz,FALSE,Epic,Yanma,,,0,A,Sinnoh
+469,470,Stage 1,Leafeon,82,46,44,8,49,GRASS,FIRE,GROUND,5,470.png,,,Quick Attack,Leaf Blade,FALSE,Epic,Eevee,,,0,A,Sinnoh
+470,471,Stage 1,Glaceon,82,48,43,8,41,WATER,FIRE,WATER,5,471.png,,,Ice Shard,Blizzard,FALSE,Epic,Eevee,,,0,A,Sinnoh
+471,472,Stage 1,Gliscor,84,45,44,6,49,GROUND,WATER,ELECTRIC,4,472.png,Poison Heal,Restores HP instead of taking damage from poison.,Earthquake,X-Scissor,FALSE,Epic,Gligar,,,0,A,Sinnoh
+472,473,Stage 2,Mamoswine,122,57,46,8,53,WATER,GRASS,FIRE,5,473.png,,,Ice Fang,Earthquake,FALSE,Epic,Piloswine,,,0,S,Sinnoh
+473,474,Stage 2,Porygon-Z,113,58,46,8,57,NORMAL,FIGHTING,NONE,4,474.png,,,Tri Attack,Hyper Beam,FALSE,Epic,Porygon2,,,0,S,Sinnoh
+474,475,Stage 2,Gallade,108,56,49,8,53,PSYCHIC,DARK,FIGHTING,4,475.png,,,Psycho Cut,Close Combat,FALSE,Epic,Kirlia,,,0,S,Sinnoh
+475,476,Stage 1,Probopass,81,43,49,6,35,GROUND,GRASS,ELECTRIC,5,476.png,,,Magnet Bomb,Rock Slide,FALSE,Rare,Nosepass,,,0,A,Sinnoh
+476,477,Stage 2,Dusknoir,100,52,54,8,42,DARK,DARK,PSYCHIC,5,477.png,Pressure,Forces opponent to expend energy quicker.,Shadow Punch,Shadow Ball,FALSE,Epic,Dusclops,,,0,S,Sinnoh
+477,478,Stage 1,Froslass,67,37,33,6,53,WATER,FIRE,WATER,3,478.png,,,Ice Shard,Ominous Wind,FALSE,Rare,Snorunt,,,0,B,Sinnoh
+478,479,Basic,Rotom,78,45,40,5,48,ELECTRIC,GROUND,WATER,3,479.png,Levitate,Immune to GROUND type attacks.,Thunder Shock,Ominous Wind,FALSE,Rare,,,,0,A,Sinnoh
+479,480,Legendary,Uxie,110,48,53,10,58,PSYCHIC,DARK,FIGHTING,6,480.png,,,Swift,Extrasensory,FALSE,Legendary,,,,0,S,Sinnoh
+480,481,Legendary,Mesprit,112,54,50,10,53,PSYCHIC,DARK,FIGHTING,5,481.png,,,Swift,Extrasensory,FALSE,Legendary,,,,0,S,Sinnoh
+481,482,Legendary,Azelf,110,57,45,10,65,PSYCHIC,DARK,FIGHTING,5,482.png,,,Swift,Extrasensory,FALSE,Legendary,,,,0,S,Sinnoh
+482,483,Legendary,Dialga,140,69,60,10,55,GROUND,NONE,PSYCHIC,6,483.png,Pressure,Forces opponent to expend energy quicker.,Dragon Pulse,Roar of Time,FALSE,Legendary,,,,0,S+,Sinnoh
+483,484,Legendary,Palkia,136,69,60,10,58,WATER,ELECTRIC,FIRE,6,484.png,Pressure,Forces opponent to expend energy quicker.,Dragon Pulse,Spacial Rend,FALSE,Legendary,,,,0,S+,Sinnoh
+484,485,Legendary,Heatran,136,64,59,10,50,FIRE,WATER,GRASS,6,485.png,Flash Fire,Grants immunity to FIRE and boosts user fire damage.,Earth Power,Magma Storm,FALSE,Legendary,,,,0,S+,Sinnoh
+485,486,Legendary,Regigigas,122,62,50,10,60,NORMAL,FIGHTING,NONE,6,486.png,Slow Start,Starts combat with reduced stats for initial rounds.,Hammer Arm,Crush Grip,FALSE,Legendary,,,,0,S,Sinnoh
+486,487,Legendary,Giratina,160,58,61,10,55,DARK,DARK,PSYCHIC,6,487.png,Pressure,Forces opponent to expend energy quicker.,Dragon Claw,Shadow Force,FALSE,Legendary,,,,0,S+,Sinnoh
+487,488,Legendary,Cresselia,125,48,53,10,55,PSYCHIC,DARK,FIGHTING,6,488.png,Levitate,Immune to GROUND type attacks.,Psychic,Calm Mind,FALSE,Legendary,,,,0,S,Sinnoh
+488,489,Legendary,Phione,112,49,47,8,53,WATER,ELECTRIC,FIRE,4,489.png,,,Bubble Beam,Surf,FALSE,Epic,,,,0,S,Sinnoh
+489,490,Legendary,Manaphy,118,53,49,10,60,WATER,ELECTRIC,FIRE,5,490.png,Hydration,Heals negative status effects naturally.,Water Pulse,Hydro Pump,FALSE,Legendary,,,,0,S,Sinnoh
+490,491,Legendary,Darkrai,128,65,56,10,67,DARK,FIGHTING,PSYCHIC,5,491.png,Bad Dreams,Reduces HP of sleeping opposing Pokémon.,Dark Pulse,Dark Void,FALSE,Legendary,,,,0,S+,Sinnoh
+491,492,Legendary,Shaymin,118,53,49,10,60,GRASS,FIRE,GROUND,5,492.png,Natural Cure,Cures status ailments when switching to the bench.,Energy Ball,Seed Flare,FALSE,Legendary,,,,0,S,Sinnoh
+492,493,Legendary,Arceus,148,62,61,10,65,NORMAL,NONE,NONE,6,493.png,Multitype,Adapts its typing dynamically to master all elements.,Hyper Beam,Judgment,FALSE,Legendary,,,,0,S+,Sinnoh
+493,95,Boss,Crystal Onix,900,65,80,8,3,ROCK,NONE,WATER,4,X Crystal Onix.png,Diamond Hoard,Invincible crystalline titan. Endure the battle and strike it to mine 20-50 Diamonds!,Rock Slide,Crystal Blast,FALSE,Boss,,,,0,S+,Special
+494,130,Legendary,Red Gyarados,138,61,57,8,52,WATER,,,5,130 (Shiny).png,Furia,"Whenever this PKMN takes damage or falls below 50% HP, its Move DMG increases by +2.",Aqua Tail,Hyper Beam,FALSE,Legendary,,,,0,S+,Johto
+495,130,Boss,Red Gyarados (Boss),600,70,65,10,50,WATER,,,5,130 (Shiny).png,Furia Desatada,Enraged lake guardian! Deals +3 extra damage with all attacks and gains relentless power.,Aqua Tail,Hyper Beam,FALSE,Boss,,,,0,S+,Special
+496,150,Boss,Enraged Mewtwo,750,80,65,10,75,PSYCHIC,NONE,,5,150.png,Escalada Furiosa,Increases +1 DMG for each round the battle lasts.,Aura Sphere,Mind Bending,FALSE,Boss,,,,0,S+,Special
+497,249,Boss,Celestial Lugia,800,65,85,10,65,PSYCHIC,DARK,GROUND,6,249.png,Ira Celestial,"If partner faints, becomes enraged and increases base DMG and Speed.",Aeroblast,Hydro Pump,FALSE,Boss,,,,0,S+,Special
+498,250,Boss,Celestial Ho-Oh,800,75,75,10,65,FIRE,WATER,GROUND,6,250.png,Ira Celestial,"If partner faints, becomes enraged and increases base DMG and Speed.",Sacred Fire,Brave Bird,FALSE,Boss,,,,0,S+,Special
+499,382,Boss,Primal Kyogre,850,85,75,10,60,WATER,ELECTRIC,FIRE,6,382.png,Drizzle,Boosts WATER moves DMG by +2.,Water Spout,Hydro Pump,FALSE,Boss,,,,0,S+,Special
+500,383,Boss,Primal Groudon,850,85,80,10,60,GROUND,WATER,ELECTRIC,6,383.png,Drought,Boosts FIRE & GROUND moves DMG by +2.,Earthquake,Eruption,FALSE,Boss,,,,0,S+,Special
+501,384,Boss,Apex Rayquaza,900,90,70,10,75,NORMAL,WATER,GROUND,6,384.png,Air Lock,Cancels all weather and field effects.,Extreme Speed,Dragon Ascent,FALSE,Boss,,,,0,S+,Special
+502,386,Boss,Cosmic Deoxys,900,95,60,10,85,PSYCHIC,DARK,FIGHTING,6,386.png,Pressure,Forces opponent to expend energy quicker.,Psycho Boost,Psychic,FALSE,Boss,,,,0,S+,Special
