@@ -248,7 +248,7 @@ func get_player_trainer_name() -> String:
 
 func get_enemy_trainer_name() -> String:
 	var is_sp = GameData.is_spanish()
-	if GameData.is_tutorial_mode:
+	if GameData.is_tutorial_mode and not GameData.is_campaign_mode:
 		return "Prof. Oak"
 	if GameData.is_online_pvp:
 		if not GameData.online_rival_name.is_empty():
@@ -1203,7 +1203,7 @@ func _show_forfeit_confirmation_modal() -> void:
 	if btn_cancel_forfeit:
 		btn_cancel_forfeit.text = GameData.tr_text("⚔️ Keep Battling", "⚔️ Seguir Luchando")
 	
-	if GameData.is_tutorial_mode:
+	if GameData.is_tutorial_mode and not GameData.is_campaign_mode:
 		forfeit_title_lbl.text = GameData.tr_text("🎓 EXIT TUTORIAL?", "🎓 ¿SALIR DEL TUTORIAL?")
 		forfeit_body_lbl.text = GameData.tr_text(
 			"Are you sure you want to exit the Tutorial?\nYou can restart it anytime to learn mechanics and claim your 💎 5 Diamonds.",
@@ -1216,6 +1216,9 @@ func _show_forfeit_confirmation_modal() -> void:
 		forfeit_body_lbl.text = "Are you sure you want to surrender?\nYou will forfeit the match to %s." % r_name
 		btn_confirm_forfeit.text = "🏳️ Forfeit & Surrender"
 	elif GameData.is_campaign_mode:
+		GameData.is_tutorial_mode = false
+		GameData.just_completed_tutorial = false
+		GameData.just_completed_tutorial_combat1 = false
 		if GameData.campaign_submode == "LAKE_OF_RAGE":
 			forfeit_title_lbl.text = "🌊 ¿HUIR DEL LAGO DE LA FURIA?"
 			forfeit_body_lbl.text = "¿Seguro que deseas retirarte del combate contra Gyarados Rojo?\nPodrás volver a desafiarlo cuando tu equipo esté listo."
@@ -1286,7 +1289,7 @@ func _notification(what: int) -> void:
 
 func _on_return_to_menu() -> void:
 	Engine.time_scale = 1.0
-	if GameData.is_tutorial_mode:
+	if GameData.is_tutorial_mode and not GameData.is_campaign_mode:
 		GameData.is_tutorial_mode = false
 	if GameData.is_online_pvp:
 		OnlineManager.leave_or_delete_room()
@@ -1322,13 +1325,18 @@ func _on_return_to_menu() -> void:
 		GameData.reset_chaos_odyssey()
 		GameData.is_campaign_mode = false
 		GameData.save_profile()
+	elif GameData.is_campaign_mode and GameData.campaign_submode == "TOURNAMENT":
+		if (is_battle_over and not is_victory) or not is_battle_over:
+			GameData.reset_campaign()
+		GameData.is_campaign_mode = false
+		GameData.save_profile()
 	if bgm_player and bgm_player.playing:
 		bgm_player.stop()
 	get_tree().call_deferred("change_scene_to_file", "res://scenes/main_menu.tscn")
 
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
-	if GameData.is_tutorial_mode:
+	if GameData.is_tutorial_mode and not GameData.is_campaign_mode:
 		GameData.is_tutorial_mode = false
 	if GameData.is_online_pvp:
 		OnlineManager.leave_or_delete_room()
@@ -1455,7 +1463,7 @@ func start_new_game() -> void:
 	is_waiting_for_online_opponent = false
 	is_processing_opponent_action = false
 	
-	if GameData.is_tutorial_mode:
+	if GameData.is_tutorial_mode and not GameData.is_campaign_mode:
 		tutorial_steps_shown.clear()
 		if GameData.tutorial_combat_phase == 2:
 			var p_s1_id = GameData.tutorial_stage1_id if GameData.tutorial_stage1_id >= 0 else 6
@@ -1477,6 +1485,9 @@ func start_new_game() -> void:
 			enemy_team = [e_inst]
 			battle_title_lbl.text = GameData.tr_text("🎓 Battle Tutorial: %s vs %s", "🎓 Tutorial de Combate: %s vs %s") % [p_inst.name, e_inst.name]
 	elif GameData.is_campaign_mode:
+		GameData.is_tutorial_mode = false
+		GameData.just_completed_tutorial = false
+		GameData.just_completed_tutorial_combat1 = false
 		if GameData.campaign_submode == "LAKE_OF_RAGE":
 			player_team = []
 			for pid in GameData.player_team_ids:
@@ -1539,6 +1550,21 @@ func start_new_game() -> void:
 					GameData.init_campaign_team([0, 1, 2])
 				team_state = GameData.get_active_campaign_team_state()
 				
+			var any_alive = false
+			for p_chk in team_state:
+				if int(p_chk.get("current_hp", 0)) > 0:
+					any_alive = true
+					break
+			if not any_alive and not team_state.is_empty():
+				for p_chk in team_state:
+					var inst_chk = GameData.create_pokemon_instance(int(p_chk["id"]))
+					if inst_chk:
+						p_chk["current_hp"] = inst_chk.max_hp
+					p_chk["burn_turns"] = 0
+					p_chk["is_poisoned"] = false
+					p_chk["is_flinched"] = false
+				GameData.save_profile()
+
 			player_team = []
 			for p_state in team_state:
 				var inst = GameData.create_pokemon_instance(int(p_state["id"]))
@@ -1636,6 +1662,7 @@ func start_new_game() -> void:
 				rival_ids = GameData.get_campaign_rival_team(GameData.campaign_match_number)
 				var match_info = GameData.get_tournament_match_info(GameData.campaign_match_number)
 				battle_title_lbl.text = "🏆 %s - Battle %d / %d" % [match_info["phase_name"], GameData.campaign_match_number, GameData.TOURNAMENT_TOTAL_MATCHES]
+				GameData.enemy_team_ids = rival_ids.duplicate()
 				
 			enemy_team = []
 			for eid in rival_ids:
@@ -1734,11 +1761,14 @@ func start_new_game() -> void:
 	round_step = 0
 	
 	var mode_str = "QUICK BATTLE"
-	if GameData.is_tutorial_mode:
+	if GameData.is_tutorial_mode and not GameData.is_campaign_mode:
 		mode_str = "COMBAT TUTORIAL"
 	elif GameData.is_online_pvp:
 		mode_str = "ONLINE BATTLE"
 	elif GameData.is_campaign_mode:
+		GameData.is_tutorial_mode = false
+		GameData.just_completed_tutorial = false
+		GameData.just_completed_tutorial_combat1 = false
 		if GameData.campaign_submode == "LAKE_OF_RAGE":
 			mode_str = "EL LAGO DE LA FURIA - GYARADOS ROJO (BOSS)"
 		elif GameData.campaign_submode == "PSYCHIC_DUEL":
@@ -4413,7 +4443,7 @@ func check_team_defeat() -> bool:
 func _resolve_battle_victory() -> void:
 	GameData.stats_battles_total += 1
 	GameData.stats_battles_won += 1
-	if GameData.is_tutorial_mode:
+	if GameData.is_tutorial_mode and not GameData.is_campaign_mode:
 		if GameData.tutorial_completed:
 			GameData.is_tutorial_mode = false
 			show_game_over(
@@ -5089,7 +5119,7 @@ func _resolve_battle_victory() -> void:
 			show_game_over("VICTORY!", "You defeated the rival team!")
 func _resolve_battle_defeat(is_double_ko: bool = false) -> void:
 	GameData.stats_battles_total += 1
-	if GameData.is_tutorial_mode:
+	if GameData.is_tutorial_mode and not GameData.is_campaign_mode:
 		if GameData.tutorial_completed:
 			GameData.is_tutorial_mode = false
 			show_game_over(
@@ -5225,12 +5255,23 @@ func _resolve_battle_defeat(is_double_ko: bool = false) -> void:
 				"Todos tus Pokémon han caído debilitados.\nEl progreso de la liga se ha reiniciado.\n¡Puedes volver a desafiar la Liga de Campeonato cuando estés listo!"
 			)
 		else:
-			GameData.reset_campaign()
+			# Pokémon Stadium (Tournament) - Conservar estado de campaña para permitir revancha inmediata
 			GameData.save_profile()
-			show_game_over(
-				"💀 ELIMINATED FROM THE TOURNAMENT!",
-				"All your Pokémon have fainted in battle.\nThe Tournament run was reset, but your Gold (G) and Diamonds are safe!%s\nYou can use your Gold at the Camp to buy supplies for your next run!" % preserved_msg
+			var defeat_title = "💀 DERROTA EN EL STADIUM!" if GameData.is_spanish() else "💀 DEFEATED IN THE STADIUM!"
+			var defeat_desc = (
+				"Todos tus Pokémon han caído debilitados en el Combate %d / %d.%s\n\n¿Deseas una revancha inmediata o volver al Campamento / Hub?" % [
+					GameData.campaign_match_number,
+					GameData.TOURNAMENT_TOTAL_MATCHES,
+					preserved_msg
+				]
+			) if GameData.is_spanish() else (
+				"All your Pokémon have fainted in Battle %d / %d.%s\n\nTap Rematch to try again or return to the Campaign Hub." % [
+					GameData.campaign_match_number,
+					GameData.TOURNAMENT_TOTAL_MATCHES,
+					preserved_msg
+				]
 			)
+			show_game_over(defeat_title, defeat_desc)
 	else:
 		GameData.save_profile()
 		if GameData.is_online_pvp:
@@ -7812,6 +7853,9 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 		btn_restart.visible = false
 		btn_game_over_menu.text = "🏆 Return to Campaign Hub"
 	elif GameData.is_campaign_mode:
+		GameData.is_tutorial_mode = false
+		GameData.just_completed_tutorial = false
+		GameData.just_completed_tutorial_combat1 = false
 		btn_restart.visible = false
 		if GameData.campaign_submode == "LAKE_OF_RAGE":
 			btn_game_over_menu.text = "🗺️ Return to Johto"
@@ -7840,6 +7884,10 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 		else:
 			if GameData.campaign_match_number > GameData.TOURNAMENT_TOTAL_MATCHES:
 				btn_game_over_menu.text = "🏆 Complete Tournament"
+			elif is_battle_over and not is_victory:
+				btn_restart.visible = true
+				btn_restart.text = "🔄 Revancha" if GameData.is_spanish() else "🔄 Rematch"
+				btn_game_over_menu.text = "🏛️ Volver al Hub" if GameData.is_spanish() else "🏛️ Campaign Hub"
 			else:
 				btn_game_over_menu.text = "⛺ Camp / Shop"
 	elif GameData.campaign_submode in ["ADVENTURE", "CHAOS"]:

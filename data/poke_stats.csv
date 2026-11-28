@@ -214,7 +214,7 @@
 212,201,Basic,Unown,36,21,18,4,24,PSYCHIC,DARK,,2,201.png,Levitate,Floating immunity to Ground.,Hidden Power,Cosmic Power,FALSE,Common,,,,0,D,Johto
 213,202,Stage 1,Wobbuffet,110,38,37,6,33,PSYCHIC,DARK,,3,202.png,Shadow Tag,Prevents foe from escaping or switching.,Counter-Cut,Destiny Bond,FALSE,Rare,Wynaut,,,0,A,Johto
 214,203,Basic,Girafarig,83,45,38,5,46,NORMAL,DARK,PSYCHIC,3,203.png,Early Bird,Awakens quickly from sleep.,Stomp,Psybeam,FALSE,Rare,,,,0,A,Johto
-215,204,Basic,Pineco,36,20,21,3,17,GRASS,FIRE,,2,204.png,Sturdy,Cannot be knocked out in one hit.,Tackle,Self-Destruct,FALSE,Common,,Forretress,Leaf,80,D,Johto
+215,204,Basic,Pineco,36,20,21,4,17,GRASS,FIRE,,2,204.png,Sturdy,Cannot be knocked out in one hit.,Tackle,Self-Destruct,FALSE,Common,,Forretress,Leaf,80,D,Johto
 216,205,Stage 1,Forretress,68,37,40,6,29,GRASS,FIRE,NORMAL,4,205.png,Overcoat,Protects from sandstorm damage.,Spikes,Explosion,FALSE,Rare,Pineco,,,0,B,Johto
 217,206,Basic,Dunsparce,76,35,32,4,30,NORMAL,,NONE,2,206.png,Serene Grace,Boosts the likelihood of added effects.,Defense Curl,Rollout,FALSE,Uncommon,,,,0,B,Johto
 218,207,Basic,Gligar,66,35,37,4,44,GROUND,WATER,ELECTRIC,3,207.png,Hyper Cutter,Prevents Attack reduction.,Sand Attack,Slash,FALSE,Uncommon,,Gliscor,Ground,80,B,Johto
@@ -310,7 +310,7 @@
 308,303,Basic,Mawile,61,37,34,5,32,GROUND,FIRE,GRASS,3,303.png,Hyper Cutter,Prevents attack reduction.,Bite,Iron Head,FALSE,Rare,,,,0,B,Hoenn
 309,304,Basic,Aron,44,25,27,3,25,GROUND,GRASS,ELECTRIC,2,304.png,Sturdy,Endures a lethal 1-hit KO with 1 HP.,Tackle,Metal Claw,FALSE,Uncommon,,Lairon,Ground,35,C,Hoenn
 310,305,Stage 1,Lairon,58,34,35,5,28,GROUND,GRASS,ELECTRIC,3,305.png,Sturdy,Endures a lethal 1-hit KO with 1 HP.,Iron Head,Take Down,FALSE,Rare,Aron,Aggron,Ground,120,C,Hoenn
-311,306,Stage 2,Aggron,108,53,55,8,43,GROUND,GRASS,ELECTRIC,5,306.png,Sturdy,Endures a lethal 1-hit KO with 1 HP.,Iron Defense,Rock Wrecker,FALSE,Epic,Lairon,,,0,S,Hoenn
+311,306,Stage 2,Aggron,108,53,55,8,43,GROUND,GRASS,ELECTRIC,5,306.png,Sturdy,Endures a lethal 1-hit KO with 1 HP.,Iron Head,Rock Wrecker,FALSE,Epic,Lairon,,,0,S,Hoenn
 312,307,Basic,Meditite,33,18,19,3,27,FIGHTING,PSYCHIC,DARK,2,307.png,,,Confusion,Drain Punch,FALSE,Uncommon,,Medicham,Punch,80,D,Hoenn
 313,308,Stage 1,Medicham,81,41,39,6,45,FIGHTING,PSYCHIC,DARK,3,308.png,,,High Jump Kick,Zen Headbutt,FALSE,Rare,Meditite,,,0,A,Hoenn
 314,309,Basic,Electrike,35,20,17,3,28,ELECTRIC,GROUND,WATER,2,309.png,,,Tackle,Thunder Shock,FALSE,Common,,Manectric,Thunder,80,D,Hoenn
@@ -378,7 +378,7 @@
 376,371,Basic,Bagon,44,26,24,3,28,NORMAL,FIGHTING,FIRE,2,371.png,Rock Head,Protects the Pokemon from recoil damage.,Bite,Dragon Breath,FALSE,Uncommon,,Shelgon,Scale,35,C,Hoenn
 377,372,Stage 1,Shelgon,59,35,32,5,31,NORMAL,FIGHTING,FIRE,3,372.png,Rock Head,Protects the Pokemon from recoil damage.,Headbutt,Dragon Claw,FALSE,Rare,Bagon,Salamence,Scale,120,B,Hoenn
 378,373,Stage 2,Salamence,138,65,55,8,58,NORMAL,WATER,FIRE,5,373.png,Intimidate,Lowers foe's attack on entry (-2 DMG).,Dragon Claw,Draco Meteor,FALSE,Legendary,Shelgon,,,0,S+,Hoenn
-379,374,Basic,Beldum,43,24,26,3,25,GROUND,FIRE,PSYCHIC,2,374.png,,,Take Down,Metal Claw,FALSE,Uncommon,,Metang,Psyche,35,C,Hoenn
+379,374,Basic,Beldum,43,24,26,3,25,GROUND,FIRE,PSYCHIC,2,374.png,,,Iron Head,Metal Claw,FALSE,Uncommon,,Metang,Psyche,35,C,Hoenn
 380,375,Stage 1,Metang,58,32,33,5,31,GROUND,FIRE,PSYCHIC,3,375.png,,,Metal Claw,Zen Headbutt,FALSE,Rare,Beldum,Metagross,Psyche,120,C,Hoenn
 381,376,Stage 2,Metagross,132,65,61,8,48,GROUND,FIRE,PSYCHIC,5,376.png,Clear Body,Immune to stat-lowering and debuff effects.,Zen Headbutt,Meteor Mash,FALSE,Legendary,Metang,,,0,S+,Hoenn
 382,377,Legendary,Regirock,112,51,58,10,43,GROUND,NONE,ELECTRIC,5,377.png,,,Ancient Power,Stone Edge,FALSE,Legendary,,,,0,S,Hoenn

@@ -622,6 +622,8 @@ var team_card_views_map: Dictionary = {} # id -> Dictionary de vistas del grid
 const REGION_TAB_IDS: Array = ["KANTO", "JOHTO", "HOENN", "SINNOH", "ALL"]
 const REGION_TAB_LABELS: Dictionary = {"KANTO": "Kanto", "JOHTO": "Johto", "HOENN": "Hoenn", "SINNOH": "Sinnoh", "ALL": "All"}
 var team_filter_region: String = "ALL"
+var team_filter_favorites_only: bool = false
+var btn_team_fav_filter: Button = null
 var team_search_query: String = ""
 var team_filters_box: VBoxContainer = null
 var team_region_buttons: Dictionary = {}
@@ -5695,6 +5697,9 @@ func _show_camp_combat2_prompt() -> void:
 	)
 
 func open_team_select_for_campaign() -> void:
+	GameData.is_tutorial_mode = false
+	GameData.just_completed_tutorial = false
+	GameData.just_completed_tutorial_combat1 = false
 	refresh_cards_data_from_catalog()
 	team_select_mode = "CAMPAIGN"
 	GameData.is_pvp_mode = false
@@ -9313,6 +9318,9 @@ func build_team_select_cards_grid() -> void:
 	team_region_pool_cache = pool
 	var filtered_pool: Array = []
 	for c in pool:
+		var cid = int(c.get("id", -1))
+		if team_filter_favorites_only and not GameData.is_pokemon_favorite(cid):
+			continue
 		if team_filter_region != "ALL" and _get_card_region_key(c) != team_filter_region:
 			continue
 		if not _card_matches_search(c, team_search_query):
@@ -9325,7 +9333,12 @@ func build_team_select_cards_grid() -> void:
 	if current_sorted_team_pool.is_empty():
 		var empty_lbl = Label.new()
 		empty_lbl.name = "TeamEmptyFilterLbl"
-		if team_filter_region != "ALL" or team_search_query.strip_edges() != "":
+		if team_filter_favorites_only:
+			empty_lbl.text = "⭐ " + GameData.tr_text(
+				"No Pokémon match your Favorites filter.\nTap the star (☆) on any Pokémon to add them to your favorites!",
+				"No tienes Pokémon que coincidan con el filtro de Favoritos.\n¡Toca la estrella (☆) en cualquier Pokémon para añadirlo a tus favoritos!"
+			)
+		elif team_filter_region != "ALL" or team_search_query.strip_edges() != "":
 			empty_lbl.text = "🔍 No Pokémon match this region / search."
 		elif GameData.campaign_submode == "CHAOS":
 			empty_lbl.text = "🔒 No tienes Pokémon Legendarios ni Dragones en tu colección.\n¡Consíguelos en sobres o evoluciona tus Pokémon para entrar en Chaos Odyssey!"
@@ -9382,6 +9395,7 @@ func build_team_select_cards_grid() -> void:
 		# Badge flotante para indicar rol en el equipo (✓ 1º LÍDER, etc.)
 		var badge_panel = PanelContainer.new()
 		badge_panel.set_anchors_preset(Control.PRESET_TOP_WIDE)
+		badge_panel.offset_left = 28.0
 		badge_panel.offset_right = -28.0
 		badge_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		badge_panel.visible = false
@@ -9392,6 +9406,51 @@ func build_team_select_cards_grid() -> void:
 		badge_lbl.add_theme_font_size_override("font_size", 9)
 		badge_panel.add_child(badge_lbl)
 		thumb_btn.add_child(badge_panel)
+		
+		# Botón de Favorito flotante (⭐ / ☆) en la esquina superior izquierda
+		var btn_fav = Button.new()
+		btn_fav.name = "BtnFav_%d" % cid
+		var is_fav = GameData.is_pokemon_favorite(cid)
+		btn_fav.text = "⭐" if is_fav else "☆"
+		btn_fav.tooltip_text = GameData.tr_text("Toggle Favorite", "Alternar Favorito")
+		btn_fav.custom_minimum_size = Vector2(24, 24)
+		btn_fav.size = Vector2(24, 24)
+		btn_fav.position = Vector2(4, 4)
+		btn_fav.focus_mode = Control.FOCUS_NONE
+		btn_fav.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		btn_fav.add_theme_font_size_override("font_size", 11)
+		
+		var sb_fav_norm = StyleBoxFlat.new()
+		sb_fav_norm.bg_color = Color(0.04, 0.07, 0.12, 0.85)
+		sb_fav_norm.border_color = Color(0.95, 0.75, 0.2, 0.85) if is_fav else Color(0.4, 0.45, 0.55, 0.6)
+		sb_fav_norm.set_border_width_all(1)
+		sb_fav_norm.set_corner_radius_all(4)
+		btn_fav.add_theme_stylebox_override("normal", sb_fav_norm)
+		btn_fav.modulate = Color(1.2, 1.1, 0.3) if is_fav else Color(0.7, 0.7, 0.7)
+		
+		btn_fav.pressed.connect(func():
+			if GameData.is_drag_scrolling():
+				return
+			var new_state = GameData.toggle_pokemon_favorite(cid)
+			GameData.save_profile()
+			btn_fav.text = "⭐" if new_state else "☆"
+			btn_fav.modulate = Color(1.2, 1.1, 0.3) if new_state else Color(0.7, 0.7, 0.7)
+			var sb = StyleBoxFlat.new()
+			sb.bg_color = Color(0.04, 0.07, 0.12, 0.85)
+			sb.border_color = Color(0.95, 0.75, 0.2, 0.85) if new_state else Color(0.4, 0.45, 0.55, 0.6)
+			sb.set_border_width_all(1)
+			sb.set_corner_radius_all(4)
+			btn_fav.add_theme_stylebox_override("normal", sb)
+			_update_team_fav_filter_ui()
+			if team_filter_favorites_only:
+				build_team_select_cards_grid()
+				update_team_select_ui()
+		)
+		btn_fav.gui_input.connect(func(ev: InputEvent):
+			if ev is InputEventMouseButton and ev.pressed:
+				get_viewport().set_input_as_handled()
+		)
+		thumb_btn.add_child(btn_fav)
 		
 		# Botón de Lupa flotante (🔍) sin texto sobre la carta para inspeccionar stats y moves
 		var btn_inspect = Button.new()
@@ -9593,13 +9652,53 @@ func _setup_team_select_filters() -> void:
 		team_region_buttons[rid] = b
 	team_filters_box.add_child(reg_row)
 	
+	var search_fav_row = HBoxContainer.new()
+	search_fav_row.name = "SearchFavRow"
+	search_fav_row.add_theme_constant_override("separation", 6)
+	search_fav_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
 	team_search_edit = _make_search_line_edit("TeamSearchEdit", "🔍 Search by name or Pokédex #")
 	team_search_edit.text_changed.connect(_on_team_search_changed)
-	team_filters_box.add_child(team_search_edit)
+	team_search_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	search_fav_row.add_child(team_search_edit)
+
+	btn_team_fav_filter = Button.new()
+	btn_team_fav_filter.name = "BtnTeamFavFilter"
+	btn_team_fav_filter.text = "⭐ Favoritos" if GameData.is_spanish() else "⭐ Favorites"
+	btn_team_fav_filter.focus_mode = Control.FOCUS_NONE
+	btn_team_fav_filter.custom_minimum_size = Vector2(115, 34)
+	btn_team_fav_filter.add_theme_font_size_override("font_size", 11)
+	btn_team_fav_filter.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_apply_retro_button_style(btn_team_fav_filter, Color(0.35, 0.35, 0.35), Color(0.60, 0.60, 0.60), false)
+	btn_team_fav_filter.pressed.connect(func():
+		team_filter_favorites_only = not team_filter_favorites_only
+		_update_team_fav_filter_ui()
+		build_team_select_cards_grid()
+		update_team_select_ui()
+	)
+	search_fav_row.add_child(btn_team_fav_filter)
+	team_filters_box.add_child(search_fav_row)
 	
 	box.add_child(team_filters_box)
 	box.move_child(team_filters_box, sort_bar.get_index() + 1)
 	_update_team_region_buttons_ui()
+
+func _update_team_fav_filter_ui() -> void:
+	if not btn_team_fav_filter:
+		return
+	var fav_count = 0
+	for c in team_region_pool_cache:
+		var cid = int(c.get("id", -1))
+		if GameData.is_pokemon_favorite(cid):
+			fav_count += 1
+	var base_label = "Favoritos" if GameData.is_spanish() else "Favorites"
+	btn_team_fav_filter.text = "⭐ %s (%d)" % [base_label, fav_count]
+	if team_filter_favorites_only:
+		_apply_retro_button_style(btn_team_fav_filter, Color(0.85, 0.65, 0.10), Color(1.0, 0.95, 0.45), true)
+		btn_team_fav_filter.modulate = Color(1.3, 1.25, 0.5)
+	else:
+		_apply_retro_button_style(btn_team_fav_filter, Color(0.35, 0.35, 0.35), Color(0.60, 0.60, 0.60), false)
+		btn_team_fav_filter.modulate = Color(0.85, 0.85, 0.85)
 
 func _on_team_region_pressed(reg_id: String) -> void:
 	team_filter_region = reg_id
@@ -9612,6 +9711,7 @@ func _on_team_search_changed(new_text: String) -> void:
 	update_team_select_ui()
 
 func _update_team_region_buttons_ui() -> void:
+	_update_team_fav_filter_ui()
 	if team_region_buttons.is_empty():
 		return
 	var counts = {"KANTO": 0, "JOHTO": 0, "HOENN": 0, "SINNOH": 0, "ALL": team_region_pool_cache.size()}
