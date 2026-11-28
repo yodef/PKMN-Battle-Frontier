@@ -30,6 +30,7 @@ var enemy_combat_history: Array[String] = []
 var player_combat_history: Array[String] = []
 var global_combat_history: Array[String] = []
 var is_battle_over: bool = false
+var is_victory: bool = false
 var sandstorm_turns: int = 0
 var grassy_terrain_turns: int = 0
 var trick_room_turns: int = 0
@@ -1422,6 +1423,7 @@ func get_benched_enemy_indices() -> Array[int]:
 func start_new_game() -> void:
 	game_over_panel.visible = false
 	is_battle_over = false
+	is_victory = false
 	is_busy = false
 	can_player_act = false
 	is_player_turn = false
@@ -4441,6 +4443,8 @@ func check_team_defeat() -> bool:
 	return false
 
 func _resolve_battle_victory() -> void:
+	is_battle_over = true
+	is_victory = true
 	GameData.stats_battles_total += 1
 	GameData.stats_battles_won += 1
 	if GameData.is_tutorial_mode and not GameData.is_campaign_mode:
@@ -5118,6 +5122,8 @@ func _resolve_battle_victory() -> void:
 		else:
 			show_game_over("VICTORY!", "You defeated the rival team!")
 func _resolve_battle_defeat(is_double_ko: bool = false) -> void:
+	is_battle_over = true
+	is_victory = false
 	GameData.stats_battles_total += 1
 	if GameData.is_tutorial_mode and not GameData.is_campaign_mode:
 		if GameData.tutorial_completed:
@@ -7829,7 +7835,7 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 	_apply_game_over_banner_styling(title)
 	
 	var title_upper = title.to_upper()
-	var is_victory = (
+	is_victory = (
 		"VICTOR" in title_upper or 
 		"WIN" in title_upper or 
 		"CHAMPION" in title_upper or 
@@ -7900,7 +7906,7 @@ func _show_game_over_internal(title: String, subtitle: String) -> void:
 
 func _apply_game_over_banner_styling(title: String) -> void:
 	var title_upper = title.to_upper()
-	var is_victory = (
+	is_victory = (
 		"VICTOR" in title_upper or 
 		"WIN" in title_upper or 
 		"CHAMPION" in title_upper or 
